@@ -1,9 +1,30 @@
+2001-02-06  gray  <gray@farlep.net>
+	Fixed handling of integer objects in radscm/radscm.c (added
+	bignums). Improved test/test.scm. 
+
+2001-02-04  gray  <gray@farlep.net>
+	Fixed radiusd/timestr.c to allow for "descending" time strings
+	(Al1800-0100)
+
+2001-02-01  gray  <gray@farlep.net>
+	Added -i option (source IP address) to radiusd.
+	Fixed nasty bug in radscm/radscm.c:radclient_alloc_server
+	(missing return statement).
+	Added some additional checks to configure.
+	Added acct_alive_query keyword to raddb/sqlserver and
+	modified radiusd/acct.c to handle this type of queries.
+
+2001-01-31  gray  <gray@farlep.net>
+	Fixed alignment bug in radlib/mem.c Thanks to Oswaldo E. Aguirre M.
+	<oaguirre@reacciun.ve>.
+	Fixed radlib/md5.c (did not work on Sparks). 
+
 2001-01-23  gray  <gray@farlep.net>
 	Added boolean shortcut evaluation and bitwise operations
 	to rewrite.y
 
 2001-01-17  gray  <gray@farlep.net>
-	Finished writing radscm. Written guile modules which replace radctl
+	Finished writing radscm. Wrote guile modules which replace radctl
 	and radtest programs. Removed radctl and radtest subdirs from the 
 	distribution. Also added radctl.m4 to radscripts directory, so that
 	the functionality of old radctl is preserved.

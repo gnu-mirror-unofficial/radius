@@ -28,6 +28,7 @@ enum cntl_command {
 	CNTL_SHUTDOWN,
 	CNTL_SUSPEND,
 	CNTL_CONTINUE,
+	CNTL_REMARK,
 };
 
 #ifdef CNTL_STATE_DECL
@@ -42,6 +43,7 @@ struct keyword cntl_state[] = {
 	"shutdown", CNTL_SHUTDOWN,
 	"suspend", CNTL_SUSPEND,
 	"continue", CNTL_CONTINUE,
+	"remark", CNTL_REMARK,
 	NULL
 };
 #endif

@@ -21,6 +21,9 @@
  */
 
 #include <stdio.h>
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
 #include <sysdep.h>
 #include <radius.h>
 #include <radpaths.h>
@@ -38,8 +41,8 @@ typedef struct {
 	int delayed_hup_wait;
 	int checkrad_assume_logged;
 	int max_requests;
-	char exec_user[32];
-	char exec_group[32];
+	char *exec_user;
+	char *exec_group;
 } Config;
 
 typedef struct {
@@ -430,7 +433,6 @@ void		md5_calc(u_char *, u_char *, u_int);
 
 /* radiusd.c */
 void		debug_pair(char *, VALUE_PAIR *);
-int		log_err (char *);
 void		sig_cleanup(int);
 int             server_type();
 int             stat_request_list(int (*report)());
@@ -438,6 +440,7 @@ void *          scan_request_list(int type, int (*handler)(), void *closure);
 int             set_nonblocking(int fd);
 int             master_process();
 int             rad_flush_queues();
+void            schedule_restart();
 
 /* util.c */
 char *		ip_hostname (UINT4);

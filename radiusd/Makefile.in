@@ -146,12 +146,6 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-DEP_FILES =  .deps/acct.P .deps/auth.P .deps/config.P .deps/debugmod.P \
-.deps/exec.P .deps/files.P .deps/ippool.P .deps/log.P .deps/menu.P \
-.deps/notify.P .deps/pam.P .deps/proxy.P .deps/radctl.P .deps/radius.P \
-.deps/radiusd.P .deps/radutil.P .deps/rewrite.P .deps/shmem.P \
-.deps/snmpserv.P .deps/sql.P .deps/stat.P .deps/symtab.P \
-.deps/timestr.P .deps/version.P
 SOURCES = $(radiusd_SOURCES)
 OBJECTS = $(radiusd_OBJECTS)
 
@@ -159,9 +153,9 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .ln .o .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu radiusd/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps radiusd/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -190,6 +184,9 @@ uninstall-sbinPROGRAMS:
 	list='$(sbin_PROGRAMS)'; for p in $$list; do \
 	  rm -f $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	done
+
+.c.o:
+	$(COMPILE) -c $<
 
 .s.o:
 	$(COMPILE) -c $<
@@ -245,11 +242,6 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = radiusd
 
 distdir: $(DISTFILES)
-	here=`cd $(top_builddir) && pwd`; \
-	top_distdir=`cd $(top_distdir) && pwd`; \
-	distdir=`cd $(distdir) && pwd`; \
-	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu radiusd/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -260,38 +252,94 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
+acct.o: acct.c ../config.h ../include/sysdep.h ../include/radiusd.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radutmp.h ../include/radsql.h
+auth.o: auth.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radsql.h
+config.o: config.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+debugmod.o: debugmod.c ../config.h ../include/log.h
+exec.o: exec.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+files.o: files.c ../config.h ../include/sysdep.h ../include/radiusd.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radutmp.h ../include/parser.h ../include/symtab.h \
+	../include/radsql.h
+ippool.o: ippool.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+log.o: log.c ../config.h ../include/sysdep.h ../include/radiusd.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/obstack1.h ../include/obstack.h
+menu.o: menu.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+notify.o: notify.c ../config.h
+pam.o: pam.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+proxy.o: proxy.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+radctl.o: radctl.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radutmp.h ../include/radctl.h
+radius.o: radius.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+radiusd.o: radiusd.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h ../include/radsql.h ../include/symtab.h
+radutil.o: radutil.c ../config.h ../include/sysdep.h \
+	../include/radiusd.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h
+rewrite.o: rewrite.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h ../include/symtab.h ../include/obstack1.h \
+	../include/obstack.h
+shmem.o: shmem.c ../config.h ../include/log.h ../include/mem.h \
+	../include/sysdep.h ../include/radiusd.h ../include/radius.h \
+	../include/raddict.h ../include/radpaths.h ../include/ippool.h
+snmpserv.o: snmpserv.c ../config.h ../include/snmp/snmp.h \
+	../include/snmp/asn1.h ../include/snmp/snmp_error.h \
+	../include/snmp/snmp_session.h ../include/snmp/snmp_vars.h \
+	../include/snmp/snmp_pdu.h ../include/snmp/snmp_msg.h \
+	../include/snmp/snmp_coexist.h ../include/snmp/snmp_api_error.h \
+	../include/snmp/snmp_impl.h ../include/snmp/snmp_api.h \
+	../include/snmp/snmp-internal.h ../include/snmp/parse.h \
+	../include/snmp/snmp_compat.h ../include/snmp/snmp_debug.h \
+	../include/sysdep.h ../include/radiusd.h ../include/radius.h \
+	../include/raddict.h ../include/radpaths.h ../include/mem.h \
+	../include/log.h ../include/ippool.h ../include/radutmp.h \
+	../include/radsnmp.h ../include/radmib.h
+sql.o: sql.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radsql.h ../include/obstack1.h ../include/obstack.h
+stat.o: stat.c ../config.h ../include/sysdep.h ../include/radiusd.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radutmp.h
+symtab.o: symtab.c ../config.h ../include/sysdep.h ../include/symtab.h \
+	../include/mem.h
+timestr.o: timestr.c ../config.h ../include/sysdep.h
+version.o: version.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h
 
-DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
-
--include $(DEP_FILES)
-
-mostlyclean-depend:
-
-clean-depend:
-
-distclean-depend:
-	-rm -rf .deps
-
-maintainer-clean-depend:
-
-%.o: %.c
-	@echo '$(COMPILE) -c $<'; \
-	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
-	@-cp .deps/$(*F).pp .deps/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*F).pp \
-	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*F).P; \
-	rm .deps/$(*F).pp
-
-%.lo: %.c
-	@echo '$(LTCOMPILE) -c $<'; \
-	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
-	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
-	  < .deps/$(*F).pp > .deps/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*F).pp \
-	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*F).P; \
-	rm -f .deps/$(*F).pp
 info-am:
 info: info-am
 dvi-am:
@@ -332,24 +380,23 @@ distclean-generic:
 maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)$(MAINTAINERCLEANFILES)" || rm -f $(BUILT_SOURCES) $(MAINTAINERCLEANFILES)
 mostlyclean-am:  mostlyclean-sbinPROGRAMS mostlyclean-compile \
-		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+		mostlyclean-tags mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-sbinPROGRAMS clean-compile clean-tags clean-depend \
-		clean-generic mostlyclean-am
+clean-am:  clean-sbinPROGRAMS clean-compile clean-tags clean-generic \
+		mostlyclean-am
 
 clean: clean-am
 
 distclean-am:  distclean-sbinPROGRAMS distclean-compile distclean-tags \
-		distclean-depend distclean-generic clean-am
+		distclean-generic clean-am
 
 distclean: distclean-am
 
 maintainer-clean-am:  maintainer-clean-sbinPROGRAMS \
 		maintainer-clean-compile maintainer-clean-tags \
-		maintainer-clean-depend maintainer-clean-generic \
-		distclean-am
+		maintainer-clean-generic distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -359,14 +406,12 @@ maintainer-clean: maintainer-clean-am
 clean-sbinPROGRAMS maintainer-clean-sbinPROGRAMS uninstall-sbinPROGRAMS \
 install-sbinPROGRAMS mostlyclean-compile distclean-compile \
 clean-compile maintainer-clean-compile tags mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir \
-mostlyclean-depend distclean-depend clean-depend \
-maintainer-clean-depend info-am info dvi-am dvi check check-am \
-installcheck-am installcheck install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 config.c: $(srcdir)/config.y

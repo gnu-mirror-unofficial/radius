@@ -1011,11 +1011,31 @@ void
 sfn_ipaddr(m)
 	MACH *m;
 {
-	VALUE_PAIR *p;
+	VALUE_PAIR *p, *tmp, *pp;
+	
 	/* Assign an IP if necessary */
-	if (!pairfind(m->user_reply, DA_FRAMED_IP_ADDRESS) &&
-	    (p = alloc_ip_pair(m->namepair->strvalue, m->req)))
-		pairadd(&m->user_reply, p);
+	if (!pairfind(m->user_reply, DA_FRAMED_IP_ADDRESS)) {
+		if (p = alloc_ip_pair(m->namepair->strvalue, m->req))
+			pairadd(&m->user_reply, p);
+		else if (p = pairfind(m->req->request, DA_FRAMED_IP_ADDRESS)) {
+			/* termserver hint */
+			pairadd(&m->user_reply, pairdup(p));
+			if (p = pairfind(m->req->request,
+					 DA_ADD_PORT_TO_IP_ADDRESS))
+				pairadd(&m->user_reply, pairdup(p));
+		}
+	}
+	
+	if ((p = pairfind(m->user_reply, DA_FRAMED_IP_ADDRESS)) &&
+	    (tmp = pairfind(m->user_reply, DA_ADD_PORT_TO_IP_ADDRESS)) &&
+	    tmp->lvalue &&
+	    (pp = pairfind(m->req->request, DA_NAS_PORT_ID)))
+		/* NOTE: This only works because IP numbers are stored in
+		 * host order throughout the program.
+		 */
+		p->lvalue += pp->lvalue;
+		
+	pairdelete(&m->user_reply, DA_ADD_PORT_TO_IP_ADDRESS);
 }
 
 void

@@ -145,7 +145,7 @@ make_server_ident()
 }
 
 /*
- *	Display the revision number for this program
+ * Display the version number and build particulars.
  */
 void
 version()
@@ -172,18 +172,23 @@ version()
 		fprintf(stderr, "%s ", compile_flag_str[i]);
 	}
 	fprintf(stderr, "\n");
+	fprintf(stderr, "Ports in use:\n");
+	fprintf(stderr, " AUTH: %d\n", PW_AUTH_UDP_PORT);
+	fprintf(stderr, " ACCT: %d\n", PW_ACCT_UDP_PORT);
 #if defined(USE_MYSQL)
-	fprintf(stderr, "using sql port %d\n", RAD_SQL_PORT);
+	fprintf(stderr, " SQL : %d\n", RAD_SQL_PORT);
 #endif
+	fprintf(stderr, "Paths:\n");
+	fprintf(stderr, _(" logging directory:    %s\n"), RADLOG_DIR);
+	fprintf(stderr, _(" accounting directory: %s\n"), RADACCT_DIR);
 #if defined(DENY_SHELL)
-	fprintf(stderr, _("deny shell is %s\n"), DENY_SHELL);
+	fprintf(stderr, _(" deny shell: %s\n"), DENY_SHELL);
 #endif
-	fprintf(stderr, _("logfiles stored in %s\n"), RADLOG_DIR);
 
 #ifdef RADIUS_PID
-	fprintf(stderr, _("pidfile %s\n"), RADIUS_PID);
+	fprintf(stderr, _(" pidfile: %s\n"), RADIUS_PID);
 #else
-	fprintf(stderr, _("no pidfile\n"));
+	fprintf(stderr, _(" no pidfile\n"));
 #endif
 
 	exit(0);

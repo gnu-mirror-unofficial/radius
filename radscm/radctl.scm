@@ -26,35 +26,49 @@
 
 (define (string-ws str)
   (let ((len (string-length str)))
-    (let ((i (do ((index (1- len) (1- index)))
-		 ((or (< index 0)
-		      (char-whitespace? (string-ref str index)))
-		  index))))
-      (cond
-       ((< i 0)
-	#f)
-       (else
-	i)))))
+    (cond
+     ((and (> len 0)
+	   (char=? (string-ref str (1- len)) #\")
+	   (string-rindex (substring str 1 (1- len)) #\" ))
+      (string-index (substring str 1 (1- len)) #\"))
+     (else
+      (let ((i (do ((index (1- len) (1- index)))
+		   ((or (< index 0)
+			(char-whitespace? (string-ref str index)))
+		    index))))
+	(cond
+	 ((< i 0)
+	  #f)
+	 (else
+	  i)))))))
 
 (define (string-tokenize str)
   (let loop ((fields '())
 	     (str str))
-       (cond
-	((string-ws str)
-	 => (lambda (w)
-	      (if w
-		  (loop
-		   (let ((s (substring str (+ 1 w))))
-		     (cond
-		      ((= (string-length s) 0)
-		       fields)
-		      (else
-		       (cons s fields))))
-		   (substring str 0 w))
-		  fields)))
-	((= (string-length str) 0)
-	 fields)
-	(else (append (list str) fields)))))
+    (cond
+     ((string-ws str)
+      => (lambda (w)
+	   (if w
+	       (loop
+		(let ((s (substring str (+ 1 w))))
+		  (cond
+		   ((= (string-length s) 0)
+		    fields)
+		   (else
+		    (cons s fields))))
+		(substring str 0 w))
+	       fields)))
+     ((= (string-length str) 0)
+      fields)
+     (else (append (list str) fields)))))
+
+(define (dequote l)
+  (map (lambda (el)
+	 (if (and (char=? (string-ref el 0) #\")
+		  (char=? (string-ref el (1- (string-length el))) #\"))
+	     (substring el 1 (1- (string-length el)))
+	     el))
+       l))
 
 (define (message text list)
   (format #t "~A" text)
@@ -80,7 +94,10 @@
     (let ((ans (rad-send :port-cntl :auth-req
 			 (if (null? cmdlist)
 			     pack
-			     (append pack (list (cons "Class" (car cmdlist)))))
+			     (append pack
+				     (map (lambda (el)
+					    (cons "Class" el))
+					  cmdlist)))
 			 flag-verbose)))
       (cond
        ((null? ans)
@@ -141,7 +158,8 @@
     (dumpdb 1)
     (shutdown 2)
     (suspend 2)
-    (continue 1)))
+    (continue 1)
+    (remark 3)))
     
 (define (complete-command str)
   (let ((len (string-length str)))
@@ -218,7 +236,7 @@
 		   (else
 		    (cond
 		     ((and opt-login opt-passwd)
-		      (rad-cntl command-word (cdr cmd)))
+		      (rad-cntl command-word (dequote (cdr cmd))))
 		     (else
 		      (error "no username/password")))))))
 	   (else

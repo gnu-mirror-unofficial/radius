@@ -69,10 +69,11 @@ SQL_cfg sql_cfg;
 #define STMT_ACCT_STOP_QUERY       12
 #define STMT_ACCT_NASUP_QUERY      13
 #define STMT_ACCT_NASDOWN_QUERY    14
-#define STMT_QUERY_BUFFER_SIZE     15
-#define STMT_IDLE_TIMEOUT          16
-#define STMT_MAX_AUTH_CONNECTIONS  17
-#define STMT_MAX_ACCT_CONNECTIONS  18
+#define STMT_ACCT_KEEPALIVE_QUERY  15
+#define STMT_QUERY_BUFFER_SIZE     16
+#define STMT_IDLE_TIMEOUT          17
+#define STMT_MAX_AUTH_CONNECTIONS  18
+#define STMT_MAX_ACCT_CONNECTIONS  19
 
 static FILE  *sqlfd;
 static int line_no;
@@ -96,6 +97,8 @@ struct keyword sql_keyword[] = {
 	"auth_query",         STMT_AUTH_QUERY,
 	"acct_start_query",   STMT_ACCT_START_QUERY,
 	"acct_stop_query",    STMT_ACCT_STOP_QUERY,
+	"acct_alive_query",   STMT_ACCT_KEEPALIVE_QUERY,
+	"acct_keepalive_query", STMT_ACCT_KEEPALIVE_QUERY,
 	"acct_nasup_query",   STMT_ACCT_NASUP_QUERY,
 	"acct_nasdown_query", STMT_ACCT_NASDOWN_QUERY,
 	"query_buffer_size",  STMT_QUERY_BUFFER_SIZE,
@@ -416,6 +419,10 @@ rad_sql_init()
 			
 		case STMT_ACCT_STOP_QUERY:
 			new_cfg.acct_stop_query = estrdup(cur_ptr);
+			break;
+			
+		case STMT_ACCT_KEEPALIVE_QUERY:
+			new_cfg.acct_keepalive_query = estrdup(cur_ptr);
 			break;
 			
 		case STMT_ACCT_NASUP_QUERY:
@@ -944,6 +951,19 @@ rad_sql_acct(authreq)
 		break;
 
 	case DV_ACCT_STATUS_TYPE_ALIVE:
+		if (!sql_cfg.acct_keepalive_query)
+			break;
+		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
+				     sql_cfg.acct_keepalive_query,
+				     authreq->request, NULL);
+		rc = rad_sql_query(conn, query, &count);
+		sqllog(rc, query);
+		if (rc != 0) {
+			radlog(L_INFO,
+			       _("SQL: %d records updated writing keepalive info for NAS %s"),
+			       count,
+			       nas_name2(authreq));
+		}
 		break;
 		
 	}

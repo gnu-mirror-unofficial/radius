@@ -23,7 +23,7 @@ static char *days[] =
 
 #define DAYMIN		(24*60)
 #define WEEKMIN		(24*60*7)
-#define val(x)		(( (x) < 48 || (x) > 57) ? 0 : ((x) - 48))
+#define val(x)		(( (x) < '0' || (x) > '9') ? 0 : ((x) - '0'))
 
 #ifdef DEBUG
 #  define xprintf if (1) printf
@@ -88,7 +88,7 @@ static int hour_fill(char *bitmap, char *tm)
 		if (end < 0)
 			end = start;
 		if (end < start)
-			end += 2*600+4*60;
+			end += DAYMIN;
 		if (start >= DAYMIN)
 			return 0;
 	}
@@ -159,6 +159,7 @@ static int day_fill(char *bitmap, char *tm)
  */
 static int week_fill(char *bitmap, char *tm)
 {
+	int             i;
 	char		*s;
 	char		tmp[128];
 
@@ -176,8 +177,29 @@ static int week_fill(char *bitmap, char *tm)
 		s = strtok(NULL, ",|");
 	}
 
+	/* Wrap up the extra day */
+	s = bitmap + 180*7;
+	for (i = 0; i < 180; i++)
+		*bitmap++ |= *s++;
 	return 0;
 }
+
+#if DEBUG2
+int
+hour_filled(s)
+	char *s;
+{
+	int i;
+	
+	for (i = 0; i < 7; i++)
+		if (*s++)
+			return 1;
+	for (i = 0; i < 4; i++)
+		if (*s & (1 << i))
+			return 1;
+	return 0;
+}
+#endif
 
 /*
  *	Match a timestring and return seconds left.
@@ -186,13 +208,12 @@ static int week_fill(char *bitmap, char *tm)
 int timestr_match(char *tmstr, time_t t)
 {
 	struct tm	*tm;
-	char		bitmap[WEEKMIN / 8];
+	char		bitmap[(WEEKMIN + DAYMIN) / 8];
 	int		now, tot, i;
 	int		byte, bit;
 #if DEBUG2
 	int		y;
 	char		*s;
-	char		null[8];
 #endif
 
 	tm = localtime(&t);
@@ -202,13 +223,15 @@ int timestr_match(char *tmstr, time_t t)
 	week_fill(bitmap, tmstr);
 
 #if DEBUG2
-	memset(null, 0, 8);
+	printf("hr:");
+	for (y = 0; y < 23; y++) 
+		printf("%d", y%10);
+	printf("\n");
 	for (i = 0; i < 7; i++) {
 		printf("%d: ", i);
-		s = bitmap + 180 * i;
 		for (y = 0; y < 23; y++) {
 			s = bitmap + 180 * i + (75 * y) / 10;
-			printf("%c", memcmp(s, null, 8) == 0 ? '.' : '#');
+			printf("%c", hour_filled(s) ? '#' : '.');
 		}
 		printf("\n");
 	}

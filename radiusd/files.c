@@ -543,24 +543,6 @@ user_find(name, request_pairs, check_pairs, reply_pairs)
 		return -1;
 
 	/*
-	 *	Fix dynamic IP address if needed.
-	 */
-	if ((tmp = pairfind(*reply_pairs, DA_ADD_PORT_TO_IP_ADDRESS)) != NULL){
-		if (tmp->lvalue != 0) {
-			tmp = pairfind(*reply_pairs, DA_FRAMED_IP_ADDRESS);
-			if (tmp) {
-				/*
-			 	 * NOTE: This only works because IP
-				 * numbers are stored in host order
-				 * everywhere in this program.
-				 */
-				tmp->lvalue += nas_port;
-			}
-		}
-		pairdelete(reply_pairs, DA_ADD_PORT_TO_IP_ADDRESS);
-	}
-
-	/*
 	 *	Remove server internal parameters.
 	 */
 	pairdelete(reply_pairs, DA_FALL_THROUGH);
@@ -750,9 +732,8 @@ userparse(buffer, first_pair, errmsg)
 				}
 
 				/*
-				 *	We allow a "+" at the end to
-				 *	indicate that we should add the
-				 *	portno. to the IP address.
+				 * We allow a "+" at the end to	indicate that
+				 * we should add the portno. to the IP address.
 				 */
 				x = 0;
 				if (token[0]) {
@@ -869,8 +850,8 @@ hints_setup(request_pairs)
 	debug(1, ("called for `%s'", name));
 	
 	/*
-	 *	Small check: if Framed-Protocol present but Service-Type
-	 *	is missing, add Service-Type = Framed-User.
+	 * if Framed-Protocol present but Service-Type is missing, add
+	 * Service-Type = Framed-User.
 	 */
 	if (pairfind(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
 	    pairfind(request_pairs, DA_SERVICE_TYPE) == NULL) {

@@ -33,13 +33,14 @@ typedef struct {
 	size_t bufsize;
 	char  *data_buffer;
 	char   vector[AUTH_VECTOR_LEN];
+	UINT4  source_ip;
 	unsigned timeout;
 	unsigned retries;
 	unsigned messg_id;
 	SERVER *first_server;
 } RADCLIENT;	
 
-RADCLIENT *radclient_alloc(size_t);
+RADCLIENT *radclient_alloc(UINT4, size_t);
 AUTH_REQ *radclient_send(RADCLIENT *config, int port_type,
 			 int code, VALUE_PAIR *pair);
 

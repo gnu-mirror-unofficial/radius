@@ -14,6 +14,9 @@
  * needed on buffers full of bytes, and then call MD5Final, which
  * will fill a supplied 16-byte array with the digest.
  */
+/*
+ * Modified (2001-01-31) to work on Sparks    <gray@farlep.net>
+ */
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
 #endif
@@ -25,10 +28,7 @@
 #include <md5.h>
 
 void
-md5_calc(output, input, inlen)
-	unsigned char *output;
-	unsigned char *input;   
-	unsigned int inlen;     
+md5_calc(unsigned char *output, unsigned char *input, unsigned int inlen)  
 {
 	MD5_CTX	context;
 
@@ -37,28 +37,31 @@ md5_calc(output, input, inlen)
 	MD5Final(output, &context);
 }
 
-#ifndef HIGHFIRST
-#define byteReverse(buf, len)	/* Nothing */
-#else
-void byteReverse(unsigned char *buf, unsigned longs);
 
-#ifndef ASM_MD5
-/*
- * Note: this code is harmless on little-endian machines.
- */
-void
-byteReverse(unsigned char *buf, unsigned longs)
+static void
+bytes_encode(unsigned char *output, uint32 *input, unsigned int len)
 {
-    uint32 t;
-    do {
-	t = (uint32) ((unsigned) buf[3] << 8 | buf[2]) << 16 |
-	    ((unsigned) buf[1] << 8 | buf[0]);
-	*(uint32 *) buf = t;
-	buf += 4;
-    } while (--longs);
+	unsigned int i, j;
+
+	for (i = 0, j = 0; j < len; i++, j += 4) {
+		output[j] = (unsigned char)(input[i] & 0xff);
+		output[j+1] = (unsigned char)((input[i] >> 8) & 0xff);
+		output[j+2] = (unsigned char)((input[i] >> 16) & 0xff);
+		output[j+3] = (unsigned char)((input[i] >> 24) & 0xff);
+	}
 }
-#endif
-#endif
+
+static void 
+bytes_decode(uint32 *output, unsigned char *input, unsigned int len)
+{
+	unsigned int i, j;
+	
+	for (i = 0, j = 0; j < len; i++, j += 4)
+		output[i] = ((uint32)input[j]) |
+			    (((uint32)input[j+1]) << 8) |
+			    (((uint32)input[j+2]) << 16) |
+			    (((uint32)input[j+3]) << 24);
+}
 
 /*
  * Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
@@ -93,19 +96,16 @@ MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
     ctx->bits[1] += len >> 29;
 
     t = (t >> 3) & 0x3f;	/* Bytes already in shsInfo->data */
-
     /* Handle any leading odd-sized chunks */
 
     if (t) {
 	unsigned char *p = (unsigned char *) ctx->in + t;
-
 	t = 64 - t;
 	if (len < t) {
 	    memcpy(p, buf, len);
 	    return;
 	}
 	memcpy(p, buf, t);
-	byteReverse(ctx->in, 16);
 	MD5Transform(ctx->buf, (uint32 *) ctx->in);
 	buf += t;
 	len -= t;
@@ -114,8 +114,7 @@ MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
 
     while (len >= 64) {
 	memcpy(ctx->in, buf, 64);
-	byteReverse(ctx->in, 16);
-	MD5Transform(ctx->buf, (uint32 *) ctx->in);
+	MD5Transform(ctx->buf, (uint32 const *) buf);
 	buf += 64;
 	len -= 64;
     }
@@ -150,7 +149,6 @@ MD5Final(unsigned char digest[16], struct MD5Context *ctx)
     if (count < 8) {
 	/* Two lots of padding:  Pad the first block to 64 bytes */
 	memset(p, 0, count);
-	byteReverse(ctx->in, 16);
 	MD5Transform(ctx->buf, (uint32 *) ctx->in);
 
 	/* Now fill the next block with 56 bytes */
@@ -159,15 +157,11 @@ MD5Final(unsigned char digest[16], struct MD5Context *ctx)
 	/* Pad block to 56 bytes */
 	memset(p, 0, count - 8);
     }
-    byteReverse(ctx->in, 14);
 
     /* Append length in bits and transform */
-    ((uint32 *) ctx->in)[14] = ctx->bits[0];
-    ((uint32 *) ctx->in)[15] = ctx->bits[1];
-
+    bytes_encode((unsigned char*)((uint32 *) ctx->in + 14), ctx->bits, 8);
     MD5Transform(ctx->buf, (uint32 *) ctx->in);
-    byteReverse((unsigned char *) ctx->buf, 4);
-    memcpy(digest, ctx->buf, 16);
+    bytes_encode(digest,ctx->buf,16);	
     memset((char *) ctx, 0, sizeof(ctx));	/* In case it's sensitive */
 }
 
@@ -175,15 +169,28 @@ MD5Final(unsigned char digest[16], struct MD5Context *ctx)
 
 /* The four core functions - F1 is optimized somewhat */
 
-/* #define F1(x, y, z) (x & y | ~x & z) */
-#define F1(x, y, z) (z ^ (x & (y ^ z)))
+#define F1(x, y, z) (x & y | ~x & z) 
+/*#define F1(x, y, z) (z ^ (x & (y ^ z))) */
 #define F2(x, y, z) F1(z, x, y)
 #define F3(x, y, z) (x ^ y ^ z)
 #define F4(x, y, z) (y ^ (x | ~z))
 
 /* This is the central step in the MD5 algorithm. */
 #define MD5STEP(f, w, x, y, z, data, s) \
-	( w += f(x, y, z) + data,  w = w<<s | w>>(32-s),  w += x )
+	( w += f(x, y, z) + data,  w = w<<s | w>>(32-s),  w += x ); 
+
+#if 0
+dump(char *label,unsigned char *p, int len)
+{
+	int i;
+	return;
+	printf("dump: %s\n", label);
+	for (i=0; i<len; i++)
+		printf("%x\n", p[i]);
+	printf("--\n");
+
+}
+#endif
 
 /*
  * The core of the MD5 algorithm, this alters an existing MD5 hash to
@@ -191,9 +198,12 @@ MD5Final(unsigned char digest[16], struct MD5Context *ctx)
  * the data and converts bytes into longwords for this routine.
  */
 void
-MD5Transform(uint32 buf[4], uint32 const in[16])
+MD5Transform(uint32 buf[4], uint32 const cin[16])
 {
     register uint32 a, b, c, d;
+    uint32 in[16];
+
+    bytes_decode(in, (unsigned char *) cin, 64);
 
     a = buf[0];
     b = buf[1];

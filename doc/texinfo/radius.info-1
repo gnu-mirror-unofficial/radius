@@ -38,7 +38,7 @@ The GNU Radius
    Radius is a suite of programs for performing user authentication and
 accounting using RADIUS protocol.
 
-   This Info file documents the version 0.93 of the package.
+   This Info file documents the version 0.93.1 of the package.
 
 * Menu:
 
@@ -81,8 +81,9 @@ Guile interface
 Radius Attributes
 * Attribute list::      Some frequently used attributes.
 
-Reporting Bugs
-* Bugs::                How to report a bug
+Reporting Bugs and getting information
+* Bugs::                How to report a bug.
+* Info::                Where to get info about GNU radius.
 
 Indices
 * Program Index::       Index of programs.
@@ -1116,6 +1117,12 @@ following sources (in order of increasing precedence):
      Stay in foreground. We recommend to use it for debugging purposes
      only.
 
+`-i IP'
+`--ip-address'
+     Specifies a source IP address. `Radiusd' will listen to packets
+     coming to this address. If this option is not specified, the
+     program picks up the first IP address it sees on the machine.
+
 `-l DIR'
 `--logging-directory DIR'
      Specify alternate logging directory.
@@ -1128,6 +1135,10 @@ following sources (in order of increasing precedence):
 `--port PORTNO'
      Listen the udp port PORTNO. The accounting port is computed as
      PORTNO + 1.
+
+`-P DIR'
+`--pid-file-dir DIR'
+     Specifies the alternate path for the pidfile.
 
 `-S'
 `--log-stripped-names'

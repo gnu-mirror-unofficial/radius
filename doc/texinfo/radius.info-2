@@ -39,6 +39,7 @@ Syntax:
 -------
 
      options {
+             [ source-ip NUMBER ; ]
              [ usr2delay NUMBER ; ]
              [ max-requests NUMBER ; ]
              [ exec-program-user STRING ; ]
@@ -53,6 +54,11 @@ Usage
 
 Numeric statements
 ------------------
+
+`source-ip'
+     Sets the source IP address. When this statement is not present, the
+     IP address of the first available network interface on the machine
+     will be used as source.
 
 `usr2delay'
      Sets the delay time in seconds between receiving the `SIGUSR2'
@@ -1068,6 +1074,7 @@ keywords are as follows:
      acct_db STRING
      acct_start_query STRING
      acct_stop_query STRING
+     acct_keepalive_query STRING
      acct_nasup_query STRING
      acct_nasdown_query STRING
 
@@ -1091,6 +1098,11 @@ keywords are as follows:
 `acct_stop_query STRING'
      Specifies the SQL query to be used when the `Stop' accounting
      packet is received. The query should not return any value.
+     Typically, this would be some `UPDATE' statement.
+
+`acct_stop_query STRING'
+     Specifies the SQL query to be executed upon arrival of an keepalive
+     (update) accounting packet. The query should not return any value.
      Typically, this would be some `UPDATE' statement.
 
 `acct_nasup_query STRING'

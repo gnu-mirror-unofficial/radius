@@ -300,13 +300,8 @@ cntl_respond(fd, sa, salen, buf, size)
 			break;
 		}
 		reply_code = PW_AUTHENTICATION_ACK;
-		sprintf(reply_ptr, _("restart initiated"));
-		rad_send_reply(reply_code, authreq,
-			       NULL, reply_msg, fd);
-		pairfree(user_check);
-		pairfree(user_reply);
-		authfree(authreq);
-		rad_restart();
+		sprintf(reply_ptr, _("restart scheduled"));
+		schedule_restart();
 		break;
 		
 	case CNTL_SHUTDOWN:
@@ -345,7 +340,16 @@ cntl_respond(fd, sa, salen, buf, size)
 		}
 		reply_code = PW_AUTHENTICATION_ACK;
 		break;
-		
+
+	case CNTL_REMARK:
+		pair = pairfind(authreq->request, DA_CLASS);
+		while (pair) {
+			radlog(L_INFO, "REMARK: %s", pair->strvalue);
+			pair = pairfind(pair->next, DA_CLASS);
+		}
+		reply_code = PW_AUTHENTICATION_ACK;
+		break;
+			
 	default:
 		radlog(L_ERR,
 		       _("unknown command `%s' in control packet"),

@@ -85,13 +85,13 @@ MAKEINFO = makeinfo
 MSGFMT = /usr/bin/msgfmt
 PACKAGE = gnu-radius
 PS = /usr/bin/ps
-RADIUSD_LDADD =  -lpam -L ../snmplib -lsnmp
+RADIUSD_LDADD =  -lpam -L /usr/local/lib/mysql -L /usr/lib/mysql -lm -lmysqlclient -L ../snmplib -lsnmp
 RADIUS_PID = 
 RADLOG_DIR = /usr/adm
 RADPID_DIR = /usr/local/etc/raddb
 RANLIB = ranlib
 USE_NLS = no
-VERSION = 0.93
+VERSION = 0.93.1
 YACC = byacc
 YACC_OPTS = -t
 
@@ -116,9 +116,9 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in:  Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu doc/man/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps doc/man/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -205,11 +205,6 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = doc/man
 
 distdir: $(DISTFILES)
-	here=`cd $(top_builddir) && pwd`; \
-	top_distdir=`cd $(top_distdir) && pwd`; \
-	distdir=`cd $(distdir) && pwd`; \
-	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu doc/man/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \

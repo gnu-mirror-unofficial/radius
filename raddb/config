@@ -6,6 +6,11 @@ option {
 	max-requests 1024;
 };
 
+paths {
+	log-dir "/var/log";
+	acct-dir "/var/acct";
+};
+
 logging {
 	channel info {
 		file "radius.info";

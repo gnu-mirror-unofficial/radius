@@ -155,8 +155,8 @@ Config config = {
 	10,              /* delayed_hup_wait */
 	1,               /* checkrad_assume_logged */
 	MAX_REQUESTS,    /* maximum number of requests */
-	"daemon",        /* exec-program user */
-	"daemon",        /* exec-program group */
+	NULL,            /* exec-program user */
+	NULL,            /* exec-program group */
 };
 
 UINT4			myip;
@@ -194,6 +194,10 @@ static void rad_child_cleanup();
  * This flag means the reload of the configuration is needed
  */
 static int		need_reload = 0;
+/*
+ * When set to 1 radiusd will try to restart itself
+ */
+static int              need_restart = 0;
 
 static void     check_reload();
 
@@ -221,7 +225,7 @@ static int      open_socket(int port, char *type);
 static void reread_config(int reload);
 static UINT4 getmyip(void);
 
-#define OPTSTR "Aa:bd:cfhl:Lnp:Ssvx:yz"
+#define OPTSTR "Aa:bd:cfhl:Lni:p:P:Ssvx:yz"
 #ifdef HAVE_GETOPT_LONG
 struct option longopt[] = {
 	"log-auth-detail",    no_argument,       0, 'A',
@@ -236,7 +240,9 @@ struct option longopt[] = {
 	"logging-directory",  no_argument,       0, 'l',
 	"license",            no_argument,       0, 'L',
 	"auth-only",          no_argument,       0, 'n',
+	"ip-address",	      required_argument, 0, 'i',	
 	"port",               required_argument, 0, 'p',
+	"pid-file-dir",       required_argument, 0, 'P',
 	"log-stripped-names", no_argument,       0, 'S',
 	"single-process",     no_argument,       0, 's',
 	"version",            no_argument,       0, 'v',
@@ -266,8 +272,11 @@ main(argc, argv)
 	int			pid;
 	int			radius_port = 0;
 	int                     check_config;    
+	char			ipbuf[DOTTED_QUAD_LEN+1];
 #ifdef RADIUS_PID
 	FILE			*fp;
+	char                    *radpid_dir = RADPID_DIR;
+	char                    *p;
 #endif
 
 	if ((progname = strrchr(argv[0], '/')) == NULL)
@@ -291,6 +300,12 @@ main(argc, argv)
 	/* save the invocation */
 	xargc = argc;
 	xargv = argv;
+
+	/*
+	 * Set up some default values
+	 */
+	config.exec_user  = make_string("daemon");
+	config.exec_group = dup_string(config.exec_user);
 	
 	/*
 	 *	Process the options.
@@ -301,7 +316,7 @@ main(argc, argv)
 			auth_detail++;
 			break;
 		case 'a':
-			radacct_dir = optarg;
+			radacct_dir = make_string(optarg);
 			break;
 #ifdef USE_DBM
 		case 'b':
@@ -318,13 +333,22 @@ main(argc, argv)
 			foreground = 1;
 			break;
 		case 'l':
-			radlog_dir = optarg;
+			radlog_dir = make_string(optarg);
 			break;
 		case 'L':
 			license();
 			exit(0);
 		case 'n':
 			open_acct = 0;
+			break;
+		case 'i':
+			if ((myip = get_ipaddr(optarg)) == 0)
+				radlog(L_WARN, 
+					_("invalid IP address: %s"),
+					optarg);
+			break;
+		case 'P':
+			radpid_dir = optarg;
 			break;
 		case 'p':
 			radius_port = atoi(optarg);
@@ -356,7 +380,6 @@ main(argc, argv)
 		}
 	}
 
-	radpath_init();
 
 	signal(SIGHUP, sig_hup);
 	signal(SIGUSR1, sig_usr1);
@@ -364,6 +387,7 @@ main(argc, argv)
 	signal(SIGQUIT, sig_fatal);
 	signal(SIGTERM, sig_fatal);
 	signal(SIGCHLD, sig_cleanup);
+	signal(SIGBUS, sig_fatal);
 #if !defined(MAINTAINER_MODE)
 	signal(SIGTRAP, sig_fatal);
 	signal(SIGFPE, sig_fatal);
@@ -380,15 +404,8 @@ main(argc, argv)
 	for (t = 32; t >= 3; t--)
 		close(t);
 
-
-	/*
-	 *	Read config files.
-	 */
-	get_config();
-	stat_init();
-
 	/* 
-	 * Determine port numbers for authentication and accounting
+	 * Determine default port numbers for authentication and accounting
 	 */
 	if (radius_port)
 		auth_port = radius_port;
@@ -399,16 +416,21 @@ main(argc, argv)
 		else
 			auth_port = PW_AUTH_UDP_PORT;
 	}
-	svp = getservbyname ("radacct", "udp");
-	if (radius_port || svp == (struct servent *) 0)
+	if (radius_port ||
+	    (svp = getservbyname ("radacct", "udp")) == (struct servent *) 0)
 		acct_port = auth_port + 1;
 	else
 		acct_port = ntohs(svp->s_port);
-
 	
+	/*
+	 *	Read config files.
+	 */
+	radpath_init();
 	reread_config(0);
 	if (check_config) 
 		exit(0);
+	
+	
 #if 0
 /*DEBUG ONLY*/
 	test_rewrite();
@@ -416,10 +438,12 @@ main(argc, argv)
 /*END*/
 #endif
 	
-	if ((myip = getmyip()) == 0) {
+	if (myip == 0 && (myip = getmyip()) == 0) {
 		radlog(L_CRIT, _("can't find out my own IP address"));
 		exit(1);
 	}
+	radlog(L_INFO, "using %s as my IP address",
+		ipaddr2str(ipbuf, myip));
 
 	/*
 	 *	Open Authentication socket.
@@ -466,10 +490,12 @@ main(argc, argv)
 	}
 	radius_pid = getpid();
 #ifdef RADIUS_PID
-	if ((fp = fopen(RADIUS_PID, "w")) != NULL) {
+	p = mkfilename(radpid_dir, "radiusd.pid");
+	if ((fp = fopen(p, "w")) != NULL) {
 		fprintf(fp, "%d\n", radius_pid);
 		fclose(fp);
 	}
+	efree(p);
 #endif
 
 	/*
@@ -666,17 +692,23 @@ reread_config(reload)
 	}
 
 #ifdef USE_SNMP
-	server_stat->auth.status = serv_init;
-	server_stat->acct.status = serv_init;
+	if (server_stat) {
+		server_stat->auth.status = serv_init;
+		server_stat->acct.status = serv_init;
+	}
 #endif	
 
 	/* Read the options */
 	get_config();
+	if (!reload) {
+		radpath_init();
+		stat_init();
+	}
 
 	res = reload_config_file(reload_all);
-
+	
 #ifdef USE_SNMP
-
+	
 	server_stat->auth.status = serv_running;
 	snmp_auth_server_reset();
 
@@ -704,11 +736,18 @@ getmyip()
 	return get_ipaddr(myname);
 }
 
-
+void
+schedule_restart()
+{
+	need_restart = 1;
+}
 
 void
 check_reload()
 {
+	if (need_restart)
+		rad_restart();
+	
 	if (delayed_hup_time &&
 	    time(NULL) - delayed_hup_time >= config.delayed_hup_wait) {
 		delayed_hup_time = 0;
@@ -1331,11 +1370,15 @@ usage()
 "    -l, --logging-directory DIR Specify alternate logging directory\n"
 "                                (default " RADLOG_DIR ").\n"
 "    -n, --auth-only             Start only authentication process.\n"
-"    -p, --port PORTNO           Use alternate port number.\n" 
+"    -i, --ip-address IP         Use this IP as source address.\n"	
+"    -p, --port PORTNO           Use alternate port number.\n"
+"    -P, --pid-file-dir DIR      Store pidfile in DIR.\n"
+"                                (default " RADPID_DIR ")\n"
 "    -S, --log-stripped-names    Log usernames stripped off any\n"
 "                                prefixes/suffixes.\n"
 "    -s, --single-process        Run in single process mode.\n"
-"    -v, --version               Display program version and exit.\n"
+"    -v, --version               Display program version and configuration\n"
+"                                parameters and exit.\n"
 "    -x, --debug debug_level     Set debugging level.\n"
 "    -y, --log-auth              Log authentications.\n"
 "    -z, --log-auth-pass         Log passwords used.\n"
@@ -1356,11 +1399,15 @@ usage()
 "    -l DIR                      Specify alternate logging directory\n"
 "                                (default " RADLOG_DIR ").\n"
 "    -n                          Start only authentication process.\n"
+"    -i IP                       Use this IP as source address.\n"
 "    -p PORTNO                   Use alternate port number.\n" 
+"    -P DIR                      Store pidfile in DIR.\n"
+"                                (default " RADPID_DIR ")\n"
 "    -S                          Log usernames stripped off any\n"
 "                                prefixes/suffixes.\n"
 "    -s                          Run in single process mode.\n"
-"    -v                          Display program version and exit.\n"
+"    -v                          Display program version and configuration\n"
+"                                parameters and exit.\n"
 "    -x debug_level              Set debugging level.\n"
 "    -y                          Log authentications.\n"
 "    -z                          Log passwords used.\n"
@@ -1435,7 +1482,7 @@ rad_exit(sig)
 		break;
 	default:
 		radlog(L_CRIT, _("%sexit on signal (%d)"), me, sig);
-		break;
+		abort();
 	}
 
 	exit(sig == SIGTERM ? 0 : 1);
@@ -1462,6 +1509,11 @@ rad_restart()
 	struct socket_list *slist;
 	
 	radlog(L_NOTICE, _("restart initiated"));
+	if (xargv[0][0] != '/') {
+		radlog(L_ERR,
+		       _("can't restart: not started as absolute pathname"));
+		return;
+	}
 	
 	/* Flush request queues */
 	rad_flush_queues();
@@ -1631,7 +1683,7 @@ open_socket(port, type)
 	sin = (struct sockaddr_in *) & salocal;
         memset ((char *) sin, '\0', sizeof (salocal));
 	sin->sin_family = AF_INET;
-	sin->sin_addr.s_addr = INADDR_ANY;
+	sin->sin_addr.s_addr = htonl(myip);
 	sin->sin_port = htons(port);
 
 	if (bind (fd, & salocal, sizeof (*sin)) < 0) {

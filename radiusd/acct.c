@@ -675,7 +675,7 @@ write_detail(authreq, authtype, f)
 	VALUE_PAIR	*pair;
 	UINT4		nas;
 	NAS		*cl;
-	long		curtime;
+	time_t		curtime;
 	int		ret = 0;
 	struct stat	st;
 
@@ -730,7 +730,7 @@ write_detail(authreq, authtype, f)
 	} else {
 
 		/* Post a timestamp */
-		fprintf(outfd, ctime(&curtime));
+		fprintf(outfd, "%s", ctime(&curtime));
 
 		/* Decide which username to log */
 		if (!strip_names) {

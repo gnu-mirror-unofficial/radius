@@ -44,7 +44,7 @@ struct category {
 
 extern char	*radlog_dir;
 
-char default_log[MAX_PATH_LENGTH];
+char *default_log;
 int log_mode = RLOG_DEFAULT;
 
 struct channel *chan_first, *chan_last;
@@ -75,11 +75,8 @@ log_init()
 		abort();
 	}
 			
-	if (strlen(radlog_dir)+1+sizeof(RADIUS_LOG) >= sizeof(default_log)) {
-		radlog(L_CRIT, _("radlog_dir too long, using default instead"));
-		radlog_dir = RADLOG_DIR;
-	}
-	sprintf(default_log, "%s/%s", radlog_dir, RADIUS_LOG);
+	efree(default_log);
+	default_log = mkfilename(radlog_dir, RADIUS_LOG);
 	
 	default_channel.mode = LM_FILE;
 	default_channel.options = LO_CONS|LO_PID|LO_LEVEL;

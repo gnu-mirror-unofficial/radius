@@ -115,7 +115,8 @@ radclient_send(config, port_type, code, pair)
 	sin = (struct sockaddr_in *) &salocal;
         memset (sin, 0, sizeof (salocal));
 	sin->sin_family = AF_INET;
-	sin->sin_addr.s_addr = INADDR_ANY;
+	sin->sin_addr.s_addr = config->source_ip ?
+		                   htonl(config->source_ip) : INADDR_ANY;
 
 	local_port = 1025;
 	do {
@@ -519,7 +520,8 @@ random_vector(vector)
 /* Initialization. */
 
 RADCLIENT *
-radclient_alloc(bufsize)
+radclient_alloc(source_ip, bufsize)
+	UINT4 source_ip;
 	size_t bufsize;
 {
 	RADCLIENT *client;
@@ -527,6 +529,7 @@ radclient_alloc(bufsize)
 	client = emalloc(sizeof *client);
 
 	/* Provide default values */
+	client->source_ip = source_ip;
 	client->timeout = 1;
 	client->retries = 3;
 	client->bufsize = bufsize ? bufsize : 4096;
@@ -551,6 +554,7 @@ radclient_alloc_server(src)
 	server->port[2] = src->port[2];
 	strncpy(server->secret, src->secret, AUTH_PASS_LEN);
 	server->secret[AUTH_PASS_LEN] = 0;
+	return server;
 }
 
 SERVER *

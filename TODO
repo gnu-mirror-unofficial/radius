@@ -1,2 +1,5 @@
+Add more checking to users.y. To begin with, check if dependent pairs
+are listed, e.g.: Password with Auth-Type = Local, or Auth-Type = Crypt-Local
+
 Need a more flexible IP allocation strategy
 Write a unified configuration utility in guile.

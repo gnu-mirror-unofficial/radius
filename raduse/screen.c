@@ -154,7 +154,13 @@ sysdep_init_screen()
 {
 	if (tcgetattr(STDOUT, &old_settings) != -1) {
 		new_settings.c_lflag &= ~(ICANON | ECHO);
-		new_settings.c_oflag &= ~(TAB3);
+        #ifdef TAB3
+                new_settings.c_oflag &= ~(TAB3);
+        #elif defined(OXTABS)
+                new_settings.c_oflag &= ~(OXTABS);
+        #elif
+        # warning "Neither TAB3 nor OXTABS defined"
+        #endif
 		new_settings.c_cc[VMIN] = 1;
 		new_settings.c_cc[VTIME] = 0;
 		tcsetattr(STDOUT, TCSADRAIN, &new_settings);

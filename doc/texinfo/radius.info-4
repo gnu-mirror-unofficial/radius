@@ -194,6 +194,8 @@ example of `radctl.rc' file:
      ;;       -------------------------------------------
            '(("local" "localhost" "foobar" 1645 1646 5000)))
      
+     ;; Set client source address
+     (rad-client-source-ip "127.0.0.1")
      ;; Set timeout and the number of retransmission retries
      (rad-client-timeout 3)
      (rad-client-retry 2)
@@ -576,6 +578,10 @@ Functions
      string entered.  This is the interface to the C getpass(3)
      function.
 
+
+ - rad-client-source-ip: IP-STRING
+     Sets the IP address to be used as source IP. IP-STRING can be
+     either an IP address in dotted-quad form or a hostname.
 
  - rad-client-timeout: NUMBER
      Sets the timeout for waiting to the server reply.

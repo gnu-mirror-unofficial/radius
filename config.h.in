@@ -211,6 +211,12 @@
 #define N_(s) s
 
 /* ************************************************************************** */
+/* data types that might be missed */
+#undef off_t
+#undef u_char
+#undef u_int
+#undef u_long
+/* ************************************************************************** */
 
 #undef HAVE_SYS_ERRLIST
 

@@ -37,13 +37,18 @@ void
 radpath_init()
 {
 	if (!radius_dir)
-		radius_dir = RADIUS_DIR;
+		radius_dir = make_string(RADIUS_DIR);
 	if (!radlog_dir)
-		radlog_dir = RADLOG_DIR;
+		radlog_dir = make_string(RADLOG_DIR);
 	if (!radacct_dir)
-		radacct_dir = RADACCT_DIR;
+		radacct_dir = make_string(RADACCT_DIR);
 
+	efree(radutmp_path);
 	radutmp_path = mkfilename(radlog_dir, RADUTMP);
+
+	efree(radwtmp_path);
 	radwtmp_path = mkfilename(radlog_dir, RADWTMP);
+
+	efree(radstat_path);
 	radstat_path = mkfilename(radlog_dir, RADSTAT);
 }

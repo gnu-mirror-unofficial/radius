@@ -438,7 +438,7 @@ i.e. it should return integer value and should not take any arguments.
 huntgroups::
 
 
-File: radius.info,  Node: Bugs,  Up: Top
+File: radius.info,  Node: Bugs,  Next: Info,  Up: Top
 
 Reporting Bugs
 **************
@@ -464,6 +464,30 @@ information when reporting a bug. The information needed is:
 
    Send your report to bug-gnu-radius@gnu.org. Allow me a couple of
 days to answer.
+
+
+File: radius.info,  Node: Info,  Prev: Bugs,  Up: Top
+
+Where to get info about GNU Radius
+**********************************
+
+   To obtain announcements and progress information about GNU Radius
+project subscribe to the mailing list info-gnu-radius. To subscribe
+either visit `http://mail.gnu.org/mailman/listinfo/info-gnu-radius' or
+send a letter to info-gnu-radius@gnu.org with the following line in its
+subject or body:
+
+     subscribe [PASSWORD] [DIGEST-OPTION] [address=ADDRESS]
+
+Your password must be given to unsubscribe or change your options.
+When you subscribe to the list, you'll be reminded of your password
+periodically. DIGEST-OPTION may be either: `nodigest' or `digest' (no
+quotes, please!)  If you wish to subscribe an address other than the
+address you send this request from, you may specify "address=EMAIL
+ADDRESS".
+
+   You can also send a letter with a single word `help' in its subject
+to obtain more detailed help on this list.
 
 
 File: radius.info,  Node: Program Index,  Next: Attribute Index,  Up: Top

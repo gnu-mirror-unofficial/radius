@@ -19,12 +19,15 @@
 
 (use-modules (ice-9 getopt-long))
 
+(define radius-build-dir "..")
 (define radius-source-dir "..")
 (define admin-login "ROOT")
 (define admin-password "Regnbue")
 (define flag-verbose #f)
 
 (define user-list
+  ;;   Login        .   Password
+  ;;----------------+------------
   '(("claudius"     . "claudius")       
     ("hamlet"	    . "hamlet")        
     ("fortinbras"   . "fortinbras")    
@@ -44,17 +47,25 @@
 
 
 ;;; Some handy functions
-(define (message . text)
+(define (message dest . text)
   (for-each (lambda (s)
 	      (format #t s))
 	    text)
-  (format #t "\n"))
+  (format #t "\n")
+  (if dest
+      (remark text)))
 
 (define (error text)
   (format #t "ERROR: ~A" text))
 
 (define (cons? p)
   (and (pair? p) (not (list? p))))
+
+(define (dequote s)
+  (if (and (char=? (string-ref s 0) #\")
+	   (char=? (string-ref s (1- (string-length s))) #\"))
+      (substring s 1 (1- (string-length s)))
+      s))
 
 ;;; ====================================================================
 
@@ -65,21 +76,15 @@
 				       (cons "NAS-Port-Id" port))
 	    flag-verbose))
 
-(define (rad-acct uname acct-type nas port sid . plist)
-  (let ((pack (list (cons "User-Name"  uname)
-		    (cons "Acct-Status-Type" (if (string? acct-type)
-						 (rad-dict-name->value
-						  "Acct-Status-Type" acct-type)
-						 acct-type))
-		    (cons "Acct-Session-Id" sid)
-		    (cons "NAS-Port-Id" port))))
-    (rad-send :port-acct :acct-req
-	      (cond
-	       ((pair? plist)
-		(append pack (car plist)))
-	       (else
-		pack))
-	      flag-verbose)))
+(define (rad-acct type uname sid nas port)
+  (rad-send :port-acct :acct-req (list (cons "User-Name"  uname)
+				       (cons "Acct-Status-Type"
+					     (rad-dict-name->value
+					      "Acct-Status-Type" type))
+				       (cons "Acct-Session-Id"  sid)
+				       (cons "NAS-IP-Address"  nas)
+				       (cons "NAS-Port-Id" port))
+	    flag-verbose))
 
 (define (rad-cntl command . cmdlist)
   (let* ((state (symbol->string command))
@@ -89,49 +94,62 @@
     (let ((ans (rad-send :port-cntl :auth-req
 			 (if (null? cmdlist)
 			     pack
-			     (append pack (list (cons "Class" (car cmdlist)))))
+			     (append pack
+				     (map (lambda (el)
+					    (cons "Class" (dequote el)))
+					  cmdlist)))
 			 flag-verbose)))
       (cond
        ((null? ans)
 	(format #t "FAILED\n")
 	#f)
        (else
-	(if (= (car ans) :auth-ack)
-	    (format #t "OK\n")
+	(if (not (= (car ans) :auth-ack))
 	    (format #t "ERROR\n"))
 	(rad-format-reply-msg (cdr ans))
 	(format #t "\n")
 	#t)))))
 
-(define (session-start uname passwd nas port sid)
-  (let ((auth (rad-auth uname passwd nas port)))
+(define (remark rest)
+  (rad-cntl 'remark 
+	    (cond
+	     ((string? rest)
+	      (rad-cntl 'remark rest))
+	     (else
+	      (let loop ((rest rest)
+			 (str ""))
+		(cond
+		 ((null? rest)
+		  str)
+		 (else
+		  (loop (cdr rest) (string-append str (car rest))))))))))
+
+(define (session-start uname passwd nas port)
+  (let ((auth (rad-auth)))
     (let loop ((auth auth))
       (cond
        ((null? auth)
-	(format #t "Authentication failed\n")
-	#f)
+	(format #t "Authentication failed\n"))
        (else
 	(cond
 	 ((= (car auth) :auth-ack)
-	  (let ((acct (rad-acct uname "Start" nas port sid (cdr auth))))
+	  (let ((acct (rad-acct (rad-dict-name->value
+				 "Acct-Status-Type" "Start")
+				(cdr auth))))
 	    (cond
 	     ((null? acct)
-	      (format #t "Accounting failed\n")
-	      #f)
+	      (format #t "Accounting failed\n"))
 	     (else
 	      (cond 
 	       ((= (car acct) :acct-resp)
-		(format #t "Accounting OK\n")
-		#t)
+		(format #t "Accounting OK\n"))
 	       (else
 		(format #t "Accounting failed: response ~A\n"
 			(rad-format-code #f (car acct)))
-		(rad-format-reply-msg (cdr auth) "Reply Message:")
-		#f))))))
+		(rad-format-reply-msg (cdr auth) "Reply Message:")))))))
 	 ((= (car auth) :auth-rej)
 	  (format #t "Authentication failed\n")
-	  (rad-format-reply-msg (cdr auth) "Reply Message:")
-	  #f)
+	  (rad-format-reply-msg (cdr auth) "Reply Message:"))
 	 ((= (car auth) :access-challenge)
 	  (rad-format-reply-msg (cdr auth) "Reply Message:")
 	  (let ((menu (get-value "State" (cdr auth)))
@@ -145,89 +163,83 @@
 	 (else
 	  (format #t "Authentication failed: code ~A\n"		
 		  (rad-format-code #f (car auth)))
-	  (rad-format-reply-msg (cdr auth) "Reply Message:")
-	  #f)))))))
+	  (rad-format-reply-msg (cdr auth) "Reply Message:"))))))))
 
 ;;; ====================================================================
 
 (define grammar
-  `((source-dir (value #t))
-    (build-dir (value #t)) ))
+  `((verbose)
+    (build-dir (value #t))
+    (source-dir (value #t)) ))
 
 (for-each (lambda (x)
 	    (and (cons? x)
 		 (case (car x)
+		   ((build-dir)
+		    (set! radius-build-dir (cdr x)))
 		   ((source-dir)
 		    (set! radius-source-dir (cdr x)))
 		   ((verbose)
 		    (set! flag-verbose (not flag-verbose)))  )))
 	  (getopt-long (command-line) grammar))
 
-;;; Fix-up the paths
-(if (char=? (string-ref radius-source-dir 0) #\.)
-    (set! radius-source-dir (string-append (getcwd) "/" radius-source-dir)))
-
 ;;; Ok, lets get running
-(load (string-append radius-source-dir "/test/raddb/radctl.rc"))
+(load (string-append radius-build-dir "/test/raddb/radctl.rc"))
 
 ;;; Start radius daemon
-(message "Starting radius")
-(system (string-append radius-source-dir
+(message #f "Starting radius")
+(system (string-append radius-build-dir
 		       "/radiusd/radiusd"
-		       " -d " radius-source-dir "/test/raddb"
-		       " -l " radius-source-dir "/test/log"
-		       " -a " radius-source-dir "/test/acct"))
-;;; Test if it is running
+		       " -d " radius-build-dir "/test/raddb"
+		       " -l " radius-build-dir "/test/log"
+		       " -a " radius-build-dir "/test/acct"
+		       " -i 127.0.0.1" ))
+;;; See if it is running
 (cond
  ((not (rad-cntl 'getpid))
   (error "Can't start radius daemon. Abort.")
   (exit)))
 
 (define nas-ip-address "127.0.0.1")
-
 (define total-error-count 0)
+
+(define (run-test name descr fun args expect)
+  (message #t "============" name ": " descr "============")
+  (let ((ec (do ((tail user-list (cdr tail))
+		 (port 1 (1+ port))
+		 (error-count 0))
+		((null? tail) error-count)
+	      ;	    (format #t "~A\n" (car tail))
+	      (let* ((pair (car tail))
+		     (res (apply fun pair nas-ip-address port args)))
+		(if (or (null? res) (not (= (car res) expect)))
+		    (set! error-count (1+ error-count)))))))
+    (set! total-error-count (+ total-error-count ec))
+    (sleep 2)
+    (message #t (string-append name ": ")
+	     (if (= ec 0)
+		 "OK"
+		 (format #f "~A errors" ec)))))
+
 
 ;;; ======================================================================
 ;;; Authentication test
-(message "============== TEST1: AUTHENTICATION ==============")
-
-(let ((ec (do ((tail user-list (cdr tail))
-	       (port 1 (1+ port))
-	       (error-count 0))
-	      ((null? tail) error-count)
-;	    (format #t "~A\n" (car tail))
-	    (let* ((pair (car tail))
-		   (auth (rad-auth (car pair) (cdr pair)
-				   nas-ip-address port)))
-	      (if (null? auth)
-		  (set! error-count (1+ error-count)))))))
-  (set! total-error-count (+ total-error-count ec))
-  (message "TEST1: "(if (= ec 0)
-			"OK"
-			(format #f "~A errors\n" ec))))
-
-;;; ======================================================================
+(define (test-auth pair nas port)
+  (rad-auth (car pair) (cdr pair) nas port))
 ;;; Accounting test
-(message "============== TEST2: ACCOUNTING ==================")
-(let ((ec (do ((tail user-list (cdr tail))
-	       (port 1 (1+ port))
-	       (error-count 0))
-	      ((null? tail) error-count)
-	    (let ((pair (car tail)))
-	      (if (not (session-start (car pair) (cdr pair)
-				      nas-ip-address port
-				      (format #f "~A" port)))
-		  (set! error-count (1+ error-count)))))))
-  (set! total-error-count (+ total-error-count ec))
-  (message "TEST2: "(if (= ec 0)
-			"OK"
-			(format #f "~A errors\n" ec))))
+(define (test-acct pair nas port args)
+  (rad-acct args (car pair) (number->string port) nas port))
 
-		
-	       
+(run-test "TEST1" "AUTHENTICATION" test-auth '() :auth-ack)
+(run-test "TEST2" "ACCOUNTING START" test-acct (list "Start") :acct-resp)
+(system "../radwho/radwho -d ./raddb -f ./log/radutmp")
+(run-test "TEST3" "ACCOUNTING STOP" test-acct (list "Stop") :acct-resp)
+(system "../radlast/radlast -d ./raddb -f ./log/radwtmp")
+			       
 	      
 ;;; Stop radius daemon
-(message "Shutting radius down")
+(message #f "Shutting radius down")
 (rad-cntl 'shutdown)
 
 (exit total-error-count)
+

@@ -73,7 +73,7 @@
 		char *name;
 		int type;
 		void *base;
-		size_t size;
+		int once;
 	} Variable;
 		
 	typedef struct {
@@ -161,12 +161,13 @@
 #endif
 	
 	Variable top_vars[] = {
+		"source-ip", AT_IPADDR, &myip, 1,
 		"usr2delay", AT_INT,    &config.delayed_hup_wait, 0,
 		"max-requests", AT_INT, &config.max_requests, 0,
-		"exec-program-user", AT_STRING,
-		                 &config.exec_user, sizeof(config.exec_user)-1,
-		"exec-program-group", AT_STRING,
-		                 &config.exec_group, sizeof(config.exec_group)-1,
+		"log-dir", AT_STRING, &radlog_dir, 1,
+		"acct-dir", AT_STRING, &radacct_dir, 1,
+		"exec-program-user", AT_STRING, &config.exec_user, 0,
+		"exec-program-group", AT_STRING, &config.exec_group, 0,
 		NULL
 	};
 
@@ -181,7 +182,7 @@
 #endif
 
 	Variable auth_vars[] = {
-		"port", AT_INT, &auth_port, 0,
+		"port", AT_INT, &auth_port, 1,
 
 		"spawn", AT_BOOL,
 		&request_class[R_AUTH].spawn, 0,
@@ -205,7 +206,7 @@
 	};
 
 	Variable acct_vars[] = {
-		"port", AT_INT, &acct_port, 0,
+		"port", AT_INT, &acct_port, 1,
 
 		"spawn", AT_BOOL,
 		&request_class[R_ACCT].spawn, 0,
@@ -223,7 +224,7 @@
 	};
 
 	Variable cntl_vars[] = {
-		"port", AT_INT,	&cntl_port, 0,
+		"port", AT_INT,	&cntl_port, 1,
 		NULL
 	};
 
@@ -249,7 +250,7 @@
                 "request-cleanup-delay", AT_INT,
                 &request_class[R_SNMP].cleanup_delay, 0,
 
-		"port", AT_INT, &snmp_port, 0,
+		"port", AT_INT, &snmp_port, 1,
 		NULL
 	};
 #endif
@@ -298,6 +299,7 @@
 	static int yylex();
 	static void putback(char *tok, int length);
 
+	static int first_time = 1;
 	static int debug_config;
 %}
 
@@ -1386,6 +1388,7 @@ get_config()
 	free_netlist();
 #endif
 
+	first_time = 0;
         radlog(L_INFO, _("ready"));
 	return 0;
 }	
@@ -1407,8 +1410,7 @@ do_asgn(varlist, asgn)
 	Asgn *asgn;
 {
 	Variable *var;
-	int length;
-
+	
 	var = find_var(varlist, asgn->name);
 	if (!var) {
 		radlog(L_ERR, _("%s:%d: variable `%s' undefined"),
@@ -1421,25 +1423,28 @@ do_asgn(varlist, asgn)
 		       filename, line_num, typestr[var->type]);
 		return;
 	}
+
+#define check_once(v, c) \
+	if ((v)->once && !first_time && (c))\
+		schedule_restart();
+	
 	switch (var->type) {
 	case AT_INT:
+		check_once(var, *(int*) var->base != asgn->v.number);
 		*(int*) var->base = asgn->v.number;
 		break;
 	case AT_STRING:
-		length = strlen(asgn->v.string);
-		if (length > var->size) {
-			radlog(L_ERR,
-			       _("%s:%d: string value too long. Limit is %d"),
-			       var->size);
-			length = var->size-1;
-		}
-		memcpy(var->base, asgn->v.string, length);
-		((char*)var->base)[length] = 0;
+		check_once(var,
+			   *(char**)var->base == NULL ||
+			   strcmp(*(char**)var->base, asgn->v.string));
+		replace_string((char**)var->base, asgn->v.string);
 		break;
 	case AT_IPADDR:
+		check_once(var, *(UINT4*) var->base != asgn->v.ipaddr);
 		*(UINT4*) var->base = asgn->v.ipaddr;
 		break;
 	case AT_BOOL:
+		check_once(var, *(int*) var->base != asgn->v.bool);
 		*(int*) var->base = asgn->v.bool;
 		break;
 	default:

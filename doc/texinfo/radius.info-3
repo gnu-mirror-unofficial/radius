@@ -737,7 +737,7 @@ SQL Accounting
 `--enable-sql' option and `sqlserver' file in its configuration
 directory is properly set up *Note sqlserver::.
 
-   This version of GNU Radius (0.93) supports MySQL and PostgreSQL
+   This version of GNU Radius (0.93.1) supports MySQL and PostgreSQL
 servers. Support for Oracle servers will be added in the nearest future.
 
    With this accounting method enabled, `radiusd' will store the

@@ -134,8 +134,9 @@ Guile interface
 Radius Attributes
 * Attribute list::      Some frequently used attributes.
 
-Reporting Bugs
-* Bugs::                How to report a bug
+Reporting Bugs and getting information
+* Bugs::                How to report a bug.
+* Info::                Where to get info about GNU radius.
 
 Indices
 * Program Index::       Index of programs.
@@ -1274,6 +1275,14 @@ Specify alternate configuration directory. Default is @file{@value{RADDB}}.
 @itemx --foreground
 Stay in foreground. We recommend to use it for debugging purposes only.
 
+@c ** -i option (radiusd)
+@c ** --ip-address
+@item -i IP
+@itemx --ip-address
+Specifies a source IP address. @code{Radiusd} will listen to packets
+coming to this address. If this option is not specified, the program
+picks up the first IP address it sees on the machine.
+
 @c ** -l option (radiusd)
 @c ** --logging-directory option (radiusd)
 @item -l DIR
@@ -1291,6 +1300,12 @@ Process only authentication requests.
 @item -p PORTNO
 @itemx --port PORTNO
 Listen the udp port PORTNO. The accounting port is computed as @var{PORTNO} + 1.
+
+@c ** -P (radiusd)
+@c ** --pid-file-dir (radiusd)
+@item -P DIR
+@itemx --pid-file-dir DIR
+Specifies the alternate path for the pidfile. 
 
 @c ** -S option (radiusd)
 @c ** --log-stripped-names option (radiusd)
@@ -1439,6 +1454,7 @@ These are the basic statements:
 
 @example
 options @{
+        [ source-ip @var{number} ; ]
         [ usr2delay @var{number} ; ]
         [ max-requests @var{number} ; ]
         [ exec-program-user @var{string} ; ]
@@ -1453,6 +1469,11 @@ The options statement defines the global options to be used by @code{radiusd}.
 @subheading Numeric statements
 
 @table @code
+
+@item source-ip
+Sets the source IP address. When this statement is not present, the
+IP address of the first available network interface on the machine
+will be used as source.
 
 @item usr2delay
 Sets the delay time in seconds between receiving the @code{SIGUSR2} signal
@@ -2501,6 +2522,7 @@ acct_max_connections @var{number}
 acct_db @var{string}
 acct_start_query @var{string}
 acct_stop_query @var{string}
+acct_keepalive_query @var{string}
 acct_nasup_query @var{string}
 acct_nasdown_query @var{string}
 @end example
@@ -2526,6 +2548,11 @@ this would be some @code{INSERT} statement @ref{Queries}.
 @item acct_stop_query @var{string}
 Specifies the SQL query to be used when the @code{Stop} accounting
 packet is received. The query should not return any value. Typically,
+this would be some @code{UPDATE} statement.
+
+@item acct_stop_query @var{string}
+Specifies the SQL query to be executed upon arrival of an keepalive
+(update) accounting packet. The query should not return any value. Typically,
 this would be some @code{UPDATE} statement.
 
 @item acct_nasup_query @var{string}
@@ -5008,6 +5035,8 @@ an example of @code{radctl.rc} file:
 ;;       -------------------------------------------
       '(("local" "localhost" "foobar" 1645 1646 5000)))
 
+;; Set client source address
+(rad-client-source-ip "127.0.0.1")
 ;; Set timeout and the number of retransmission retries
 (rad-client-timeout 3)
 (rad-client-retry 2)
@@ -5349,6 +5378,7 @@ the radius server is printed.
 
 @end deffn
 
+
 @deffn rad-client-list-servers
 
 List currently configured servers. Two columns for each server are displayed:
@@ -5450,6 +5480,11 @@ This is the interface to the C getpass(3) function.
 
 @end deffn
 
+@deffn rad-client-source-ip IP-STRING
+Sets the IP address to be used as source IP. IP-STRING can be either an
+IP address in dotted-quad form or a hostname.
+@end deffn
+
 @deffn rad-client-timeout NUMBER
 
 Sets the timeout for waiting to the server reply.
@@ -5546,7 +5581,7 @@ The server data are looked up in rad-server-list variable.
 
 
 @comment *******************************************************************
-@node Bugs, , , Top
+@node Bugs, Info, , Top
 @chapter Reporting Bugs
 
 It is possible you will encounter a bug in one of Radius programs. If this
@@ -5567,6 +5602,30 @@ you have set it to while configuring).
 
 Send your report to bug-gnu-radius@@gnu.org. Allow me a couple of
 days to answer.
+
+@comment *******************************************************************
+@node Info, , Bugs, Top
+@chapter Where to get info about GNU Radius
+
+To obtain announcements and progress information about GNU Radius
+project subscribe to the mailing list info-gnu-radius. To subscribe
+either visit @url{http://mail.gnu.org/mailman/listinfo/info-gnu-radius}
+or send a letter to info-gnu-radius@@gnu.org with the following line
+in its subject or body:
+
+@example
+subscribe [@var{password}] [@var{digest-option}] [address=@var{address}]
+@end example
+@noindent
+Your password must be given to unsubscribe or change your options.
+When you subscribe to the list, you'll be reminded of your password
+periodically. @var{digest-option} may be either: @samp{nodigest} or
+@samp{digest} (no quotes, please!)  If you wish to subscribe an address
+other than the address you send this request from, you may specify
+"address=@var{email address}".
+
+You can also send a letter with a single word @samp{help} in its subject
+to obtain more detailed help on this list.
 
 
 @comment *******************************************************************

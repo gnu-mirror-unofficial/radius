@@ -36,7 +36,7 @@ struct entry {
 	Entry next;
 };
 
-typedef struct bucket *Bucket;
+typedef union bucket *Bucket;
 
 typedef struct bucketclass *Bucketclass;
 struct bucketclass {
@@ -50,9 +50,12 @@ struct bucketclass {
 	Entry free;                  /* Entry to the list of free elements */
 };
 
-struct bucket {
-	Bucketclass class;
-	Bucket next;
+union bucket {
+	struct {
+		Bucketclass class;
+		Bucket next;
+	} s;
+	Align_t align;
 };
 
 Bucketclass bucket_class;
@@ -65,10 +68,10 @@ static void put_back_cont(Bucketclass, void *, count_t);
 
 #define ENTRY_SIZE sizeof(struct entry)
 #define CLASS_SIZE sizeof(struct bucketclass)
-#define BUCKET_SIZE sizeof(struct bucket)
+#define BUCKET_SIZE sizeof(union bucket)
 
 #define ENTRY(b, n) \
-  	(Entry)((char*)((Bucket)b+1) + (b)->class->elsize * (n))
+  	(Entry)((char*)((Bucket)b+1) + (b)->s.class->elsize * (n))
 #define bucket_capacity(size) \
         (count_t)((MEM_PAGESIZE-BUCKET_SIZE+(size)-1)/(size)-1)
 
@@ -90,7 +93,7 @@ alloc_class_mem()
 		Bucket bp = alloc_bucket(&class);
 		bucket_class = &class; /* to fake alloc_entry() */
 		bucket_class = alloc_entry(CLASS_SIZE);
-		bp->class = bucket_class;
+		bp->s.class = bucket_class;
 		
 		bucket_class->first = bp;
 		bucket_class->free = class.free;
@@ -154,8 +157,8 @@ alloc_bucket(class)
 		radlog(L_ERR, _("can't allocate bucket page"));
 		return 0;
 	}
-	bp->class = class;
-	bp->next = class->first;
+	bp->s.class = class;
+	bp->s.next = class->first;
 	class->first = bp;
 
 	if (class->cont) {
@@ -240,7 +243,7 @@ free_entry(ptr)
 	Bucket bucket;
 
 	for (class = bucket_class; class; class = class->next)
-		for (bucket = class->first; bucket; bucket = bucket->next) 
+		for (bucket = class->first; bucket; bucket = bucket->s.next) 
 			if (ptr >= (void*)ENTRY(bucket, 0) && 
 				ptr < (void*)ENTRY(bucket, class->elcnt)) {
 				if (class->cont)
@@ -366,7 +369,7 @@ cfree_entry(ptr, count)
 	Bucket bucket;
 
 	for (class = bucket_class; class; class = class->next)
-		for (bucket = class->first; bucket; bucket = bucket->next) 
+		for (bucket = class->first; bucket; bucket = bucket->s.next) 
 			if (ptr >= (void*)ENTRY(bucket, 0) && 
 				ptr < (void*)ENTRY(bucket, class->elcnt)) {
 				put_back_cont(class, ptr, count);
@@ -425,9 +428,12 @@ put_back_cont(class, ptr, count)
 /* String allocation
  */
 
-typedef struct {
+typedef union {
+	struct {
 	unsigned char nblk;      /* number of allocated blocks */
 	unsigned char nref;      /* number of references */
+	} s;
+	Align_t align;
 } STRHDR;
 #define HDRSIZE sizeof(STRHDR)
 
@@ -448,8 +454,8 @@ alloc_string(length)
 		abort();
 	}
 	p = calloc_entry(count, MINSTRSIZE);
-	p->nref = 1;
-	p->nblk = count;
+	p->s.nref = 1;
+	p->s.nblk = count;
 	return (char*)(p + 1);
 }
 
@@ -475,7 +481,7 @@ dup_string(str)
 	if (!str)
 		return NULL;
 	hp = (STRHDR*)str - 1;
-	hp->nref++;
+	hp->s.nref++;
 	return str;
 }
 
@@ -494,7 +500,7 @@ replace_string(str, strvalue)
 		return *str = make_string(strvalue);
 	
 	hp = (STRHDR*)*str - 1;
-	if ( hp->nref > 1 || hp->nblk < BLKCNT(length) ) {
+	if ( hp->s.nref > 1 || hp->s.nblk < BLKCNT(length) ) {
 		free_string(*str);
 		*str = alloc_string(length + 1);
 	}
@@ -515,9 +521,9 @@ free_string(str)
 		return;
 	
 	hp = (STRHDR*)str - 1;
-	if (--hp->nref)
+	if (--hp->s.nref)
 		return;
-	cfree_entry(hp, hp->nblk);
+	cfree_entry(hp, hp->s.nblk);
 }
 
 /* ************************************************************************* */

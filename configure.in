@@ -3,7 +3,7 @@ dnl * $Id$
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.93)
+AM_INIT_AUTOMAKE(gnu-radius, 0.93.1)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
@@ -78,6 +78,9 @@ AC_TYPE_UID_T
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_CHECK_TYPE(u_char, unsigned char)
+AC_CHECK_TYPE(u_int, unsigned int)
+AC_CHECK_TYPE(u_long, unsigned long)
 AC_HEADER_TIME
 AC_STRUCT_TM
 
@@ -474,5 +477,6 @@ AC_OUTPUT(Makefile include/Makefile radlib/Makefile snmplib/Makefile \
           checkrad/Makefile builddbm/Makefile radscm/Makefile \
           radscripts/Makefile doc/Makefile \
 	  doc/texinfo/Makefile doc/man/Makefile po/Makefile \
-          doc/texinfo/config.texi doc/man/config.so)
+          doc/texinfo/config.texi doc/man/config.so \
+          test/Makefile)
 

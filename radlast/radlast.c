@@ -107,10 +107,11 @@ WTMP *login_list;
 /* List of NAS up/down transitions */
 WTMP *nas_updown_list;
 
-#define OPTSTR "?0123456789c:f:h:mn:lLp:st:w"
+#define OPTSTR "?0123456789c:d:f:h:mn:lLp:st:w"
 #ifdef HAVE_GETOPT_LONG
 struct option longopt[] = {
 	"count",              required_argument, 0, 'c',
+	"config-directory",   required_argument, 0, 'd',
 	"file",               required_argument, 0, 'f',
 	"help",               no_argument,       0, '?',
 	"host",               required_argument, 0, 'h',
@@ -160,6 +161,9 @@ main(argc, argv)
 				radlog(L_ERR, "invalid number of records");
 				return 1;
 			}
+			break;
+		case 'd':
+			radius_dir = optarg;
 			break;
 		case 'f':
 			file = optarg;

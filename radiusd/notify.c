@@ -120,7 +120,7 @@ _notify(login, called_id, what, ttl_ptr)
 	sin = (struct sockaddr_in *) & salocal;
 	memset ((char *) sin, '\0', (size_t) length);
 	sin->sin_family = AF_INET;
-	sin->sin_addr.s_addr = INADDR_ANY;
+	sin->sin_addr.s_addr = htonl(myip);
 	sin->sin_port = htons ((unsigned short) 0);
 	if (bind (sockfd, (struct sockaddr *) sin, length) < 0 ||
 	    getsockname (sockfd, (struct sockaddr *) sin, &length) < 0) {

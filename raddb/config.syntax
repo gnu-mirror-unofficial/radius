@@ -1,6 +1,9 @@
 ## This file is intended to be an explanation on configuration syntax
 ## issues. It cannot possibly be used as a configuration file.
 options {
+	# Source IP address. Can be omitted if the machine running
+	# radiusd has only one interface.
+	source-ip 127.0.0.1;
 	# Delay before reconfiguration on USR2 signal
 	usr2delay 30;
 	# Maximum number of request in queue

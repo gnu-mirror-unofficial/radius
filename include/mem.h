@@ -26,7 +26,7 @@
 #endif
 
 typedef unsigned count_t;
-
+typedef double Align_t;
 struct mallocstat {
 	int count;
 	unsigned size;

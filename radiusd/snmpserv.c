@@ -1768,6 +1768,7 @@ get_stat_nasstat(nas, var, ind)
 		break;
 
 	case MIB_KEY_NASLines:
+		stat_count_ports();
 		var->type = SMI_COUNTER32;
 		var->val_len = sizeof(counter);
 		var->val.integer = emalloc(var->val_len);
@@ -1775,6 +1776,7 @@ get_stat_nasstat(nas, var, ind)
 		break;
 
 	case MIB_KEY_NASLinesInUse:
+		stat_count_ports();
 		var->type = SMI_COUNTER32;
 		var->val_len = sizeof(counter);
 		var->val.integer = emalloc(var->val_len);
@@ -1782,6 +1784,7 @@ get_stat_nasstat(nas, var, ind)
 		break;
 
 	case MIB_KEY_NASLinesIdle:
+		stat_count_ports();
 		var->type = SMI_COUNTER32;
 		var->val_len = sizeof(counter);
 		var->val.integer = emalloc(var->val_len);

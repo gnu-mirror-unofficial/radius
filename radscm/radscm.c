@@ -38,7 +38,9 @@ static SCM rad_dict_name_to_value(SCM g_attr, SCM g_value);
 static SCM rad_dict_name_to_attr(SCM g_name);
 static SCM rad_dict_pec_to_vendor(SCM g_pec);
 static SCM rad_read_no_echo(SCM g_prompt);
+static SCM rad_client_source_ip(SCM g_ip);
 
+static SCM scm_makenum(unsigned long val);
 static int scheme_to_pair(SCM scm, VALUE_PAIR *pair);
 static VALUE_PAIR *scheme_to_list(SCM list);
 static SCM list_to_scheme(VALUE_PAIR *pair);
@@ -102,7 +104,7 @@ rad_scheme_init(argc, argv)
 		radlog(L_ERR, _("error reading dictionary file"));
 		exit(1);
 	}
-	radclient = radclient_alloc(0);
+	radclient = radclient_alloc(0, 0);
 
 	/*
 	 * Provide basic primitives
@@ -116,6 +118,7 @@ rad_scheme_init(argc, argv)
 	scm_make_gsubr("rad-dict-pec->vendor", 1, 0, 0, rad_dict_pec_to_vendor);
 	scm_make_gsubr("rad-read-no-echo", 1, 0, 0, rad_read_no_echo);
 
+	scm_make_gsubr("rad-client-source-ip", 1, 0, 0, rad_client_source_ip);
 	scm_make_gsubr("rad-client-timeout", 1, 0, 0, rad_client_timeout);
 	scm_make_gsubr("rad-client-retry", 1, 0, 0, rad_client_retry);
 	scm_make_gsubr("rad-client-set-server", 1, 0, 0, rad_client_set_server);
@@ -144,6 +147,20 @@ rad_scheme_init(argc, argv)
 	efree(p);
 
 	scm_shell(argc, argv);
+}
+
+SCM
+scm_makenum(val)
+	unsigned long val;
+{
+	if (SCM_FIXABLE(val)) {
+		return SCM_MAKINUM(val);
+	}
+#ifdef SCM_BIGDIG
+	return scm_long2big(val);
+#else  /* SCM_BIGDIG */
+	return scm_make_real((double) val);
+#endif /* SCM_BIGDIG */ 
 }
 
 SCM
@@ -204,16 +221,14 @@ SCM
 rad_client_list_servers()
 {
 	SERVER *s;
-	char *p;
+	char p[DOTTED_QUAD_LEN+1];
 	SCM tail = SCM_EOL;
-
+         
 	for (s = radclient->first_server; s; s = s->next) {
-		p = malloc(DOTTED_QUAD_LEN+1);
 		ipaddr2str(p, s->addr);
 		tail = scm_cons(SCM_LIST2(scm_makfrom0str(s->name),
 					  scm_makfrom0str(p)),
 				tail);
-		free(p);
 	}
 	return scm_reverse_x(tail, SCM_UNDEFINED);
 }
@@ -298,6 +313,29 @@ rad_client_set_server(g_list)
 }
 #undef FUNC_NAME
 
+#define FUNC_NAME "rad-client-source-ip"
+SCM
+rad_client_source_ip(g_ip)
+	SCM g_ip;
+{
+	UINT4 ip;
+	
+	SCM_ASSERT((SCM_NIMP(g_ip) && SCM_STRINGP(g_ip)),
+		   g_ip, SCM_ARG1, FUNC_NAME);
+	ip = get_ipaddr(SCM_CHARS(g_ip));
+	if (ip)
+		radclient->source_ip = ip;
+	else {
+		scm_misc_error(FUNC_NAME,
+			       "Invalid IP/hostname: ~S",
+			       SCM_LIST1(g_ip));
+		return SCM_BOOL_F;
+	}
+
+	return SCM_BOOL_T;
+}
+#undef FUNC_NAME
+
 #define FUNC_NAME "rad-client-timeout"
 SCM
 rad_client_timeout(g_to)
@@ -379,7 +417,7 @@ rad_dict_name_to_value(g_attr, g_value)
 	  val = value_name_to_value_strict(attr->value, SCM_CHARS(g_value));
 	  */
 	val = value_name_to_value(SCM_CHARS(g_value));
-	return val ? SCM_MAKINUM(val->value) : SCM_BOOL_F;
+	return val ? scm_makenum(val->value) : SCM_BOOL_F;
 }
 
 SCM
@@ -406,6 +444,7 @@ rad_read_no_echo(g_prompt)
 	return scm_makfrom0str(s);
 }
 
+
 SCM
 list_to_scheme(pair)
 	VALUE_PAIR *pair;
@@ -426,7 +465,7 @@ list_to_scheme(pair)
 			break;
 		case PW_TYPE_INTEGER:
 		case PW_TYPE_IPADDR:
-			scm_value = SCM_MAKINUM(pair->lvalue);
+			scm_value = scm_makenum(pair->lvalue);
 			break;
 		default:
 			abort();
@@ -522,11 +561,13 @@ scheme_to_pair(scm, pair)
 			       SCM_LIST1(car));
 	pair->type = dict->type;
 	pair->operator = PW_OPERATOR_EQUAL;
-	
+
 	switch (pair->type) {
 	case PW_TYPE_INTEGER:
 		if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
 			pair->lvalue = SCM_INUM(cdr);
+		} else if (SCM_BIGP(cdr)) {
+			pair->lvalue = (UINT4) scm_big2dbl(cdr);
 		} else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
 			char *name = SCM_CHARS(cdr);
 			val = value_name_to_value(name);
@@ -542,6 +583,8 @@ scheme_to_pair(scm, pair)
 	case PW_TYPE_IPADDR:
 		if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
 			pair->lvalue = SCM_INUM(cdr);
+		} else if (SCM_BIGP(cdr)) {
+			pair->lvalue = (UINT4) scm_big2dbl(cdr);
 		} else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
 			pair->lvalue = get_ipaddr(SCM_CHARS(cdr));
 		} else

@@ -1,3 +1,8 @@
+2004-05-25  Sergey Poznyakoff
+
+	* radiusd/checkrad.c (snmp_check,finger_check): Fixed coredumps
+	due to improper use of grad_free.
+
 2004-05-24  Sergey Poznyakoff
 
 	* configure.ac: Raised version number to 1.2.92

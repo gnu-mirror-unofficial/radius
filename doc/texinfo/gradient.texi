@@ -1,3 +1,8 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 2004 Free Software Foundation, Inc.
+@c Written by Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
 @chapter New Configuration Approach (draft)
 
 This document presents a draft describing new approach for

@@ -6,6 +6,7 @@
 @node Accounting, Logging, Authentication, Top
 @chapter Accounting
 @cindex Accounting Types
+@UNREVISED{}
 
 By default GNU Radius supports three types of accounting. Any
 additional accounting methods can be defined using extension
@@ -15,36 +16,37 @@ The accounting methods are applied to a request in a following
 sequence:
 
 @enumerate 1
-@item UNIX accounting
+@item System accounting
 @item Detailed request accounting
 @item @acronym{sql} accounting 
 @item Custom accounting 
 @end enumerate
 
-In this sequence, only UNIX accounting is obligatory; all
-other methods are applied only when enabled.
+In this sequence, only System accounting is obligatory; all
+other methods are applied only when enabled.@FIXME{This is
+not true anymore. Describe why. Give a reference to MLC node}.
 
 If any accounting type in this sequence fails, the accounting
 is deemed to fail and all subsequent methods are not invoked.
 
 @menu
-* UNIX Accounting::                     UNIX style utmp/wtmp accounting.
+* System Accounting::                   UNIX style utmp/wtmp accounting.
 * Detailed Request Accounting::         Detailed requests.
 * SQL Accounting::                      Accounting to SQL server.
 * Custom Acct::                         Defining Custom Accounting Types.
 @end menu
 
 @comment *L2****************************************************************
-@node UNIX Accounting
-@section UNIX Accounting
-@cindex UNIX Accounting
+@node System Accounting
+@section System Accounting
+@cindex System Accounting
+@UNREVISED{}
 
 This accounting method is always enabled.
 
 Radius keeps files @file{radutmp} and @file{radwtmp} in its logging
 directory  and stores the accounting data there. The utilities
-@command{radwho} and @command{radlast} can be used to list information about
-users' sessions.
+@command{radwho} and @command{radlast} can be used to list information about users' sessions. @FIXME{Should they work if other mlc method is used?}
 
 @comment *L2****************************************************************
 @node Detailed Request Accounting

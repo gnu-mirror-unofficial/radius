@@ -577,11 +577,12 @@ characters.
 @node Vendor-Specific
 @subsection @attr{Vendor-Specific}
 @atindex Vendor-Specific
+@UNREVISED{}
 
 @defattr{Vendor-Specific,26,string,LR,-R,-R,Append,No}
 
 This attribute is available to allow vendors to support their own
-extended attributes not suitable for general usage. @FIXME{some more detail over the VSAs?}
+extended attributes not suitable for general usage. @FIXME{some more detail over the VSAs? How does GNU Radius handle unknown VSAs?}
 
 @comment **************************************************************
 @node Accounting Attributes
@@ -781,6 +782,7 @@ used in matching rules.
 * Acct-Ext-Program::
 * Acct-Type::
 * Auth-Data::
+* Auth-Failure-Trigger::
 * Auth-Type::
 * Crypt-Password::
 * Exec-Program-Wait::
@@ -796,6 +798,7 @@ used in matching rules.
 * Pam-Auth::
 * Prefix::
 * Proxy-Replied::
+* Realm-Name::
 * Replace-User-Name::
 * Rewrite-Function::
 * Scheme-Acct-Procedure::
@@ -850,6 +853,17 @@ The @attr{Acct-Type} allows one to control which accounting methods
 must be used for a given user or group of users. In the absence
 of this attribute, all currently enabled accounting types are used.
 @xref{Accounting}, for more information about accounting types.
+
+@comment **************************************************************
+@node Auth-Failure-Trigger
+@subsection @attr{Auth-Failure-Trigger}
+@atindex Auth-Failure-Trigger
+@UNREVISED{}
+
+@FIXME{This attribute specifies an external program or
+a Scheme expression to be run upon an authentication failure. It can
+update failure counts that subsequently will be used by
+@attr{Exec-Program-Wait} or @attr{Scheme-Procedure}.}
 
 @comment **************************************************************
 @node Auth-Data
@@ -1492,6 +1506,14 @@ VALUE      Proxy-Replied     Yes                  1
 
 @command{radiusd} adds this attribute to the incoming request if it
 was already processed by a remote radius server.
+
+@comment **************************************************************
+@node Realm-Name
+@subsection @attr{Realm-Name}
+@atindex Realm-Name
+@UNREVISED{}
+
+@FIXME{This attribute keeps the realm name of the user.}
 
 @comment **************************************************************
 @node Replace-User-Name

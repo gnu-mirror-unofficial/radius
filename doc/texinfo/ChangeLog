@@ -1,3 +1,13 @@
+2004-05-25  Sergey Poznyakoff
+
+	* acct.texi: Updated
+	* attributes.texi: Updated
+	* gradient.texi: Updated
+
+2004-05-24  Sergey Poznyakoff 
+
+	* gradient.texi: Minor change.
+
 2004-05-24  Sergey Poznyakoff 
 
 	* rendition.texi: New file

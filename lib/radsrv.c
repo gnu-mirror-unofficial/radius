@@ -56,22 +56,29 @@ grad_server_send_reply(int fd, grad_request_t *radreq,
                 struct sockaddr_in *sin;
                 char buf[GRAD_MAX_LONGNAME];
 
+                sin = (struct sockaddr_in *) &saremote;
+                memset ((char *) sin, '\0', sizeof (saremote));
+                sin->sin_family = AF_INET;
+                sin->sin_addr.s_addr = htonl(radreq->ipaddr);
+                sin->sin_port = htons(radreq->udp_port);
+#ifdef DEBUG_ONLY
+		grad_log(L_DEBUG,
+			 "DEBUG_ONLY version: not sending %s of id %d to %s (nas %s)",
+			 grad_request_code_to_name(reply_code), 
+			 radreq->id,
+			 grad_ip_iptostr(radreq->ipaddr, NULL),
+			 grad_nas_request_to_name(radreq, buf, sizeof buf));
+#else		
                 debug(1, ("Sending %s of id %d to %s (nas %s)",
                           grad_request_code_to_name(reply_code), 
                           radreq->id,
 			  grad_ip_iptostr(radreq->ipaddr, NULL),
                           grad_nas_request_to_name(radreq, buf, sizeof buf)));
                 
-                sin = (struct sockaddr_in *) &saremote;
-                memset ((char *) sin, '\0', sizeof (saremote));
-                sin->sin_family = AF_INET;
-                sin->sin_addr.s_addr = htonl(radreq->ipaddr);
-                sin->sin_port = htons(radreq->udp_port);
-#ifndef DEBUG_ONLY
                 sendto(fd, pdu, length, 0,
                        &saremote, sizeof(struct sockaddr_in));
 #endif
-                grad_free(pdu);
+		grad_free(pdu);
         }
 	return length;
 }
@@ -105,17 +112,22 @@ grad_server_send_challenge(int fd, grad_request_t *radreq,
                 struct sockaddr_in *sin;
                 char buf[GRAD_MAX_LONGNAME];
 
-                debug(1, ("Sending Challenge of id %d to %s (nas %s)",
-                          radreq->id, grad_ip_iptostr(radreq->ipaddr, NULL),
-                          grad_nas_request_to_name(radreq, buf, sizeof buf)));
-        
                 sin = (struct sockaddr_in *) &saremote;
                 memset ((char *) sin, '\0', sizeof (saremote));
                 sin->sin_family = AF_INET;
                 sin->sin_addr.s_addr = htonl(radreq->ipaddr);
                 sin->sin_port = htons(radreq->udp_port);
 
-#ifndef DEBUG_ONLY
+#ifdef DEBUG_ONLY
+		grad_log(L_DEBUG,
+			 "DEBUG_ONLY version: not sending challenge of id %d to %s (nas %s)",
+			 radreq->id, grad_ip_iptostr(radreq->ipaddr, NULL),
+			 grad_nas_request_to_name(radreq, buf, sizeof buf)));
+#else
+                debug(1, ("Sending Challenge of id %d to %s (nas %s)",
+                          radreq->id, grad_ip_iptostr(radreq->ipaddr, NULL),
+                          grad_nas_request_to_name(radreq, buf, sizeof buf)));
+        
                 sendto(fd, pdu, length, 0,
                        &saremote, sizeof(struct sockaddr_in));
 #endif

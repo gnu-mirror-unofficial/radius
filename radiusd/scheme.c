@@ -221,7 +221,9 @@ boot_body (void *data)
                 pthread_cond_wait(&server_cond, &server_mutex);
                 
                 debug(1, ("SRV: Processing queue"));
-                for (p = queue_head; p; p = p->next) {
+                p = queue_head;
+		while (p) {
+			struct rad_scheme_task *next = p->next;
 			switch (p->state) {
 			case RSCM_TASK_DONE:
 				debug(1, ("SRV: Deleting completed task"));
@@ -241,6 +243,7 @@ boot_body (void *data)
 				pthread_cond_signal(&p->cond);
 				Pthread_mutex_unlock(&p->mutex);
 			}
+			p = next;
                 }
         }
         /*NOTREACHED*/

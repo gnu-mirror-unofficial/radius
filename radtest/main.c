@@ -443,6 +443,11 @@ radtest_send(port, code, var)
 {
 	RADIUS_REQ *auth;
 	
+	if (reply_list)
+		avl_free(reply_list);
+	reply_list = NULL;
+	reply_code = 0;
+	
 	if (var->type != Vector) {
 		parse_error(_("wrong datatype: expected vector"));
 		return;
@@ -459,8 +464,6 @@ radtest_send(port, code, var)
 	var->type = Integer;
 	var->datum.number = reply_code;
 
-	if (reply_list)
-		avl_free(reply_list);
 	reply_list = avl_dup(auth->request);
 	var = (Variable*)sym_lookup(vartab, "REPLY");
 	var->type = Vector;

@@ -330,6 +330,12 @@ rpp_kill(pid_t pid, int signo)
 	return 0;
 }
 
+size_t
+rpp_count()
+{
+	return list_count(process_list);
+}
+
 struct rpp_request {
 	int type;                  /* Request type */
 	struct sockaddr_in addr;   /* Sender address */

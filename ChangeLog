@@ -1,3 +1,31 @@
+2004-08-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	Added initial support for loadable modules. 
+	
+	* configure.ac: Added support for loadable modules. New
+	option --with-sql allows to list SQL modules to be used.
+	* include/radiusd.h: Added new prototypes.
+	* include/radsql.h: Added support for loadable modules.
+	(struct sql_connection.cfg): New member.
+	* include/radius/radius.h: Added new prototypes.
+	* radiusd/dynload.c: New file.
+	* radiusd/Makefile.am: Added dynload.c
+	* radiusd/radiusd.c (radiusd_setup): Call dynload_init
+	* radiusd/scheme.c: Reset %load-path before reconfiguring
+	* radiusd/sql.c (attach_sql_connection): Store pointer
+	to the current configuration structure in struct sql_connection.
+	* radiusd/version.c: Updated.
+
+	* scripts/sqlmod.sh: New file
+	* scripts/Makefile.am: Added sqlmod.sh
+
+	* sql/Makefile.am: Added support for loadable modules.
+	* sql/disp.c: Likewise.
+	* sql/mysql.c: Likewise.
+	* sql/odbc.c: Likewise.
+	* sql/postgres.c: Likewise.
+	* sql/.cvsignore: Updated
+	
 2004-08-16  Sergey Poznyakoff 
 
 	* radtest/input.l: Allow single quotes around any

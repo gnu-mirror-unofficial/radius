@@ -115,6 +115,9 @@ static char *compile_flag_str[] = {
 #if defined(DENY_SHELL)
         "DENY_SHELL",
 #endif
+#if defined(USE_LOADABLE_MODULES)
+	"USE_LOADABLE_MODULES",
+#endif
         NULL
 };
 

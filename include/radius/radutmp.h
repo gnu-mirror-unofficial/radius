@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
 
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -36,8 +36,8 @@ struct radutmp {
         int  nas_port;                  /* Port on the terminal server */
         char session_id[RUT_IDSIZE];    /* Radius session ID */
                                         /* (last RUT_IDSIZE bytes at least)*/
-        unsigned int nas_address;       /* IP of the NAS */
-        unsigned int framed_address;    /* SLIP/PPP address or login-host. */
+        grad_uint32_t nas_address;      /* IP of the NAS */
+        grad_uint32_t framed_address;   /* SLIP/PPP address or login-host. */
         int proto;                      /* Protocol. */
         time_t time;                    /* Time the entry was last updated. */
         time_t delay;                   /* Delay time of request */
@@ -45,7 +45,7 @@ struct radutmp {
         int porttype;                   /* Value of NAS-Port-Type attr */
         time_t duration;
         char caller_id[RUT_PNSIZE];     /* calling station ID */
-        unsigned int realm_address;
+        grad_uint32_t realm_address;
         char reserved[10];              
 };
 
@@ -59,7 +59,7 @@ struct maxsession {
 
 typedef struct port_stat {
         struct port_stat *next;
-        grad_uint32_t ip;                  /* NAS IP */
+        grad_uint32_t ip;          /* NAS IP */
         int port_no;               /* port number */
         int active;                /* is the port used now */
         char login[RUT_NAMESIZE];  /* last login name */

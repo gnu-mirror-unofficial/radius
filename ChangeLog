@@ -1,3 +1,19 @@
+2004-06-26  Sergey Poznyakoff
+
+	* lib/dict.c (_dict_value): Append new items to the
+	end of the list.
+	(attrval_cmp): Ignore aliases.
+	* lib/iputil.c (grad_ip_iptostr): Allow for buf==NULL.
+	This is mainly for use from the gdb.
+	* radiusd/.gdbinit: Updated
+	* radscm/Makefile.am (gnuradius.scm,radiusd.scm): Do
+	not use $<
+	* radscripts/radauth.m4: Send NAS-IP-Address pair
+	* radtest/main.c (main,init_symbols): Set predefined
+	variable SOURCEIP to the source IP address we've bound
+	to.
+	(print_pairs): Rewritten
+	
 2004-06-25  Sergey Poznyakoff
 
 	* include/radius/radius.h: New flag AP_TRANSLATE

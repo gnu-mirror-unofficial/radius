@@ -5064,6 +5064,14 @@ bi_toupper()
 }	
 
 static void
+bi_request_code_string()
+{
+        int code = (int) getarg(1);
+	char *s = auth_code_abbr(code);
+	pushstr(s, strlen(s));
+}
+	
+static void
 rw_regerror(const char *prefix, regex_t *rx, int rc)
 {
 	size_t sz = regerror(rc, rx, NULL, 0);
@@ -5311,7 +5319,31 @@ bi_qprn()
 	}
 	*p = 0;
 }
-	
+
+static void
+bi_quote_string()
+{
+	char *s = (char*)getarg(1);
+	int quote;
+	size_t len = argcv_quoted_length(s, &quote);
+	char *p = heap_reserve(len + 1);
+
+	pushn((RWSTYPE) p);
+	argcv_quote_copy(p, s);
+	p[len] = 0;
+}
+
+static void
+bi_unquote_string()
+{
+	char *s = (char*)getarg(1);
+	size_t len = strlen(s);
+	char *p = heap_reserve(len + 1);
+
+	pushn((RWSTYPE) p);
+	argcv_unquote_copy(p, s, len);
+}
+
 static builtin_t builtin[] = {
         { bi_length,  "length", Integer, "s" },
 	{ bi_index,   "index",  Integer, "si" },
@@ -5330,6 +5362,9 @@ static builtin_t builtin[] = {
 	{ bi_qprn, "qprn", String, "s" },
 	{ bi_tolower, "tolower", String, "s" },
 	{ bi_toupper, "toupper", String, "s" },
+	{ bi_unquote_string, "unquote_string", String, "s" },
+	{ bi_quote_string, "quote_string", String, "s" },
+	{ bi_request_code_string, "request_code_string", String, "i" },
 	{ NULL }
 };
 

@@ -881,7 +881,7 @@ stmt    : begin list end
           {
 		  mtx_stop();
 		  $2->cond.if_false = $4;
-		  $4->nop.prev->jump.dest = mtx_cur();
+		  $4->nop.prev->jump.dest = mtx_nop();
 		  $$ = mtx_cur();
 	  }
         | RETURN expr ';'
@@ -1160,9 +1160,10 @@ yyerror(s)
  * Interface functions
  */
 int
-parse_rewrite()
+parse_rewrite(path)
+	char *path;
 {
-	input_filename = mkfilename(radius_dir, "rewrite");
+	input_filename = path;
 	infile = fopen(input_filename, "r");
 	if (!infile) {
 		if (errno != ENOENT) {
@@ -1170,7 +1171,6 @@ parse_rewrite()
 			       _("can't open file `%s'"),
 			       input_filename);
 		}
-		efree(input_filename);
 		return -1;
 	}
 
@@ -1208,7 +1208,6 @@ parse_rewrite()
 	mtx_free_all();
 		
 	fclose(infile);
-	efree(input_filename);
 	obstack_free(&input_stk, NULL);
 	return 0;
 }
@@ -3146,7 +3145,7 @@ code_init()
 	if (rw_rt.code == NULL) {
 		rw_rt.codesize  = 4096;
 		rw_rt.stacksize = 4096;
-		
+
 		rw_rt.code  = emalloc(rw_rt.codesize * sizeof(rw_rt.code[0]));
 		rw_rt.stack = emalloc(rw_rt.stacksize * sizeof(rw_rt.stack[0]));
 	}
@@ -4591,7 +4590,7 @@ interpret(fcall, req, type, datum)
 		default:
 			insist_fail("datatype!");
 		}
-		parm++;
+		parm = parm->next;
 	}
 	obstack_free(&obs, NULL);
 	

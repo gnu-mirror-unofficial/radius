@@ -1,5 +1,16 @@
 2003-07-20  Sergey Poznyakoff
 
+	* configure.ac: New option --without-readline
+	* radiusd/tsh.c: New file. The improved test shell.
+	* radiusd/Makefile.am: Added tsh.c
+	* radiusd/radiusd.c: Removed test_shell() stuff.
+	* lib/argcv.c (argcv_string): Quote arguments containing
+	whitespace.
+	* TODO: Updated
+	* NEWS: Updated
+
+2003-07-20  Sergey Poznyakoff
+
 	Fixed bugs in extended request comparison. Fixed minor
 	bug in SQL caching.
 	Improved test shell and radtest.

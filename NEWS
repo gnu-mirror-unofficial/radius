@@ -21,8 +21,7 @@ does not disturb the main process.
 accounting.
 ** Strings in raddb/config may contain escaped characters. This is
 useful mainly for username-chars statement.
-** New command in test shell mode allows to check a timestamp
-against a time interval specification.
+** Test shell significantly improved.
 
 
 Version 1.0:

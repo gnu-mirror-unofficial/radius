@@ -38,6 +38,7 @@ radiusd/sql.c
 radiusd/stat.c
 radiusd/version.c
 radiusd/rpp.c
+radiusd/tsh.c
 radlast/radlast.c
 
 radscm/radscm.c

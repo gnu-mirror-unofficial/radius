@@ -9,15 +9,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.0\n"
-"Report-Msgid-Bugs-To: <gray@mirddin.farlep.net>\n"
-"POT-Creation-Date: 2003-06-23 20:01+0300\n"
-"PO-Revision-Date: 2003-06-24 16:44+0300\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2003-07-20 23:44+0300\n"
+"PO-Revision-Date: 2003-07-20 23:59+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2;\n"
 
 #: lib/avl.c:88
 #, c-format
@@ -34,15 +35,15 @@ msgstr ""
 msgid "Received invalid reply digest from server"
 msgstr "Otrzymano b³êdny odcisk odpowiedzi od serwera"
 
-#: lib/client.c:177
+#: lib/client.c:180
 msgid "invalid port type"
 msgstr "Nieprawid³owy typ portu"
 
-#: lib/client.c:270
+#: lib/client.c:284
 msgid "select() interrupted"
 msgstr "select() zosta³ przerwany"
 
-#: lib/client.c:290
+#: lib/client.c:304
 #, c-format
 msgid "error receiving data from %s:%d"
 msgstr "b³±d przy otrzymaniu danych od %s:%d"
@@ -51,7 +52,7 @@ msgstr "b³±d przy otrzymaniu danych od %s:%d"
 msgid "compiled without debugging support"
 msgstr "program skompilowany bez obs³ugi odpluskwiania"
 
-#: lib/dict.c:82 lib/nas.c:58 radiusd/files.c:904
+#: lib/dict.c:82 lib/nas.c:58 radiusd/files.c:903
 msgid "too few fields"
 msgstr "za ma³o pól"
 
@@ -189,7 +190,9 @@ msgstr "login: pozycja dla NAS-u %s, port %d wystêpuje w porz±dku b³êdnym"
 #: lib/radutmp.c:175
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr "logout: pozycja dla NAS-u %s, port %d ma b³êdny ID (spodziewano %s, odnaleziono %s)"
+msgstr ""
+"logout: pozycja dla NAS-u %s, port %d ma b³êdny ID (spodziewano %s, "
+"odnaleziono %s)"
 
 #: lib/radutmp.c:198
 #, c-format
@@ -205,7 +208,7 @@ msgstr "nie mogê otworzyæ %s"
 msgid "not enough memory"
 msgstr "brak pamiêci"
 
-#: lib/users.l:231 radiusd/config.y:816 radiusd/stat.c:80
+#: lib/users.l:231 radiusd/config.y:826 radiusd/stat.c:80
 #, c-format
 msgid "can't stat `%s'"
 msgstr "stat(%s) nie powiód³ siê"
@@ -269,7 +272,7 @@ msgstr "%s:%d: w³±czanie odpluskwiania analizatora pliku \"users\""
 msgid "%s:%d: disabled userfile parser debugging"
 msgstr "%s:%d: wy³±czanie odpluskwiania analizatora pliku \"users\""
 
-#: lib/util.c:192
+#: lib/util.c:253
 #, c-format
 msgid "string too long: %s"
 msgstr "³añcuch za d³ugi: %s"
@@ -372,8 +375,8 @@ msgstr "z³a liczba argumentów do formy %s"
 msgid "form `%s' not closed"
 msgstr "forma `%s' nie jest zamkniêta"
 
-#: lib/radargp.c:38 radiusd/radiusd.c:53 radiusd/radiusd.c:61
-#: radiusd/radiusd.c:71
+#: lib/radargp.c:38 radiusd/radiusd.c:54 radiusd/radiusd.c:62
+#: radiusd/radiusd.c:72
 msgid "DIR"
 msgstr "KATALOG"
 
@@ -620,7 +623,7 @@ msgstr "nie mogê stworzyæ sesji SNMP: %s"
 msgid "can't open snmp session: %s"
 msgstr "nie mogê otworzyæ sesji SNMP: %s"
 
-#: radiusd/checkrad.c:285 radiusd/checkrad.c:295 radiusd/snmpserv.c:2663
+#: radiusd/checkrad.c:285 radiusd/checkrad.c:295 radiusd/snmpserv.c:2665
 #, c-format
 msgid "can't create SNMP PDU: %s"
 msgstr "nie mogê stworzyæ SNMP PDU: %s"
@@ -645,50 +648,50 @@ msgstr "niewiadoma instrukcja blokowa"
 msgid "invalid netmask length: %d"
 msgstr "b³êdna d³ugo¶æ maski podsieci: %d"
 
-#: radiusd/config.y:416 radiusd/rewrite.y:1476
+#: radiusd/config.y:419 radiusd/rewrite.y:1476
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
 msgstr "%s:%d: nieoczekiwany koniec pliku w komentarzu rozpoczêtym w linii %d"
 
-#: radiusd/config.y:625
+#: radiusd/config.y:628
 #, c-format
 msgid "%s:%d: no such service: %s"
 msgstr "%s:%d: nieznana us³uga: %s"
 
-#: radiusd/config.y:651 radiusd/sql.c:312
+#: radiusd/config.y:654 radiusd/sql.c:317
 #, c-format
 msgid "%s:%d: unknown host: %s"
 msgstr "%s:%d: nieznany host: %s"
 
-#: radiusd/config.y:694
+#: radiusd/config.y:704
 #, c-format
 msgid "INTERNAL ERROR at %s:%d: unknown datatype %d"
 msgstr "B£¡D WEWNÊTRZNY w %s:%d: nieznany typ danych %d"
 
-#: radiusd/config.y:720
+#: radiusd/config.y:730
 #, c-format
 msgid "%s:%d: wrong datatype (should be %s)"
 msgstr "%s:%d: b³êdny typ danych (musi byæ %s)"
 
-#: radiusd/config.y:730
+#: radiusd/config.y:740
 msgid "too few arguments"
 msgstr "za ma³o argumentów"
 
-#: radiusd/config.y:730 radiusd/config.y:735
+#: radiusd/config.y:740 radiusd/config.y:745
 msgid "too many arguments"
 msgstr "za du¿o argumentów"
 
-#: radiusd/config.y:750
+#: radiusd/config.y:760
 #, c-format
 msgid "%s:%d: obsolete statement"
 msgstr "%s:%d: instrukcja przestarza³a"
 
-#: radiusd/config.y:823
+#: radiusd/config.y:833
 #, c-format
 msgid "can't open config file `%s'"
 msgstr "nie mogê otworzyæ pliku konfiguracyjnego `%s'"
 
-#: radiusd/config.y:833
+#: radiusd/config.y:843
 #, c-format
 msgid "reading %s"
 msgstr "czytanie %s"
@@ -711,7 +714,9 @@ msgstr "setreuid(%d) nie powiód³ siê (ruid=%d, euid=%d)"
 #: radiusd/exec.c:98
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
-msgstr "radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie jest pe³n± nazw± ¶cie¿ki: %s"
+msgstr ""
+"radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie jest pe³n± "
+"nazw± ¶cie¿ki: %s"
 
 #: radiusd/exec.c:109
 #, c-format
@@ -727,7 +732,7 @@ msgstr "nie mogê otworzyæ potoku"
 msgid "can't reset SIGCHLD"
 msgstr "nie mo¿na ustaliæ obs³ugi SIGCHLD"
 
-#: radiusd/exec.c:141 radiusd/exec.c:174
+#: radiusd/exec.c:141 radiusd/exec.c:175
 msgid "can't close pipe"
 msgstr "nie mo¿na zamkn±æ potoku"
 
@@ -735,16 +740,16 @@ msgstr "nie mo¿na zamkn±æ potoku"
 msgid "can't dup stdout"
 msgstr "nie mo¿na zduplikowaæ stdout"
 
-#: radiusd/exec.c:186 radiusd/exec.c:571
+#: radiusd/exec.c:187 radiusd/exec.c:572
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<wyj¶cie standardowe %s>:%d: %s"
 
-#: radiusd/exec.c:203
+#: radiusd/exec.c:204
 msgid "can't restore SIGCHLD"
 msgstr "nie mo¿na odtworzyæ obs³ugi SIGCHLD"
 
-#: radiusd/exec.c:210
+#: radiusd/exec.c:211
 #, c-format
 msgid ""
 "can't run external program `%s' (reason reported via syslog channel user.err)"
@@ -752,56 +757,56 @@ msgstr ""
 "nie mo¿na wykonaæ programu zewnêtrznego `%s' (powód raportowany przez kana³ "
 "syslog user.err)"
 
-#: radiusd/exec.c:218
+#: radiusd/exec.c:219
 #, c-format
 msgid "external program `%s' %s"
 msgstr "program zewnêtrzny `%s' %s"
 
-#: radiusd/exec.c:234
+#: radiusd/exec.c:235
 #, c-format
 msgid "won't execute, no such user: %s"
 msgstr "nie mo¿na wykonaæ: nie ma takiego u¿ytkownika: %s"
 
-#: radiusd/exec.c:349
+#: radiusd/exec.c:350
 #, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
 msgstr "filtr %s (pid %d) %s (wej¶cie: %u, wyj¶cie: %u)"
 
-#: radiusd/exec.c:402
+#: radiusd/exec.c:403
 #, c-format
 msgid "filter %s is not declared"
 msgstr "filtr %s nie jest zadeklarowany"
 
-#: radiusd/exec.c:419
+#: radiusd/exec.c:420
 #, c-format
 msgid "cannot run filter %s"
 msgstr "nie mo¿na uruchomiæ filtra %s"
 
-#: radiusd/exec.c:436
+#: radiusd/exec.c:437
 #, c-format
 msgid "filter %s"
 msgstr "filtr %s"
 
-#: radiusd/exec.c:457
+#: radiusd/exec.c:458
 msgid "wrong return type"
 msgstr "zwracany typ danych jest b³êdny"
 
-#: radiusd/exec.c:558 radiusd/exec.c:613
+#: radiusd/exec.c:559 radiusd/exec.c:614
 #, c-format
 msgid "reading from filter %s"
 msgstr "czytanie z filtru %s"
 
-#: radiusd/exec.c:580
+#: radiusd/exec.c:581
 #, c-format
 msgid "filter %s (auth): bad output: %s"
 msgstr "filter %s (uwierzytelnienie): niepoprawne wyj¶cie: %s"
 
-#: radiusd/exec.c:624 radiusd/exec.c:630
+#: radiusd/exec.c:625 radiusd/exec.c:631
 #, c-format
 msgid "filter %s (acct): bad output: %s"
 msgstr "filter %s (rozliczenie): niepoprawne wyj¶cie: %s"
 
-#: radiusd/exec.c:701
+#: radiusd/exec.c:702
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: filtr ju¿ zadeklarowany w %s:%d"
@@ -840,24 +845,24 @@ msgstr "install_pair zawiód³ na %s"
 msgid "expected , but found %s"
 msgstr "oczekiwano ',' odnaleziono natomiast %s"
 
-#: radiusd/files.c:678 radiusd/files.c:779
+#: radiusd/files.c:677 radiusd/files.c:778
 msgid "not defined"
 msgstr "nie zdefiniowany"
 
-#: radiusd/files.c:814 radiusd/files.c:987
+#: radiusd/files.c:813 radiusd/files.c:986
 msgid "wrong number of fields"
 msgstr "b³êdna ilo¶æ pól"
 
-#: radiusd/files.c:915
+#: radiusd/files.c:914
 msgid "unknown method"
 msgstr "nieznana metoda"
 
-#: radiusd/files.c:992
+#: radiusd/files.c:991
 #, c-format
 msgid "user `%s' already found in %s"
 msgstr "u¿ytkownik `%s' ju¿ odnaleziony w %s"
 
-#: radiusd/files.c:1018
+#: radiusd/files.c:1017
 #, c-format
 msgid "%d user disabled"
 msgid_plural "%d users disabled"
@@ -865,40 +870,40 @@ msgstr[0] "wy³±czono %d u¿ytkownika"
 msgstr[1] "wy³±czono %d u¿ytkowników"
 msgstr[2] "wy³±czono %d u¿ytkowników"
 
-#: radiusd/files.c:1565
+#: radiusd/files.c:1564
 msgid "using only dbm: USERS NOT LOADED"
 msgstr "u¿ycie jedynie dbm: U¯YTKOWNICY NIEZA£ADOWANI"
 
-#: radiusd/files.c:1573
+#: radiusd/files.c:1572
 msgid "DBM files found but no -b flag given - NOT using DBM"
 msgstr ""
 "znaleziono pliki DBM lecz nie podano znacznika -b,  DBM NIE jest u¿ywane"
 
-#: radiusd/files.c:1577
+#: radiusd/files.c:1576
 #, c-format
 msgid "can't load %s: exited"
 msgstr "nie mogê za³adowaæ %s: wyj¶cie"
 
-#: radiusd/files.c:1580
+#: radiusd/files.c:1579
 #, c-format
 msgid "%s reloaded."
 msgstr "%s za³adowany ponownie."
 
-#: radiusd/files.c:1655
+#: radiusd/files.c:1654
 msgid "SQL Error: SQL client could not be initialized"
 msgstr "B³±d SQL: nie jest mo¿liwe zinicjalizowanie klienta SQL"
 
-#: radiusd/files.c:1668
+#: radiusd/files.c:1667
 #, c-format
 msgid "INTERNAL ERROR: unknown reload code: %d"
 msgstr "B£¡D WEWNÊTRZNY: niewiadomy kod ³adowania: %d"
 
-#: radiusd/files.c:1789
+#: radiusd/files.c:1788
 #, c-format
 msgid "can't create parser output file `%s'"
 msgstr "nie mogê stworzyæ pliku wyj¶ciowego `%s'"
 
-#: radiusd/files.c:1803
+#: radiusd/files.c:1802
 #, c-format
 msgid "dumped users database to %s"
 msgstr "baza u¿ytkowników zrzucona do %s"
@@ -1099,102 +1104,102 @@ msgstr "BEGIN bez Fall-Through"
 msgid "request from unknown client"
 msgstr "¿±danie od nieznanego klienta"
 
-#: radiusd/radius.c:293
+#: radiusd/radius.c:363
 msgid "Dropping packet"
 msgstr "Zrzut pakietu"
 
-#: radiusd/radius.c:316
+#: radiusd/radius.c:386
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Retransmisja odpowiedzi %s"
 
-#: radiusd/radius.c:321
+#: radiusd/radius.c:391
 msgid "request failed"
 msgstr "¿±danie nie powiod³o siê"
 
-#: radiusd/radius.c:388
+#: radiusd/radius.c:442
 #, c-format
 msgid "Unrecognized proxy reply from server %s, proxy ID %d"
 msgstr "Nierozpoznana odpowied¼ od serwera %s, proxy ID %d"
 
-#: radiusd/radius.c:416
+#: radiusd/radius.c:470
 #, c-format
 msgid "unknown request code %d"
 msgstr "nieznany kod ¿±dania %d"
 
-#: radiusd/radiusd.c:46
+#: radiusd/radiusd.c:47
 msgid "GNU radius daemon"
 msgstr "Demon GNU radius"
 
-#: radiusd/radiusd.c:50
+#: radiusd/radiusd.c:51
 msgid "radiusd specific switches:"
 msgstr "radiusd - prze³±czniki specjalne:"
 
-#: radiusd/radiusd.c:52
+#: radiusd/radiusd.c:53
 msgid "Do detailed authentication logging"
 msgstr "W³±cza dok³adn± rejestacjê uwierzytelnienia"
 
-#: radiusd/radiusd.c:54
+#: radiusd/radiusd.c:55
 msgid "Set accounting directory"
 msgstr "Ustala nazwê katalogu rozliczeniowego"
 
-#: radiusd/radiusd.c:57
+#: radiusd/radiusd.c:58
 msgid "Enable DBM support"
 msgstr "W³±cza obs³ugê DBM"
 
-#: radiusd/radiusd.c:60
+#: radiusd/radiusd.c:61
 msgid "Stay in foreground"
 msgstr "Powoduje wys³anie w t³o"
 
-#: radiusd/radiusd.c:62
+#: radiusd/radiusd.c:63
 msgid "Set logging directory name"
 msgstr "Ustala nazwê kalalogu logowania"
 
-#: radiusd/radiusd.c:64
+#: radiusd/radiusd.c:65
 msgid "Select operation mode: test, checkconf, builddbm."
 msgstr "Wybiera tryb operacji: test, checkconf, builddbm."
 
-#: radiusd/radiusd.c:66
+#: radiusd/radiusd.c:67
 msgid "Do not resolve IP addresses"
 msgstr "Wy³±cza rozwijanie adresów IP"
 
-#: radiusd/radiusd.c:67 radlast/radlast.c:124
+#: radiusd/radiusd.c:68 radlast/radlast.c:124
 msgid "IPADDR"
 msgstr "IPADRES"
 
-#: radiusd/radiusd.c:68
+#: radiusd/radiusd.c:69
 msgid "Listen on IPADDR"
 msgstr "W³±cza nas³uchanie na podanym adresie IP"
 
-#: radiusd/radiusd.c:70
+#: radiusd/radiusd.c:71
 msgid "Set authentication port number"
 msgstr "Ustawia numer portu uwierzytelnienia"
 
-#: radiusd/radiusd.c:72
+#: radiusd/radiusd.c:73
 msgid "Store pidfile in DIR"
 msgstr "Zachowa plik pid w podanym KATALOGU"
 
-#: radiusd/radiusd.c:74
+#: radiusd/radiusd.c:75
 msgid "Strip prefixes/suffixes off user names before logging"
 msgstr "Przed logowaniem usuwa z nazwy u¿ytkownika przedrostki/przyrostki"
 
-#: radiusd/radiusd.c:76
+#: radiusd/radiusd.c:77
 msgid "Run in single process mode"
 msgstr "Uruchamia radiusd w trybie pojedynczego procesu"
 
-#: radiusd/radiusd.c:77
+#: radiusd/radiusd.c:78
 msgid "DEBUGSPEC"
 msgstr "POZIOM"
 
-#: radiusd/radiusd.c:78
+#: radiusd/radiusd.c:79 radiusd/tsh.c:83
 msgid "Set debugging level"
 msgstr "Ustala poziom odpluskwiania"
 
-#: radiusd/radiusd.c:80
+#: radiusd/radiusd.c:81
 msgid "Log authentications"
 msgstr "W³±cza logowanie uwierzytelnieñ"
 
-#: radiusd/radiusd.c:82
+#: radiusd/radiusd.c:83
 msgid "Log users' passwords"
 msgstr "Notuje has³a u¿ytkowników"
 
@@ -1236,7 +1241,9 @@ msgstr ""
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
-msgstr "\nOsi±gniêto ograniczenie dziedziny - odmowa dostêpu\n"
+msgstr ""
+"\n"
+"Osi±gniêto ograniczenie dziedziny - odmowa dostêpu\n"
 
 #: radiusd/radiusd.c:286
 msgid ""
@@ -1274,68 +1281,69 @@ msgstr[2] "pozosta³y %d procesów potomnych"
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
 msgstr "Radiusd nie nas³uchuje na ¿adnym porcie. Mimo to kontynuujê..."
 
-#: radiusd/radiusd.c:395
+#: radiusd/radiusd.c:398
 msgid "Starting"
 msgstr "Uruchamianie"
 
-#: radiusd/radiusd.c:416
+#: radiusd/radiusd.c:419
 msgid "Ready"
 msgstr "Gotów"
 
-#: radiusd/radiusd.c:508
+#: radiusd/radiusd.c:511
 msgid "can't find out my own IP address"
 msgstr "nie mogê rozpoznaæ w³asnego adresu IP"
 
-#: radiusd/radiusd.c:603
+#: radiusd/radiusd.c:606
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD U¦PIONY"
 
-#: radiusd/radiusd.c:633
+#: radiusd/radiusd.c:636
 msgid "Reloading configuration now"
 msgstr "Prze³adowywanie konfiguracji"
 
-#: radiusd/radiusd.c:645
+#: radiusd/radiusd.c:648
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "Zapis bazy u¿ytkowników do `%s'"
 
-#: radiusd/radiusd.c:702
+#: radiusd/radiusd.c:705
 msgid "restart initiated"
 msgstr "Rozpoczêto ponowne uruchomienie"
 
-#: radiusd/radiusd.c:705
+#: radiusd/radiusd.c:708
 msgid "can't restart: not started as absolute pathname"
-msgstr "nie mo¿na ponownie uruchomiæ: nazwa programu nie jest pe³n± nazw± ¶cie¿ki"
+msgstr ""
+"nie mo¿na ponownie uruchomiæ: nazwa programu nie jest pe³n± nazw± ¶cie¿ki"
 
-#: radiusd/radiusd.c:717
+#: radiusd/radiusd.c:720
 msgid "radiusd_restart: cannot fork"
 msgstr "radiusd_restart: fork() zawiód³"
 
-#: radiusd/radiusd.c:732
+#: radiusd/radiusd.c:735
 msgid "restarting radius"
 msgstr "ponowne uruchomienie"
 
-#: radiusd/radiusd.c:734
+#: radiusd/radiusd.c:737
 msgid "RADIUS NOT RESTARTED: exec failed"
 msgstr "RADIUS NIE ZOSTA£ PONOWNIE URUCHOMIONY: uruchomienie zawiod³o"
 
-#: radiusd/radiusd.c:771
+#: radiusd/radiusd.c:774
 msgid "Normal shutdown."
 msgstr "Normalne zamkniêcie."
 
-#: radiusd/radiusd.c:789
+#: radiusd/radiusd.c:792
 msgid "Ready to process requests."
 msgstr "Gotowy do obs³ugi wywo³añ."
 
-#: radiusd/radiusd.c:877
+#: radiusd/radiusd.c:880
 msgid "Loading configuration files."
 msgstr "Prze³adowanie plików konfiguracyjnych."
 
-#: radiusd/radiusd.c:887
+#: radiusd/radiusd.c:890
 msgid "Errors reading config file - EXITING"
 msgstr "B³êdy przy odczycie pliku konfiguracyjnego - WYJ¦CIE"
 
-#: radiusd/radiusd.c:1184
+#: radiusd/radiusd.c:1060
 #, c-format
 msgid "socket %s:%d is already assigned for %s"
 msgstr "gniazdo %s:%d ju¿ wyznaczone dla %s"
@@ -1345,29 +1353,29 @@ msgstr "gniazdo %s:%d ju¿ wyznaczone dla %s"
 msgid "INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"
 msgstr "B£¡D WEWNÊTRZNY (%s:%d): atrybut %d ma b³êdny typ (%d)"
 
-#: radiusd/request.c:197
+#: radiusd/request.c:210
 #, c-format
 msgid "Proxy %s request expired in queue"
 msgstr "¿±danie proxy %s wygas³o w kolejce"
 
-#: radiusd/request.c:213
+#: radiusd/request.c:226
 #, c-format
 msgid "Killing unresponsive %s child %lu"
 msgstr "Unicestwienie nieodpowiadaj±cego %s procesu %lu"
 
-#: radiusd/request.c:240
+#: radiusd/request.c:254
 msgid "duplicate request"
 msgstr "podwójne ¿±danie"
 
-#: radiusd/request.c:308
+#: radiusd/request.c:324
 msgid "too many requests in queue"
 msgstr "za du¿o ¿±dañ w kolejce"
 
-#: radiusd/request.c:313
+#: radiusd/request.c:329
 msgid "too many requests of this type"
 msgstr "za du¿o ¿±dañ tego typu"
 
-#: radiusd/request.c:320
+#: radiusd/request.c:336
 msgid "Maximum number of children active"
 msgstr "Uruchomiono maksymalna ilo¶æ procesów"
 
@@ -1417,7 +1425,7 @@ msgstr "%s:%d: za du¿o argumentów w wywo³aniu %s"
 msgid "%s:%d: too few arguments in call to %s"
 msgstr "%s:%d: za ma³o argumentów w wywo³aniu %s"
 
-#: radiusd/rewrite.y:2572
+#: radiusd/rewrite.y:2572 radiusd/tsh.c:210
 msgid "Undefined"
 msgstr "Niezdefiniowany"
 
@@ -1637,91 +1645,91 @@ msgstr "serwer u¶piony na ¿±danie SNMP"
 msgid "server shutting down on SNMP request"
 msgstr "zatrzymywanie serwera na ¿±danie SNMP"
 
-#: radiusd/snmpserv.c:2670
+#: radiusd/snmpserv.c:2672
 #, c-format
 msgid "can't decode SNMP packet from %s: %s"
 msgstr "nie mo¿na zdekodowaæ pakietu SNMP z %s: %s"
 
-#: radiusd/snmpserv.c:2679
+#: radiusd/snmpserv.c:2681
 #, c-format
 msgid "DENIED attempt to access community %s from %s"
 msgstr "ODRZUCONO próbê dostêpu do spo³eczno¶ci %s z %s"
 
-#: radiusd/snmpserv.c:2732
+#: radiusd/snmpserv.c:2734
 #, c-format
 msgid "Dropping SNMP request from client %s: %s"
 msgstr "Zrzucanie ¿±dania SNMP od klienta %s: %s"
 
-#: radiusd/sql.c:284
+#: radiusd/sql.c:289
 #, c-format
 msgid "could not read sqlserver file %s"
 msgstr "nie mo¿na odczytaæ pliku sqlserver %s"
 
-#: radiusd/sql.c:296
+#: radiusd/sql.c:301
 msgid "unrecognized keyword"
 msgstr "nieznane s³owo kluczowe"
 
-#: radiusd/sql.c:304
+#: radiusd/sql.c:309
 msgid "required argument missing"
 msgstr "brak wymaganego argumentu"
 
-#: radiusd/sql.c:328 radiusd/sql.c:355
+#: radiusd/sql.c:333 radiusd/sql.c:360
 msgid "number parse error"
 msgstr "b³±d przetwarzania liczby"
 
-#: radiusd/sql.c:347 radiusd/sql.c:365 radiusd/sql.c:373
+#: radiusd/sql.c:352 radiusd/sql.c:370 radiusd/sql.c:378
 msgid "expected boolean value"
 msgstr "spodziewano warto¶æ logiczn±"
 
-#: radiusd/sql.c:424
+#: radiusd/sql.c:429
 msgid "auth_max_connections is obsolete"
 msgstr "auth_max_connections jest przestarza³y"
 
-#: radiusd/sql.c:431
+#: radiusd/sql.c:436
 msgid "acct_max_connections is obsolete"
 msgstr "acct_max_connections jest przestarza³y"
 
-#: radiusd/sql.c:438
+#: radiusd/sql.c:443
 msgid "query_buffer_size is obsolete"
 msgstr "query_buffer_size jest przestarza³y"
 
-#: radiusd/sql.c:446
+#: radiusd/sql.c:451
 msgid "Unsupported SQL interface"
 msgstr "Interfejs SQL nie jest obs³ugiwany"
 
-#: radiusd/sql.c:516
+#: radiusd/sql.c:518
 msgid "disabling SQL auth: no auth_query specified"
 msgstr "wy³±czenie uwierzytelnienia SQL: brak auth_query"
 
-#: radiusd/sql.c:521
+#: radiusd/sql.c:523
 msgid "SQL auth: no group_query specified"
 msgstr "uwierzytelnienie SQL: brak group_query"
 
-#: radiusd/sql.c:531
+#: radiusd/sql.c:533
 msgid "SQL acct: no acct_start_query specified"
 msgstr "rozliczenie SQL: brak acct_start_query"
 
-#: radiusd/sql.c:537
+#: radiusd/sql.c:539
 msgid "disabling SQL acct: no acct_stop_query specified"
 msgstr "wy³±czanie rozliczenia SQL: brak acct_stop_query"
 
-#: radiusd/sql.c:544
+#: radiusd/sql.c:546
 msgid "SQL acct: no acct_nasdown_query specified"
 msgstr "rozliczenie SQL: brak acct_nasdown_query"
 
-#: radiusd/sql.c:550
+#: radiusd/sql.c:552
 msgid "SQL acct: no acct_nasup_query specified"
 msgstr "rozliczenie SQL: brak acct_nasup_query"
 
-#: radiusd/sql.c:572
+#: radiusd/sql.c:573
 msgid "SQL configuration changed: closing existing connections"
 msgstr "Konfiguracja SQL zmieni³a siê: zamykanie istniej±cych po³±czeñ"
 
-#: radiusd/sql.c:654
+#: radiusd/sql.c:794
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "rad_sql_acct(): brak atrybutu Acct-Status-Type"
 
-#: radiusd/sql.c:731
+#: radiusd/sql.c:871
 #, c-format
 msgid "%s updated %d record"
 msgid_plural "%s updated %d records"
@@ -1729,11 +1737,11 @@ msgstr[0] "na ¿±danie %s zmieni³ siê %d wiersz"
 msgstr[1] "na ¿±danie %s zmieni³y siê %d wiersze"
 msgstr[2] "na ¿±danie %s zmieni³y siê %d wierszy"
 
-#: radiusd/sql.c:752
+#: radiusd/sql.c:892
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr "SQL Auth wpisany w pliku u¿ytkowników, ale nie w pliku sqlserver"
 
-#: radiusd/sql.c:847
+#: radiusd/sql.c:987
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr "SQL: b³êdny operator: %s"
@@ -1881,6 +1889,74 @@ msgstr "Podproces odebra³ niepoprawny nag³ówek (d³ugo¶æ = %d, b³±d = %s)"
 msgid "Child received malformed data"
 msgstr "Podproces odebra³ niepoprawne dane"
 
+#: radiusd/tsh.c:71
+msgid "Print this help screen"
+msgstr "Wy¶wietla ten tekst pomocy"
+
+#: radiusd/tsh.c:72
+msgid "NAS LOGIN SID PORT [IP]"
+msgstr "NAS LOGIN SID PORT [IP]"
+
+#: radiusd/tsh.c:73
+msgid "Query the given NAS"
+msgstr "Odpytanie podanego NAS-u"
+
+#: radiusd/tsh.c:75
+msgid "Enter Guile"
+msgstr "Uruchamia pow³okê Guile"
+
+#: radiusd/tsh.c:77
+msgid "FUNCTION(args..)"
+msgstr "FUNKCJA(argumenty...)"
+
+#: radiusd/tsh.c:78
+msgid "Run given Rewrite function"
+msgstr "Uruchamia podan± funkcje w jêzyku Rewrite"
+
+#: radiusd/tsh.c:79 radlast/radlast.c:122 radtest/main.c:70
+#: radwho/radwho.c:137 radzap/radzap.c:60
+msgid "FILE"
+msgstr "PLIK"
+
+#: radiusd/tsh.c:80
+msgid "Source the given Rewrite file"
+msgstr "Odczytuje podany plik Rewrite"
+
+#: radiusd/tsh.c:81
+msgid "TIMESPAN [DOW [HH [MM]]]"
+msgstr "ZAKRES-CZASU [DZIEÑ-TYDNIA [GODZINA [MINUTY]]]"
+
+#: radiusd/tsh.c:82
+msgid "Check the timespan interval"
+msgstr "Sprawdza zakres czasu"
+
+#: radiusd/tsh.c:83
+msgid "LEVEL"
+msgstr "POZIOM"
+
+#: radiusd/tsh.c:84
+msgid "Quit the shell"
+msgstr "Wyj¶cie z pow³oki"
+
+#: radiusd/tsh.c:155 radiusd/tsh.c:191 radiusd/tsh.c:226 radiusd/tsh.c:245
+#: radiusd/tsh.c:288
+#, c-format
+msgid "%s: wrong number of arguments\n"
+msgstr "%s: b³êdna liczba argumentów\n"
+
+#: radiusd/tsh.c:160
+#, c-format
+msgid "%s: unknown nas\n"
+msgstr "%s: nieznany NAS\n"
+
+#: radiusd/tsh.c:364
+msgid "Not enough memory\n"
+msgstr "Brak pamiêci\n"
+
+#: radiusd/tsh.c:500
+msgid "Bad command\n"
+msgstr "B³êdne polecenie\n"
+
 #: radlast/radlast.c:105
 msgid "report last logins from Radius database."
 msgstr "raport ostatnich logowañ z bazy Radiusa."
@@ -1897,11 +1973,6 @@ msgstr "LICZBA"
 #: radlast/radlast.c:121
 msgid "show at most NUMBER records"
 msgstr "wy¶wietla najwy¿ej tyle rekordów"
-
-#: radlast/radlast.c:122 radtest/main.c:70 radwho/radwho.c:137
-#: radzap/radzap.c:60
-msgid "FILE"
-msgstr "PLIK"
 
 #: radlast/radlast.c:123
 msgid "use FILE as radwtmp"
@@ -1960,7 +2031,7 @@ msgstr "nadal zalogowany"
 msgid "error reading dictionary file"
 msgstr "b³±d odczytu pliku s³ownika"
 
-#: gram.y:455 radtest/gram.y:455
+#: gram.y:492 radtest/gram.y:492
 #, c-format
 msgid "attribute %s has unknown type"
 msgstr "atrybut %s ma nieznany typ"
@@ -1989,7 +2060,9 @@ msgstr "ustawia poziom odpluskwiania"
 msgid ""
 "Read input from FILE. When this option is used, all unknown options in the "
 "form --VAR=VALUE are treated as variable assignments"
-msgstr "Odczyt wej¶cia z PLIKU. Po wyst±pieniu tej opcji wszystkie nieznane opcje w formie --ZMIENNA=WARTO¦Æ s± traktowane jako podstawienia"
+msgstr ""
+"Odczyt wej¶cia z PLIKU. Po wyst±pieniu tej opcji wszystkie nieznane opcje w "
+"formie --ZMIENNA=WARTO¦Æ s± traktowane jako podstawienia"
 
 #: radtest/main.c:77
 msgid "set number of retries"
@@ -2024,7 +2097,7 @@ msgstr "podstawienie: brak zamykaj±cego cudzys³owa\n"
 msgid "assign: invalid IP address: %s\n"
 msgstr "podstawienie: b³êdny adres IP: %s\n"
 
-#: radtest/main.c:468
+#: radtest/main.c:475
 msgid "wrong datatype: expected vector"
 msgstr "b³êdny typ danych: spodziewano wektor"
 

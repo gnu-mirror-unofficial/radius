@@ -228,39 +228,39 @@ rad_accounting_new(authreq, dowtmp)
 		rb_record = 1;
 
 	if (!rb_record &&
-	    (vp = pairfind(authreq->request, DA_USER_NAME)) == NULL) do {
-		int check1 = 0;
-		int check2 = 0;
+	    (vp = pairfind(authreq->request, DA_USER_NAME)) == NULL) {
 
 		/* ComOS (up to and including 3.5.1b20) does not send
-		   standard DV_ACCT_STATUS_TYPE_ACCOUNTING_{ON|OFF} messages.
+		   standard DV_ACCT_STATUS_TYPE_ACCOUNTING_{ON|OFF}
+		   attributes upon reboot or restart.
+		   Instead it sends the packet with regular Start/Stop
+		   attributes, Acct-Session-Id of "00000000" and
+		   Acct-Session-Time of 0 or without Acct-Session-Time
+		   attribute at all.
 
-		   This heuristics checks for one of the following conditions:
-		             * no Acct-Session-Time
-			     * Acct-Session-Time == 0
-		 	     * Acct-Session-Id == "00000000". */
-		if ((vp = pairfind(authreq->request, DA_ACCT_SESSION_TIME))
-		     == NULL || vp->lvalue == 0)
-			check1 = 1;
-		if ((vp = pairfind(authreq->request, DA_ACCT_SESSION_ID))
-		     != NULL && vp->strlength == 8 &&
-		     memcmp(vp->strvalue, "00000000", 8) == 0)
-			check2 = 1;
-		if (check1 == 0 || check2 == 0) {
+		   For backward compatibility we convert such packets to
+		   DV_ACCT_STATUS_TYPE_ACCOUNTING_{ON|OFF} */
+		
+		if ((!(vp = pairfind(authreq->request, DA_ACCT_SESSION_TIME))
+		     || vp->lvalue == 0) &&
+		    (!(vp = pairfind(authreq->request, DA_ACCT_SESSION_ID))
+		     && vp->strlength == 8
+		     && memcmp(vp->strvalue, "00000000", 8) == 0)) {
+
+			radlog(L_INFO, _("converting reboot records"));
+			if (status == DV_ACCT_STATUS_TYPE_STOP)
+				status = DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF;
+			if (status == DV_ACCT_STATUS_TYPE_START)
+				status = DV_ACCT_STATUS_TYPE_ACCOUNTING_ON;
+			rb_record = 1;
+
+		} else {
 #if 0 /* Cisco sometimes sends START records without username. */
 			radlog(L_ERR, _("no username in record"));
 			return -1;
-#else
-			break;
 #endif
 		}
-		radlog(L_INFO, _("converting reboot records"));
-		if (status == DV_ACCT_STATUS_TYPE_STOP)
-			status = DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF;
-		if (status == DV_ACCT_STATUS_TYPE_START)
-			status = DV_ACCT_STATUS_TYPE_ACCOUNTING_ON;
-		rb_record = 1;
-	} while (0);  /* hack to make break in the above code work */
+	} 
 
 	/* Add any specific attributes for this username. */
 	if (!rb_record && vp != NULL) {

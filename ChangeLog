@@ -1,5 +1,19 @@
 2003-06-05  Sergey Poznyakoff 
 
+	* NEWS: Updated.
+	* include/radiusd.h (input_iterate_channels,rpp_count): New
+	functions.
+	* radiusd/input.c (input_iterate_channels): New function.
+	* radiusd/radiusd.c (radiusd_preconfig_hook): Send SIGKILL
+	to those children that do not exit in 2 seconds.
+	(radiusd_postconfig_hook): Warn if no radius sockets were
+	opened.
+	* radiusd/request.c (request_xmit): Extra argument (see previous
+	commit).
+	* radiusd/rpp.c (rpp_count): New function.
+	
+2003-06-05  Sergey Poznyakoff 
+
 	* include/radiusd.h (struct request_class.xmit): Extra argument:
 	the original request data.
 	(radius_req_xmit): Likewise.

@@ -14,22 +14,24 @@ among them. This allows to ensure the stability of the SQL
 connections, make possible the retransmission of the replies when
 duplicate requests arrive.
 
-* configure
+* New features
+
+** Support for Guile version 1.6 and newer.
+
+** Allow several servers per radius realm. 
+
+* Changes to configure
 
 ** --enable-snmp gets optional argument 'compat'.
 
 The radius-specific MIBs use the MIB subtree allocated for GNU project:
 .iso.org.dod.internet.private.enterprises.gnu.radius (.1.3.6.1.4.1.11591.1).
-Previous versions have used the radius-specific subtree for this purpose
+Previous versions have used the GNU radius private subtree for this purpose
 (.iso.org.dod.internet.private.enterprises.gnu-radius = .1.3.6.1.4.1.9163)
 Specifying --enable-snmp=compat enables support of this subtree along with
 the official GNU subtree.
 
-** When --with-mysql option is used, configure first tries to use
-thread-safe version of the mysqlclient library (libmysqlclient_r). If
-it is not found, usual libmysqlclient is used.
-
-* raddb/config changes
+* Changes in raddb/config 
 
 ** New keyword max-processes
 
@@ -59,8 +61,6 @@ See accompanying documentations for more detail (node `Filters').
 The maximum number of connections to the authentication database equals
 the maximum number of processes set by `max-processes' statement. The
 same holds for the number of connections to accounting the database.
-
-* Allow several servers per radius realm. 
 
 * Testsuite completely rewritten.
 

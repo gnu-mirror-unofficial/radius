@@ -24,6 +24,12 @@ SUBDIRS= intl m4 include lib sql snmplib radscm radiusd radwho radzap radlast\
         radscripts elisp raddb db client radtest examples doc po\
         mibs scripts contrib 
 
+update-dictionary:
+	here=`cd $(top_srcdir); pwd`;\
+	cd $$here/raddb;\
+	$(MAKE) update-dictionary;\
+	cd $$here
+
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES=core *~ err out
 

@@ -53,6 +53,24 @@ rewrite_DATA = checknas.rw log-hook.rw
 EXTRA_DIST=$(raddb_files) $(dictionaries) client.conf.in config.in checknas.rw log-hook.rw
 DISTCLEANFILES=client.conf
 
+update-dictionary:
+	if [ -s $(DESTDIR)$(raddbdir)/dictionary.grad.1.0 ]; then \
+		echo "Backup dicionary file found. It seems you have already run make install-dictionary"; \
+	else\
+		$(AWK) -f $(top_srcdir)/scripts/update-dict.awk\
+                    $(DESTDIR)$(raddbdir)/dictionary\
+                    $(top_srcdir)/raddb/dictionary\
+                    $(top_srcdir)/raddb/dict/standard > $@-t; \
+		if test -s $@-t; then \
+		    mv $(DESTDIR)$(raddbdir)/dictionary \
+                      $(DESTDIR)$(raddbdir)/dictionary.grad.1.0; \
+		    mv $@-t $(DESTDIR)$(raddbdir)/dictionary;\
+	        fi; \
+	fi; \
+        for file in $(dictionaries); do \
+		${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(DESTDIR)$(raddbdir)/$$file; \
+        done; 
+
 install-data-local:
 	@if [ ! -d $(DESTDIR)$(raddbdir) ]; then \
 		${INSTALL} -d $(DESTDIR)$(raddbdir); \
@@ -74,8 +92,8 @@ install-data-local:
 		for file in $(raddb_files_600); do \
 			${INSTALL} -m 600 $(top_srcdir)/raddb/$$file $(DESTDIR)$(raddbdir)/$$file; \
 		done; \
+	        for file in $(dictionaries); do \
+		        ${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(DESTDIR)$(raddbdir)/$$file; \
+	        done;\ 
 	fi
-	@for file in $(dictionaries); do \
-		${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(DESTDIR)$(raddbdir)/$$file; \
-	done; 
 

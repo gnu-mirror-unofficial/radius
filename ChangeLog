@@ -1,3 +1,18 @@
+2002-03-19  Sergey Poznyakoff 
+
+	* configure.in: define lisp_LISP only if emacs was found
+	  on the system.
+	* elisp/Makefile.am: Install elisp files only if emacs
+	  is present on the system (bug reported by Andrey Lakhno
+	  <land@dnepr.net>).
+
+	* doc/texinfo/configure.texi: Fixed wrong description of attrib.op
+	  usage.
+	* radiusd/exec.c: Removed #if 0 blocks.
+	* radiusd/radiusd.c: Ignore SIGPIPE.
+	* radiusd/sql.c (attach_sql_connection): Do not call time()
+	  twice.
+
 2002-03-18  Sergey Poznyakoff  
 
 	* radiusd/auth.c: Renamed MACH to AUTH_MACH. It caused

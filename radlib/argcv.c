@@ -81,12 +81,14 @@ argcv_get (const char *command, const char *delim, int *argc, char ***argv)
   save = 0;
   while (argcv_scan (len, command, delim, &start, &end, &save) < len)
       (*argc)++;
+  if (start == end)
+    (*argc)--;
 
   *argv = calloc ((*argc + 1), sizeof (char *));
 
   i = 0;
   save = 0;
-  do
+  for (i = 0; i < *argc; i++)
     {
       int n;
       argcv_scan (len, command, delim, &start, &end, &save);
@@ -107,9 +109,7 @@ argcv_get (const char *command, const char *delim, int *argc, char ***argv)
 	return 1;
       memcpy ((*argv)[i], &command[start], n);
       (*argv)[i][n] = 0;
-      i++;
     }
-  while (save < len);
   (*argv)[i] = NULL;
   return 0;
 }

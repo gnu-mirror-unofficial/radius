@@ -548,7 +548,6 @@ radclient_alloc_server(src)
 	server->addr = src->addr;
 	server->port[0] = src->port[0];
 	server->port[1] = src->port[1];
-	server->port[2] = src->port[2];
 	strncpy(server->secret, src->secret, AUTH_PASS_LEN);
 	server->secret[AUTH_PASS_LEN] = 0;
 	return server;
@@ -565,7 +564,6 @@ radclient_dup_server(src)
 	dest->name = dup_string(src->name);
 	dest->port[0] = src->port[0];
 	dest->port[1] = src->port[1];
-	dest->port[2] = src->port[2];
 	strncpy(dest->secret, src->secret, AUTH_PASS_LEN);
 	return dest;
 }

@@ -19,13 +19,13 @@
 
 #define PORT_AUTH 0
 #define PORT_ACCT 1
-#define PORT_CNTL 2
+#define PORT_MAX  2
 
 typedef struct server {
 	struct server *next;
 	UINT4  addr;
 	char   *name;
-	int    port[3];
+	int    port[PORT_MAX];
 	char   secret[AUTH_PASS_LEN+1];
 } SERVER;
 

@@ -19,6 +19,8 @@ option {
        	acct-dir "/var/acct";
 	# Resolve IP addresses to hostnames (default)
 	resolve yes;
+	# Set characters that may be used in a username.
+	username-chars "{}";
 };
 
 logging {
@@ -32,9 +34,11 @@ logging {
 		print-pid yes;		# Output pid along with the diagnostics
 		print-cons yes;		# Duplicate output to /dev/console
 		print-level yes;	# Output severity level description
+		print-severity yes;     # Synonim for the above
 		print-tid yes;		# Print thread ID.
 		print-milliseconds yes; # Print timestamp with milliseconds
-	};
+		print-category yes;     # Print category description
+	};	
 	# This defines output channel that sends it info to syslog whith
 	# facility `auth' and priority `notice'
 	channel notice {

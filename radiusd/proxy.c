@@ -324,26 +324,25 @@ proxy_send(REQUEST *req)
 
 /* FIXME! server timeout is not used */
 void
-proxy_retry(RADIUS_REQ *radreq, RADIUS_REQ *orig_req, int fd)
+proxy_retry(RADIUS_REQ *req, int fd)
 {
 	VALUE_PAIR *namepair;
 	char *saved_username;
 	
-        namepair = avl_find(radreq->request, DA_USER_NAME);
+        namepair = avl_find(req->request, DA_USER_NAME);
         if (namepair == NULL)
                 return;
 
         saved_username = namepair->avp_strvalue;
-        namepair->avp_strvalue = orig_req->remote_user;
+        namepair->avp_strvalue = req->remote_user;
         namepair->avp_strlength = strlen(namepair->avp_strvalue);
 
-	proxy_send_request(fd, orig_req);
+	proxy_send_request(fd, req);
 
 	/* restore username */
 	namepair->avp_strvalue = saved_username;
         namepair->avp_strlength = strlen(namepair->avp_strvalue);
 }
-
 
 static int
 select_propagated(void *null ARG_UNUSED, VALUE_PAIR *pair)

@@ -473,13 +473,13 @@ radius_respond(REQUEST *req)
 
 	radiusd_sql_clear_cache();
 
+        /* Add any specific attributes for this username. */
+        hints_setup(radreq);
+
 	if (radreq->request->code == RT_ACCESS_REQUEST
 	    && rad_auth_check_username(radreq, req->fd))
 	    return 1;
 	
-        /* Add any specific attributes for this username. */
-        hints_setup(radreq);
-
         /* Check if we support this request */
         switch (radreq->request->code) {
         case RT_ACCESS_REQUEST:

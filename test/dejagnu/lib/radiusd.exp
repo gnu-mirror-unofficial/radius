@@ -68,20 +68,240 @@ proc default_radiusd_start {} {
     global verbose
     global RADIUSD
     global RADIUSFLAGS
-	
-    set radiusd_cmd "$RADIUSD -f -d $base_dir/../raddb -l $base_dir/../log -a $base_dir/../acct -P $base_dir/../log"
+    global RADTEST
+    global radtest_prompt
     
+    set radiusd_cmd "$base_dir/../test.sh --radiusd $RADIUSD --radtest $RADTEST --driver dejagnu"
+
     verbose "Spawning $radiusd_cmd"
-exit
+
     set res [remote_spawn host $radiusd_cmd]
     if { $res < 0 || $res == "" } {
 	perror "Spawning $RADIUSD failed."
 	return 1;
     }
+
+    radius_expect 360 {
+	-re "\[\r\n\]?${radtest_prompt}$" {
+	    verbose "RADIUS initialized."
+	}
+	eof {
+	    perror "(eof) RADIUS not initialized."
+	    remote_close host;
+	    return -1;
+	}
+	timeout	{
+	    perror "(timeout) RADIUS not initialized after 10 seconds."
+	    remote_close host;
+	    return -1
+	}
+	default {
+	    perror "GOT $expect_out(buffer)"
+	}
+    }
+    return 0
 }
 
-proc radius_start {} {
+proc default_radiusd_stop {} {
+
+    verbose "Stopping radiusd"
+    
+}
+
+proc radiusd_start {} {
     return [default_radiusd_start];
 }
     
+proc radiusd_stop {} {
+    return [default_radiusd_stop];
+}
+
+##
+
+proc radius_send { string } {
+    global suppress_flag;
+    if {[info exists suppress_flag] && $suppress_flag} {
+	return "suppressed";
+    }
+    return [remote_send host "$string"]
+}
+
+proc radius_exit {} {
+    return [radius_send "exit"];
+}
+
+proc radius_expect { args } {
+
+    if { [lindex $args 0] == "-notransfer" } {
+	set notransfer -notransfer;
+	set args [lrange $args 1 end];
+    } else {
+	set notransfer "";
+    }
+
+    if { [llength $args] == 2  && [lindex $args 0] != "-re" } {
+	set gtimeout [lindex $args 0];
+	set expcode [list [lindex $args 1]];
+    } else {
+	upvar timeout timeout;
+
+	set expcode $args;
+	if [target_info exists radiusd,timeout] {
+	    if [info exists timeout] {
+		if { $timeout < [target_info radiusd,timeout] } {
+		    set gtimeout [target_info radiusd,timeout];
+		} else {
+		    set gtimeout $timeout;
+		}
+	    } else {
+		set gtimeout [target_info radiusd,timeout];
+	    }
+	}
+
+	if ![info exists gtimeout] {
+	    global timeout;
+	    if [info exists timeout] {
+		set gtimeout $timeout;
+	    } else {
+		# Eeeeew.
+		set gtimeout 60;
+	    }
+	}
+    }
+    global suppress_flag;
+    global remote_suppress_flag;
+    global verbose
+    if [info exists remote_suppress_flag] {
+	set old_val $remote_suppress_flag;
+    }
+    if [info exists suppress_flag] {
+	if { $suppress_flag } {
+	    set remote_suppress_flag 1;
+	}
+    }
+
+    verbose "RUNNING remote_expect host $gtimeout $notransfer" 2
+    set code [catch \
+	{uplevel remote_expect host "$gtimeout $notransfer" $expcode} string];
+    if [info exists old_val] {
+	set remote_suppress_flag $old_val;
+    } else {
+	if [info exists remote_suppress_flag] {
+	    unset remote_suppress_flag;
+	}
+    }
+
+    if {$code == 1} {
+        global errorInfo errorCode;
+
+	return -code error -errorinfo $errorInfo -errorcode $errorCode $string
+    } elseif {$code == 2} {
+	return -code return $string
+    } elseif {$code == 3} {
+	return
+    } elseif {$code > 4} {
+	return -code $code $string
+    }
+}
+
+# radius_test [-message MESSAGE][-default DEF] COMMAND EXPECT 
+# COMMAND   - Command to send to radtest
+# EXPECT    - Sequence to expect in return
+# MESSAGE   - [optional] message to output
+proc radius_test { args } {
+    global verbose
+    global radtest_prompt
+    global suppress_flag;
+    upvar timeout timeout
+
+    set message ""
+    for {set i 0} {$i < [llength $args]} {incr i} {
+	set a [lindex $args $i]
+	if {"$a" == "-default"} {
+	    set default [lindex $args [expr $i + 1]]
+	    incr i
+	} elseif {"$a" == "-message"} {
+	    set message [lindex $args [expr $i + 1]]
+	    incr i
+	} else {
+	    set args [lrange $args $i [llength $args]]
+	    break
+	}
+    }
+    
+    set command [lindex $args 0]
+    set pattern [lindex $args 1]
+    if {"$message" == ""}  {
+	set message [lindex $args 2]
+    }
+
+    if { [info exists suppress_flag] && $suppress_flag } {
+	set do_suppress 1
+    } else {
+	set do_suppress 0
+    }
+
+    if $verbose>2 then {
+	send_user "Sending \"$command\"\n"
+	send_user "Expecting to get \"$pattern\"\n"
+	send_user "Message is \"$message\"\n"
+    }
+    
+    set result -1
+    set string "${command}\n";
+    if { [radius_send "send $string"] != "" } {
+	if { ! $do_suppress } {
+	    perror "Couldn't send $command.";
+	}
+	fail "$message";
+	return $result;
+    }
+
+    if [info exists timeout] {
+	set tmt $timeout;
+    } else {
+	global timeout;
+	if [info exists timeout] {
+	    set tmt $timeout;
+	} else {
+	    set tmt 60;
+	}
+    }
+
+    radius_expect $tmt {
+	-re "$radtest_prompt" {
+	    verbose "GOT PROMPT" 2;
+	}
+	timeout	{
+	    fail "$message (timeout)"
+	    set result 1
+	}
+    }
+
+    set string "${pattern}\n"
+    if { [radius_send "expect ${string}"] != "" } {
+
+	if { [info exists suppress_flag] && ! $suppress_flag } {
+	    perror "Couldn't send expect command.";
+	}
+	fail "$message";
+	return $result;
+    }
+
+    radius_expect $tmt {
+	-re "PASS" {
+	    pass "$message";
+	    set result 0
+	}
+	-re "FAIL" {
+	    fail "$message";
+	    set result 0
+	}
+	timeout	{
+	    fail "$message (timeout)"
+	    set result 1
+	}
+    }
+    return result
+}
 

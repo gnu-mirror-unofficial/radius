@@ -426,8 +426,6 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
                 return -1;
         }
 
-        obstack_init(&stk);
-
         /*
          * Read from the remote system; If no data arrives, we will exit
          * by alarm.
@@ -436,6 +434,7 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
          */
         lastc = 0;
         if ((fp = fdopen(s, "r")) != NULL) {
+        	obstack_init(&stk);
 		if (setjmp(to_env)) {
 			grad_log(L_NOTICE,
 			       _("timed out in waiting for finger response from NAS %s"),
@@ -511,6 +510,8 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
                 }
                 fclose(fp);
         }
+
+	obstack_free(&stk, NULL);
 
         /* restore alarm settings */
         alarm(0);

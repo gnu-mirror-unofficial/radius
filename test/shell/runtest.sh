@@ -135,7 +135,7 @@ else
     done
 fi) |
  $AWK -v VERBOSE=$VERBOSE '
-    /:[0-9]*:.*/ {
+    /^:[0-9]*:.*/ {
 	test_total++;
 	n = split($0,arg,":")
 	ntest = arg[2]
@@ -148,6 +148,28 @@ fi) |
 	    print "Test " ntest
 	next
     }
+    /^%:[0-9]*:.*/ {
+	subtest_total++
+	n = split($0,arg,":")
+	ntest = arg[2]
+	if (n == 4)
+	    pattern = arg[3]
+	else
+	    pattern = "PASS"
+	state = 2
+    }
+    /%:END:.*/ {
+	n = split($0,arg,":")
+	if ($3 == subtest_pass) {
+	    if (VERBOSE) print "PASS"
+	    pass++
+	} else {
+	    if (VERBOSE) print "FAIL (" subtest_fail "/" subtest_total ")"
+	    fail++
+	}
+	subtest_total = subtest_pass = subtest_fail = 0
+	state = 0
+    }	    
     /UNSUPPORTED/ {
 	unsupp++;
 	state = 0;
@@ -166,7 +188,14 @@ fi) |
 	    fail++;
 	state = 0;
 	next
-    }   
+    }
+    state == 2 {
+	if (index($0, pattern))
+	    subtest_pass++;
+	else
+	    subtest_fail++;
+	next
+    }
     END {
      	    print "# of expected passes " pass+0
 	    print "# of failed tests " fail+0

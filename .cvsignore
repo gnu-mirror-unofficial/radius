@@ -12,3 +12,11 @@ config.cache
 config.status
 stamp-h
 *.tar.gz
+config.guess
+config.sub
+install-sh
+mkinstalldirs
+INSTALL
+stamp-h.in
+missing
+depcomp

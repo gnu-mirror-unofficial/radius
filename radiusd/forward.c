@@ -111,25 +111,6 @@ forward_data(RADIUS_SERVER *srv, int type, void *data, size_t size)
 	}
 }
 
-static void
-forward_request_recode(RADIUS_SERVER *srv, struct request_data *r)
-{
-	VALUE_PAIR *vp;
-	void *pdu;
-	size_t size;
-
-	vp = proxy_request_recode(r->req, srv->secret, r->req->vector);
-	size = rad_create_pdu(&pdu, r->req->code,
-			      rad_clt_message_id(srv),
-			      r->req->vector,
-			      srv->secret,
-			      vp,
-			      NULL);
-	avl_free(vp);
-	forward_data(srv, r->type, pdu, size);
-	efree(pdu);
-}
-
 static int
 forwarder(void *item, void *data)
 {
@@ -146,7 +127,9 @@ forwarder(void *item, void *data)
 		
 		if (srv->secret) {
 			secret = srv->secret;
-			vp = proxy_request_recode(r->req, secret,
+			vp = proxy_request_recode(r->req,
+						  avl_dup(r->req->request),
+						  secret,
 						  r->req->vector);
 			plist = vp;
 			id = rad_clt_message_id(srv);

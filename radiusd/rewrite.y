@@ -657,7 +657,7 @@ static int rw_error_free(char *msg);
 #define rw_code_lock() 
 #define rw_code_unlock()
 
-#define AVPLIST(m) ((m)->req ? (m)->req->request : NULL)
+#define AVPLIST(m) ((m)->req ? (m)->req->avlist : NULL)
 %}
 
 
@@ -4333,7 +4333,7 @@ attrasgn_internal(int attr, grad_avp_t *pair, RWSTYPE val)
                  pair = grad_avp_create(attr);
                  if (!pair)
                         rw_error(_("can't create A/V pair"));
-                 grad_avl_add_pair(&mach.req->request, pair);
+                 grad_avl_add_pair(&mach.req->avlist, pair);
          }
 		
 	switch (pair->type) {
@@ -4437,7 +4437,7 @@ void
 rw_attr_delete0()
 {
         int attr = (int) rw_code[mach.pc++];
-	grad_avl_delete(&mach.req->request, attr);
+	grad_avl_delete(&mach.req->avlist, attr);
 }
 
 void
@@ -4448,7 +4448,7 @@ rw_attr_delete()
 
 	assert_request_presence();
 	cpopn(&index);
-	grad_avl_delete_n(&mach.req->request, attr, index);
+	grad_avl_delete_n(&mach.req->avlist, attr, index);
 }
 
 /*

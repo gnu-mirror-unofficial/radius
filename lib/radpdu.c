@@ -491,10 +491,10 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
                 }
         }
 
-        radreq->request = first_pair;
+        radreq->avlist = first_pair;
 #ifdef DEBUG_ONLY
         {
-                grad_avp_t *p = grad_avl_find(radreq->request,
+                grad_avp_t *p = grad_avl_find(radreq->avlist,
 					      DA_NAS_IP_ADDRESS);
                 if (p)
                         radreq->ipaddr = p->avp_lvalue;

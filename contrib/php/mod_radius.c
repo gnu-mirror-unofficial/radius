@@ -485,11 +485,11 @@ ZEND_FUNCTION(radius_query)
 
 	reply_code = reply->code;
 	if (reply_string) {
-		ZVAL_STRING(reply_string, get_reply_message(reply->request),
+		ZVAL_STRING(reply_string, get_reply_message(reply->avlist),
 			    0);
 	}
 	if (reply_pairs) {
-		convert_from_pair_list(reply_pairs, reply->request);
+		convert_from_pair_list(reply_pairs, reply->avlist);
 	}
 
 	grad_avl_free(plist);

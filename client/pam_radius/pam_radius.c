@@ -457,7 +457,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
                 grad_request_free(authreq);
         }
         /* add username to the response (do we need it still?) */
-        grad_avl_add_pair(&authreq->request, grad_avp_dup(namepair));
+        grad_avl_add_pair(&authreq->avlist, grad_avp_dup(namepair));
 
         return PAM_SUCCESS;
 }

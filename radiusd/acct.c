@@ -51,9 +51,9 @@ static int write_wtmp(struct radutmp *ut);
 static int write_nas_restart(int status, grad_uint32_t addr);
 static int check_ts(struct radutmp *ut);
 
-int rad_acct_system(grad_request_t *radreq, int dowtmp);
-int rad_acct_db(grad_request_t *radreq, int authtype);
-int rad_acct_ext(grad_request_t *radreq);
+int rad_acct_system(radiusd_request_t *radreq, int dowtmp);
+int rad_acct_db(radiusd_request_t *radreq, int authtype);
+int rad_acct_ext(radiusd_request_t *radreq);
 
 
 /* Zap a user, or all users on a NAS, from the radutmp file. */
@@ -175,7 +175,7 @@ check_attribute(grad_avp_t *check_pairs, int pair_attr,
 
 /*  Store logins in the RADIUS utmp file. */
 int
-rad_acct_system(grad_request_t *radreq, int dowtmp)
+rad_acct_system(radiusd_request_t *radreq, int dowtmp)
 {
         struct radutmp  ut;
         grad_avp_t *vp;
@@ -192,9 +192,9 @@ rad_acct_system(grad_request_t *radreq, int dowtmp)
 		return 0;
 	
         /* A packet should have Acct-Status-Type attribute */
-        if ((vp = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE))
+        if ((vp = grad_avl_find(radreq->request->avlist, DA_ACCT_STATUS_TYPE))
 	        == NULL) {
-                grad_log_req(L_ERR, radreq,
+                grad_log_req(L_ERR, radreq->request,
                              _("no Acct-Status-Type attribute"));
                 return -1;
         }
@@ -214,7 +214,7 @@ rad_acct_system(grad_request_t *radreq, int dowtmp)
         }
         
         /* Fill in radutmp structure */
-        for (vp = radreq->request; vp; vp = vp->next) {
+        for (vp = radreq->request->avlist; vp; vp = vp->next) {
                 switch (vp->attribute) {
                 case DA_USER_NAME:
                         backslashify(ut.login, vp->avp_strvalue, RUT_NAMESIZE);
@@ -276,7 +276,7 @@ rad_acct_system(grad_request_t *radreq, int dowtmp)
         /* If we didn't find out the NAS address, use the originator's
            IP address. */
         if (nas_address == 0) {
-                nas_address = radreq->ipaddr;
+                nas_address = radreq->request->ipaddr;
                 ut.nas_address = htonl(nas_address);
         }
 
@@ -316,7 +316,7 @@ rad_acct_system(grad_request_t *radreq, int dowtmp)
             status != DV_ACCT_STATUS_TYPE_STOP &&
             status != DV_ACCT_STATUS_TYPE_ALIVE) {
                 grad_log_req(L_NOTICE, 
-                             radreq, _("unknown packet type (%d)"),
+                             radreq->request, _("unknown packet type (%d)"),
                              status);
                 return 0;
         } else if (status == DV_ACCT_STATUS_TYPE_START ||
@@ -343,7 +343,7 @@ rad_acct_system(grad_request_t *radreq, int dowtmp)
         if (!port_seen)
                 return 0;
 
-        if (!ACCT_TYPE(radreq->request, DV_ACCT_TYPE_SYSTEM)) {
+        if (!ACCT_TYPE(radreq->request->avlist, DV_ACCT_TYPE_SYSTEM)) {
                 debug(1,("Acct type system disabled for %s", ut.login));
                 return 0;
         }
@@ -370,8 +370,9 @@ rad_acct_system(grad_request_t *radreq, int dowtmp)
                 stat_update(&ut, status);
         } else {
                 ret = -1;
-                stat_inc(acct, radreq->ipaddr, num_norecords);
-                grad_log_req(L_NOTICE, radreq, _("NOT writing wtmp record"));
+                stat_inc(acct, radreq->request->ipaddr, num_norecords);
+                grad_log_req(L_NOTICE, radreq->request,
+			     _("NOT writing wtmp record"));
         }
         return ret;
 }
@@ -540,7 +541,7 @@ acct_init()
 }
 
 static char *
-make_legacy_detail_filename(grad_request_t *radreq, char *default_filename)
+make_legacy_detail_filename(radiusd_request_t *radreq, char *default_filename)
 {
 	char nasname[GRAD_MAX_LONGNAME];
 	grad_nas_t *cl;
@@ -553,8 +554,8 @@ make_legacy_detail_filename(grad_request_t *radreq, char *default_filename)
            Only if that fails we resort to a name lookup. */
 	
         cl = NULL;
-        ip = radreq->ipaddr;
-        if ((pair = grad_avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
+        ip = radreq->request->ipaddr;
+        if ((pair = grad_avl_find(radreq->request->avlist, DA_NAS_IP_ADDRESS)) != NULL)
                 ip = pair->avp_lvalue;
 
         if (radreq->realm) {
@@ -579,7 +580,7 @@ make_legacy_detail_filename(grad_request_t *radreq, char *default_filename)
 }
 
 static char *
-make_detail_filename(grad_request_t *req, char *template,
+make_detail_filename(radiusd_request_t *req, char *template,
 		     char *default_filename)
 {
 	if (!template) {
@@ -589,7 +590,7 @@ make_detail_filename(grad_request_t *req, char *template,
 		Datum datum;
 
 		/*FIXME: Should be compiled!*/
-		if (rewrite_interpret(template+1, req, &type, &datum)) 
+		if (rewrite_interpret(template+1, req->request, &type, &datum)) 
 			return NULL;
 		if (type != String) {
 			grad_log(L_ERR, "%s: %s",
@@ -602,7 +603,7 @@ make_detail_filename(grad_request_t *req, char *template,
 		char *ptr;
 		
 		obstack_init(&stk);
-		ptr = radius_xlate(&stk, template, req, NULL);
+		ptr = radius_xlate(&stk, template, req->request, NULL);
 		if (ptr) 
 			ptr = grad_estrdup(ptr);
 		obstack_free(&stk, NULL);
@@ -625,7 +626,7 @@ make_path_to_file(char *filename, int perms)
 }
 
 int
-write_detail(grad_request_t *radreq, int authtype, int rtype)
+write_detail(radiusd_request_t *radreq, int authtype, int rtype)
 {
         FILE *outfd;
         char *save;
@@ -683,12 +684,12 @@ write_detail(grad_request_t *radreq, int authtype, int rtype)
                         /* user wants a full (non-stripped) name to appear
                            in detail */
                         
-                        pair = grad_avl_find(radreq->request,
+                        pair = grad_avl_find(radreq->request->avlist,
 					     DA_ORIG_USER_NAME);
                         if (pair) 
                                 pair->name = "User-Name";
                         else
-                                pair = grad_avl_find(radreq->request,
+                                pair = grad_avl_find(radreq->request->avlist,
 						     DA_USER_NAME);
                         if (pair) {
                                 fprintf(outfd, "\t%s\n", 
@@ -698,7 +699,7 @@ write_detail(grad_request_t *radreq, int authtype, int rtype)
                 }
 
                 /* Write each attribute/value to the log file */
-                for (pair = radreq->request; pair; pair = pair->next) {
+                for (pair = radreq->request->avlist; pair; pair = pair->next) {
 			if (pair->prop & GRAD_AP_INTERNAL)
 				continue;
                         switch (pair->attribute) {
@@ -743,29 +744,30 @@ write_detail(grad_request_t *radreq, int authtype, int rtype)
 }
 
 int
-rad_acct_db(grad_request_t *radreq, int authtype)
+rad_acct_db(radiusd_request_t *radreq, int authtype)
 {
         int rc = 0;
 
-        if (acct_detail && ACCT_TYPE(radreq->request, DV_ACCT_TYPE_DETAIL))
+        if (acct_detail
+	    && ACCT_TYPE(radreq->request->avlist, DV_ACCT_TYPE_DETAIL))
                 rc = write_detail(radreq, authtype, R_ACCT);
-        if (ACCT_TYPE(radreq->request, DV_ACCT_TYPE_SQL))
+        if (ACCT_TYPE(radreq->request->avlist, DV_ACCT_TYPE_SQL))
                 radiusd_sql_acct(radreq);
         return rc;
 }
 
 int
-rad_acct_ext(grad_request_t *radreq)
+rad_acct_ext(radiusd_request_t *radreq)
 {
         grad_avp_t *p;
 
 #ifdef USE_SERVER_GUILE
-        for (p = grad_avl_find(radreq->request, DA_SCHEME_ACCT_PROCEDURE);
+        for (p = grad_avl_find(radreq->request->avlist, DA_SCHEME_ACCT_PROCEDURE);
 	     p;
 	     p = grad_avl_find(p->next, DA_SCHEME_ACCT_PROCEDURE))
                 scheme_acct(p->avp_strvalue, radreq);
 #endif
-        for (p = grad_avl_find(radreq->request, DA_ACCT_EXT_PROGRAM);
+        for (p = grad_avl_find(radreq->request->avlist, DA_ACCT_EXT_PROGRAM);
 	     p;
 	     p = grad_avl_find(p->next, DA_ACCT_EXT_PROGRAM)) {
     		switch (p->avp_strvalue[0]) {
@@ -781,7 +783,7 @@ rad_acct_ext(grad_request_t *radreq)
 
 /* run accounting modules */
 int
-rad_accounting(grad_request_t *radreq, int activefd, int verified)
+rad_accounting(radiusd_request_t *radreq, int activefd, int verified)
 {
 	log_open(L_ACCT);
 
@@ -789,11 +791,11 @@ rad_accounting(grad_request_t *radreq, int activefd, int verified)
 
 #if defined(RT_ASCEND_EVENT_REQUEST) && defined(RT_ASCEND_EVENT_RESPONSE)
         /* Special handling for Ascend-Event-Request */
-        if (radreq->code == RT_ASCEND_EVENT_REQUEST) {
+        if (radreq->request->code == RT_ASCEND_EVENT_REQUEST) {
                 write_detail(radreq, verified, R_ACCT);
                 radius_send_reply(RT_ASCEND_EVENT_RESPONSE,
                                   radreq, NULL, NULL, activefd);
-                stat_inc(acct, radreq->ipaddr, num_resp);
+                stat_inc(acct, radreq->request->ipaddr, num_resp);
                 return 0;
         }
 #endif
@@ -804,7 +806,7 @@ rad_accounting(grad_request_t *radreq, int activefd, int verified)
                 /* Now send back an ACK to the NAS. */
                 radius_send_reply(RT_ACCOUNTING_RESPONSE,
                                radreq, NULL, NULL, activefd);
-                stat_inc(acct, radreq->ipaddr, num_resp);
+                stat_inc(acct, radreq->request->ipaddr, num_resp);
                 return 0;
         }
 
@@ -830,7 +832,7 @@ write_nas_restart(int status, grad_uint32_t addr)
 /* Multiple login checking */
 
 int
-radutmp_mlc_collect_user(char *name, grad_request_t *request,
+radutmp_mlc_collect_user(char *name, radiusd_request_t *request,
 			 grad_list_t **sess_list)
 {
         radut_file_t file;
@@ -856,7 +858,7 @@ radutmp_mlc_collect_user(char *name, grad_request_t *request,
 }
 
 int
-radutmp_mlc_collect_realm(grad_request_t *request, grad_list_t **sess_list)
+radutmp_mlc_collect_realm(radiusd_request_t *request, grad_list_t **sess_list)
 {
         radut_file_t file;
 	struct radutmp *up;

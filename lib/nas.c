@@ -173,7 +173,7 @@ grad_nas_request_to_nas(const grad_request_t *radreq)
         grad_uint32_t ipaddr;
         grad_avp_t *pair;
 
-        if ((pair = grad_avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
+        if ((pair = grad_avl_find(radreq->avlist, DA_NAS_IP_ADDRESS)) != NULL)
                 ipaddr = pair->avp_lvalue;
         else
                 ipaddr = radreq->ipaddr;
@@ -188,7 +188,7 @@ grad_nas_request_to_name(const grad_request_t *radreq, char *buf, size_t size)
         grad_nas_t *nas;
         grad_avp_t *pair;
 
-        if ((pair = grad_avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
+        if ((pair = grad_avl_find(radreq->avlist, DA_NAS_IP_ADDRESS)) != NULL)
                 ipaddr = pair->avp_lvalue;
         else
                 ipaddr = radreq->ipaddr;

@@ -52,15 +52,9 @@ grad_request_alloc()
 void 
 grad_request_free(grad_request_t *radreq)
 {
-	grad_list_destroy(&radreq->locus_list, NULL, NULL);
-	grad_free(radreq->remote_user);
-        grad_avl_free(radreq->reply_pairs);
-        grad_free(radreq->reply_msg);
-        grad_avl_free(radreq->server_reply);
-        grad_avl_free(radreq->request);
+        grad_avl_free(radreq->avlist);
         grad_free(radreq);
 }
-
 
 /* Turn printable string (dictionary type DATE) into correct tm struct entries
  */

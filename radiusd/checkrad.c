@@ -142,18 +142,18 @@ checkrad_xlat_new(struct check_instance *checkp, char *template)
 	
 	/* Create a temporary request */
 	req = grad_request_alloc();
-	grad_avl_add_pair(&req->request,
+	grad_avl_add_pair(&req->avlist,
 			  grad_avp_create_string(DA_USER_NAME, checkp->name));
-	grad_avl_add_pair(&req->request,
+	grad_avl_add_pair(&req->avlist,
 			  grad_avp_create_integer(DA_NAS_PORT_ID,
 						  checkp->port));
-	grad_avl_add_pair(&req->request,
+	grad_avl_add_pair(&req->avlist,
 			  grad_avp_create_string(DA_ACCT_SESSION_ID,
 						 checkp->sid));
-	grad_avl_add_pair(&req->request,
+	grad_avl_add_pair(&req->avlist,
 			  grad_avp_create_integer(DA_FRAMED_IP_ADDRESS,
 						  checkp->framed_ip));
-	grad_avl_add_pair(&req->request,
+	grad_avl_add_pair(&req->avlist,
 			  grad_avp_create_integer(DA_NAS_IP_ADDRESS,
 						  checkp->nas_ip));
 

@@ -114,7 +114,7 @@ menu_pairs(char *menu_name, char *menu_selection)
 }       
 
 void
-menu_reply(grad_request_t *radreq, int activefd)
+menu_reply(radiusd_request_t *radreq, int activefd)
 {
         grad_avp_t *pair, *term_pair, *new_pair;
         char menu_name[MAX_MENU_NAME];
@@ -122,7 +122,7 @@ menu_reply(grad_request_t *radreq, int activefd)
         char state_value[MAX_STATE_VALUE];
         char *msg;
 
-        if ((pair = grad_avl_find(radreq->request, DA_STATE)) == NULL
+        if ((pair = grad_avl_find(radreq->request->avlist, DA_STATE)) == NULL
 	    || pair->avp_strvalue == NULL
 	    || strncmp(pair->avp_strvalue, "MENU=", 5) != 0) 
                 return;
@@ -131,12 +131,12 @@ menu_reply(grad_request_t *radreq, int activefd)
         strcpy(menu_name, pair->avp_strvalue + 5);
 
         /* The menu input is in the Password Field */
-        pair = grad_avl_find(radreq->request, DA_USER_PASSWORD);
+        pair = grad_avl_find(radreq->request->avlist, DA_USER_PASSWORD);
         if (!pair) 
                 *menu_input = 0;
         else {
                 /* Decrypt the password in the request. */
-                req_decrypt_password(menu_input, radreq, pair);
+                req_decrypt_password(menu_input, radreq->request, pair);
         }
 
         pair = menu_pairs(menu_name, menu_input);
@@ -165,7 +165,7 @@ menu_reply(grad_request_t *radreq, int activefd)
         if ((term_pair = grad_avl_find(pair, DA_MENU)) != NULL
 	    && strcmp(term_pair->avp_strvalue, "EXIT") == 0) {
                 radius_send_reply(RT_ACCESS_REJECT, radreq,
-                                  radreq->request, NULL, activefd);
+                                  radreq->request->avlist, NULL, activefd);
         } else if (pair) {
                 if (new_pair = grad_avl_find(pair, DA_MENU)) {
                         msg = menu_read_text(new_pair->avp_strvalue);
@@ -179,7 +179,7 @@ menu_reply(grad_request_t *radreq, int activefd)
                 }
         } else {
                 radius_send_reply(RT_ACCESS_REJECT, radreq,
-                                  radreq->request, NULL, activefd);
+                                  radreq->request->avlist, NULL, activefd);
         }
 
         grad_avl_free(pair);

@@ -40,21 +40,24 @@
           radreq      -- The request. */
 
 int
-grad_server_send_reply(int fd, grad_request_t *radreq)
+grad_server_send_reply(int fd, grad_request_t *radreq,
+		       int reply_code, grad_avp_t *reply_pairs,
+		       char *reply_msg)
 {
         void *pdu;
         size_t length;
 
-        length = grad_create_pdu(&pdu, radreq->reply_code,
-				 radreq->id, radreq->authenticator, radreq->secret,
-				 radreq->reply_pairs, radreq->reply_msg);
+        length = grad_create_pdu(&pdu, reply_code,
+				 radreq->id, radreq->authenticator,
+				 radreq->secret,
+				 reply_pairs, reply_msg);
         if (length > 0) {
                 struct sockaddr saremote;
                 struct sockaddr_in *sin;
                 char buf[GRAD_MAX_LONGNAME];
 
                 debug(1, ("Sending %s of id %d to %lx (nas %s)",
-                          grad_request_code_to_name(radreq->reply_code), 
+                          grad_request_code_to_name(reply_code), 
                           radreq->id,
 			  (u_long)radreq->ipaddr,
                           grad_nas_request_to_name(radreq, buf, sizeof buf)));
@@ -73,7 +76,6 @@ grad_server_send_reply(int fd, grad_request_t *radreq)
 	return length;
 }
 
-#ifdef USE_LIVINGSTON_MENUS
 /* Reply to the request with a CHALLENGE. Also attach any user message
    provided and a state value.
    Input: fd          -- Socket descriptor.
@@ -82,17 +84,19 @@ grad_server_send_reply(int fd, grad_request_t *radreq)
           state       -- Value of the State attribute.
 */
 int
-grad_server_send_challenge(int fd, grad_request_t *radreq, char *msg, char *state)
+grad_server_send_challenge(int fd, grad_request_t *radreq,
+			   grad_avp_t *reply_pairs, char *msg, char *state)
 {
         void *pdu;
         size_t length;
         grad_avp_t *p = grad_avp_create_string(DA_STATE, state);
 	grad_avp_t *reply;
 
-	reply = grad_avl_dup(radreq->reply_pairs);
+	reply = grad_avl_dup(reply_pairs);
 	grad_avl_merge(&reply, &p);
         length = grad_create_pdu(&pdu, RT_ACCESS_CHALLENGE, radreq->id,
-				 radreq->authenticator, radreq->secret, reply, msg);
+				 radreq->authenticator, radreq->secret,
+				 reply, msg);
 	grad_avl_free(reply);
 	grad_avl_free(p);
 	
@@ -120,4 +124,4 @@ grad_server_send_challenge(int fd, grad_request_t *radreq, char *msg, char *stat
         grad_avp_free(p);
 	return length;
 }
-#endif
+

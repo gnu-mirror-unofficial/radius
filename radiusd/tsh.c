@@ -362,14 +362,14 @@ tsh_req_define(int argc, char **argv, char *cmd)
 			free(cmd);
 		}
 	}
-	grad_avl_free(test_req.request);
-	test_req.request = vp;
+	grad_avl_free(test_req.avlist);
+	test_req.avlist = vp;
 }
 
 static void
 tsh_req_print(int argc, char **argv, char *cmd)
 {
-	grad_avl_fprint(stdout, "    ", 1, test_req.request);
+	grad_avl_fprint(stdout, "    ", 1, test_req.avlist);
 }
 
 

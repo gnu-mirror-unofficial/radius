@@ -503,7 +503,7 @@ radtest_send(int port, int code, grad_avp_t *avl, grad_symtab_t *cntl)
         p->type = rtv_integer;
         p->datum.number = reply_code;
 
-        reply_list = grad_client_decrypt_pairlist(grad_avl_dup(auth->request),
+        reply_list = grad_client_decrypt_pairlist(grad_avl_dup(auth->avlist),
 						  auth->authenticator, auth->secret);
 
         p = (radtest_variable_t*)grad_sym_lookup(vartab, "REPLY");

@@ -33,7 +33,7 @@
           is used instead of the supplied arguments. */
 
 void
-radius_send_reply(int code, grad_request_t *radreq,
+radius_send_reply(int code, radiusd_request_t *radreq,
 		  grad_avp_t *reply_pairs, char *msg, int fd)
 {
         if (radreq->reply_code == 0) {
@@ -44,7 +44,8 @@ radius_send_reply(int code, grad_request_t *radreq,
                 radreq->reply_msg = grad_estrdup(msg);
 
                 reply = grad_avl_dup(reply_pairs);
-                grad_avl_move_attr(&reply, &radreq->request, DA_PROXY_STATE);
+                grad_avl_move_attr(&reply, &radreq->request->avlist,
+				   DA_PROXY_STATE);
                 
                 switch (code) {
                 case RT_PASSWORD_REJECT:
@@ -55,22 +56,25 @@ radius_send_reply(int code, grad_request_t *radreq,
                         grad_avl_move_attr(&radreq->reply_pairs, &reply, 
 					   DA_PROXY_STATE);
                         grad_avl_free(reply);
-			stat_inc(auth, radreq->ipaddr, num_rejects);
+			stat_inc(auth, radreq->request->ipaddr, num_rejects);
                         break;
 
 		case RT_ACCESS_ACCEPT:
-			stat_inc(auth, radreq->ipaddr, num_accepts);
+			stat_inc(auth, radreq->request->ipaddr, num_accepts);
 			/*FALLTHROUGH*/
 			
                 default:
                         radreq->reply_pairs =
 				grad_client_encrypt_pairlist(reply,
-							     radreq->authenticator,
-							     radreq->secret);
+					     radreq->request->authenticator,
+					     radreq->request->secret);
                 }
         } 
 
-	grad_server_send_reply(fd, radreq);
+	grad_server_send_reply(fd, radreq->request,
+			       radreq->reply_code,
+			       radreq->reply_pairs,
+			       radreq->reply_msg);
 }
 	
 #ifdef USE_LIVINGSTON_MENUS
@@ -81,13 +85,14 @@ radius_send_reply(int code, grad_request_t *radreq,
           state       -- Value of the State attribute.
           fd          -- Socket descriptor. */
 void
-radius_send_challenge(grad_request_t *radreq, char *msg, char *state, int fd)
+radius_send_challenge(radiusd_request_t *radreq, char *msg, char *state, int fd)
 {
 	radreq->reply_pairs = NULL;
-	grad_avl_move_attr(&radreq->reply_pairs, &radreq->request,
+	grad_avl_move_attr(&radreq->reply_pairs, &radreq->request->avlist,
 			   DA_PROXY_STATE);
-	if (grad_server_send_challenge(fd, radreq, msg, state))
-		stat_inc(auth, radreq->ipaddr, num_challenges);
+	if (grad_server_send_challenge(fd, radreq->request,
+				       radreq->reply_pairs, msg, state))
+		stat_inc(auth, radreq->request->ipaddr, num_challenges);
 }
 #endif
 
@@ -98,7 +103,8 @@ validate_client(grad_request_t *radreq)
         CLIENT  *cl;
         
         if ((cl = client_lookup_ip(radreq->ipaddr)) == NULL) {
-                grad_log_req(L_ERR, radreq, _("request from unknown client"));
+                grad_log_req(L_ERR, radreq,
+			     _("request from unknown client"));
                 return -1;
         }
 
@@ -112,14 +118,14 @@ validate_client(grad_request_t *radreq)
 int
 radius_verify_digest(REQUEST *req)
 {
-	grad_request_t *radreq = req->data;
+	radiusd_request_t *radreq = req->data;
 	size_t len = req->rawsize;
         int  secretlen;
         char zero[GRAD_AUTHENTICATOR_LENGTH];
         u_char  *recvbuf;
         u_char digest[GRAD_AUTHENTICATOR_LENGTH];
 
-        secretlen = strlen(radreq->secret);
+        secretlen = strlen(radreq->request->secret);
 
         recvbuf = grad_emalloc(len + secretlen);
         memcpy(recvbuf, req->rawdata, len + secretlen);
@@ -127,7 +133,8 @@ radius_verify_digest(REQUEST *req)
         /* Older clients have the authentication vector set to
            all zeros. Return `1' in that case. */
         memset(zero, 0, sizeof(zero));
-        if (memcmp(radreq->authenticator, zero, GRAD_AUTHENTICATOR_LENGTH) == 0)
+        if (memcmp(radreq->request->authenticator, zero,
+		   GRAD_AUTHENTICATOR_LENGTH) == 0)
                 return REQ_AUTH_ZERO;
 
         /* Zero out the auth_vector in the received packet.
@@ -135,11 +142,12 @@ radius_verify_digest(REQUEST *req)
            and calculate the MD5 sum. This must be the same
            as the original MD5 sum (radreq->authenticator). */
         memset(recvbuf + 4, 0, GRAD_AUTHENTICATOR_LENGTH);
-        memcpy(recvbuf + len, radreq->secret, secretlen);
+        memcpy(recvbuf + len, radreq->request->secret, secretlen);
         grad_md5_calc(digest, recvbuf, len + secretlen);
         grad_free(recvbuf);
         
-        return memcmp(digest, radreq->authenticator, GRAD_AUTHENTICATOR_LENGTH) ?
+        return memcmp(digest, radreq->request->authenticator,
+		      GRAD_AUTHENTICATOR_LENGTH) ?
                           REQ_AUTH_BAD : REQ_AUTH_OK;
 }
 
@@ -150,27 +158,30 @@ int
 radius_auth_req_decode(struct sockaddr_in *sa,
 		       void *input, size_t inputsize, void **output)
 {
-        grad_request_t *radreq;
+	grad_request_t *greq;
+        radiusd_request_t *radreq;
 
 	log_open(L_AUTH);
 
         if (suspend_flag) {
-		stat_inc(auth, radreq->ipaddr, num_dropped);
+		stat_inc(auth, ntohl(sa->sin_addr.s_addr), num_dropped);
                 return 1;
 	}
         
-        radreq = grad_decode_pdu(ntohl(sa->sin_addr.s_addr),
-				 ntohs(sa->sin_port),
-				 input,
-				 inputsize);
-	if (!radreq)
+        greq = grad_decode_pdu(ntohl(sa->sin_addr.s_addr),
+			       ntohs(sa->sin_port),
+			       input,
+			       inputsize);
+	if (!greq)
 		return 1;
 
-        if (validate_client(radreq)) {
-		stat_inc(auth, radreq->ipaddr, num_dropped);
-		grad_request_free(radreq);
+        if (validate_client(greq)) {
+		stat_inc(auth, greq->ipaddr, num_dropped);
+		grad_request_free(greq);
  		return 1;
         }
+	
+	radreq = radiusd_request_alloc(greq);
 	
 	/* RFC 2865 p. 2.2:
 	   The random challenge can either be included in the
@@ -178,12 +189,12 @@ radius_auth_req_decode(struct sockaddr_in *sa,
 	   it can be placed in the Request Authenticator field of
 	   the Access-Request packet. */
 
-	if (grad_avl_find(radreq->request, DA_CHAP_PASSWORD)
-	    && !grad_avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
+	if (grad_avl_find(radreq->request->avlist, DA_CHAP_PASSWORD)
+	    && !grad_avl_find(radreq->request->avlist, DA_CHAP_CHALLENGE)) {
 		grad_avp_t *p = grad_avp_create_binary(DA_CHAP_CHALLENGE,
 						       GRAD_AUTHENTICATOR_LENGTH,
-						       radreq->authenticator);
-		grad_avl_add_pair(&radreq->request, p);
+						       radreq->request->authenticator);
+		grad_avl_add_pair(&radreq->request->avlist, p);
 	}
 	
 	*output = radreq;
@@ -194,29 +205,29 @@ int
 radius_acct_req_decode(struct sockaddr_in *sa,
 		       void *input, size_t inputsize, void **output)
 {
-        grad_request_t *radreq;
+	grad_request_t *greq;
 
 	log_open(L_ACCT);
 	
         if (suspend_flag) {
-		stat_inc(acct, radreq->ipaddr, num_dropped);
+		stat_inc(acct, ntohl(sa->sin_addr.s_addr), num_dropped);
                 return 1;
 	}
         
-        radreq = grad_decode_pdu(ntohl(sa->sin_addr.s_addr),
-				 ntohs(sa->sin_port),
-				 input,
-				 inputsize);
-	if (!radreq)
+        greq = grad_decode_pdu(ntohl(sa->sin_addr.s_addr),
+			       ntohs(sa->sin_port),
+			       input,
+			       inputsize);
+	if (!greq)
 		return 1;
         
-        if (validate_client(radreq)) {
-		stat_inc(acct, radreq->ipaddr, num_dropped);
-		grad_request_free(radreq);
+        if (validate_client(greq)) {
+		stat_inc(acct, greq->ipaddr, num_dropped);
+		grad_request_free(greq);
  		return 1;
         }
 
-	*output = radreq;
+	*output = radiusd_request_alloc(greq);
 	return 0;
 }
 
@@ -233,12 +244,12 @@ decrypt_pair(grad_request_t *req, grad_avp_t *pair)
 }
 
 grad_avp_t *
-radius_decrypt_request_pairs(grad_request_t *req, grad_avp_t *plist)
+radius_decrypt_request_pairs(radiusd_request_t *req, grad_avp_t *plist)
 {
 	grad_avp_t *pair;
 
 	for (pair = plist; pair; pair = pair->next) 
-		decrypt_pair(req, pair);
+		decrypt_pair(req->request, pair);
 	
 	return plist;
 }
@@ -269,7 +280,7 @@ _extract_pairs(grad_request_t *req, int prop)
 	char password[GRAD_STRING_LENGTH+1];
 	int found = 0;
 	
-	for (pair = req->request; !found && pair; pair = pair->next)
+	for (pair = req->avlist; !found && pair; pair = pair->next)
 		if (pair->prop & (prop|GRAD_AP_ENCRYPT)) {
 			found = 1;
 			break;
@@ -278,7 +289,7 @@ _extract_pairs(grad_request_t *req, int prop)
 	if (!found)
 		return NULL;
 
-	newlist = grad_avl_dup(req->request);
+	newlist = grad_avl_dup(req->avlist);
 	for (pair = newlist; pair; pair = pair->next) { 
 		if (pair->prop & prop) 
 			decrypt_pair(req, pair);
@@ -297,14 +308,14 @@ find_prop(grad_nas_t *nas, char *name, int defval)
 int
 radius_req_cmp(void *adata, void *bdata)
 {
-	grad_request_t *a = adata;
-	grad_request_t *b = bdata;
+	grad_request_t *a = ((radiusd_request_t*)adata)->request;
+	grad_request_t *b = ((radiusd_request_t*)bdata)->request;
 	int prop = 0;
 	grad_avp_t *alist = NULL, *blist = NULL, *ap, *bp;
 	int rc;
 	grad_nas_t *nas;
 
-	if (proxy_cmp(a, b) == 0) 
+	if (proxy_cmp((radiusd_request_t*)adata, (radiusd_request_t*)bdata) == 0) 
 		return RCMP_PROXY;
 	
 	if (a->ipaddr != b->ipaddr || a->code != b->code)
@@ -346,8 +357,8 @@ radius_req_cmp(void *adata, void *bdata)
 	alist = _extract_pairs(a, prop);
 	blist = _extract_pairs(b, prop);
 
-	ap = alist ? alist : a->request;
-	bp = blist ? blist : b->request;
+	ap = alist ? alist : a->avlist;
+	bp = blist ? blist : b->avlist;
 	
 	rc = grad_avl_cmp(ap, bp, prop) || grad_avl_cmp(bp, ap, prop);
 
@@ -360,8 +371,8 @@ radius_req_cmp(void *adata, void *bdata)
 		   Notice that the raw data will be replaced by
 		   request_retransmit() */
 		memcpy(a->authenticator, b->authenticator, sizeof(a->authenticator));
-		grad_avl_free(a->request);
-		a->request = grad_avl_dup(b->request);
+		grad_avl_free(a->avlist);
+		a->avlist = grad_avl_dup(b->avlist);
 		a->id = b->id;
 	}
 	
@@ -371,22 +382,22 @@ radius_req_cmp(void *adata, void *bdata)
 void
 radius_req_update(void *req_ptr, void *data_ptr)
 {
-	grad_request_t *req = req_ptr;
+	radiusd_request_t *req = req_ptr;
 	RADIUS_UPDATE *upd = data_ptr;
 
-	if (req->id != upd->id)
+	if (req->request->id != upd->id)
 		return;
 	req->server_id = upd->proxy_id;
 	req->realm = grad_realm_lookup_name(upd->realmname);
 	req->server_no = upd->server_no;
 	debug(1, ("Update request %d: proxy_id=%d, realm=%s, server_no=%d",
-		  req->id,upd->proxy_id,upd->realmname,upd->server_no));
+		  req->request->id,upd->proxy_id,upd->realmname,upd->server_no));
 }
 
 void
 radius_req_free(void *req)
 {
-        grad_request_free((grad_request_t *)req);
+        radiusd_request_free((radiusd_request_t *)req);
 }
 
 /*ARGSUSED*/
@@ -394,24 +405,24 @@ void
 radius_req_drop(int type, void *data, void *orig_data,
 		int fd, const char *status_str)
 {
-	grad_request_t *radreq = data ? data : orig_data;
+	radiusd_request_t *radreq = data ? data : orig_data;
 
-        grad_log_req(L_NOTICE, radreq,
+        grad_log_req(L_NOTICE, radreq->request,
 		     "%s: %s", _("Dropping packet"),  status_str);
 
         switch (type) {
         case R_AUTH:
-                stat_inc(auth, radreq->ipaddr, num_dropped);
+                stat_inc(auth, radreq->request->ipaddr, num_dropped);
                 break;
         case R_ACCT:
-                stat_inc(acct, radreq->ipaddr, num_dropped);
+                stat_inc(acct, radreq->request->ipaddr, num_dropped);
         }
 }
 
 void
 radius_req_xmit(REQUEST *request)
 {
-        grad_request_t *req = request->data;
+        radiusd_request_t *req = request->data;
 
         if (request->code == 0) {
 		if (req->reply_code == 0 && req->realm) {
@@ -419,7 +430,7 @@ radius_req_xmit(REQUEST *request)
 		} else {
 			radius_send_reply(0, req,
 					  NULL, NULL, request->fd);
-			grad_log_req(L_NOTICE, req,
+			grad_log_req(L_NOTICE, req->request,
 				     _("Retransmitting %s reply"),
 				     request_class[request->type].name);
 		} 
@@ -444,7 +455,7 @@ radius_req_failure(int type, struct sockaddr_in *addr)
 }
 
 int
-radius_status_server(grad_request_t *radreq, int fd)
+radius_status_server(radiusd_request_t *radreq, int fd)
 {
 	radius_send_reply(RT_ACCESS_ACCEPT, radreq, NULL,
 			  "GNU Radius server fully operational",
@@ -456,13 +467,13 @@ int
 radius_respond(REQUEST *req)
 {
 	int rc;
-	grad_request_t *radreq = req->data;
+	radiusd_request_t *radreq = req->data;
 
 	forward_request(req->type, radreq);
 
 	radiusd_sql_clear_cache();
 
-	if (radreq->code == RT_ACCESS_REQUEST
+	if (radreq->request->code == RT_ACCESS_REQUEST
 	    && rad_auth_check_username(radreq, req->fd))
 	    return 1;
 	
@@ -470,9 +481,9 @@ radius_respond(REQUEST *req)
         hints_setup(radreq);
 
         /* Check if we support this request */
-        switch (radreq->code) {
+        switch (radreq->request->code) {
         case RT_ACCESS_REQUEST:
-                stat_inc(auth, radreq->ipaddr, num_access_req);
+                stat_inc(auth, radreq->request->ipaddr, num_access_req);
                 if (rad_auth_init(radreq, req->fd) < 0) 
                         return 1;
                 if (proxy_send(req) != 0) 
@@ -480,7 +491,7 @@ radius_respond(REQUEST *req)
 		break;
 		
         case RT_ACCOUNTING_REQUEST:
-		stat_inc(acct, radreq->ipaddr, num_req);
+		stat_inc(acct, radreq->request->ipaddr, num_req);
                 if (proxy_send(req) != 0) 
                         return 0;
 		break;
@@ -491,11 +502,11 @@ radius_respond(REQUEST *req)
 	case RT_ACCESS_CHALLENGE:
 		if (!req->orig) {
 			char buf[GRAD_MAX_SHORTNAME];
-			grad_log_req(L_PROXY|L_ERR, radreq,
+			grad_log_req(L_PROXY|L_ERR, radreq->request,
 				     _("Unrecognized proxy reply from server %s, proxy ID %d"),
-				     client_lookup_name(radreq->ipaddr,
+				     client_lookup_name(radreq->request->ipaddr,
 						        buf, sizeof buf), 
-				     radreq->id);
+				     radreq->request->id);
 			return 1;
 		}
 		
@@ -505,7 +516,7 @@ radius_respond(REQUEST *req)
 		break;
 	}
 
-        switch (radreq->code) {
+        switch (radreq->request->code) {
         case RT_ACCESS_REQUEST:
 		rad_authenticate(radreq, req->fd);
                 break;
@@ -514,7 +525,7 @@ radius_respond(REQUEST *req)
 		/* Check the request authenticator. */
 		rc = radius_verify_digest(req);
 		if (rc == REQ_AUTH_BAD) 
-			stat_inc(acct, radreq->ipaddr, num_bad_sign);
+			stat_inc(acct, radreq->request->ipaddr, num_bad_sign);
 		rad_accounting(radreq, req->fd, rc);
                 break;
 
@@ -523,9 +534,10 @@ radius_respond(REQUEST *req)
 		break;
 					
         default:
-                stat_inc(acct, radreq->ipaddr, num_unknowntypes);
-                grad_log_req(L_NOTICE, radreq, _("unknown request code %d"), 
-                             radreq->code); 
+                stat_inc(acct, radreq->request->ipaddr, num_unknowntypes);
+                grad_log_req(L_NOTICE, radreq->request,
+			     _("unknown request code %d"), 
+                             radreq->request->code); 
                 return -1;
         }       
 
@@ -535,9 +547,9 @@ radius_respond(REQUEST *req)
 }
 
 void
-radius_req_register_locus(grad_request_t *req, grad_locus_t *loc)
+radius_req_register_locus(radiusd_request_t *req, grad_locus_t *loc)
 {
-	switch (req->code) {
+	switch (req->request->code) {
 	case RT_ACCESS_REQUEST:
 	case RT_ACCESS_ACCEPT:
 	case RT_ACCESS_REJECT:
@@ -612,7 +624,7 @@ _trace_path_compose(void *item, void *data)
 }
 
 void
-radius_trace_path(grad_request_t *req)
+radius_trace_path(radiusd_request_t *req)
 {
 	struct trace_data td;
 	char *p;
@@ -624,6 +636,6 @@ radius_trace_path(grad_request_t *req)
 	td.file = NULL;
 	grad_list_iterate(req->locus_list, _trace_path_compose, &td);
 	p = obstack_finish(&td.stk);
-	grad_log_req(L_INFO, req, _("rule trace: %s"), p);
+	grad_log_req(L_INFO, req->request, _("rule trace: %s"), p);
 	obstack_free(&td.stk, NULL);
 }

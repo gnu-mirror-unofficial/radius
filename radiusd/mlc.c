@@ -64,7 +64,7 @@ radius_mlc_enabled_p()
 }
 
 int
-radius_mlc_collect_user(char *name, grad_request_t *request,
+radius_mlc_collect_user(char *name, radiusd_request_t *request,
 			grad_list_t **sess_list)
 {
 	debug(20,("Entered"));
@@ -72,7 +72,7 @@ radius_mlc_collect_user(char *name, grad_request_t *request,
 }
 
 int
-radius_mlc_collect_realm(grad_request_t *request, grad_list_t **sess_list)
+radius_mlc_collect_realm(radiusd_request_t *request, grad_list_t **sess_list)
 {
 	debug(20,("Entered"));
 	return mlc_disptab->collect_realm(request, sess_list);
@@ -159,7 +159,7 @@ utmp_free(void *item, void *data ARG_UNUSED)
       0 == OK,
       1 == user exceeds its simultaneous-use parameter */
 int
-radius_mlc_user(char *name, grad_request_t *request,
+radius_mlc_user(char *name, radiusd_request_t *request,
 		size_t maxsimul, size_t *pcount)
 {
 	void *mlc;
@@ -182,7 +182,7 @@ radius_mlc_user(char *name, grad_request_t *request,
         if (count >= maxsimul) {
 		grad_iterator_t *itr;
 		grad_uint32_t ipno = 0;
-		grad_avp_t *fra = grad_avl_find(request->request,
+		grad_avp_t *fra = grad_avl_find(request->request->avlist,
 						DA_FRAMED_IP_ADDRESS);
 		if (fra)
 			ipno = htonl(fra->avp_lvalue);
@@ -219,7 +219,7 @@ radius_mlc_user(char *name, grad_request_t *request,
 }
 
 int
-radius_mlc_realm(grad_request_t *request)
+radius_mlc_realm(radiusd_request_t *request)
 {
         size_t count;
         struct radutmp *up;

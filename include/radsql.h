@@ -89,22 +89,6 @@ struct sql_connection {
 	size_t tail;
 };
 
-int radiusd_sql_config();
-void radiusd_sql_shutdown();
-void radiusd_sql_clear_cache();
-void radiusd_sql_acct(grad_request_t *req);
-int radiusd_sql_checkgroup(grad_request_t *req, char *groupname);
-int radiusd_sql_check_attr_query(grad_request_t *req, grad_avp_t **check_pairs);
-int radiusd_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs);
-void radiusd_sql_auth_result_query(grad_request_t *req, int fail);
-void radiusd_sql_cleanup(int type, void *req);
-
-char *radiusd_sql_pass(grad_request_t *req, char *data);
-	
-# ifdef RADIUS_SERVER_GUILE
-SCM sql_exec_query(int type, char *query);
-# endif
-
 /* Dispatcher routines */
 void disp_init();
 int disp_sql_interface_index(char *name);
@@ -134,15 +118,4 @@ typedef struct {
 	int (*n_columns)(struct sql_connection *conn, void *data, size_t *np);
 } SQL_DISPATCH_TAB;
 
-#else
-# define sql_init()
-# define radiusd_sql_config() 0
-# define radiusd_sql_shutdown()
-# define radiusd_sql_clear_cache()
-# define radiusd_sql_acct(req)
-# define radiusd_sql_checkgroup(req, groupname) 0
-# define radiusd_sql_check_attr_query(req, check_pairs) 0
-# define radiusd_sql_reply_attr_query(req, reply_pairs)
-# define radiusd_sql_auth_result_query(req, fail)
-# define radiusd_sql_cleanup (void (*)(int, void *)) NULL
 #endif

@@ -45,6 +45,7 @@
 #include <radiusd.h>
 #include <checkrad.h>
 #include <radius/raddbm.h>
+#include <rewrite.h>
 
 typedef struct locus_name {
 	struct locus_name *next;
@@ -96,21 +97,21 @@ static grad_keyword_t op_tab[] = {
         { 0 }
 };
 
-int paircmp(grad_request_t *req, grad_avp_t *check, char *pusername);
+int paircmp(radiusd_request_t *req, grad_avp_t *check, char *pusername);
 int fallthrough(grad_avp_t *vp);
 /*
  * Static declarations
  */
 static int portcmp(grad_avp_t *check, grad_avp_t *request);
-static int groupcmp(grad_request_t *req, char *groupname, char *username);
+static int groupcmp(radiusd_request_t *req, char *groupname, char *username);
 static int uidcmp(grad_avp_t *check, char *username);
 static void matchrule_free(grad_matching_rule_t **pl);
-static int matches(grad_request_t *req, char *name, grad_matching_rule_t *pl, char *matchpart);
-static int huntgroup_match(grad_request_t *req, char *huntgroup);
-static int user_find_sym(char *name, grad_request_t *req, 
+static int matches(radiusd_request_t *req, char *name, grad_matching_rule_t *pl, char *matchpart);
+static int huntgroup_match(radiusd_request_t *req, char *huntgroup);
+static int user_find_sym(char *name, radiusd_request_t *req, 
                          grad_avp_t **check_pairs, grad_avp_t **reply_pairs);
 #ifdef USE_DBM
-int user_find_db(char *name, grad_request_t *req,
+int user_find_db(char *name, radiusd_request_t *req,
                         grad_avp_t **check_pairs, grad_avp_t **reply_pairs);
 #endif
 static grad_list_t *file_read(int cf_file, char *name);
@@ -306,14 +307,14 @@ user_next(USER_LOOKUP *lptr)
 }
 
 
-static int match_user(User_symbol *sym, grad_request_t *req,
+static int match_user(User_symbol *sym, radiusd_request_t *req,
                       grad_avp_t **check_pairs, grad_avp_t **reply_pairs);
 
 /*
  * Find matching profile in the hash table
  */
 int
-user_find_sym(char *name, grad_request_t *req,
+user_find_sym(char *name, radiusd_request_t *req,
               grad_avp_t **check_pairs, grad_avp_t **reply_pairs)
 {
         int found = 0;
@@ -338,7 +339,7 @@ user_find_sym(char *name, grad_request_t *req,
 }
 
 int
-match_user(User_symbol *sym, grad_request_t *req,
+match_user(User_symbol *sym, radiusd_request_t *req,
            grad_avp_t **check_pairs, grad_avp_t **reply_pairs)
 {
         grad_avp_t *p;
@@ -406,7 +407,7 @@ match_user(User_symbol *sym, grad_request_t *req,
  * is done by the caller. user_find() only compares attributes.
  */
 int
-user_find(char *name, grad_request_t *req,
+user_find(char *name, radiusd_request_t *req,
           grad_avp_t **check_pairs, grad_avp_t **reply_pairs)
 {
         int found = 0;
@@ -601,12 +602,13 @@ userparse(char *buffer, grad_avp_t **first_pair, char **errmsg)
 }
 
 static void
-avl_eval_rewrite (grad_request_t *req, grad_matching_rule_t *rule,
+avl_eval_rewrite (radiusd_request_t *req, grad_matching_rule_t *rule,
 		  grad_avp_t *p)
 {
 	for (; p; p = p->next) {
 		if (p->attribute == DA_REWRITE_FUNCTION
-		    && (rewrite_eval(p->avp_strvalue, req, NULL, NULL))) {
+		    && (rewrite_eval(p->avp_strvalue, req->request,
+				     NULL, NULL))) {
 			grad_log_loc(L_ERR, &rule->loc, "%s(): %s",
 				     p->avp_strvalue,
 				     _("not defined"));
@@ -615,7 +617,7 @@ avl_eval_rewrite (grad_request_t *req, grad_matching_rule_t *rule,
 }
 
 void
-rule_eval_rewrite (grad_request_t *req, grad_matching_rule_t *rule)
+rule_eval_rewrite (radiusd_request_t *req, grad_matching_rule_t *rule)
 {
 	avl_eval_rewrite (req, rule, rule->rhs);
 	avl_eval_rewrite (req, rule, rule->lhs);
@@ -628,7 +630,7 @@ rule_eval_rewrite (grad_request_t *req, grad_matching_rule_t *rule)
 /* Provide a support for backward-compatible attributes Replace-User-Name
    and Rewrite-Function */
 static void
-hints_eval_compat(grad_request_t *req, grad_avp_t *name_pair, grad_matching_rule_t *rule)
+hints_eval_compat(radiusd_request_t *req, grad_avp_t *name_pair, grad_matching_rule_t *rule)
 {
         grad_avp_t      *tmp;
 	
@@ -640,7 +642,7 @@ hints_eval_compat(grad_request_t *req, grad_avp_t *name_pair, grad_matching_rule
  
 		obstack_init(&hints_stk);
 		ptr = radius_xlate(&hints_stk, tmp->avp_strvalue,
-				   req, NULL);
+				   req->request, NULL);
 		if (ptr) 
 			grad_string_replace(&name_pair->avp_strvalue, ptr);
 		obstack_free(&hints_stk, NULL);
@@ -653,9 +655,9 @@ hints_eval_compat(grad_request_t *req, grad_avp_t *name_pair, grad_matching_rule
    based on the pattern of the username and the contents of the incoming
    request */
 int
-hints_setup(grad_request_t *req)
+hints_setup(radiusd_request_t *req)
 {
-        grad_avp_t      *request_pairs = req->request;
+        grad_avp_t      *request_pairs = req->request->avlist;
         char            newname[GRAD_STRING_LENGTH];
         grad_avp_t      *name_pair;
         grad_avp_t      *orig_name_pair;
@@ -665,7 +667,7 @@ hints_setup(grad_request_t *req)
 	grad_iterator_t *itr;
 	
         /* Add Proxy-Replied pair if necessary */
-        switch (req->code) {
+        switch (req->request->code) {
         case RT_ACCESS_ACCEPT:
         case RT_ACCESS_REJECT:
         case RT_ACCOUNTING_RESPONSE:
@@ -779,7 +781,7 @@ hints_setup(grad_request_t *req)
                         grad_avp_free(name_pair);
         }
 
-        req->request = request_pairs;
+        req->request->avlist = request_pairs;
         
         return 0;
 }
@@ -792,7 +794,7 @@ hints_setup(grad_request_t *req)
  * See if the huntgroup matches.
  */
 int
-huntgroup_match(grad_request_t *req, char *huntgroup)
+huntgroup_match(radiusd_request_t *req, char *huntgroup)
 {
         grad_matching_rule_t *rule;
 	grad_iterator_t *itr;
@@ -822,7 +824,7 @@ huntgroup_match(grad_request_t *req, char *huntgroup)
  *         -1 on error.
  */
 int
-huntgroup_access(grad_request_t *radreq, grad_locus_t *loc)
+huntgroup_access(radiusd_request_t *radreq, grad_locus_t *loc)
 {
         grad_avp_t      *pair;
         grad_matching_rule_t   *rule;
@@ -1178,7 +1180,7 @@ uidcmp(grad_avp_t *check, char *username)
 }
 
 static int
-system_groupcmp(grad_request_t *req, char *groupname, char *username)
+system_groupcmp(radiusd_request_t *req, char *groupname, char *username)
 {
         struct passwd pw, *pwd;
         struct group *grp;
@@ -1204,7 +1206,7 @@ system_groupcmp(grad_request_t *req, char *groupname, char *username)
 
 /* Return 0 if user `username' is a member of group `groupname' */
 int
-groupcmp(grad_request_t *req, char *groupname, char *username)
+groupcmp(radiusd_request_t *req, char *groupname, char *username)
 {
         int retval;
 
@@ -1293,7 +1295,7 @@ server_attr(int attr)
  * Return 0 on match.
  */
 int
-paircmp(grad_request_t *request, grad_avp_t *check, char *pusername)
+paircmp(radiusd_request_t *request, grad_avp_t *check, char *pusername)
 {
         grad_avp_t *check_item = check;
         grad_avp_t *auth_item;
@@ -1321,7 +1323,7 @@ paircmp(grad_request_t *request, grad_avp_t *check, char *pusername)
                 /*
                  *      See if this item is present in the request.
                  */
-                for (auth_item = request->request; auth_item; 
+                for (auth_item = request->request->avlist; auth_item; 
                                 auth_item = auth_item->next) {
                         debug(30, ("trying %d", auth_item->attribute));
 
@@ -1576,7 +1578,7 @@ wild_match(char *expr, char *name, char *return_name)
  * Match a username with a wildcard expression.
  */
 int
-matches(grad_request_t *req, char *name, grad_matching_rule_t *pl, char *matchpart)
+matches(radiusd_request_t *req, char *name, grad_matching_rule_t *pl, char *matchpart)
 {
 	memcpy(matchpart, name, GRAD_STRING_LENGTH);
         if (strncmp(pl->name, "DEFAULT", 7) == 0

@@ -109,7 +109,7 @@ SCM_DEFINE(rad_send_internal, "rad-send-internal", 3, 0, 0,
          * Construct scheme return values
          */
         scm_auth = SCM_MAKINUM(auth->code);
-        scm_plist = radscm_avl_to_list(auth->request);
+        scm_plist = radscm_avl_to_list(auth->avlist);
         
         return scm_cons(scm_auth, scm_plist);
 }

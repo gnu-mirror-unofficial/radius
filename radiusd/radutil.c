@@ -326,11 +326,11 @@ radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
                                 break;
 				
                         case 'D':
-                                curtime_to_str(obp, req->request, 0);
+                                curtime_to_str(obp, req->avlist, 0);
                                 break;
 				
                         case 'G':
-                                curtime_to_str(obp, req->request, 1);
+                                curtime_to_str(obp, req->avlist, 1);
                                 break;
 				
                         case 'f': /* Framed IP address */
@@ -340,7 +340,8 @@ radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
                                 break;
 				
                         case 'n': /* NAS IP address */
-                                attrno_to_str(obp, req, req->request,
+                                attrno_to_str(obp, req,
+					      req->avlist,
                                               DA_NAS_IP_ADDRESS, NULL,
 					      escape);
                                 break;
@@ -352,13 +353,13 @@ radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
                                 break;
 				
                         case 'p': /* Port number */
-                                attrno_to_str(obp, req, req->request,
+                                attrno_to_str(obp, req, req->avlist,
                                               DA_NAS_PORT_ID, NULL,
 					      escape);
                                 break;
 				
                         case 'u': /* User name */
-                                attrno_to_str(obp, req, req->request,
+                                attrno_to_str(obp, req, req->avlist,
                                               DA_USER_NAME, NULL,
 					      escape);
                                 break;
@@ -370,7 +371,7 @@ radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
                                 break;
 				
                         case 'i': /* Calling station ID */
-                                attrno_to_str(obp, req, req->request,
+                                attrno_to_str(obp, req, req->avlist,
                                               DA_CALLING_STATION_ID, NULL,
 					      escape);
                                 break;
@@ -382,7 +383,7 @@ radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
                                 break;
 				
                         case 's': /* Speed */
-                                attrno_to_str(obp, req, req->request,
+                                attrno_to_str(obp, req, req->avlist,
                                               DA_CONNECT_INFO, NULL,
 					      escape);
                                 break;
@@ -394,7 +395,7 @@ radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
 				} 
                                 /* Request pair */
                                 da = parse_dict_attr(p, &p, &defval);
-                                attr_to_str(obp, req, req->request,
+                                attr_to_str(obp, req, req->avlist,
                                             da, defval, escape);
                                 grad_free(defval);
                                 break;
@@ -517,7 +518,7 @@ pair_set_value(grad_avp_t *p, Datatype type, Datum *datum)
 }
 
 int
-radius_eval_avl(grad_request_t *req, grad_avp_t *p)
+radius_eval_avl(radiusd_request_t *req, grad_avp_t *p)
 {
 	int errcnt = 0;
 	for (; p; p = p->next) {
@@ -530,7 +531,7 @@ radius_eval_avl(grad_request_t *req, grad_avp_t *p)
 			
 		case grad_eval_interpret:
 			if (rewrite_interpret(p->avp_strvalue,
-					      req, &type, &datum)) {
+					      req->request, &type, &datum)) {
                                 errcnt++;
                                 continue;
                         }
@@ -538,8 +539,8 @@ radius_eval_avl(grad_request_t *req, grad_avp_t *p)
 			break;
 
 		case grad_eval_compiled:
-			if (rewrite_eval(p->avp_strvalue,
-					 req, &type, &datum)) {
+ 			if (rewrite_eval(p->avp_strvalue,
+					 req->request, &type, &datum)) {
                                 errcnt++;
                                 continue;
                         }
@@ -554,5 +555,22 @@ radius_eval_avl(grad_request_t *req, grad_avp_t *p)
 	return errcnt++;
 }
 
+radiusd_request_t *
+radiusd_request_alloc(grad_request_t *req)
+{
+	radiusd_request_t *ret = grad_emalloc(sizeof(*ret));
+	ret->request = req;
+	return ret;
+}
 
+void
+radiusd_request_free(radiusd_request_t *radreq)
+{
+	grad_list_destroy(&radreq->locus_list, NULL, NULL);
+	grad_free(radreq->remote_user);
+        grad_avl_free(radreq->reply_pairs);
+        grad_free(radreq->reply_msg);
+        grad_avl_free(radreq->server_reply);
+	grad_request_free(radreq->request);
+}
 

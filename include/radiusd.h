@@ -30,6 +30,35 @@
 /* Server data structures */
 struct radutmp; /* declared in radutmp.h */
 
+/* Struct radiusd_request expands grad_request_t by adding server-specific
+   fields to it. */
+typedef struct radiusd_request {
+	grad_request_t *request;
+	
+        /* Saved reply values */
+        int           reply_code;   /* Reply code */
+        grad_avp_t    *reply_pairs; /* Reply pairs */
+        char          *reply_msg;   /* Reply message */
+	                            /* FIXME: should probably be
+			 	       incorporated to reply_pairs
+				       at once */
+	/* List of cfg file locations that lead to the decision on this
+	   request */
+	grad_list_t   *locus_list;
+	
+        /* Proxy support fields */
+        grad_realm_t  *realm;       
+        int           validated;     /* Already md5 checked */
+	int           server_no;
+	int           attempt_no;
+        grad_uint32_t server_id;     /* Proxy ID of the packet */
+	char          *remote_user;  /* Remote username */
+        u_char        remote_auth[GRAD_AUTHENTICATOR_LENGTH];
+	                             /* Remote request authenticator */	
+        int           server_code;   /* Reply code from other srv */
+        grad_avp_t    *server_reply; /* Reply from other server */
+} radiusd_request_t;
+
 enum reload_what {
         reload_config,
         reload_all,
@@ -400,19 +429,19 @@ void radiusd_close_channel(int fd);
 int radius_get_user_ids(RADIUS_USER *usr, const char *name);
 int radius_switch_to_user(RADIUS_USER *usr);
 int radius_exec_command(char *cmd);
-int radius_exec_program(char *, grad_request_t *, grad_avp_t **, int);
+int radius_exec_program(char *, radiusd_request_t *, grad_avp_t **, int);
 void filter_cleanup(pid_t pid, int status);
-int filter_auth(char *name, grad_request_t *req, grad_avp_t **reply_pairs);
-int filter_acct(char *name, grad_request_t *req);
+int filter_auth(char *name, radiusd_request_t *req, grad_avp_t **reply_pairs);
+int filter_acct(char *name, radiusd_request_t *req);
 int filters_stmt_term(int finish, void *block_data, void *handler_data);
 extern struct cfg_stmt filters_stmt[];
 
 /* scheme.c */
 void scheme_main();
 void scheme_load_path(char *pathname);
-int scheme_auth(char *procname, grad_request_t *req,
+int scheme_auth(char *procname, radiusd_request_t *req,
                 grad_avp_t *user_check, grad_avp_t **user_reply_ptr);
-int scheme_acct(char *procname, grad_request_t *req);
+int scheme_acct(char *procname, radiusd_request_t *req);
 int scheme_eval_boolean_expr(char *expr);
 void scheme_read_eval_loop();
 void scheme_redirect_output();
@@ -443,8 +472,8 @@ extern struct cfg_stmt logging_stmt[];
 #define REQ_AUTH_ZERO 1
 #define REQ_AUTH_BAD  2
 
-void radius_send_reply(int, grad_request_t *, grad_avp_t *, char *, int);
-void radius_send_challenge(grad_request_t *radreq, char *msg, char *state, int fd);
+void radius_send_reply(int, radiusd_request_t *, grad_avp_t *, char *, int);
+void radius_send_challenge(radiusd_request_t *radreq, char *msg, char *state, int fd);
 int radius_verify_digest(REQUEST *req);
 
 int radius_auth_req_decode(struct sockaddr_in *sa,
@@ -459,9 +488,9 @@ void radius_req_xmit(REQUEST *request);
 int radius_req_failure(int type, struct sockaddr_in *addr);
 void radius_req_update(void *req_ptr, void *data_ptr);
 int radius_respond(REQUEST *req);
-void radius_req_register_locus(grad_request_t *req, grad_locus_t *loc);
-void radius_trace_path(grad_request_t *req);
-grad_avp_t *radius_decrypt_request_pairs(grad_request_t *req, grad_avp_t *pair);
+void radius_req_register_locus(radiusd_request_t *req, grad_locus_t *loc);
+void radius_trace_path(radiusd_request_t *req);
+grad_avp_t *radius_decrypt_request_pairs(radiusd_request_t *req, grad_avp_t *pair);
 void radius_destroy_pairs(grad_avp_t **p);
 
 /* shmem.c */
@@ -475,10 +504,10 @@ int pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg);
 
 /* proxy.c */
 int proxy_send(REQUEST *req);
-int proxy_receive(grad_request_t *radreq, grad_request_t *oldreq, int activefd);
-void proxy_retry(grad_request_t *radreq, int fd);
-int proxy_cmp(grad_request_t *qr, grad_request_t *r);
-grad_avp_t *proxy_request_recode(grad_request_t *radreq, grad_avp_t *plist,
+int proxy_receive(radiusd_request_t *radreq, radiusd_request_t *oldreq, int activefd);
+void proxy_retry(radiusd_request_t *radreq, int fd);
+int proxy_cmp(radiusd_request_t *qr, radiusd_request_t *r);
+grad_avp_t *proxy_request_recode(radiusd_request_t *radreq, grad_avp_t *plist,
 				 u_char *secret, u_char *authenticator);
 
 /* menu.c */
@@ -489,27 +518,27 @@ grad_avp_t *proxy_request_recode(grad_request_t *radreq, grad_avp_t *plist,
 #define MAX_STATE_VALUE                 128
 #define RAD_BUFFER_SIZE                 4096
 
-void menu_reply(grad_request_t *radreq, int fd);
+void menu_reply(radiusd_request_t *radreq, int fd);
 char *menu_read_text(char *menu_name);
 
 /* acct.c */
 void system_acct_init();
 void acct_init();
-int rad_accounting(grad_request_t *, int, int);
+int rad_accounting(radiusd_request_t *, int, int);
 int radzap(grad_uint32_t nas, int port, char *user, time_t t);
-int write_detail(grad_request_t *radreq, int authtype, int rtype);
+int write_detail(radiusd_request_t *radreq, int authtype, int rtype);
 
-int radutmp_mlc_collect_user(char *name, grad_request_t *request,
+int radutmp_mlc_collect_user(char *name, radiusd_request_t *request,
 			     grad_list_t **sess_list);
-int radutmp_mlc_collect_realm(grad_request_t *request,
+int radutmp_mlc_collect_realm(radiusd_request_t *request,
 			      grad_list_t **sess_list);
 void radutmp_mlc_close(struct radutmp *up);
 int radutmp_mlc_enabled_p(void);
 
 /* mlc.c */
-typedef int (*mlc_collect_user_t) (char *name, grad_request_t *request,
+typedef int (*mlc_collect_user_t) (char *name, radiusd_request_t *request,
 				   grad_list_t **sess_list);
-typedef int (*mlc_collect_realm_t) (grad_request_t *request,
+typedef int (*mlc_collect_realm_t) (radiusd_request_t *request,
 				    grad_list_t **sess_list);
 typedef void (*mlc_close_t) (struct radutmp *up);
 typedef int (*mlc_enabled_t) (void);
@@ -520,23 +549,23 @@ void mlc_register_method(char *name,
 			 mlc_enabled_t enabled_p);
 
 extern struct cfg_stmt mlc_stmt[];
-int radius_mlc_user(char *name, grad_request_t *request,
+int radius_mlc_user(char *name, radiusd_request_t *request,
 		    size_t maxsimul, size_t *pcount);
-int radius_mlc_realm(grad_request_t *request);
+int radius_mlc_realm(radiusd_request_t *request);
 
 /* files.c */
-int user_find(char *name, grad_request_t *, grad_avp_t **, grad_avp_t **);
+int user_find(char *name, radiusd_request_t *, grad_avp_t **, grad_avp_t **);
 int userparse(char *buf, grad_avp_t **first_pair, char **errmsg);
 void presuf_setup(grad_avp_t *request_pairs);
-int hints_setup(grad_request_t *request);
-int huntgroup_access(grad_request_t *radreq, grad_locus_t *loc);
+int hints_setup(radiusd_request_t *request);
+int huntgroup_access(radiusd_request_t *radreq, grad_locus_t *loc);
 CLIENT *client_lookup_ip(grad_uint32_t ipno);
 char *client_lookup_name(grad_uint32_t ipno, char *buf, size_t size);
 int read_clients_file(char *);
 grad_nas_t *grad_nas_find(grad_uint32_t ipno);
 grad_nas_t *grad_nas_by_name(char *name);
 char *grad_nas_name(grad_uint32_t ipno);
-char *nas_name2(grad_request_t *r);
+char *nas_name2(radiusd_request_t *r);
 int read_nas_list_file(char *);
 int reload_config_file(enum reload_what);
 int presufcmp(grad_avp_t *check, char *name, char *rest);
@@ -552,9 +581,9 @@ void strip_username(int do_strip, char *name,
 void version();
 
 /* auth.c */
-int rad_auth_init(grad_request_t *radreq, int activefd);
-int rad_auth_check_username(grad_request_t *radreq, int activefd);
-int rad_authenticate (grad_request_t *, int);
+int rad_auth_init(radiusd_request_t *radreq, int activefd);
+int rad_auth_check_username(radiusd_request_t *radreq, int activefd);
+int rad_authenticate (radiusd_request_t *, int);
 void req_decrypt_password(char *password, grad_request_t *req,
 			  grad_avp_t *pair);
 
@@ -598,9 +627,12 @@ void snmp_req_drop(int type, void *data, void *orig_data,
 int snmp_req_respond(REQUEST *request);
         
 /* radutil.c */
+radiusd_request_t *radiusd_request_alloc(grad_request_t *req);
+void radiusd_request_free(radiusd_request_t *radreq);
+
 char *radius_xlate(struct obstack *obp, char *str,
                    grad_request_t *req, grad_avp_t *reply_pairs);
-int radius_eval_avl(grad_request_t *req, grad_avp_t *p);
+int radius_eval_avl(radiusd_request_t *req, grad_avp_t *p);
 char *util_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq);
 
 /* rewrite.y */
@@ -621,7 +653,7 @@ int rad_cfg_forward_auth(int argc, cfg_value_t *argv,
 int rad_cfg_forward_acct(int argc, cfg_value_t *argv,
 			 void *block_data, void *handler_data);
 void forward_init();
-void forward_request(int type, grad_request_t *req);
+void forward_request(int type, radiusd_request_t *req);
 
 /* dynload.c */
 extern struct cfg_stmt dynload_stmt[];
@@ -677,3 +709,34 @@ void log_set_default(char *name, int cat, int pri);
 void log_open(int cat);
 void log_close();
 
+/* sql.c */
+#ifdef USE_SQL
+void sql_init();
+int radiusd_sql_config();
+void radiusd_sql_shutdown();
+void radiusd_sql_clear_cache();
+void radiusd_sql_acct(radiusd_request_t *req);
+int radiusd_sql_checkgroup(radiusd_request_t *req, char *groupname);
+int radiusd_sql_check_attr_query(radiusd_request_t *req, grad_avp_t **check_pairs);
+int radiusd_sql_reply_attr_query(radiusd_request_t *req, grad_avp_t **reply_pairs);
+void radiusd_sql_auth_result_query(radiusd_request_t *req, int fail);
+void radiusd_sql_cleanup(int type, void *req);
+
+char *radiusd_sql_pass(radiusd_request_t *req, char *data);
+
+# ifdef RADIUS_SERVER_GUILE
+SCM sql_exec_query(int type, char *query);
+# endif
+
+#else
+# define sql_init()
+# define radiusd_sql_config() 0
+# define radiusd_sql_shutdown()
+# define radiusd_sql_clear_cache()
+# define radiusd_sql_acct(req)
+# define radiusd_sql_checkgroup(req, groupname) 0
+# define radiusd_sql_check_attr_query(req, check_pairs) 0
+# define radiusd_sql_reply_attr_query(req, reply_pairs)
+# define radiusd_sql_auth_result_query(req, fail)
+# define radiusd_sql_cleanup (void (*)(int, void *)) NULL
+#endif

@@ -43,10 +43,10 @@
 /* Decode a password and encode it again. */
 static void
 passwd_recode(grad_avp_t *pass_pair, char *new_secret, char *new_authenticator,
-	      grad_request_t *req)
+	      radiusd_request_t *req)
 {
         char password[GRAD_STRING_LENGTH+1];
-        req_decrypt_password(password, req, pass_pair);
+        req_decrypt_password(password, req->request, pass_pair);
         grad_free(pass_pair->avp_strvalue);
         grad_encrypt_password(pass_pair, password, new_authenticator, new_secret);
         /* Don't let the cleantext hang around */
@@ -56,14 +56,15 @@ passwd_recode(grad_avp_t *pass_pair, char *new_secret, char *new_authenticator,
 /* Decode a password and encode it again. */
 static void
 tunnel_passwd_recode(grad_avp_t *pass_pair, char *new_secret, char *new_authenticator,
-		     grad_request_t *req)
+		     radiusd_request_t *req)
 {
         char password[GRAD_STRING_LENGTH+1];
 	u_char tag;
 	
 	grad_decrypt_tunnel_password(password, 
 				     &tag, pass_pair,
-				     req->authenticator, req->secret);
+				     req->request->authenticator,
+				     req->request->secret);
         grad_free(pass_pair->avp_strvalue);
 	grad_encrypt_tunnel_password(pass_pair,
 				     tag, password, 
@@ -72,7 +73,7 @@ tunnel_passwd_recode(grad_avp_t *pass_pair, char *new_secret, char *new_authenti
 }
 
 grad_avp_t *
-proxy_request_recode(grad_request_t *radreq, grad_avp_t *plist,
+proxy_request_recode(radiusd_request_t *radreq, grad_avp_t *plist,
 		     u_char *secret, u_char *authenticator)
 {
 	grad_avp_t *p;
@@ -92,7 +93,7 @@ proxy_request_recode(grad_request_t *radreq, grad_avp_t *plist,
  */
 
 int
-proxy_cmp(grad_request_t *qr, grad_request_t *r)
+proxy_cmp(radiusd_request_t *qr, radiusd_request_t *r)
 {
 	grad_avp_t *p, *proxy_state_pair = NULL;
 	grad_server_t *server;
@@ -108,7 +109,7 @@ proxy_cmp(grad_request_t *qr, grad_request_t *r)
 	}
 	
         /* Find the last PROXY_STATE attribute. */
-        for (p = r->request; p; p = p->next) {
+        for (p = r->request->avlist; p; p = p->next) {
                 if (p->attribute == DA_PROXY_STATE) 
                         proxy_state_pair = p;
         }
@@ -127,16 +128,16 @@ proxy_cmp(grad_request_t *qr, grad_request_t *r)
 		       state->remote_ip));
 		
                 if (state->ref_ip == ref_ip
-		    && state->proxy_id == r->id
-		    && state->remote_ip == r->ipaddr) {
+		    && state->proxy_id == r->request->id
+		    && state->remote_ip == r->request->ipaddr) {
 			debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x, proxy_id %d %d, server_addr %#8x %#8x", 
-				   qr->id, state->id,
-				   qr->ipaddr, state->client_ip,
+				   qr->request->id, state->id,
+				   qr->request->ipaddr, state->client_ip,
 				   qr->server_id, state->proxy_id,
 				   server->addr, state->remote_ip));
         
-			if (state->client_ip == qr->ipaddr
-			    && state->id  == qr->id
+			if (state->client_ip == qr->request->ipaddr
+			    && state->id  == qr->request->id
 			    && state->proxy_id == qr->server_id
 			    && state->remote_ip == server->addr) {
 				debug(1,("EQUAL!!!"));
@@ -153,7 +154,7 @@ proxy_cmp(grad_request_t *qr, grad_request_t *r)
 
 /* Send the request */
 static int
-proxy_send_pdu(int fd, grad_server_t *server, grad_request_t *radreq,
+proxy_send_pdu(int fd, grad_server_t *server, radiusd_request_t *radreq,
 	       void *pdu, size_t size)
 {
 	struct sockaddr_in sin;
@@ -162,18 +163,18 @@ proxy_send_pdu(int fd, grad_server_t *server, grad_request_t *radreq,
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = htonl(server->addr);
 	
-	sin.sin_port = htons((radreq->code == RT_ACCESS_REQUEST) ?
+	sin.sin_port = htons((radreq->request->code == RT_ACCESS_REQUEST) ?
 			     server->port[GRAD_PORT_AUTH] 
-                              : server->port[GRAD_PORT_ACCT]);
+			     : server->port[GRAD_PORT_ACCT]);
 
 	debug(1, ("Proxying id %d to %lx",
-		  radreq->id, (u_long)server->addr));
+		  radreq->request->id, (u_long)server->addr));
 
 	return sendto(fd, pdu, size, 0, (struct sockaddr *)&sin, sizeof(sin));
 }
 
 int
-proxy_send_request(int fd, grad_request_t *radreq)
+proxy_send_request(int fd, radiusd_request_t *radreq)
 {
 	grad_avp_t *plist, *p;
 	void *pdu;
@@ -190,7 +191,7 @@ proxy_send_request(int fd, grad_request_t *radreq)
 				radreq->server_no);
 
 	if (!server) {
-		grad_log_req(L_NOTICE, radreq,
+		grad_log_req(L_NOTICE, radreq->request,
 		             _("couldn't send request to realm %s"),
 		             radreq->realm->realm);
 		return 0;
@@ -200,8 +201,10 @@ proxy_send_request(int fd, grad_request_t *radreq)
 	radreq->attempt_no++;
 
 	grad_client_random_authenticator(radreq->remote_auth);
-	plist = proxy_request_recode(radreq, grad_avl_dup(radreq->request),
-				     server->secret, radreq->remote_auth);
+	plist = proxy_request_recode(radreq,
+				     grad_avl_dup(radreq->request->avlist),
+				     server->secret,
+				     radreq->remote_auth);
 
 	/* Add a proxy-pair to the end of the request. */
 	p = grad_avp_alloc();
@@ -214,15 +217,16 @@ proxy_send_request(int fd, grad_request_t *radreq)
 	proxy_state = (PROXY_STATE *)p->avp_strvalue;
 	
 	proxy_state->ref_ip = ref_ip;
-	proxy_state->client_ip = radreq->ipaddr;
-	proxy_state->id = radreq->id;
+	proxy_state->client_ip = radreq->request->ipaddr;
+	proxy_state->id = radreq->request->id;
 	proxy_state->proxy_id = radreq->server_id;
 	proxy_state->remote_ip = server->addr;
 	
 	grad_avl_add_pair(&plist, p);
 	
 	/* Create the pdu */
-	size = grad_create_pdu(&pdu, radreq->code,
+	size = grad_create_pdu(&pdu,
+			       radreq->request->code,
 			       radreq->server_id,
 			       radreq->remote_auth,
 			       server->secret,
@@ -237,7 +241,7 @@ proxy_send_request(int fd, grad_request_t *radreq)
                 /* Prepare update data. */
 		size = sizeof(*upd) + strlen(radreq->realm->realm) + 1;
 		upd = grad_emalloc(size);
-		upd->id = radreq->id;
+		upd->id = radreq->request->id;
 		upd->proxy_id = radreq->server_id;
 		upd->server_no = radreq->server_no;
 		strcpy(upd->realmname, radreq->realm->realm);
@@ -260,7 +264,7 @@ proxy_send_request(int fd, grad_request_t *radreq)
 /* Interface functions */
 
 static grad_realm_t *
-proxy_lookup_realm(grad_request_t *req, char *name)
+proxy_lookup_realm(radiusd_request_t *req, char *name)
 {
 	grad_realm_t *realm = grad_realm_lookup_name(name);
 	static char *var[] = { "auth", "acct" };
@@ -268,7 +272,7 @@ proxy_lookup_realm(grad_request_t *req, char *name)
 	
 	if (realm) {
 		int rc;
-		switch (req->code) {
+		switch (req->request->code) {
 		case RT_ACCESS_REQUEST:
 			t = R_AUTH;
 			break;
@@ -305,7 +309,7 @@ proxy_lookup_realm(grad_request_t *req, char *name)
 int
 proxy_send(REQUEST *req)
 {
-	grad_request_t *radreq = req->data;
+	radiusd_request_t *radreq = req->data;
         char *username;
         grad_avp_t *namepair;
         grad_avp_t *vp;
@@ -313,7 +317,7 @@ proxy_send(REQUEST *req)
         grad_realm_t *realm;
 
         /* Look up name. */
-        namepair = grad_avl_find(radreq->request, DA_USER_NAME);
+        namepair = grad_avl_find(radreq->request->avlist, DA_USER_NAME);
         if (grad_avp_null_string_p(namepair))
                 return 0;
 
@@ -354,7 +358,7 @@ proxy_send(REQUEST *req)
 	radreq->remote_user = grad_estrdup(username); 
 
 	/* Add a Realm-Name pair */
-	grad_avl_add_pair(&radreq->request,
+	grad_avl_add_pair(&radreq->request->avlist,
 			  grad_avp_create_string(DA_REALM_NAME, realm->realm));
 	
         /* If there is a DA_CHAP_PASSWORD attribute, there is
@@ -369,12 +373,12 @@ proxy_send(REQUEST *req)
 
 /* FIXME! server timeout is not used */
 void
-proxy_retry(grad_request_t *req, int fd)
+proxy_retry(radiusd_request_t *req, int fd)
 {
 	grad_avp_t *namepair;
 	char *saved_username;
 	
-        namepair = grad_avl_find(req->request, DA_USER_NAME);
+        namepair = grad_avl_find(req->request->avlist, DA_USER_NAME);
         if (namepair == NULL)
                 return;
 
@@ -397,11 +401,11 @@ select_propagated(void *null ARG_UNUSED, grad_avp_t *pair)
 
 /* Called when a response from a remote radius server has been received.
    The function finds the original request and replaces all fields in
-   radreq, except `request', with the original data.
+   radreq, except `request->avlist', with the original data.
    Return:   0 proxy found
             -1 error don't reply */
 int
-proxy_receive(grad_request_t *radreq, grad_request_t *oldreq, int fd)
+proxy_receive(radiusd_request_t *radreq, radiusd_request_t *oldreq, int fd)
 {
         grad_avp_t *vp, *proxy_state_pair, *prev, *x;
         grad_avp_t *allowed_pairs;
@@ -409,7 +413,7 @@ proxy_receive(grad_request_t *radreq, grad_request_t *oldreq, int fd)
         /* Remove the last proxy pair from the list. */
         proxy_state_pair = x = prev = NULL;
 
-        for (vp = radreq->request; vp; vp = vp->next) {
+        for (vp = radreq->request->avlist; vp; vp = vp->next) {
                 if (vp->attribute == DA_PROXY_STATE) {
                         prev = x;
                         proxy_state_pair = vp;
@@ -421,35 +425,38 @@ proxy_receive(grad_request_t *radreq, grad_request_t *oldreq, int fd)
                 if (prev)
                         prev->next = proxy_state_pair->next;
                 else
-                        radreq->request = proxy_state_pair->next;
+                        radreq->request->avlist = proxy_state_pair->next;
                 grad_avp_free(proxy_state_pair);
         }
 
         /* Only allow some attributes to be propagated from
            the remote server back to the NAS, for security. */
         allowed_pairs = NULL;
-        grad_avl_move_pairs(&allowed_pairs, &radreq->request,
+        grad_avl_move_pairs(&allowed_pairs, &radreq->request->avlist,
 			    select_propagated, NULL);
-        grad_avl_free(radreq->request);
+        grad_avl_free(radreq->request->avlist);
 
-        /* Rebuild the grad_request_t struct, so that the normal functions
+        /* Rebuild the radiusd_request_t struct, so that the normal functions
            can process it. Take care not to modify oldreq! */
 
-	memcpy(radreq->authenticator, oldreq->remote_auth, sizeof radreq->authenticator);
+	memcpy(radreq->request->authenticator,
+	       oldreq->remote_auth, sizeof radreq->request->authenticator);
  	radreq->server_reply = proxy_request_recode(radreq, allowed_pairs,
-						    oldreq->secret,
-						    oldreq->authenticator);
+						    oldreq->request->secret,
+						    oldreq->request->authenticator);
         radreq->validated    = 1;
-        radreq->server_code  = radreq->code;
-        radreq->code         = oldreq->code;
+        radreq->server_code  = radreq->request->code;
+        radreq->request->code = oldreq->request->code;
 
-        radreq->ipaddr       = oldreq->ipaddr;
-        radreq->udp_port     = oldreq->udp_port;
-        radreq->id           = oldreq->id;
+        radreq->request->ipaddr       = oldreq->request->ipaddr;
+        radreq->request->udp_port     = oldreq->request->udp_port;
+        radreq->request->id           = oldreq->request->id;
 
-	memcpy(radreq->authenticator, oldreq->authenticator, sizeof radreq->authenticator);
-        radreq->secret       = oldreq->secret;
-        radreq->request      = grad_avl_dup(oldreq->request);
+	memcpy(radreq->request->authenticator,
+	       oldreq->request->authenticator,
+	       sizeof radreq->request->authenticator);
+        radreq->request->secret       = oldreq->request->secret;
+        radreq->request->avlist       = grad_avl_dup(oldreq->request->avlist);
 
         /* Proxy support fields */
         radreq->realm         = oldreq->realm;

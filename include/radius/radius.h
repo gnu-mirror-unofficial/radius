@@ -288,30 +288,7 @@ typedef struct grad_request {
         u_char        authenticator[GRAD_AUTHENTICATOR_LENGTH];
 	                            /* Request authenticator */
         u_char        *secret;      /* Shared secret */
-        grad_avp_t    *request;     /* Request pairs */
-
-        /* Saved reply values */
-        int           reply_code;   /* Reply code */
-        grad_avp_t    *reply_pairs; /* Reply pairs */
-        char          *reply_msg;   /* Reply message */
-	                            /* FIXME: should probably be
-			 	       incorporated to reply_pairs
-				       at once */
-	/* List of cfg file locations that lead to the decision on this
-	   request */
-	grad_list_t   *locus_list;
-	
-        /* Proxy support fields */
-        grad_realm_t  *realm;       
-        int           validated;     /* Already md5 checked */
-	int           server_no;
-	int           attempt_no;
-        grad_uint32_t server_id;     /* Proxy ID of the packet */
-	char          *remote_user;  /* Remote username */
-        u_char        remote_auth[GRAD_AUTHENTICATOR_LENGTH];
-	                             /* Remote request authenticator */	
-        int           server_code;   /* Reply code from other srv */
-        grad_avp_t    *server_reply; /* Reply from other server */
+        grad_avp_t    *avlist;      /* Request pairs */
 } grad_request_t;
 
 typedef struct grad_keyword grad_keyword_t;
@@ -357,9 +334,12 @@ grad_request_t *grad_decode_pdu(grad_uint32_t host,
 				u_short udp_port, u_char *buffer,
 				size_t length);
 
-int grad_server_send_reply(int fd, grad_request_t *radreq);
+int grad_server_send_reply(int fd, grad_request_t *radreq,
+			   int reply_code, grad_avp_t *reply_pairs,
+			   char *reply_msg);
 int grad_server_send_challenge(int fd, grad_request_t *radreq,
-			       char *msg, char *state);
+			       grad_avp_t *reply_pairs, char *msg,
+			       char *state);
 
 
 /* dict.c */

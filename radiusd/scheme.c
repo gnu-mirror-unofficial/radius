@@ -307,7 +307,7 @@ scheme_main()
 /* Entry points for main Radius tasks */
 
 int
-scheme_try_auth(int auth_type, grad_request_t *req,
+scheme_try_auth(int auth_type, radiusd_request_t *req,
 		grad_avp_t *user_check,
 		grad_avp_t **user_reply_ptr)
 {
@@ -315,7 +315,7 @@ scheme_try_auth(int auth_type, grad_request_t *req,
 	SCM res;
 	grad_avp_t *tmp =
 		radius_decrypt_request_pairs(req,
-					     grad_avl_dup(req->request));
+					     grad_avl_dup(req->request->avlist));
         static char *try_auth = "radiusd-try-auth";
 	
 	s_request = radscm_avl_to_list(tmp);
@@ -355,7 +355,7 @@ scheme_try_auth(int auth_type, grad_request_t *req,
 }
 
 int
-scheme_auth(char *procname, grad_request_t *req, 
+scheme_auth(char *procname, radiusd_request_t *req, 
 	    grad_avp_t *user_check,
 	    grad_avp_t **user_reply_ptr)
 {
@@ -363,7 +363,7 @@ scheme_auth(char *procname, grad_request_t *req,
 	SCM res;
 	grad_avp_t *tmp =
 		radius_decrypt_request_pairs(req,
-					     grad_avl_dup(req->request));
+					     grad_avl_dup(req->request->avlist));
 	
 	s_request = radscm_avl_to_list(tmp);
 	radius_destroy_pairs(&tmp);
@@ -399,10 +399,10 @@ scheme_auth(char *procname, grad_request_t *req,
 }
 
 int
-scheme_acct(char *procname, grad_request_t *req)
+scheme_acct(char *procname, radiusd_request_t *req)
 {
 	SCM res;
-	SCM s_request = radscm_avl_to_list(req->request);
+	SCM s_request = radscm_avl_to_list(req->request->avlist);
 
 	if (scheme_call_proc(&res,
 			     procname,
@@ -666,7 +666,7 @@ struct cfg_stmt guile_stmt[] = {
 #include <radius/radius.h>
 
 int
-scheme_try_auth(int auth_type, grad_request_t *req,
+scheme_try_auth(int auth_type, radiusd_request_t *req,
 	        grad_avp_t *user_check,
 	        grad_avp_t **user_reply_ptr)
 {

@@ -243,7 +243,7 @@ radius_exec_command(char *cmd)
    Return 0 if exec_wait == 0.
    Return the exit code of the called program if exec_wait != 0. */
 int
-radius_exec_program(char *cmd, grad_request_t *req, grad_avp_t **reply,
+radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
 		    int exec_wait)
 {
         int p[2];
@@ -283,7 +283,8 @@ radius_exec_program(char *cmd, grad_request_t *req, grad_avp_t **reply,
                 obstack_init(&s);
                 
                 /* child branch */
-                ptr = radius_xlate(&s, cmd, req, reply ? *reply : NULL);
+                ptr = radius_xlate(&s, cmd, req->request,
+				   reply ? *reply : NULL);
 
                 debug(1, ("command line: %s", ptr));
 
@@ -541,11 +542,11 @@ filter_kill(Filter *filter)
 }
 
 static Filter *
-filter_open(char *name, grad_request_t *req, int type, int *errp)
+filter_open(char *name, radiusd_request_t *req, int type, int *errp)
 {
 	Filter *filter = grad_sym_lookup(filter_tab, name);
 	if (!filter) {
-		grad_log_req(L_ERR, req,
+		grad_log_req(L_ERR, req->request,
 			     _("filter %s is not declared"),
 			     name);
 		*errp = -1;
@@ -562,7 +563,7 @@ filter_open(char *name, grad_request_t *req, int type, int *errp)
 						pipe);
 		
 		if (filter->pid <= 0) {
-			grad_log_req(L_ERR|L_PERROR, req,
+			grad_log_req(L_ERR|L_PERROR, req->request,
 				     _("cannot run filter %s"),
 				     name);
 			filter = NULL;
@@ -580,7 +581,8 @@ filter_open(char *name, grad_request_t *req, int type, int *errp)
 	}
 
 	if (filter && kill(filter->pid, 0)) {
-		grad_log_req(L_ERR|L_PERROR, req, _("filter %s"), name);
+		grad_log_req(L_ERR|L_PERROR, req->request,
+			     _("filter %s"), name);
 		filter_close(filter);
 		filter = NULL;
 	}
@@ -589,13 +591,13 @@ filter_open(char *name, grad_request_t *req, int type, int *errp)
 }
 
 char *
-filter_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq)
+filter_xlate(struct obstack *sp, char *fmt, radiusd_request_t *radreq)
 {
-	return util_xlate(sp, fmt, radreq);
+	return util_xlate(sp, fmt, radreq->request);
 }
 
 static int
-filter_write(Filter *filter, char *fmt, grad_request_t *radreq)
+filter_write(Filter *filter, char *fmt, radiusd_request_t *radreq)
 {
 	int rc, length;
 	struct obstack stack;
@@ -660,7 +662,7 @@ filter_read(Filter *filter, int type, char *buffer, size_t buflen)
    Returns: 0   -- Authentication succeeded
             !0  -- Authentication failed */
 int
-filter_auth(char *name, grad_request_t *req, grad_avp_t **reply_pairs)
+filter_auth(char *name, radiusd_request_t *req, grad_avp_t **reply_pairs)
 {
 	Filter *filter;
 	int rc = -1;
@@ -715,7 +717,7 @@ filter_auth(char *name, grad_request_t *req, grad_avp_t **reply_pairs)
 }
 
 int
-filter_acct(char *name, grad_request_t *req)
+filter_acct(char *name, radiusd_request_t *req)
 {
 	Filter *filter;
 	int rc = -1;

@@ -791,7 +791,7 @@ radiusd_sql_cleanup(int type, void *req ARG_UNUSED)
  * Perform normal accounting
  */ 
 void
-radiusd_sql_acct(grad_request_t *radreq)
+radiusd_sql_acct(radiusd_request_t *radreq)
 {
         int rc, count;
         int status;
@@ -805,9 +805,10 @@ radiusd_sql_acct(grad_request_t *radreq)
         if (!sql_cfg.active[SQL_ACCT])
                 return;
 
-        if (!(pair = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE))) {
+        if (!(pair = grad_avl_find(radreq->request->avlist,
+				   DA_ACCT_STATUS_TYPE))) {
                 /* should never happen!! */
-                grad_log_req(L_ERR, radreq,
+                grad_log_req(L_ERR, radreq->request,
                              _("no Acct-Status-Type attribute in rad_sql_acct()"));
                 return;
         }
@@ -823,7 +824,7 @@ radiusd_sql_acct(grad_request_t *radreq)
                         break;
                 query = radius_xlate(&stack,
                                      sql_cfg.query[acct_start_query],
-                                     radreq, NULL);
+                                     radreq->request, NULL);
                 rc = disp_sql_query(conn, query, NULL);
                 sqllog(rc, query);
 		log_facility = 0;
@@ -835,7 +836,7 @@ radiusd_sql_acct(grad_request_t *radreq)
                         break;
                 query = radius_xlate(&stack,
                                      sql_cfg.query[acct_stop_query],
-                                     radreq, NULL);
+                                     radreq->request, NULL);
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
                 if (rc == 0 && count != 1) 
@@ -848,7 +849,7 @@ radiusd_sql_acct(grad_request_t *radreq)
                         break;
                 query = radius_xlate(&stack,
                                      sql_cfg.query[acct_nasup_query],
-                                     radreq, NULL);
+                                     radreq->request, NULL);
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
 		if (rc == 0)
@@ -861,7 +862,7 @@ radiusd_sql_acct(grad_request_t *radreq)
                         break;
                 query = radius_xlate(&stack,
                                      sql_cfg.query[acct_nasdown_query],
-                                     radreq, NULL);
+                                     radreq->request, NULL);
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
 		if (rc == 0)
@@ -874,7 +875,7 @@ radiusd_sql_acct(grad_request_t *radreq)
                         break;
                 query = radius_xlate(&stack,
                                      sql_cfg.query[acct_keepalive_query],
-                                     radreq, NULL);
+                                     radreq->request, NULL);
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
                 if (rc == 0 && count != 1) 
@@ -884,7 +885,7 @@ radiusd_sql_acct(grad_request_t *radreq)
         }
 
 	if (log_facility) {
-		grad_log_req(log_facility, radreq,
+		grad_log_req(log_facility, radreq->request,
 			     ngettext("%s updated %d record",
 				      "%s updated %d records",
 				      count),
@@ -897,7 +898,7 @@ radiusd_sql_acct(grad_request_t *radreq)
 
 
 char *
-radiusd_sql_pass(grad_request_t *req, char *authdata)
+radiusd_sql_pass(radiusd_request_t *req, char *authdata)
 {
         char *mysql_passwd;
         struct sql_connection *conn;
@@ -911,14 +912,15 @@ radiusd_sql_pass(grad_request_t *req, char *authdata)
         }
         
         if (authdata) {
-                grad_avl_add_pair(&req->request,
+                grad_avl_add_pair(&req->request->avlist,
 				  grad_avp_create_string(DA_AUTH_DATA,
 							 authdata));
         }
         
         obstack_init(&stack);
-        query = radius_xlate(&stack, sql_cfg.query[auth_query], req, NULL);
-        grad_avl_delete(&req->request, DA_AUTH_DATA);
+        query = radius_xlate(&stack, sql_cfg.query[auth_query],
+			     req->request, NULL);
+        grad_avl_delete(&req->request->avlist, DA_AUTH_DATA);
         
         conn = attach_sql_connection(SQL_AUTH);
         mysql_passwd = disp_sql_getpwd(conn, query);
@@ -932,7 +934,7 @@ radiusd_sql_pass(grad_request_t *req, char *authdata)
 }
 
 int
-radiusd_sql_checkgroup(grad_request_t *req, char *groupname)
+radiusd_sql_checkgroup(radiusd_request_t *req, char *groupname)
 {
         int   rc = -1;
         struct sql_connection *conn;
@@ -950,7 +952,8 @@ radiusd_sql_checkgroup(grad_request_t *req, char *groupname)
 
         obstack_init(&stack);
 	
-        query = radius_xlate(&stack, sql_cfg.query[group_query], req, NULL);
+        query = radius_xlate(&stack, sql_cfg.query[group_query],
+			     req->request, NULL);
 	res = sql_cache_lookup(conn, query);
 	if (!res) {
 		res = sql_cache_retrieve(conn, query);
@@ -1026,7 +1029,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 }
 			
 int
-radiusd_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs)
+radiusd_sql_reply_attr_query(radiusd_request_t *req, grad_avp_t **reply_pairs)
 {
         struct sql_connection *conn;
         char *query;
@@ -1040,7 +1043,7 @@ radiusd_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs)
         obstack_init(&stack);
 
         query = radius_xlate(&stack, sql_cfg.query[reply_attr_query],
-			     req, NULL);
+			     req->request, NULL);
         rc = rad_sql_retrieve_pairs(conn, query, reply_pairs, 0);
 
         obstack_free(&stack, NULL);
@@ -1048,7 +1051,7 @@ radiusd_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs)
 }
 
 int
-radiusd_sql_check_attr_query(grad_request_t *req, grad_avp_t **return_pairs)
+radiusd_sql_check_attr_query(radiusd_request_t *req, grad_avp_t **return_pairs)
 {
         struct sql_connection *conn;
         char *query;
@@ -1062,7 +1065,7 @@ radiusd_sql_check_attr_query(grad_request_t *req, grad_avp_t **return_pairs)
         obstack_init(&stack);
 	
         query = radius_xlate(&stack, sql_cfg.query[check_attr_query],
-			     req, NULL);
+			     req->request, NULL);
         rc = rad_sql_retrieve_pairs(conn, query, return_pairs, 1);
         
         obstack_free(&stack, NULL);
@@ -1083,7 +1086,7 @@ sql_auth_avail_p(const char **msg)
  * Auth failure trigger
  */
 void
-radiusd_sql_auth_result_query(grad_request_t *req, int fail)
+radiusd_sql_auth_result_query(radiusd_request_t *req, int fail)
 {
         struct sql_connection *conn;
         char *query;
@@ -1098,7 +1101,7 @@ radiusd_sql_auth_result_query(grad_request_t *req, int fail)
         obstack_init(&stack);
 	
         query = radius_xlate(&stack, sql_cfg.query[q],
-			     req, NULL);
+			     req->request, NULL);
 	rc = disp_sql_query(conn, query, NULL);
 	sqllog(rc, query);
         obstack_free(&stack, NULL);
@@ -1145,7 +1148,7 @@ rad_sql_retrieve_sessions(struct sql_connection *conn,
 
 int
 sql_mlc_collect(const char *query_template,
-		grad_request_t *request,
+		radiusd_request_t *request,
 		grad_list_t **sess_list)
 {
         struct sql_connection *conn;
@@ -1156,7 +1159,8 @@ sql_mlc_collect(const char *query_template,
         conn = attach_sql_connection(SQL_ACCT);
         obstack_init(&stack);
 	
-        query = radius_xlate(&stack, (char*) query_template, request, NULL);
+        query = radius_xlate(&stack, (char*) query_template,
+			     request->request, NULL);
         rc = rad_sql_retrieve_sessions(conn, query, sess_list);
 	obstack_free(&stack, NULL);
         return rc == 0;
@@ -1170,7 +1174,7 @@ rad_sql_mlc_enabled_p()
 }
 
 int
-rad_sql_mlc_collect_user(char *name, grad_request_t *request,
+rad_sql_mlc_collect_user(char *name, radiusd_request_t *request,
 			 grad_list_t **sess_list)
 {
         if (sql_cfg.active[SQL_ACCT] == 0 || !sql_cfg.query[mlc_user_query])
@@ -1180,7 +1184,7 @@ rad_sql_mlc_collect_user(char *name, grad_request_t *request,
 }
 
 int
-rad_sql_mlc_collect_realm(grad_request_t *request, grad_list_t **sess_list)
+rad_sql_mlc_collect_realm(radiusd_request_t *request, grad_list_t **sess_list)
 {
         if (sql_cfg.active[SQL_ACCT] == 0 || !sql_cfg.query[mlc_realm_query])
                 return 1;
@@ -1206,12 +1210,12 @@ rad_sql_mlc_close(struct radutmp *up)
 	obstack_init(&stack);
 	/* Create a temporary request */
 	req = grad_request_alloc();
-	grad_avl_add_pair(&req->request,
+	grad_avl_add_pair(&req->avlist,
 			  grad_avp_create_string(DA_USER_NAME, up->login));
-	grad_avl_add_pair(&req->request,
+	grad_avl_add_pair(&req->avlist,
 			  grad_avp_create_integer(DA_NAS_PORT_ID,
 						  up->nas_port));
-	grad_avl_add_pair(&req->request,
+	grad_avl_add_pair(&req->avlist,
 			  grad_avp_create_string(DA_ACCT_SESSION_ID,
 						 up->session_id));
 	query = radius_xlate(&stack, sql_cfg.query[query_index], req, NULL);

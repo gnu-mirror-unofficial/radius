@@ -30,7 +30,7 @@
 
 struct request_data {
 	int type;
-	grad_request_t *req;
+	radiusd_request_t *req;
 };
 
 static int forward_fd = -1;
@@ -130,23 +130,23 @@ forwarder(void *item, void *data)
 		if (srv->secret) {
 			secret = srv->secret;
 			vp = proxy_request_recode(r->req,
-						  grad_avl_dup(r->req->request),
+						  grad_avl_dup(r->req->request->avlist),
 						  secret,
-						  r->req->authenticator);
+						  r->req->request->authenticator);
 			plist = vp;
 			id = grad_client_message_id(srv);
 		} else {
-			secret = r->req->secret;
-			plist = r->req->request;
-			id = r->req->id;
+			secret = r->req->request->secret;
+			plist = r->req->request->avlist;
+			id = r->req->request->id;
 		}
 		size = grad_create_pdu(&pdu,
-				      r->req->code,
-				      id,
-				      r->req->authenticator,
-				      secret,
-				      plist,
-				      NULL);
+				       r->req->request->code,
+				       id,
+				       r->req->request->authenticator,
+				       secret,
+				       plist,
+				       NULL);
 		grad_avl_free(vp);
 		forward_data(srv, r->type, pdu, size);
 		grad_free(pdu);
@@ -218,7 +218,7 @@ forward_init()
 }
 
 void
-forward_request(int type, grad_request_t *req)
+forward_request(int type, radiusd_request_t *req)
 {
 	struct request_data rd;
 

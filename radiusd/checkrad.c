@@ -51,13 +51,14 @@ struct check_instance {
         char          *name;
         int           port;
         char          *sid;
-        grad_uint32_t         ip;
+        grad_uint32_t ip;
         int           result;
         int           timeout;
         int           method;
         char          *func;
         grad_envar_t  *args;
         char          *hostname;
+	struct obstack stack;
 };
 
 char *
@@ -96,12 +97,14 @@ create_instance(struct check_instance *cptr, grad_nas_t *nas, struct radutmp *up
         cptr->args = grad_envar_merge_lists((grad_envar_t*) nas->args,
 					    radck_type->args);
         cptr->func = slookup(cptr, "function", NULL);
+	obstack_init(&cptr->stack);
         return cptr;
 }
 
 void
 free_instance(struct check_instance *cptr)
 {
+	obstack_free(&cptr->stack, NULL);
         grad_envar_free_list(&cptr->args);
 }
 
@@ -122,20 +125,46 @@ compare(struct check_instance *checkp, char *str)
 }
 
 
-/* Replace: %u  -- username
+char *
+checkrad_xlat_new(struct check_instance *checkp, char *template)
+{
+	grad_request_t *req;
+	char *str;
+	
+	/* Create a temporary request */
+	req = grad_request_alloc();
+	grad_avl_add_pair(&req->request,
+			  grad_avp_create_string(DA_USER_NAME, checkp->name));
+	grad_avl_add_pair(&req->request,
+			  grad_avp_create_integer(DA_NAS_PORT_ID,
+						  checkp->port));
+	grad_avl_add_pair(&req->request,
+			  grad_avp_create_string(DA_ACCT_SESSION_ID,
+						 checkp->sid));
+	grad_avl_add_pair(&req->request,
+			  grad_avp_create_integer(DA_FRAMED_IP_ADDRESS,
+						  checkp->ip));
+
+	str = util_xlate(&checkp->stack, template, req);
+
+	grad_request_free(req);
+	
+	return str;
+}
+
+/* Translate traditional OID specs.
+ * Replace: %u  -- username
  *          %s  -- session id
  *          %p  -- port no
  *          %P  -- port no + 1
  */
 char *
-checkrad_xlat(struct check_instance *checkp, char *str)
+checkrad_xlat_old(struct check_instance *checkp, char *str)
 {
         char *ptr;
         int len;
         char buf[24];
-        struct obstack stk;
 
-        obstack_init(&stk);
         while (*str) {
                 if (*str == '%') {
                         switch (str[1]) {
@@ -166,22 +195,29 @@ checkrad_xlat(struct check_instance *checkp, char *str)
                                 break;
                         default:
                                 ptr = NULL;
-                                obstack_grow(&stk, str, 2);
+                                obstack_grow(&checkp->stack, str, 2);
                         }
                         if (ptr) {
                                 len = strlen(ptr);
-                                obstack_grow(&stk, ptr, len);
+                                obstack_grow(&checkp->stack, ptr, len);
                         }
                         str += 2;
                 } else {
-                        obstack_1grow(&stk, *str);
+                        obstack_1grow(&checkp->stack, *str);
                         str++;
                 }
         }
-        obstack_1grow(&stk, 0);
-        str = grad_estrdup(obstack_finish(&stk));
-        obstack_free(&stk, NULL);
-        return str;
+        obstack_1grow(&checkp->stack, 0);
+        return obstack_finish(&checkp->stack);
+}
+
+char *
+checkrad_xlat(struct check_instance *checkp, char *str)
+{
+	if (str[0] == '=')
+		return checkrad_xlat_new(checkp, str+1);
+	
+	return checkrad_xlat_old(checkp, str+1);
 }
 
 /*ARGSUSED*/
@@ -249,6 +285,8 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
                 return -1;
         }
         snmp_oid = checkrad_xlat(checkp, snmp_oid);
+	if (!snmp_oid) /* The diagnostics has already been issued */
+		return -1;
         oid = oid_create_from_string(snmp_oid);
         if (!oid) {
                 grad_log(L_ERR,
@@ -356,12 +394,14 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
         struct msghdr msg;
         int found = 0;
         char *peername;
-        struct obstack stk;
         char *ptr;
         RETSIGTYPE (*handler)() = SIG_IGN;
         unsigned int to;
-
+	
         arg = checkrad_xlat(checkp, slookup(checkp, "arg", "%u"));
+	if (!arg) /* The diagnostics has already been issued */
+		return -1;
+	
         /* Copy at most RUT_NAMESIZE bytes from the user name */
         ptr = arg;
         for (i = 0; i < RUT_NAMESIZE && *ptr; ++ptr, ++i)
@@ -434,13 +474,11 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
          */
         lastc = 0;
         if ((fp = fdopen(s, "r")) != NULL) {
-        	obstack_init(&stk);
 		if (setjmp(to_env)) {
 			grad_log(L_NOTICE,
 			       _("timed out in waiting for finger response from NAS %s"),
 			       checkp->hostname);
 			fclose(fp);
-			obstack_free(&stk, NULL);
 			alarm(0);
 			grad_set_signal(SIGALRM, handler);
 			return checkp->result = -1;
@@ -468,7 +506,7 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
                                         continue;
                                 }
                         }
-                        obstack_1grow(&stk, c);
+                        obstack_1grow(&checkp->stack, c);
                         if (c == '\n') {
                                 /* Make sure no alarm arrives while
                                  * processing data
@@ -476,11 +514,11 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
 				to = alarm(0);
 				grad_set_signal(SIGALRM, handler);
                                 
-                                obstack_1grow(&stk, 0);
-                                ptr = obstack_finish(&stk);
+                                obstack_1grow(&checkp->stack, 0);
+                                ptr = obstack_finish(&checkp->stack);
                                 debug(2,("got : %s", ptr));
                                 found = compare(checkp, ptr);
-                                obstack_free(&stk, ptr);
+                                obstack_free(&checkp->stack, ptr);
                                 if (found) 
                                         break;
 
@@ -497,21 +535,18 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
                         alarm(0);
 			grad_set_signal(SIGALRM, handler);
 
-                        obstack_1grow(&stk, '\n');
-                        obstack_1grow(&stk, 0);
+                        obstack_1grow(&checkp->stack, '\n');
+                        obstack_1grow(&checkp->stack, 0);
                         debug(2,("got : %s", ptr));
-                        ptr = obstack_finish(&stk);
+                        ptr = obstack_finish(&checkp->stack);
                         found = compare(checkp, ptr);
                 }
-                obstack_free(&stk, NULL);
                 
                 if (ferror(fp)) {
                         grad_log(L_ERR|L_PERROR, "finger");
                 }
                 fclose(fp);
         }
-
-	obstack_free(&stk, NULL);
 
         /* restore alarm settings */
         alarm(0);
@@ -525,7 +560,26 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
 int
 ext_check(struct check_instance *checkp, grad_nas_t *nas)
 {
-        grad_log(L_ERR, "ext_check not implemented");
+	char *s, *path;
+	int rc;
+	
+	s = slookup(checkp, "path", NULL);
+	if (!s) {
+                grad_log(L_ERR, _("path variable not set"));
+                return -1;
+	}
+	path = checkrad_xlat_new(checkp, s);
+	if (!path) /* The diagnostics has already been issued */
+		return -1;
+
+	rc = radius_exec_command(path);
+	switch (rc) {
+	case 0:
+	case 1:
+		return rc;
+	default:
+		return -1;
+	}
         return -1;
 }
 

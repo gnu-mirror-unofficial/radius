@@ -26,12 +26,10 @@ define([TOOLDIR],[define([_TOOLDIR],$1)
 define([_SEQ_NUM],0)
 if ! test -d _FULL_PATH/$1; then mkdir _FULL_PATH/$1; fi])
 
-dnl ***
-define([BEGIN],[SEQUENCE(Start,,default_radiusd_start $1)])
-
-define([END],[SEQUENCE(Stop,,radius_exit)])
+define([_print_zero],[ifelse($1,0,,0[_print_zero(decr($1))])])
+define([_fmtnum],[_print_zero(eval($2-len($1)))$1])
 
 dnl ***
 dnl FILENAME(NAME,NUM,SUFFIX)
-define([FILENAME],[_FULL_PATH/_TOOLDIR/[]eval(_SEQ_NUM,10,$2)[]$1.$3])
+define([FILENAME],[_FULL_PATH/_TOOLDIR/[]_fmtnum(_SEQ_NUM,3)[]$1.$3])
 divert[]dnl

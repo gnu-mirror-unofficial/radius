@@ -37,19 +37,12 @@ static char rcsid[] = "@(#) $Id$";
 #include <sysdep.h>
 #include <radiusd.h>
 
-struct category {
+typedef struct category {
 	char *descr;
-	struct channel *channel;
-};
+	struct chanlist *chanlist;
+} Category;
 
-extern char	*radlog_dir;
-
-char *default_log;
-int log_mode = RLOG_DEFAULT;
-
-struct channel *chan_first, *chan_last;
-struct channel default_channel;
-
+int log_mode;
 struct category category[] = {
 	NULL,          NULL,
         N_("Debug"),   NULL, 
@@ -57,64 +50,16 @@ struct category category[] = {
 	N_("Notice"),  NULL, 
 	N_("Warning"), NULL, 
 	N_("Error"),   NULL, 
-	N_("Crit"),    &default_channel,
+	N_("Crit"),    NULL,
 	N_("Auth"),    NULL,
 	N_("Proxy"),   NULL,
 };
+#define NCAT NITEMS(category)
 
-int log_to_file(char *file, int opt, char *descr, char *msg);
+/* ************************************************************************* */
+/* channels */
 
-void
-log_init()
-{
-	Channel *cp;
-
-	log_cleanup(1);
-	if (chan_first || chan_last) {
-		radlog(L_CRIT, _("log_cleanup failed"));
-		abort();
-	}
-			
-	efree(default_log);
-	default_log = mkfilename(radlog_dir, RADIUS_LOG);
-	
-	default_channel.mode = LM_FILE;
-	default_channel.options = LO_CONS|LO_PID|LO_LEVEL;
-	default_channel.id.file = default_log;
-	
-	install_channel("null", LM_OFF, 0, NULL, 0);
-	cp = install_channel("default",	LM_FILE, 0, RADIUS_LOG, LO_LEVEL);
-	register_category(-1, cp);
-}
-
-void
-log_cleanup(all)
-	int all;
-{
-	Channel *cp, *next, *prev;
-
-	prev = NULL;
-	cp = chan_first;
-	while (cp) {
-		next = cp->next;
-		if (all || cp->ucnt == 0) {
-			efree(cp->name);
-			if (cp->mode == LM_FILE)
-				efree(cp->id.file);
-
-			if (prev)
-				prev->next = next;
-			else
-				chan_first = next;
-			if (cp == chan_last) 
-				chan_last = prev;
-
-			efree(cp);
-		} else
-			prev = cp;
-		cp = next;
-	}
-}
+struct channel *chan_first;
 
 Channel *
 channel_lookup(name)
@@ -128,31 +73,6 @@ channel_lookup(name)
 	return NULL;
 }
 
-void
-register_category(level, channel)
-	int level;
-	Channel *channel;
-{
-	if (channel == NULL)
-		channel = channel_lookup("default");
-	else if (channel->mode == LM_OFF)
-		channel = NULL;
-	
-	if (level <= 0) {
-		for (level = 1; level < NITEMS(category); level++) {
-			if (level == L_CRIT)
-				continue;
-			category[level].channel = channel;
-			if (channel)
-				channel->ucnt++;
-		}
-	} else {
-		category[level].channel = channel;
-		if (channel)
-			channel->ucnt++;
-	}
-}
-
 Channel *
 register_channel(chan)
 	Channel *chan;
@@ -163,36 +83,34 @@ register_channel(chan)
 	char *filename;
 	
 	if (chan->mode == LM_FILE) {
-		len = strlen(chan->id.file) + strlen(radlog_dir) + 2;
+		if (strcmp(chan->id.file, "stdout")) {
+			filename = mkfilename(radlog_dir, chan->id.file);
 			
-		filename = emalloc(len);
-		sprintf(filename, "%s/%s", radlog_dir, chan->id.file);
-		
-		/* check the accessibility of the file */
-		fp = fopen(filename, "a");
-		if (!fp) {
-			radlog(L_CRIT|L_PERROR, _("can't access `%s'"), filename);
-			return NULL;
-		}
-		fclose(fp);
-
+			/* check the accessibility of the file */
+			fp = fopen(filename, "a");
+			if (!fp) {
+				radlog(L_CRIT|L_PERROR,
+				       _("can't access `%s'"), filename);
+				efree(filename);
+				filename = estrdup("stdout");
+			}
+			fclose(fp);
+		} else
+			filename = estrdup("stdout");
 	} else if (chan->mode == LM_SYSLOG) {
 	} 
 
-	channel = emalloc(sizeof(*channel));
+	channel = alloc_entry(sizeof(*channel));
 	channel->name = estrdup(chan->name);
-	channel->ucnt = 0;
 	channel->mode = chan->mode;
 	if (chan->mode == LM_FILE)
 		channel->id.file = filename;
 	else if (chan->mode == LM_SYSLOG)
 		channel->id.prio = chan->id.prio;
 	channel->options = chan->options;
-	if (!chan_first)
-		chan_first = channel;
-	else
-		chan_last->next = channel;
-	chan_last = channel;
+	channel->next = chan_first;
+	chan_first = channel;
+
 	return channel;
 }	
 
@@ -216,8 +134,126 @@ install_channel(name, mode, prio, file, options)
 	return register_channel(&chan);
 }
 
-int vlog(int lvl, char *fmt, va_list ap);
+void
+free_channels()
+{
+	Channel *cp;
 
+	while (chan_first) {
+		cp = chan_first->next;
+
+		efree(chan_first->name);
+		if (chan_first->mode == LM_FILE)
+			efree(chan_first->id.file);
+
+		free_entry(chan_first);
+		
+		chan_first = cp;
+	}
+}
+		
+/* ************************************************************************* */
+/* channel lists */
+Chanlist *
+make_chanlist(chan)
+	Channel *chan;
+{
+	Chanlist *cl = alloc_entry(sizeof(*cl));
+	cl->next = NULL;
+	cl->channel = chan;
+	return cl;
+}
+	
+void
+free_chanlist(cp)
+	Chanlist *cp;
+{
+	free_slist((struct slist*)cp, NULL);
+}
+
+/* ************************************************************************* */
+/* categories */
+
+void
+register_category(cat, chanlist)
+	int cat;
+	Chanlist *chanlist;
+{
+	category[cat].chanlist = chanlist;
+}
+
+void
+fixup_categories()
+{
+	int i;
+	Chanlist *cp, *next, *prev;
+	
+	for (i = 1; i < NCAT; i++) {
+		if (category[i].chanlist == NULL)
+			category[i].chanlist = make_chanlist(channel_lookup("default"));
+		else {
+			prev = next = NULL;
+			for (cp = category[i].chanlist; cp; cp = next) {
+				next = cp->next;
+				if (cp->channel->mode == LM_OFF) {
+					if (prev)
+						prev->next = cp->next;
+					else 
+						category[i].chanlist = NULL;
+					free_entry(cp);
+				}
+			}
+		}
+	}
+}
+
+void
+free_categories()
+{
+	Category *catp;
+	
+	for (catp = category+1; catp < category+NCAT; catp++) {
+		free_chanlist(catp->chanlist);
+		catp->chanlist = NULL;
+	}
+}
+
+/* ************************************************************************* */
+
+void
+log_init()
+{
+	free_categories();
+	free_channels();
+	install_channel("null", LM_OFF, 0, NULL, 0);
+	install_channel("default", LM_FILE, 0, RADIUS_LOG, LO_LEVEL);
+	install_channel("stdout", LM_FILE, 0, "stdout", LO_LEVEL);
+}
+
+void
+log_done()
+{
+	Channel *cp;
+	char *name;
+	fixup_categories();
+	cp = channel_lookup("default");
+	efree(cp->id.file);
+	cp->id.file = mkfilename(radlog_dir, "radius.log");
+}
+
+void
+log_stdout()
+{
+	int i;
+	Chanlist *cp;
+	
+	for (i = 1; i < NCAT; i++) {
+		cp = make_chanlist(channel_lookup("stdout"));
+		cp->next = category[i].chanlist;
+		category[i].chanlist = cp;
+	}
+}
+	
 int
 vlog(lvl, fmt, ap)
 	int lvl;
@@ -229,14 +265,14 @@ vlog(lvl, fmt, ap)
 	char msgbuf[1024];
 	int prio;
 	char *errstr;
-	Channel *channel;
+	Chanlist *chan;
+	Channel  *channel;
 	int syserr;
 		
 	syserr = lvl & L_PERROR;
 	lvl &= L_MASK;
 	
-	channel = category[lvl].channel;
-	if (!channel) 
+	if ((chan = category[lvl].chanlist) == NULL)
 		return 0;
 
 	errstr = strerror(errno);
@@ -250,7 +286,7 @@ vlog(lvl, fmt, ap)
 	p = buffer;
 	q = msgbuf;
 	while (*p) {
-		if (!isprint(*p)) {
+		if (iscntrl(*p)) {
 			if (q + 4 >= msgbuf + sizeof(msgbuf))
 				break;
 			sprintf(q, "\\%03o", *p);
@@ -270,31 +306,36 @@ vlog(lvl, fmt, ap)
 		}
 	}	
 
-	if (channel->options & LO_CONS) {
-		log_to_file("/dev/console",
-			    channel->options,
-			    category[lvl].descr,
-			    msgbuf);
-	}
-	
-	switch (channel->mode) {
+	do {
+		channel = chan->channel;
+		
+		if (channel->options & LO_CONS) {
+			log_to_file("/dev/console",
+				    channel->options,
+				    category[lvl].descr,
+				    msgbuf);
+		}
+		
+		switch (channel->mode) {
 
-	case LM_FILE:
-		log_to_file(channel->id.file,
-			    channel->options,
-			    category[lvl].descr,
-			    msgbuf);
-		break;
+		case LM_FILE:
+			log_to_file(channel->id.file,
+				    channel->options,
+				    category[lvl].descr,
+				    msgbuf);
+			break;
 
-	case LM_SYSLOG:
-		prio = channel->id.prio;
-		if (channel->options & LO_PID)
-			prio |= LOG_PID;
-		if (channel->options & LO_LEVEL) 
-			syslog(prio, "%s: %s", _(category[lvl].descr), msgbuf);
-		else
-			syslog(prio, "%s", msgbuf);
-	}
+		case LM_SYSLOG:
+			prio = channel->id.prio;
+			if (channel->options & LO_PID)
+				prio |= LOG_PID;
+			if (channel->options & LO_LEVEL) 
+				syslog(prio, "%s: %s",
+				       _(category[lvl].descr), msgbuf);
+			else
+				syslog(prio, "%s", msgbuf);
+		}
+	} while (chan = chan->next);
 	
 	return 0;
 }
@@ -360,8 +401,7 @@ debug_pair(prefix, pair)
 {
 	Channel *channel;
 	
-	channel = category[L_DBG].channel;
-	if (!channel)
+	if (!category[L_DBG].chanlist)
 		return;
 	fprintf(stdout, "%10.10s: ", prefix);
 	fprint_attr_val(stdout, pair);
@@ -543,4 +583,3 @@ sqllog(status, msg, va_alist)
         fclose(fp);
 }
 #endif
-

@@ -121,6 +121,8 @@ VALUE		Log-Mode-Mask		Log-Failed-Pass		4
 VALUE		Log-Mode-Mask		Log-Pass		6
 VALUE		Log-Mode-Mask		Log-All			7
 
+ATTRIBUTE	Acct-Ext-Program	2007	string	- R=
+
 # These are used by rewriting functions:
 ATTRIBUTE	Orig-User-Name		2101	string	- C
 ATTRIBUTE	Orig-NAS-Port-Id	2105	integer	- C

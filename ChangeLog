@@ -1,4 +1,30 @@
 2003-06-10  Sergey Poznyakoff
+	
+	* include/radius.h (avp_create_integer,avp_create_string)
+	(avp_create_binary): New functions.
+	(avp_create): Changed semantics.
+	* lib/avl.c: Likewise.
+	* include/radiusd.h (menu_reply, menu_read_text): New functions.
+	* radiusd/menu.c: Likewise.
+
+	* radiusd/radius.c (radius_req_decode): If the NAS stored the
+	CHAP challenge in the authenticator, create the CHAP-Challenge
+	attribute.
+
+	* client/pam_radius/pam_radius.c: Use typed avp_create functions.
+	* lib/radpdu.c: Likewise.
+	* lib/radsrv.c: Likewise.
+	* radiusd/auth.c: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/radck.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/sql.c: Likewise.
+	
+	* radiusd/scheme.c (silent_close_port): Use eval_close_port()
+	wrapper.
+	* radscm/ttl.scm (ttl-reply-string): Use (substring).
+	
+2003-06-10  Sergey Poznyakoff
 
 	* include/radiusd.h (struct request_class.xmit)
 	(radius_req_xmit, proxy_retry): Changed declaration.

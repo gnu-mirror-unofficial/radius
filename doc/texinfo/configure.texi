@@ -972,6 +972,7 @@ merlin                  emrys
 @section Naslist file
 @cindex @file{naslist} file
 @cindex @file{raddb/naslist} file
+@cindex MAX Ascend, broken passwords
 
 The @file{raddb/naslist} file contains a list of NASes known to the Radius
 server. Each record in the file consist of three fields:
@@ -992,13 +993,37 @@ querying. When the type field contains @samp{true}, @code{radiusd} assumes the
 user is logged in to the NAS, when it contains @samp{false}, @code{radiusd} 
 assumes the user @emph{is not} logged in. Otherwise, the type
 is used as a link to @file{nastypes} entry (@pxref{nastypes file}).
-@item Checkrad arguments
-Additional arguments for querying a NAS. Multiple arguments should be
-separated by commas. No intervening whitespace is allowed in this field.
-@emph{Please note}, that these arguments override the ones specified in
-@file{nastypes} and can thus be used to override the default
-values. @xref{nastypes file,,Full list of allowed arguments}.
+@item Arguments
+Additional arguments describing the NAS. Multiple arguments
+must be separated by commas. No intervening whitespace is allowed in
+this field.
 @end table
+
+There are two groups of nas arguments: @dfn{nas-specific} arguments and
+@dfn{nas-querying} arguments. @dfn{Nas-specific} arguments are used to
+modify a behavior of @code{radiusd} when sending or receiving the
+information to or from a particular NAS.
+
+@dfn{Nas-querying} arguments control the way @code{radiusd} queries
+a NAS for confirmation of a user's session (@pxref{Checking Simultaneous
+Logins}). These arguments override the ones specified in 
+@file{nastypes} and can thus be used to override the default
+values.
+
+The  @dfn{nas-specific} arguments currently implemented are:
+
+@table @asis
+@item broken_pass
+This is a boolean argument that controls the encryption of user
+passwords, longer than 16 octets. By default, @code{radiusd} uses
+method specified by @sc{rfc 2865}. However some NASes, most notably
+@sc{MAX Ascend} series, implement a broken method of encoding long
+passwords. This flag instructs @code{radiusd} to use broken method
+of password encryption for the given NAS.
+@end table
+
+For the list of nas-querying arguments,
+@xref{nastypes file,,Full list of allowed arguments}.
 
 @menu
 * Example: naslist example.     Example of @file{naslist} file.
@@ -1104,12 +1129,15 @@ Timeout @var{n} seconds on each retry.
 @table @asis
 @item timeout=@var{n}
 Give up if the NAS does not respond within @var{n} seconds.
-@item tcp=0
-@itemx notcp
+@item notcp
+@itemx tcp=0
 Disable the use of T/TCP for hosts with a broken TCP implementation.
+@item arg=@var{subst}
+Send @var{subst} to finger, instead of username. @var{subst} must be
+one of @dfn{macro variables}, described below.
 @end table
 
-@subheading Substitution rules
+@subheading Macro variables
 
 The following macro-variables are recognized and substituted when
 encountered in the @var{value} pair of an argument:
@@ -1297,7 +1325,7 @@ Type @code{livingston} queries portmaster using SNMP.
 
 The @file{raddb/hints} file is used to modify the contents of the incoming
 request depending on the username. For a detailed description of this,
-see @ref{Hints}.
+@xref{Hints}.
 
 The file contains data in @dfn{User Profile} format (@pxref{User Profile}). 
 
@@ -1339,79 +1367,22 @@ DEFAULT         Suffix = ".slip",
 @cindex @file{huntgroups} file
 @cindex @file{raddb/huntgroups} file
 
-The @file{raddb/huntgroups} file segregates the incoming requests by
-the contents of the request pairlist.
+The @file{raddb/huntgroups} contains the definitions of the
+huntgroups. For a detailed description of huntgroup concept,
+@xref{Huntgroups}.
 
 The file contains data in @dfn{User Profile} format (@pxref{User Profile}). 
 
 @menu
-* Huntgroups matching rules::
 * Example: huntgroups example.   An example of the @file{huntgroups} file.
 @end menu
 
 @comment **L3***************************************************************
-@node Huntgroups matching rules, huntgroups example, huntgroups file, huntgroups file
-@subsection Huntgroup matching rules
-@cindex @file{huntgroups}, matching rules
-@cindex Matching rules for @file{huntgroups}
-
-Radius matches the packet against the contents of @file{hints} file
-using the following rules:
-
-@table @asis
-@item 1. Compare the @dfn{Effective checklist} with the request pairlist.
-For each pair from the @dfn{Effective checklist} find a pair with the
-same attribute from the request pairlist. If no such pair is found, the
-comparison fails. Otherwise, compare the values from both attributes as
-if the value from the supplied list were at the left side from the
-comparison operator of the Effective checklist pair.
-
-This may seem a bit complicated. Lets consider an example. Suppose the
-check pair is:
-
-@example
-NAS-Port-Id <= 20
-@end example
-
-and the supplied pair is:
-
-@example
-NAS-Port-Id = 10
-@end example
-
-Then Radius will perform the following comparison:
-
-@example
-10 <= 20
-@end example
-
-which will, of course, succeed.
-@item 2. Record matches
-If the reply-pairs contain @code{Strip-User-Name} attribute and its
-value is @code{Yes} (1), then any prefixes/suffixes are stripped off
-the value of @code{User-Name} attribute.
-
-If the reply-pairs contain the @code{Rewrite-Function} attribute, the
-function specified in the value of this attribute is applied (@pxref{rewrite file}).
-
-If the reply pairs contain @code{Fall-Through} attribute and its value is
-@code{Yes} (1) then Radius switches to the next record and goes back to
-the rule 1. Otherwise the matching process stops and returns the reply pairs
-from the record.
-@end table
-
-@comment **L3***************************************************************
-@node huntgroups example, , Huntgroups matching rules, huntgroups file
+@node huntgroups example, , , huntgroups file
 @subsection An example of @file{huntgroups} file.
 @exindex @file{huntgroups} file
 
 @example
-## The following lines define administrative user huntgroup and the commands
-## it can use:
-ROOT    NAS-IP-Address = 127.0.0.1, State = "getpid"            NULL
-ROOT    NAS-IP-Address = 127.0.0.1, State = "get-m-stat"        NULL
-ROOT    NAS-IP-Address = 127.0.0.1, State = "get-q-stat"        NULL
-
 ## This defines the packet rewriting function for the server 11.10.10.11
 DEFAULT NAS-IP-Address = 11.10.10.11, Rewrite-Function = "max_fixup"
         NULL
@@ -1439,9 +1410,19 @@ be forwarded. A port number can also be specified using syntax
 @var{hostname}:@var{port}. In this case the accounting port is computed as
 @var{port} + 1.
 @item Flags (optional)
-Only @code{nostrip} flag is currently allowed in this field. This flag
-means that the realm name should not be stripped off the username when
-logging.
+@end table
+
+The flags meaningful in @file{raddb/realms} are
+
+@table @asis
+@item strip
+Boolean value. Controls whether the realm name should be stripped off
+the username before forwarding the request to the remote server. Setting
+@code{strip} enables stripping, setting @code{nostrip} disables
+it. Default is to always strip user names.
+@item quota=@var{num}
+Set maximum number of concurrent logins allowed from this realm to
+the given value (@var{num}).
 @end table
 
 @menu
@@ -1457,7 +1438,7 @@ logging.
 # Realm                 Remote server[:port]            flags
 #----------------       ---------------------           --------
 that.net                radius.that.net                 nostrip
-dom.ain                 server.dom.ain:3000
+dom.ain                 server.dom.ain:3000             strip,quota=20
 @end example
 
 @comment *L2****************************************************************

@@ -15,12 +15,11 @@ information about Scheme and Guile @xref{Top,,Overview,guile,The Guile Reference
 
 @heading Variables
 
-@deffn %raddb-path
+@deffn Variable %raddb-path
 A path to radius configuration directory.
-
 @end deffn
 
-@deffn rad-server-list
+@deffn Function rad-server-list
 A list of radius servers. Each element of the list is:
 
 @lisp
@@ -44,7 +43,7 @@ rad-client-add-server.
 
 @heading Functions
 
-@deffn rad-send-internal PORT-NUMBER CODE-NUMBER PAIR-LIST
+@deffn Function rad-send-internal PORT-NUMBER CODE-NUMBER PAIR-LIST
 Sends the request to currently selected server.
 Arguments are:
 
@@ -84,28 +83,24 @@ On failure:
 @lisp
 	'()
 @end lisp
-
 @end deffn
 
-@deffn rad-send PORT-NUMBER CODE-NUMBER PAIR-LIST . VERBOSE
+@deffn Function rad-send PORT-NUMBER CODE-NUMBER PAIR-LIST . VERBOSE
 Sends a radius request. Actually it does the same work as rad-send-internal
 but if VERBOSE is specified, the verbose report about interaction with
 the radius server is printed.
-
 @end deffn
 
-@deffn rad-client-list-servers
+@deffn Function rad-client-list-servers
 List currently configured servers. Two columns for each server are displayed:
 Server ID and IP address.
-
 @end deffn
 
-@deffn rad-get-server
+@deffn Function rad-get-server
 Returns the ID of the currently selected server.
-
 @end deffn
 
-@deffn rad-client-set-server LIST
+@deffn Function rad-client-set-server LIST
 Selects for use the server described by LIST. A LIST should be:
 
 @lisp
@@ -122,10 +117,9 @@ where:
 @item ACCT-NUM          @tab Accounting port number,
 @item CNTL-NUM          @tab Control channel port number.
 @end multitable
-
 @end deffn
 
-@deffn rad-client-add-server LIST
+@deffn Function rad-client-add-server LIST
 Adds the server described by LIST to the list of active servers.
 A LIST should be:
 
@@ -144,10 +138,9 @@ where:
 @item ACCT-NUM          @tab Accounting port number,
 @item CNTL-NUM          @tab Control channel port number.
 @end multitable
-
 @end deffn
 
-@deffn rad-dict-name->attr NAME-STRING
+@deffn Function rad-dict-name->attr NAME-STRING
 Returns a dictionary entry for the given attribute name or #f if
 no such name was found in the dictionary.
 The entry is a list of the form:
@@ -166,49 +159,42 @@ where:
 	@item VENDOR
 @tab is the vendor PEC, if the attribute is a Vendor-Specific one, or #f otherwise.
 @end multitable
-
 @end deffn
 
-@deffn rad-dict-name->value ATTR VALUE-STRING
+@deffn Function rad-dict-name->value ATTR VALUE-STRING
 Returns the numeric value of the VALUE-STRING symbolic value pertaining
 to attribute ATTR. ATTR can be either the attribute name or its number.
-
 @end deffn
 
-@deffn rad-dict-pec->vendor PEC-NUMBER
+@deffn Function rad-dict-pec->vendor PEC-NUMBER
 Converts PEC to the vendor name
-
 @end deffn
 
-@deffn rad-read-no-echo PROMPT-STRING
+@deffn Function rad-read-no-echo PROMPT-STRING
 Prints the given PROMPT-STRING, disables echoing, reads a string up to the
 next newline character, restores echoing and returns the string entered.
 This is the interface to the C getpass(3) function.
-
 @end deffn
 
-@deffn rad-client-source-ip IP-STRING
+@deffn Function rad-client-source-ip IP-STRING
 Sets the IP address to be used as source IP. IP-STRING can be either an
 IP address in dotted-quad form or a hostname.
 @end deffn
 
-@deffn rad-client-timeout NUMBER
+@deffn Function rad-client-timeout NUMBER
 Sets the timeout for waiting to the server reply.
-
 @end deffn
 
-@deffn rad-client-retry NUMBER
+@deffn Function rad-client-retry NUMBER
 Sets the number of retries for sending requests to a radius server.
-
 @end deffn
 
-@deffn rad-format-code DEST-BOOL CODE-NUMBER
+@deffn Function rad-format-code DEST-BOOL CODE-NUMBER
 Format a radius reply code into a human-readable form.
 DEST-BOOL has the same meaning as in format.
-
 @end deffn
 
-@deffn rad-format-pair DEST-BOOL PAIR
+@deffn Function rad-format-pair DEST-BOOL PAIR
 Format a radius attribute/value pair for output.
 DEST-BOOL has the same meaning as in format.
 PAIR is either
@@ -221,10 +207,9 @@ PAIR is either
 @end lisp
 @noindent
 where VALUE may be of any type appropriate for the given attribute.
-
 @end deffn
 
-@deffn rad-print-pairs DEST-BOOL PAIR-LIST
+@deffn Function rad-print-pairs DEST-BOOL PAIR-LIST
 Output the radius attribute/value pairs from the PAIR-LIST.
 DEST-BOOL has the same meaning as in format.
 PAIR-LIST is a list of pairs in the form
@@ -243,30 +228,25 @@ where VALUE may be of any type appropriate for the given attribute.
 
 All "Reply-Message" pairs from the list are concatenated and displayed
 as one.
-
 @end deffn
 
-@deffn rad-format-reply-msg PAIR-LIST . TEXT
+@deffn Function rad-format-reply-msg PAIR-LIST . TEXT
 Concatenate and print text from all "Reply-Message" pairs from the
 PAIR-LIST. If TEXT is specified, it is printed before the concatenated
 text.
-
 @end deffn
 
-@deffn rad-list-servers
+@deffn Function rad-list-servers
 For each server from @code{rad-server-list} print its ID and hostname
 or IP address.
-
 @end deffn
 
-@deffn rad-select-server ID-STRING
+@deffn Function rad-select-server ID-STRING
 Select the server identified by ID-STRING as a current server. The server
 data are looked up in rad-server-list variable.
-
 @end deffn
 
-@deffn rad-add-server ID-STRING
+@deffn Function rad-add-server ID-STRING
 Add the server identified by ID-STRING to the list of current servers.
 The server data are looked up in rad-server-list variable.
-
 @end deffn

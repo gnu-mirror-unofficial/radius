@@ -17,7 +17,7 @@ CPPFLAGS=-DDATADIR=\"$(pkgdatadir)\"
 ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_LONG\).*\"\([^\"]\)*\"/\3/' \
    --regex='/[ \t]*SCM_[G]?DEFINE1?[ \t]*(\([^,]*\),[^,]*/\1/'
 
-radscm_LDADD=@GUILE_LIBS@ ../radlib/librad.la ../radlib/libdebug.la ../radlib/liblog.la
+radscm_LDADD=@GUILE_LIBS@ ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la 
 pkgdata_DATA=boot.scm session.scm radctl.scm guile-procedures.txt
 BUILT_SOURCES=radscm.x radscm.doc 
 

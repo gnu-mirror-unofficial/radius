@@ -13,7 +13,7 @@ EXTRA_DIST=screen.h
 
 bin_PROGRAMS    = raduse
 raduse_SOURCES = raduse.c screen.c display.c 
-raduse_LDADD   = -lcurses -ltermcap ../radlib/librad.la ../radlib/liblog.la ../radlib/libdebug.la
+raduse_LDADD   = -lcurses -ltermcap ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la
 INCLUDES        = -I$(top_srcdir)/include @INCLUDEPATH@
 
 SUFFIXES=.S .c .ln .o .s

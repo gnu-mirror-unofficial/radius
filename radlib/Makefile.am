@@ -16,11 +16,12 @@ libsql_a_SOURCES=mysql.c postgres.c
 endif
 
 noinst_LIBRARIES=librad.a $(LIBSQL) liblog.a libdebug.a 
-librad_a_SOURCES=intl.c radpaths.c alloc.c radprintf.c raddb.c dict.c \
-                 fixalloc.c iputil.c strerror.c strncasecmp.c \
-                 md5.c md5crypt.c mem.c leakdetect.c obstack.c \
+librad_a_SOURCES=intl.c radpaths.c sysdep.c alloc.c radprintf.c \
+		 raddb.c dict.c fixalloc.c iputil.c strerror.c \
+		 strncasecmp.c md5.c md5crypt.c mem.c leakdetect.c \
                  users_gram.c users_lex.c util.c client.c \
-		 insist.c debug.c slist.c dbm.c
+		 insist.c debug.c slist.c dbm.c obstack.c
+
 liblog_a_SOURCES=log.c 
 libdebug_a_SOURCES=debugmod.c
 

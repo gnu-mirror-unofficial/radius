@@ -29,14 +29,13 @@ typedef struct snmp_req {
 
 typedef struct mib_tree_node Mib_tree_node;
 
-typedef variable_list *(*oid_pf)(variable_list *, int *);
-typedef variable_list *(*oid_sf)(variable_list *, int *);
+typedef struct snmp_var *(*oid_pf)(struct snmp_var *, int *);
+typedef struct snmp_var *(*oid_sf)(struct snmp_var *, int *);
 
-typedef Mib_tree_node *(*oid_gf)(Mib_tree_node *, oid *, int);
+typedef Mib_tree_node *(*oid_gf)(Mib_tree_node *, oid_t);
 
 struct mib_tree_node {
-	oid *name;
-	int len;
+	oid_t name;
 	oid_pf parser;
 	oid_sf set;
 	oid_gf get;
@@ -49,33 +48,33 @@ void snmp_build_acct_tree();
 void snmp_req_free(SNMP_REQ *req);
 void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
 	
-oid_pf snmp_tree_pf(Mib_tree_node *, oid *, int);
-oid_sf snmp_tree_sf(Mib_tree_node *, oid *, int);
-Mib_tree_node * snmp_auth_getnext(Mib_tree_node *, oid *, int);
-Mib_tree_node * snmp_auth_get(Mib_tree_node *, oid *, int);
-Mib_tree_node * snmp_acct_getnext(Mib_tree_node *, oid *, int);
-Mib_tree_node * snmp_acct_get(Mib_tree_node *, oid *, int);
+oid_pf snmp_tree_pf(Mib_tree_node *, oid_t);
+oid_sf snmp_tree_sf(Mib_tree_node *, oid_t);
+Mib_tree_node * snmp_auth_getnext(Mib_tree_node *, oid_t);
+Mib_tree_node * snmp_auth_get(Mib_tree_node *, oid_t);
+Mib_tree_node * snmp_acct_getnext(Mib_tree_node *, oid_t);
+Mib_tree_node * snmp_acct_get(Mib_tree_node *, oid_t);
 
-variable_list * snmp_acct_var(variable_list *, int *);
-variable_list * snmp_acct_client_var(variable_list *, int *);
-variable_list * snmp_acct_compliance(variable_list *, int *);
-variable_list * snmp_acct_mib_group(variable_list *, int *);
-variable_list * snmp_acct_set(variable_list *, int *);
+struct snmp_var * snmp_acct_var(struct snmp_var *, int *);
+struct snmp_var * snmp_acct_client_var(struct snmp_var *, int *);
+struct snmp_var * snmp_acct_compliance(struct snmp_var *, int *);
+struct snmp_var * snmp_acct_mib_group(struct snmp_var *, int *);
+struct snmp_var * snmp_acct_set(struct snmp_var *, int *);
 
-variable_list * snmp_auth_var(variable_list *, int *);
-variable_list * snmp_auth_client_var(variable_list *, int *);
-variable_list * snmp_auth_compliance(variable_list *, int *);
-variable_list * snmp_auth_mib_group(variable_list *, int *);
-variable_list * snmp_auth_set(variable_list *, int *);
+struct snmp_var * snmp_auth_var(struct snmp_var *, int *);
+struct snmp_var * snmp_auth_client_var(struct snmp_var *, int *);
+struct snmp_var * snmp_auth_compliance(struct snmp_var *, int *);
+struct snmp_var * snmp_auth_mib_group(struct snmp_var *, int *);
+struct snmp_var * snmp_auth_set(struct snmp_var *, int *);
 
-variable_list * snmp_stat_var(variable_list *, int *);
-variable_list * snmp_stat_client_var(variable_list *, int *);
-Mib_tree_node * snmp_stat_getnext(Mib_tree_node *, oid *, int);
-Mib_tree_node * snmp_stat_get(Mib_tree_node *, oid *, int);
+struct snmp_var * snmp_stat_var(struct snmp_var *, int *);
+struct snmp_var * snmp_stat_client_var(struct snmp_var *, int *);
+Mib_tree_node * snmp_stat_getnext(Mib_tree_node *, oid_t);
+Mib_tree_node * snmp_stat_get(Mib_tree_node *, oid_t);
 
-variable_list * snmp_stat_port_var(variable_list *, int *);
-Mib_tree_node * snmp_stat_port_get(Mib_tree_node *, oid *, int);
-Mib_tree_node * snmp_stat_port_getnext(Mib_tree_node *, oid *, int);
+struct snmp_var * snmp_stat_port_var(struct snmp_var *, int *);
+Mib_tree_node * snmp_stat_port_get(Mib_tree_node *, oid_t);
+Mib_tree_node * snmp_stat_port_getnext(Mib_tree_node *, oid_t);
 
 #endif
 

@@ -92,4 +92,11 @@ extern int strncasecmp(char*, char*, int);
 #  define ut_user ut_name
 #endif
 
+#if defined (sun) && defined(__svr4__)
+RETSIGTYPE (*sun_signal(int signo, void (*func)(int)))(int);
+#define signal sun_signal
+#endif
+int set_nonblocking(int fd);
+int getmaxfd();
+
 #endif /* SYSDEP_H_INCLUDED */

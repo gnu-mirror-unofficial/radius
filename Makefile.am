@@ -37,7 +37,7 @@ endif
 EXTRA_DIST=include raddb doc mibs scripts contrib
 
 dist-hook:
-	(cd $(distdir); \
+	-(cd $(distdir); \
 	 find . \( -name CVS -o -name .emacs.desktop -o -name .deps -o \
                    -name '*~' -o -name core \) -exec rm -rf {} \; )
 

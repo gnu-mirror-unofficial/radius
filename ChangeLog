@@ -1,3 +1,21 @@
+2001-03-18  gray  <gray@farlep.net>
+	Finally finished writing SNMP library and attached it instead
+	of hacked up CMU version used previously. Adapted
+	radiusd/checkrad.c and radiusd/snmpserv.c for new calling 
+	conventions. The latter seems to need good rewriting.
+
+2001-03-17  gray  <gray@farlep.net>
+	Discovered and chopped memory leak in radiusd/checkrad.c. The
+	effect of the leak would be noticeable only if running radiusd
+	long enough with continuous SNMP polling of NASes.
+
+2001-03-15  gray  <gray@farlep.net>
+	Removed unnecessary radlog.h from includes. 
+	Moved system-dependent calls to radlib/sysdep.c.
+	Introduced getmaxfd() call instead of supposing an arbitrary 
+	number of open file descriptors (radiusd/radiusd.c, radiusd/exec.c).
+	Added check to the length of Password attribute in radiusd/client.c.
+
 2001-03-14  gray  <gray@farlep.net>
 	Added @ to the array of symbols allowed in a username.
 	Thanks to Jody Owens for reporting the bug.

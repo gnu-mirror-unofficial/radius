@@ -87,8 +87,9 @@ static struct argp_option options[] = {
 
 /* *************************** Global Variables **************************** */
 
-int        debug_flag; /* can be raised from debugger only */
-int        log_mode;
+int        debug_flag;     /* can be raised from debugger only */
+int        log_mode;       /* logging mode */
+char       *auth_log_hook; /* Authentication logging hook function */
 
 static int foreground; /* Stay in the foreground */
 int spawn_flag; 

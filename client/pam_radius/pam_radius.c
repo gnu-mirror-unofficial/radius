@@ -149,7 +149,7 @@ static char *radius_confdir = RADDB_DIR;
 static char *service_type = NULL;
 static RADCLIENT *radclient;
 
-#define DEBUG(m,c) if ((m)>=CNTL_DEBUG_LEV()) _pam_debug c
+#define DEBUG(m,c) if (CNTL_DEBUG_LEV()>=(m)) _pam_debug c
 #define AUDIT(c) if (cntl_flags&CNTL_AUDIT) _pam_debug c
 
 #define XSTRDUP(s) (s) ? strdup(s) : NULL
@@ -188,8 +188,8 @@ _pam_parse(pam_handle_t *pamh, int argc, const char **argv)
 
 		if (!strncmp(*argv,"debug",5)) {
 			ctrl |= CNTL_DEBUG;
-			if ((*argv)[6] == '=') 
-				CNTL_SET_DEBUG_LEV(ctrl,atoi(*argv+7));
+			if ((*argv)[5] == '=') 
+				CNTL_SET_DEBUG_LEV(ctrl,atoi(*argv+6));
 			else
 				CNTL_SET_DEBUG_LEV(ctrl,1);
 		} else if (!strcmp(*argv,"audit"))

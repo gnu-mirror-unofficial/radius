@@ -38,7 +38,7 @@ static char rcsid[] =
 #include <log.h>
 #include <radtest.h>
 
-#define OPTSTR "a:d:hLp:qr:s:t:vx:V"
+#define OPTSTR "a:d:hLp:qr:s:St:vx:V"
 struct option longopt[] = {
 	"assign", required_argument, 0, 'a',
 	"debug", required_argument, 0, 'x',
@@ -49,13 +49,12 @@ struct option longopt[] = {
 	"quick", no_argument, 0, 'q',
 	"retry", required_argument, 0, 'r',
 	"server", required_argument, 0, 's',
+	"shell", no_argument, 0, 'S',
 	"timeout", required_argument, 0, 't',
 	"verbose", no_argument, 0, 'v', 
 	"version", no_argument, 0, 'V',
 	0
 };
-
-#define RCFILE "radtestrc"
 
 Symtab *vartab;
 char *radius_dir = RADIUS_DIR;
@@ -80,7 +79,8 @@ main(argc, argv)
 	char **argv;
 {
 	int c;
-	int quiet = 0;
+	int quick = 0;
+	int shell = 0;
 	char *p;
 	char *server = NULL;
 	int retry = 0;
@@ -89,7 +89,8 @@ main(argc, argv)
 	app_setup();
 	initlog(argv[0]);
 	init_symbols();
-	
+
+	opterr = 0;
 	while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
@@ -107,13 +108,16 @@ main(argc, argv)
 		case 'p':
 			break;
 		case 'q':
-			quiet++;
+			quick++;
 			break;
 		case 'r':
 			retry = strtol(optarg, NULL, 0);
 			break;
 		case 's':
 			server = optarg;
+			break;
+		case 'S':
+			shell++;
 			break;
 		case 't':
 			timeout = strtol(optarg, NULL, 0);
@@ -129,8 +133,16 @@ main(argc, argv)
 			print_version();
 			break;
 		default:
-			print_usage();
-			return 1;
+			if (shell
+			    && argv[optind-1][0] == '-'
+			    && argv[optind-1][1] == '-'
+			    && (p = strchr(argv[optind-1], '=')) != NULL
+			    && !(p > argv[optind-1] && p[-1] == '\\')) {
+			    assign(argv[optind-1]+2);
+			} else {
+				print_usage();
+				return 1;
+			}
 		}
 	}
 
@@ -140,7 +152,7 @@ main(argc, argv)
 		radlog(L_ERR, _("error reading dictionary file"));
 		return 1;
 	}
-	radclient = radclient_alloc(0x7f000001, 0);
+	radclient = radclient_alloc(!quick, 0, 0);
 	
 	if (!radclient)
 		return 1;
@@ -212,39 +224,17 @@ main(argc, argv)
 		if (argc < 4)
 			serv.port[0] = DEF_AUTH_PORT;
 		if (argc < 6)
-			serv.port[0] = DEF_ACCT_PORT;
+			serv.port[1] = DEF_ACCT_PORT;
 		radclient->first_server =
 			radclient_append_server(radclient->first_server,
 						radclient_alloc_server(&serv));
 		argcv_free(argc, argv);
 	}
-	
-	if (!quiet) {
-		struct stat sb;
-		struct passwd *pw;
-		char *buffer;
-		int len, len1;
 
-		pw = getpwuid(getuid());
-		len = strlen(radius_dir) + sizeof(RCFILE) + 1;
-		len1 = strlen(pw->pw_dir) + sizeof(RCFILE) + 2;
-		if (len < len1)
-			len = len1;
-		buffer = emalloc(len);
-		sprintf(buffer, "%s/%s", radius_dir, RCFILE);
-		if (stat(buffer, &sb) == 0) {
-			if (open_input(buffer) == 0) {
-				yyparse();
-				close_input();
-			}
-		}
-		sprintf(buffer, "%s/.%s", pw->pw_dir, RCFILE);
-		if (stat(buffer, &sb) == 0) {
-			if (open_input(buffer) == 0) {
-				yyparse();
-				close_input();
-			}
-		}
+	if (!radclient->first_server) {
+		radlog(L_ERR,
+		       "No servers specfied. Use -s option.\n");
+		exit(1);
 	}
 	
 	argc -= optind;
@@ -515,6 +505,9 @@ static char usage_str[] =
 "    -q, --quick                  Quick mode\n"
 "    -r, --retry NUMBER           Set number of retries\n"
 "    -s, --server                 Set server name\n"
+"    -S, --shell                  Run in shell mode, i.e. treat all unknown\n"
+"                                 options in the form --VAR=VALUE as variable\n"
+"                                 assignments\n"
 "    -t, --timeout NUMBER         Set timeout in seconds\n"
 "    -v, --verbose                Verbose mode\n"
 "    -x, --debug DEBUG-LEVEL      Set debugging level\n"

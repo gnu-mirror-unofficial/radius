@@ -39,6 +39,7 @@ auth {
 	max-requests 127;
 	request-cleanup-delay 2;
 	detail yes;
+	detail-file-name "=nas_name(request_source_ip()) + \"/detail.auth\"";
 	strip-names yes;
 	checkrad-assume-logged yes;
 };
@@ -46,6 +47,7 @@ auth {
 acct {
 	max-requests 127;
 	request-cleanup-delay 2;
+	detail-file-name "=nas_name(request_source_ip()) + \"/detail\"";
 };
 
 rewrite {

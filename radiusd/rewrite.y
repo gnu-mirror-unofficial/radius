@@ -536,6 +536,8 @@ static Datatype return_type = Undefined;
                                    /* Data type of the topmost expression. */
 
 static int regcomp_flags = 0;     /* Flags to be used with regcomps */
+
+#define regex_init() regcomp_flags = 0
  
 /* Runtime */
 static size_t rewrite_stack_size = 4096;  /* Size of stack+heap */
@@ -1287,6 +1289,7 @@ parse_rewrite(char *path)
         yyeof = 0;
         locus.line = 1;
 	errcnt = 0;
+        regex_init();
         obstack_init(&input_stk);
 
         mtx_init();
@@ -1295,7 +1298,7 @@ parse_rewrite(char *path)
         frame_init();
         
         frame_push();
-        
+	
         yyparse();
 
         var_free_all();
@@ -1317,6 +1320,7 @@ parse_rewrite_string(char *str)
 	locus.file = "<string>";
 	locus.line = 1;
 	errcnt = 0;
+        regex_init();
         obstack_init(&input_stk);
 
         mtx_init();

@@ -20,8 +20,6 @@
 /* This file deals with contents of /etc/raddb directory (except config and
    dictionaries) */
 
-#define RADIUS_MODULE_FILES_C
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif

@@ -36,7 +36,7 @@ int
 main(int argc, char **argv)
 {
         /*grad_app_setup();*/
-        initlog(argv[0]);
+        /*initlog(argv[0]);*/
         
         scm_boot_guile(argc, argv, radscm_shell, 0);
         /*NOTREACHED*/

@@ -85,7 +85,6 @@ main(argc, argv)
         char **argv;
 {
         app_setup();    
-        initlog(argv[0]);
 
         if (grad_argp_parse(&argp, &argc, &argv, 0, NULL, NULL))
                 return 1;

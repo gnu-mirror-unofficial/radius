@@ -19,8 +19,6 @@
 
 /* RPP is a Radius Process Pool */
 
-#define RADIUS_MODULE_RPP_C
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif

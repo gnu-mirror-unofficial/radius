@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -17,7 +17,6 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#define RADIUS_MODULE_POSTGRES_C
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif

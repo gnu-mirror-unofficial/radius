@@ -1,3 +1,77 @@
+2004-01-31  Sergey Poznyakoff
+
+	* Makefile.am (debugmod rule): Removed
+	* autogen.sh: Debugmod is no longer necessary
+	* configure.ac: Likewise.
+	* include/Makefile.am: Likewise.
+	* include/radius.h (initlog,vlog,debug_module): Removed
+	(grad_logger_fp): New typedef
+	(grad_set_logger,grad_app_logger,grad_debug_p): New functions
+	(debug_on,debug): Rewritten using grad_debug_p
+	* include/radiusd.h (radiusd_logger): New function.
+
+	* lib/applog.c: Removed
+	* lib/Makefile.am (noinst_LTLIBRARIES): Removed
+	* lib/.cvsignore: Updated
+	* include/.cvsignore: Updated
+	* radiusd/.cvsignore: Updated
+	* radtest/.cvsignore: Updated
+	
+	* lib/debug.c: Rewritten. Debugging module info is now kept
+	in a linked list, so `make debugmod' is no longer necessary.
+	* lib/logger.c (grad_default_logger,grad_set_logger): New
+	functions
+
+	* radiusd/Makefile.am: Removed obsolete rules
+	* radiusd/log.c (vlog): Renamed to radiusd_logger.
+	* radiusd/radiusd.c (main): Register logger function
+	
+	* lib/client.c: Removed RADIUS_MODULE_ and calls to initlog()
+	* lib/leakdetect.c: Likewise
+	* lib/radpdu.c: Likewise
+	* lib/radsrv.c: Likewise
+	* radiusd/acct.c: Likewise
+	* radiusd/auth.c: Likewise
+	* radiusd/builddbm.c: Likewise
+	* radiusd/checkrad.c: Likewise
+	* radiusd/exec.c: Likewise
+	* radiusd/files.c: Likewise
+	* radiusd/input.c: Likewise
+	* radiusd/pam.c: Likewise
+	* radiusd/proxy.c: Likewise
+	* radiusd/radius.c: Likewise
+	* radiusd/radutil.c: Likewise
+	* radiusd/request.c: Likewise
+	* radiusd/rewrite.y: Likewise
+	* radiusd/rpp.c: Likewise
+	* radiusd/scheme.c: Likewise
+	* radiusd/snmpserv.c: Likewise
+	* radiusd/sql.c: Likewise
+	* radiusd/stat.c: Likewise
+	* radlast/radlast.c: Likewise
+	* radscm/main.c: Likewise
+	* radtest/gram.y: Likewise
+	* radtest/main.c: Likewise
+	* raduse/raduse.c: Likewise
+	* radwho/radwho.c: Likewise
+	* radzap/radzap.c: Likewise
+	* sql/mysql.c: Likewise
+	* sql/odbc.c: Likewise
+	* sql/postgres.c: Likewise
+		
+	* client/pam_radius/Makefile.am: Removed libdebug.la and obsolete
+	rules.
+	* radlast/Makefile.am: Likewise
+	* radscm/Makefile.am: Likewise
+	* radtest/Makefile.am: Likewise
+	* radwho/Makefile.am: Likewise
+	* radzap/Makefile.am: Likewise
+	* sql/Makefile.am: Likewise
+	
+	* scripts/debug.sh: Removed 
+	* scripts/debugmod.m4: Removed
+	* scripts/Makefile.am: Removed debug.sh and debugmod.m4
+	
 2004-01-29  Sergey Poznyakoff  
 
 	* Makefile.am (distuninstallcheck_listfiles): Override the

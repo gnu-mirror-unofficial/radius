@@ -419,6 +419,12 @@ int guile_cfg_handler(int argc, cfg_value_t *argv,
 extern struct cfg_stmt guile_stmt[];
 
 /* log.c */
+void radiusd_logger(int level,
+		    const RADIUS_REQ *req,
+		    const LOCUS *loc,
+		    const char *func_name,
+		    int en,
+		    const char *fmt, va_list ap);
 void sqllog __PVAR((int status, char *msg, ...));
 int logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
 			 void *handler_data);

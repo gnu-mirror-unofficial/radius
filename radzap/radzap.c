@@ -207,7 +207,6 @@ main(int argc, char **argv)
         struct arguments args;
         
         grad_app_setup();
-        initlog(argv[0]);
 
         if (s = getenv("RADZAP_CONFIRM"))
                 confirm_flag = atoi(s);

@@ -17,8 +17,6 @@
    along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#define RADIUS_MODULE_RADSRV_C
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -35,7 +33,6 @@
 #include <time.h>
 #include <ctype.h>
 #include <radius.h>
-#include <debugmod.h>
 
 /* Build and send a reply to the incoming request.
    Input: fd          -- Socket descriptor.

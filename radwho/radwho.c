@@ -231,7 +231,6 @@ main(int  argc, char **argv)
         int index;
 
         grad_app_setup();
-        initlog(argv[0]);
         if (grad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
                 return 1;
 

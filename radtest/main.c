@@ -147,7 +147,6 @@ main(int argc, char **argv)
         int index;
         
         grad_app_setup();
-        initlog(argv[0]);
         init_symbols();
 
         index = argc;

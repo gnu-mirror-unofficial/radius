@@ -268,7 +268,7 @@ void avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
 void avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
 		    int (*fun)(), void *closure);
 
-extern int do_not_resolve;
+extern int resolve_hostnames;
 char *ip_gethostname (UINT4, char *buf, size_t size);
 UINT4 ip_gethostaddr (char *);
 int good_ipaddr(char *);

@@ -29,8 +29,6 @@ AC_SUBST(BUILD_TARGET)
 AC_SUBST(INCLUDEPATH)
 AC_SUBST(YACC_OPTS)
 AC_SUBST(RADIUS_PID)
-AC_SUBST(PS)
-AC_SUBST(GETOPT)
 
 case $target in
 	*-*-linux*)	SHADOW_SUPPORT=yes
@@ -56,11 +54,17 @@ dnl out ac_dummy indirection if the argument has shell variables in it.
 dnl To compensate, I have to use my own dummy variable.
 
 ra_PATH=$PATH:/usr/ccs/bin:/usr/bin:/usr/local/bin
-AC_PATH_PROG(M4, m4, no, $ra_PATH)
 AC_PATH_PROG(PS, ps, no, $ra_PATH)
+AC_ARG_VAR(PS,[Full path to ps binary])
+
 AC_PATH_PROG(GETOPT, getopt, no, $ra_PATH)
+AC_ARG_VAR(GETOPT, [Full path to getopt binary])
+
 AC_PROG_LN_S
 AM_PROG_LIBTOOL
+
+M4='`cd $(top_srcdir); pwd`/scripts/missing --run m4'
+AC_SUBST(M4)
 
 AC_SUBST(build_POFILTER)
 RA_MAINTAINER_MODE([build_POFILTER=pofilter])
@@ -360,7 +364,7 @@ AC_MSG_RESULT($BUILD_CLIENT)
 ## **************
 AC_MSG_CHECKING(authentication port number)
 AC_ARG_WITH(auth-port,
-	AC_HELP_STRING([--with-auth-port=NUMBER],
+	AC_HELP_STRING([--with-auth-port={rfc|old|NUMBER}],
 	[specify port number to use for authentication]),
 	[case $withval in
 		[[0-9]][[0-9]]*)	AUTH_PORT=$withval

@@ -31,6 +31,7 @@ static char rcsid[] = "@(#) $Id$";
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <netdb.h>
 #include <pwd.h>

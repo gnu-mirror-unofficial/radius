@@ -97,7 +97,7 @@ ATTRIBUTE	Add-Port-To-IP-Address	1037	integer	- [-R-R--]=
 ATTRIBUTE	Exec-Program		1038	string	- [-R----]=
 ATTRIBUTE	Exec-Program-Wait	1039	string	- [-R----]=
 ATTRIBUTE	Hint			1040	string	- [L--R-R]
-ATTRIBUTE	Pam-Auth		1041	string	- [L--R-R]
+ATTRIBUTE	Pam-Auth		1041	string	- [L--R-R]=
 ATTRIBUTE	Login-Time		1042	string	- [L-----]
 
 # Attributes used by GNU Radius
@@ -112,7 +112,7 @@ VALUE		Acct-Type		SQL	3
 
 ATTRIBUTE	Match-Profile		2004	string	- [LR-R-R]
 ## ATTRIBUTE	Include-Profile		2005	string 
-ATTRIBUTE	Auth-Data		2006	string	- [L--R-R]
+ATTRIBUTE	Auth-Data		2006	string	- [L--R-R]=
 
 ATTRIBUTE	Log-Mode-Mask		2007	integer	- [L--R-R]+
 VALUE		Log-Mode-Mask		Log-Auth		1

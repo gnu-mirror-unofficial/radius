@@ -50,8 +50,8 @@ configuration files.
 logged at the @code{Info} log level.
 
 @item which
-Reports the running version of @command{radiusd}.
-@c [ FIXME ]
+Reports the running version of @command{radiusd}. @FIXME{What does
+it report, exactly? Give a reference to ps(1) for more info.}
 @end table
 
 

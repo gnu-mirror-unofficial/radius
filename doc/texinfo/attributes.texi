@@ -581,8 +581,7 @@ characters.
 @defattr{Vendor-Specific,26,string,LR,-R,-R,Append,No}
 
 This attribute is available to allow vendors to support their own
-extended attributes not suitable for general usage.
-@c [FIXME: some more detail over the VSAs ]
+extended attributes not suitable for general usage. @FIXME{some more detail over the VSAs?}
 
 @comment **************************************************************
 @node Accounting Attributes

@@ -30,6 +30,7 @@ radius_TEXINFOS=acct.texi\
  debug.texi\
  extensions.texi\
  fdl.texi\
+ gradient.texi\
  intro.texi\
  invoke.texi\
  logging.texi\
@@ -42,15 +43,36 @@ radius_TEXINFOS=acct.texi\
  radlast.texi\
  radping.texi\
  radscm.texi\
- raduse.texi\
  radwho.texi\
  radzap.texi\
+ rendition.texi\
  version.texi
 
 EXTRA_DIST = index.html.in
 
-CLEANFILES=*.tmp *.ats *.cps *.exs *.fns *.kws *.pgs \
+CLEANFILES=tmp-* *.tmp *.ats *.cps *.exs *.fns *.kws *.pgs \
  *.text *.html 
+
+PROJECT=$(PACKAGE_TARNAME)
+RENDITION=DISTRIB
+MAKEINFOFLAGS=-D$(RENDITION)
+
+tmp-$(PROJECT).texi: $(info_TEXINFOS) $(radius_TEXINFOS)
+	$(MAKEINFO) -D$(RENDITION) -Etmp-$(PROJECT).tmp -otmp-$(PROJECT).info \
+	 -I$(srcdir) $(PROJECT).texi
+	rm -f tmp-$(PROJECT).sed tmp-$(PROJECT).info*
+	echo '' > tmp-$(PROJECT).sed
+	test $(RENDITION) = DISTRIB \
+	  || echo >>tmp-$(PROJECT).sed 's/^@set DISTRIB/@set $(RENDITION)/'
+	sed -f tmp-$(PROJECT).sed tmp-$(PROJECT).tmp > tmp-$(PROJECT).texi
+	rm -f tmp-$(PROJECT).sed tmp-$(PROJECT).tmp
+
+$(PROJECT).dvi: tmp-$(PROJECT).texi
+	TEXINPUTS=$(top_srcdir)/scripts:$$TEXINPUTS \
+	 MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
+	 $(TEXI2DVI) tmp-$(PROJECT).texi
+	mv tmp-$(PROJECT).dvi $@
+
 
 if MAINTAINER_MODE
 BASE_URL="http://www.gnu.org/software/radius/manual/"

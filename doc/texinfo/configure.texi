@@ -1021,9 +1021,9 @@ absolute pathname, it will be searched in directories set up by
 
 @subheading Loading
 
-@c FIXME:
-
-The default load path is @code{@file{RADDB}:@file{DATADIR}/rewrite}.
+The default load path is @code{@file{RADDB}:@file{DATADIR}/rewrite}. @FIXME{
+I should describe in detail the loading process. Also, some kind of
+autoloading is necessary for Rewrite.}
 
 @comment **L3***************************************************************
 @node guile
@@ -1890,9 +1890,12 @@ The @file{raddb/hints} file is used to modify the contents of the incoming
 request depending on the username. For a detailed description of this,
 @xref{Hints}.
 
-The file contains data in @dfn{Matching Rule} format (@pxref{Matching Rule}). 
+The file contains data in @dfn{Matching Rule} format (@pxref{Matching
+Rule}). 
 
-The only attributes that can be used in the check list are:
+Notice, that versions of GNU Radius up to 1.0 allowed to use only
+a subset of attributes in the check list of a @file{hints} entry,
+namely: 
 
 @itemize @bullet
 @item @attr{Suffix}
@@ -1900,6 +1903,9 @@ The only attributes that can be used in the check list are:
 @item @attr{Group}
 @item @attr{User-ID}
 @end itemize
+
+@noindent
+This requirement has been removed in version 1.0.
 
 @menu
 * Example: hints example.       An example of @file{hints} file.

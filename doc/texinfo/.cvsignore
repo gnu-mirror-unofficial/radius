@@ -34,3 +34,4 @@ radius.text
 radius.tmp
 *.tar.gz
 index.html
+tmp-*

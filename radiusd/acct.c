@@ -497,7 +497,7 @@ write_detail(radreq, authtype, f)
 		s = ip_hostname(nas);
 		if (strlen(s) >= sizeof(nasname) || strchr(s, '/'))
 			return -1;
-		strcpy(nasname, s);
+		strcpy(nasname, s); /*FIXME FIXME FIXME*/
 	}
 	
 	/* Create a directory for this nas. */

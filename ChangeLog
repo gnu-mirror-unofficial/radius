@@ -1,3 +1,42 @@
+2001-07-12 Sergey Poznyakoff <gray@farlep.net>
+	Added possibility to defer evaluation of a reply pair value. To
+	defer evaluation of a pair, it should be specified in raddb/users
+	(or hints, huntgroups) in the following form:
+
+		NAME = "=function(arg1,arg2,...)"
+
+	`function' must be defined in raddb/rewrite.
+
+	* radlib/argcv.c: (new, from GNU mailutils) Split a string on
+	whitespace and given delimiters.
+	* radlib/Makefile.am: Added argcv.c. Sorted SOURCES.
+	* include/argcv.h: (new) Protos for argcv_.*() calls.
+	* include/Makefile.am: Added argcv.h.
+	* radiusd/rewrite.y: Modified interpret() to use argcv_ functions.
+	* include/radiusd.h: Added eval member to VALUE_PAIR structure.
+	Added proto for bug_report_address.
+	* radiusd/auth.c: Evaluate a/v pairs with eval flag set.
+	* radlib/users.y: Support for deferred evaluation.
+	* radlib/radprintf.c: Print correctly pairs with deferred evaluation.
+	* radiusd/files.c: Likewise.
+
+	* radlib/users.l: Support for $INCLUDE and $DEBUG directives.
+	* radlast/radlast.c: Fixed inappropriate usage of nas_lookup_ip() 
+	functions, introduced 2001-07-09.
+
+	* ylwrap: Modified sed expr to change lines `# line "lex.yy.c"'
+	to `# line "sourcename.c"'
+
+	* radlib/radpaths.c: Added bug_report_address.
+	* radiusd/radiusd.c: Added 'Report bugs to..' to the --help output.
+	* radiusd/version.c: Likewise.
+	* radlast/radlast.c: Likewise.
+	* raduse/raduse.c: Likewise.
+	* radwho/radwho.c: Likewise.
+	* radzap/radzap.c: Likewise.
+
+	* configure.in: Changed version number.
+
 2001-07-09 Sergey Poznyakoff <gray@farlep.net>
 	* m4/Makefile.am: (new)
 	* m4/maintain.m4: (new) Enable maintainer-specific definitions

@@ -33,7 +33,6 @@ its standard input and output channels.
 * Adding Reply Attributes::
 * Accounting Filters::
 * Invoking Accounting Filter::
-* Common Filters::
 @end menu
 
 @node Getting Acquainted with Filters
@@ -224,26 +223,6 @@ vertical bar character as a value of @attr{Acct-Ext-Program} in our
 DEFAULT NULL
         Acct-Ext-Program = "|check_clid:
 @end example        
-
-@node Common Filters
-@subsection Common Filters
-
-The only aspect of the filter functionality we have not covered is
-so called @dfn{common filter}. By default, each @command{radiusd} thread
-runs its own instance of the filter. This allows all threads to run
-concurrently. However, in some configurations it might be necessary to
-share a single instance of the filter among all threads. Such filters
-are called @dfn{common} filters. Notice, that common filters create potential
-bottleneck in the data flow of the program: each thread has to wait
-for the previous request to be finished before passing its data to the
-filter.
-
-A filter is declared as common by adding the following statement to
-its declaration:
-
-@example
-common yes;
-@end example
 
 @comment *L1****************************************************************
 @node Rewrite

@@ -113,7 +113,6 @@ acct_start_query     INSERT INTO calls \
                             0,\
                             0,\
                             '%C{Framed-IP-Address}',\
-                            0,\
                             '%C{Called-Station-Id}',\
                             '%C{Calling-Station-Id}')
 

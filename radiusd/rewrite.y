@@ -4067,6 +4067,12 @@ temp_space_create()
 	return (char*)(mach.stack + mach.st);
 }
 
+size_t
+temp_space_size()
+{
+	return (mach.ht - mach.st)*sizeof(mach.stack[0]);
+}
+
 void
 temp_space_copy(char **baseptr, char *text, size_t size)
 {
@@ -5165,6 +5171,23 @@ bi_gethostbyname()
 }
 
 static void
+bi_time()
+{
+	pushn((RWSTYPE) time(NULL));
+}
+
+static void
+bi_strftime()
+{
+	time_t t = (time_t) getarg(1);
+	char *fmt = (char*) getarg(2);
+	struct tm *tm = localtime(&t);
+	char *base = temp_space_create();
+	size_t n = strftime(base, temp_space_size(), fmt, tm);
+	pushn((RWSTYPE) temp_space_fix(base + n + 1));
+}
+
+static void
 rw_regerror(const char *prefix, regex_t *rx, int rc)
 {
 	size_t sz = regerror(rc, rx, NULL, 0);
@@ -5521,6 +5544,9 @@ static builtin_t builtin[] = {
 	/* DNS lookups */
 	{ bi_gethostbyaddr, "gethostbyaddr", Integer, "s" },
 	{ bi_gethostbyname, "gethostbyname", String, "i" },
+	/* Time functions */
+	{ bi_time, "time", Integer, "" },
+	{ bi_strftime, "strftime", String, "si" },
 	{ NULL }
 };
 

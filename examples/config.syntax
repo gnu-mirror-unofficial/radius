@@ -122,6 +122,7 @@ usedbm no;
 # SNMP sub-system configuration
 snmp {
 	port 4500;		# Port number
+	listen localhost:160;   # Same as in auth and acct.
 	max-requests 24;	# Maximum number of ACCT requests in queue
 	time-to-live 10;	# Request time to live
         request-cleanup-delay 0; # Number of seconds the request remains

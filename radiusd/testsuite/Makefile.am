@@ -68,6 +68,16 @@ remote.exp:;
 	@test ! -f remote.exp || mv remote.exp remote.bak
 	@mv $@-t remote.exp
 
+## Directories raddb and proxy are copied by test.sh if srcdir!=builddir.
+distclean-local:
+	here=`cd $(top_builddir)/$(subdir) && pwd`; \
+	source=`cd $(srcdir) && pwd`; \
+	if ! test $$here/raddb -ef $$source/raddb; then \
+		rm -rf $$here/raddb; \
+	fi; \
+	if ! test $$here/proxy -ef $$source/proxy; then \
+		rm -rf $$here/proxy; \
+	fi
 
 dist-hook:
 	here=`cd $(top_builddir)/$(subdir) && pwd`; \

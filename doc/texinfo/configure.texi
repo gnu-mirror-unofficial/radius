@@ -1825,6 +1825,17 @@ number of retries for each server are set via @code{timeout} and
 The flags meaningful in @file{raddb/realms} are
 
 @table @asis
+@item ignorecase
+Boolean value. When set, enables case-insensitive comparison of
+realm names. For example, if a realm were defined as
+
+@smallexample
+myrealm.net     remote.server.net:1812  ignorecase
+@end smallexample
+
+@noindent
+then user name @samp{user@@MyREAlm.NeT} will match this definition.
+
 @item strip
 Boolean value. Controls whether the realm name should be stripped off
 the username before forwarding the request to the remote server. Setting

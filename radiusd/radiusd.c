@@ -104,9 +104,7 @@ int        log_mode;
 
 static int foreground; /* Stay in the foreground */
 static int spawn_flag;
-static int watch_interval = 0; /* Delay in seconds between watcher wake-ups.
-				  If zero, watcher process will not be
-				  started */
+
 int use_dbm = 0;
 int open_acct = 1;
 int auth_detail = 0;
@@ -171,6 +169,7 @@ static struct signal_list {
         1, SIGHUP,  SH_ASYNC, sig_hup,
         0, SIGQUIT, SH_ASYNC, sig_exit,
         0, SIGTERM, SH_ASYNC, sig_exit,
+	0, SIGCHLD, SH_ASYNC, NULL,
         0, SIGBUS,  SH_ASYNC, sig_fatal,
         0, SIGTRAP, SH_ASYNC, sig_fatal,
         0, SIGFPE,  SH_ASYNC, sig_fatal,
@@ -243,8 +242,6 @@ static struct argp_option options[] = {
          N_("Set debugging level"), 0},
         {"log-auth", 'y', NULL, 0,
          N_("Log authentications"), 0},
-	{"watcher", 'w', N_("NUMBER"), OPTION_ARG_OPTIONAL,
-	 N_("Start watcher process"), 0},
         {"log-auth-pass", 'z', NULL, 0,
          N_("Log users' passwords"), 0},
         {NULL, 0, NULL, 0, NULL, 0}
@@ -328,12 +325,6 @@ parse_opt (key, arg, state)
         case 'y':
                 log_mode |= RLOG_AUTH;    
                 break;
-	case 'w':
-		if (optarg)
-			watch_interval = strtoul(optarg, NULL, 0);
-		else
-			watch_interval = 10; /* Default interval */
-		break;
         case 'z':
                 log_mode |= RLOG_AUTH_PASS;
                 break;
@@ -373,7 +364,6 @@ main(argc, argv)
         if (debug_flag == 0) {
                 foreground = 0;
                 spawn_flag = 1;
-		watch_interval = 0;
         }
 
         app_setup();
@@ -390,9 +380,6 @@ main(argc, argv)
         if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, NULL))
                 return 1;
 
-	if (!foreground)
-		foreground = radiusd_is_watched();
-		
         log_set_default("default.log", -1, -1);
         if (radius_mode != MODE_DAEMON)
                 log_set_to_console();
@@ -439,20 +426,12 @@ main(argc, argv)
                 exit(builddbm(extra_arg));
 #endif
         case MODE_DAEMON:
-		if (watch_interval && xargv[0][0] != '/') {
-			radlog(L_ERR,
-			       _("can't create watcher: not started as absolute pathname"));
-			exit(1);
-		}
-
 		chdir("/");
 		umask(022);
 
                 if (!foreground)
                         radiusd_daemon();
 		
-		if (watch_interval && !radiusd_is_watched())
-			radiusd_watcher();
                 common_init();
         }
 
@@ -508,7 +487,7 @@ radiusd_daemon()
 #endif
         /* SIGHUP is ignored because when the session leader terminates
            all process in the session are sent the SIGHUP.  */
-        signal (SIGHUP, SIG_IGN);
+        install_signal(SIGHUP, SIG_IGN);
 
         /* fork() again so the parent, can exit. This means that we, as a
            non-session group leader, can never regain a controlling
@@ -540,65 +519,6 @@ radiusd_daemon()
         efree(p);
 }
 
-static int child_died;
-static int child_exit_status;
-
-RETSIGTYPE
-sig_watcher(sig)
-	int sig;
-{
-	pid_t pid;
-
-	while ((pid = waitpid(-1, &child_exit_status, WNOHANG)) > 0) 
-		child_died = 1;
-	signal(SIGCHLD, sig_watcher);
-}
-
-RETSIGTYPE
-sig_watcher_exit(sig)
-	int sig;
-{
-	radiusd_pidfile_remove(RADIUSD_WATCHER_FILE);
-	exit(0);
-}
-
-void
-radiusd_watcher()
-{
-	pid_t pid;
-
-	radiusd_pidfile_write(RADIUSD_WATCHER_FILE);
-	
-	pid = fork();
-	/* Child returns immediately */
-	if (pid == 0)
-		return;
-
-	if (pid < 0) {
-		radlog(L_CRIT|L_PERROR, "fork");
-		exit(1);
-	}
-
-	/* Master: */
- 
-	signal(SIGCHLD, sig_watcher);
-	signal(SIGTERM, sig_watcher_exit);
-	signal(SIGQUIT, sig_watcher_exit);
-	signal(SIGINT, sig_watcher_exit);
-
-	while (1) {
-		sleep(watch_interval);
-		if (child_died) {
-			char buffer[80];
-			format_exit_status(buffer,
-					   sizeof buffer, child_exit_status);
-			radlog(L_NOTICE, "radiusd %s", buffer);
-			radiusd_primitive_restart(1);
-			child_died = 0;
-		}
-	}
-}
-
 void
 common_init()
 {
@@ -617,8 +537,8 @@ common_init()
 #endif
 
         /* Install signal handlers */
-	signal(SIGPIPE, SIG_IGN);
-        signal(SIGIOT, SIG_DFL);
+	install_signal(SIGPIPE, SIG_IGN);
+        install_signal(SIGIOT, SIG_DFL);
 
 	sigemptyset(&rad_signal_set);
 	for (i = 0; i < NITEMS(rad_signal_list); i++) {
@@ -861,9 +781,6 @@ radiusd_flush_queues()
 int
 radiusd_restart()
 {
-	if (radiusd_is_watched())
-		radiusd_exit();
-	
 	radlog(L_NOTICE, _("restart initiated"));
         if (xargv[0][0] != '/') {
                 radlog(L_ERR,
@@ -910,7 +827,7 @@ radiusd_primitive_restart(cont)
 
         /* Restore signals */
 	for (i = 0; i < NITEMS(rad_signal_list); i++) 
-		signal(rad_signal_list[i].sig, SIG_DFL);
+		install_signal(rad_signal_list[i].sig, SIG_DFL);
         
         /* Let the things settle */
         sleep(10);
@@ -1223,9 +1140,9 @@ radiusd_before_config_hook(unused1, unused2)
 	void *unused1;
 	void *unused2;
 {
-                radiusd_flush_queues();
-		socket_list_init(socket_first);
-        }
+	radiusd_flush_queues();
+	socket_list_init(socket_first);
+}
 
 void
 radiusd_after_config_hook(unused1, unused2)
@@ -1265,34 +1182,6 @@ reconfigure()
         }
 
 	run_after_config_hooks(NULL);
-}
-
-/*
- *      Find out my own IP address (or at least one of them).
- */
-UINT4
-getmyip()
-{
-        char *name;
-        int name_len = 256;
-        UINT4 ip;
-        int status;
-        
-        name = emalloc(name_len);
-        while (name
-               && (status = gethostname(name, name_len)) == 0
-               && !memchr(name, 0, name_len)) {
-                name_len *= 2;
-                name = erealloc(name, name_len);
-        }
-        if (status) {
-                radlog(L_CRIT, _("can't find out my own IP address"));
-                exit(1);
-        }
-                
-        ip = ip_gethostaddr(name);
-        efree(name);
-        return ip;
 }
 
 void
@@ -1868,15 +1757,6 @@ radiusd_pidfile_remove(name)
 	char *p = mkfilename(radpid_dir, name);
 	unlink(p);
 	efree(p);
-}
-
-int
-radiusd_is_watched()
-{
-	pid_t ppid = radiusd_pidfile_read(RADIUSD_WATCHER_FILE);
-	if (ppid == -1)
-		return 0;
-	return kill(ppid, 0) == 0;
 }
 
 int

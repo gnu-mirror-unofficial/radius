@@ -29,7 +29,7 @@
 #include <log.h>
 
 static int log_category = L_CAT(L_MAIN);  /* Default logging category */
-Channel *chanlist;                  /* List of defined channels */
+static Channel *chanlist;                  /* List of defined channels */
 
 static void log_to_channel(Channel *chan, int cat, int pri,
 			   char *buf1, char *buf2, char *buf3);

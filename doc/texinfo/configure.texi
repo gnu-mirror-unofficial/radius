@@ -994,7 +994,9 @@ monitored ports: increase max-port-count
 @subheading Syntax:
 @smallexample
 rewrite @{
-        [ stack-size @var{number};
+        [ stack-size @var{number} ; ]
+        [ load-path @var{string} ; ]
+        [ load @var{string} ; ]
 @};
 @end smallexample
 
@@ -1005,6 +1007,23 @@ rewrite @{
 Configures runtime stack size for Rewrite. The @var{number} is the
 size of stack in words. The default value is 4096.
 @end table
+
+@subheading String statements
+@table @code
+@item load-path
+Add specified pathname to the list of directories searched for
+rewrite files. 
+@item load
+Loads the specified source file on startup. Unless @var{string} is an
+absolute pathname, it will be searched in directories set up by
+@code{load-path} statement.
+@end table 
+
+@subheading Loading
+
+@c FIXME:
+
+The default load path is @code{@file{RADDB}:@file{DATADIR}/rewrite}.
 
 @comment **L3***************************************************************
 @node guile
@@ -1921,9 +1940,15 @@ Two of them are mandatory. The fields are:
 @table @asis
 @item Realm name
 Specifies the name of the realm being defined, i.e. part of the login
-name after the @samp{@@} symbol. The special realm name @samp{NOREALM}
-defines the empty realm, the name @samp{DEFAULT} defines the default
-realm (@pxref{Realms}).
+name after the @samp{@@} symbol. There are three special forms of this
+field.
+
+The name @samp{NOREALM} defines the empty realm, i.e. lines
+marked with this name will match user names without any realm suffix.
+
+The name @samp{DEFAULT} defines the default realm
+(@pxref{Realms}). The lines with this realm name will match any user
+name, not matched by any other line in @file{raddb/realms}.
 
 @item Remote server list
 
@@ -1944,6 +1969,24 @@ The servers from this list are tried in turn until any of them replies
 or the list is exhausted, whichever occurs first. The timeout value and
 number of retries for each server are set via @code{timeout} and
 @code{retry} flags (see below).
+
+There may be cases where you would wish a particular realm to be
+served by the server itself. It is tempting to write
+
+@smallexample
+# @emph{Wrong!}
+realm.name      localhost
+@end smallexample
+
+@noindent
+however, this will not work. The special form of the server list is
+provided for this case. It is the word @samp{LOCAL}. The correct
+configuration line for the above case will thus be:
+
+@smallexample
+# Use this to declare a locally handled realm
+realm.nam       LOCAL
+@end smallexample
 
 @item Flags (optional)
 @end table

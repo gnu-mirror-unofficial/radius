@@ -661,8 +661,8 @@ hints_setup(RADIUS_REQ *req)
 	
         /* Add Proxy-Replied pair if necessary */
         switch (req->code) {
-        case RT_AUTHENTICATION_ACK:
-        case RT_AUTHENTICATION_REJECT:
+        case RT_ACCESS_ACCEPT:
+        case RT_ACCESS_REJECT:
         case RT_ACCOUNTING_RESPONSE:
         case RT_ACCESS_CHALLENGE:
                 tmp = avp_create_integer(DA_PROXY_REPLIED, 1);

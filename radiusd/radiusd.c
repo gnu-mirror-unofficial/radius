@@ -1173,12 +1173,9 @@ rad_req_drop(type, radreq, origreq, fd, status_str)
 
 	if (!radreq)
 		radreq = origreq;
-        radlog(L_NOTICE,
-               _("Dropping %s packet from client %s, ID: %d: %s"),
-               request_class[type].name,
-               client_lookup_name(radreq->ipaddr, buf, sizeof buf),
-               radreq->id,
-               status_str);
+	
+        radlog_req(L_NOTICE, radreq,
+		   "%s: %s", _("Dropping packet"),  status_str);
 
         switch (type) {
         case R_AUTH:

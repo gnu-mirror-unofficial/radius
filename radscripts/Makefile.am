@@ -32,7 +32,7 @@ radauth: $(srcdir)/radauth.m4
               -DGETOPT=$(GETOPT) $(srcdir)/radauth.m4 > radauth
 
 radtest: $(srcdir)/radtest.m4
-	$(M4) -SRCDIR=$(srcdir) -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
+	$(M4) -DSRCDIR=$(srcdir) -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
               $(srcdir)/radtest.m4 > radtest
 
 

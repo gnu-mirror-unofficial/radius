@@ -226,6 +226,7 @@ RA_CHECK_INADDR_LOOPBACK
 #AC_FUNC_MEMCMP
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
+AC_FUNC_MMAP
 AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  mkdir mktime select socket strdup strtol lockf \
  setlocale bzero \
@@ -578,7 +579,12 @@ AC_ARG_ENABLE(snmp,
 		*)		AC_MSG_ERROR(--enable-snmp can't be used with an argument)				
 				exit 1;;
 	esac])
-	
+
+AH_BOTTOM([
+#ifndef HAVE_MMAP
+# undef USE_SNMP
+#endif])
+
 ## **************
 ## Directories
 ## **************

@@ -133,22 +133,14 @@ read_realms_entry(void *closure, int fc, char **fv, LOCUS *loc)
         STRING_COPY(rp->realm, fv[0]);
         
         if (i < fc) {
-                envar_t *args;
-                int n;
-                
-                args = envar_parse_argcv(fc-i, &fv[i]);
+                rp->args = envar_parse_argcv(fc-i, &fv[i]);
 
-                rp->striprealm = envar_lookup_int(args, "strip", 1);
-                n = envar_lookup_int(args, "quota", 0);
-                if (n)
-                        rp->maxlogins = n;
 		if (rp->queue) {
-			rp->queue->timeout = envar_lookup_int(args,
+			rp->queue->timeout = envar_lookup_int(rp->args,
 							      "timeout", 1);
-			rp->queue->retries = envar_lookup_int(args,
+			rp->queue->retries = envar_lookup_int(rp->args,
 							      "retries", 1);
 		}
-                envar_free_list(&args);
         }
 	if (!realms)
 		realms = list_create();
@@ -237,3 +229,15 @@ realm_lookup_ip(UINT4 ip)
 	return p;
 }
 
+int
+realm_strip_p(REALM *r)
+{
+	return envar_lookup_int(r->args, "strip", 1);
+}
+
+size_t
+realm_get_quota(REALM *r)
+{
+	return envar_lookup_int(r->args, "quota", 0);
+}
+		

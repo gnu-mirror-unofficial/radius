@@ -507,8 +507,7 @@ proxy_send(radreq, activefd)
         if (pp->next) {
                 VALUE_PAIR *p = pp->next;
                 pp->next = p->next;
-                p->next = NULL;  /* be sure to delete *only* this pair */
-                avl_free(p);
+                avp_free(p); /* be sure to delete *only* this pair */
         }
 #if 1   
         /* And restore username. */
@@ -661,8 +660,7 @@ proxy_receive(radreq, activefd)
                         prev->next = proxy_state_pair->next;
                 else
                         radreq->request = proxy_state_pair->next;
-                proxy_state_pair->next = NULL;
-                avl_free(proxy_state_pair);
+                avp_free(proxy_state_pair);
         }
 
         /* Only allow some attributes to be propagated from

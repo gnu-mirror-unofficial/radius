@@ -425,3 +425,6 @@ void rad_boot();
 void scheme_load(char *filename);
 void scheme_load_path(char *pathname);
 void scheme_debug(int val);
+int scheme_auth(char *procname, RADIUS_REQ *req,
+		VALUE_PAIR *user_check, VALUE_PAIR **user_reply_ptr);
+int scheme_acct(char *procname, RADIUS_REQ *req);

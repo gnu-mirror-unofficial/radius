@@ -3886,7 +3886,7 @@ check_codesize(int delta)
 {
         if (rw_pc + delta >= rw_codesize) {
                 INSTR *p = emalloc((rw_codesize + 4096) * sizeof(rw_code[0]));
-                memcpy(rw_code, p, rw_codesize);
+                memcpy(p, rw_code, rw_codesize * sizeof(rw_code[0]));
                 efree(rw_code);
                 rw_code = p;
                 rw_codesize += 4096;

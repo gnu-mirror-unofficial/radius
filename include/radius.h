@@ -577,13 +577,22 @@ struct channel {
 extern int debug_level[];
 
 /* Function prototypes */
-void initlog(char*);
+typedef void (*grad_logger_fp) (int lvl,
+				const RADIUS_REQ *req,
+				const LOCUS *loc,
+				const char *func_name,
+				int en,
+				const char *fmt,
+				va_list ap);
+grad_logger_fp grad_set_logger(grad_logger_fp fp);
+void grad_app_logger(int level,
+		     const RADIUS_REQ *req,
+		     const LOCUS *loc,
+		     const char *func_name, int en,
+		     const char *fmt, va_list ap);
+
 void radlog_open(int category);
 void radlog_close();
-void vlog(int lvl,
-	  const RADIUS_REQ *req,
-	  const LOCUS *loc, const char *func_name,
-	  int en, const char *fmt, va_list ap);
 void radlog __PVAR((int level, const char *fmt, ...));
 int __grad_insist_failure(const char *, const char *, int);
 void radlog_req __PVAR((int level, RADIUS_REQ *req, const char *fmt, ...));
@@ -597,27 +606,24 @@ void radlog_loc __PVAR((int lvl, LOCUS *loc, const char *msg, ...));
 # define MAX_DEBUG_LEVEL 100
 #endif
 
-struct debug_module {
-        char *name;
-        int  modnum;
-};
-
-extern struct debug_module debug_module[];
-
 #if RADIUS_DEBUG
-# define debug_on(level) (debug_level[RADIUS_MODULE] >= level)
+# define debug_on(level) grad_debug_p(__FILE__, level)
 # define debug(level, vlist) \
-   if (debug_level[RADIUS_MODULE] >= level) \
+   if (grad_debug_p(__FILE__, level)) \
     _debug_print(__FILE__, __LINE__, __FUNCTION__, _debug_format_string vlist)
 #else
 # define debug_on(level) 0
 # define debug(mode,vlist)
 #endif
 
+int grad_debug_p(char *name, int level);
 void _debug_print(char *file, size_t line, char *func_name, char *str);
 char *_debug_format_string __PVAR((char *fmt, ...));
 const char *auth_code_str(int code);
 const char *auth_code_abbr(int code);
+void set_debug_levels(char *str);
+int set_module_debug_level(char *name, int level);
+void clear_debug();
 
 /* Parsing */   
 
@@ -629,10 +635,6 @@ void log_release();
 
 void register_channel(Channel *chan);
 void register_category(int cat, int pri, RAD_LIST *chanlist);
-
-void set_debug_levels(char *str);
-int set_module_debug_level(char *name, int level);
-void clear_debug();
 
 void log_set_to_console();
 void log_set_default(char *name, int cat, int pri);

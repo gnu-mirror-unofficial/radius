@@ -40,22 +40,6 @@
 /* ************************************************************************* */
 /* Functions local to this module */
 
-static UINT4
-get_socket_addr(int fd)
-{
-	struct sockaddr_in sin;
-	int len = sizeof(sin);
-	UINT4 ip = 0;
-
-	if (getsockname(fd, (struct sockaddr*)&sin, &len) == 0)
-		ip = sin.sin_addr.s_addr;
-
-	if (ip == INADDR_ANY)
-		ip = ref_ip;
-	return ip;
-}
-
-
 /*
  *      Decode a password and encode it again.
  */
@@ -63,7 +47,7 @@ static void
 passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
 	      RADIUS_REQ *req)
 {
-        char    password[AUTH_STRING_LEN+1];
+        char password[AUTH_STRING_LEN+1];
         req_decrypt_password(password, req, pass_pair);
         efree(pass_pair->avp_strvalue);
         encrypt_password(pass_pair, password, new_vector, new_secret);
@@ -79,7 +63,6 @@ int
 proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
 {
 	VALUE_PAIR *p, *proxy_state_pair = NULL;
-        PROXY_STATE *state;
 	RADIUS_SERVER *server;
 	
 	if (!qr->realm) {
@@ -97,30 +80,33 @@ proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
                 if (p->attribute == DA_PROXY_STATE) 
                         proxy_state_pair = p;
         }
+
+	if (proxy_state_pair
+	    && proxy_state_pair->avp_strlength == sizeof(PROXY_STATE)) {
+		PROXY_STATE *state;
+
+		state = (PROXY_STATE *)proxy_state_pair->avp_strvalue;
 	
-        state = proxy_state_pair ?
-                   (PROXY_STATE *)proxy_state_pair->avp_strvalue : NULL;
-	
-        if (state) {
 		debug(1,
-		      ("state: ipaddr %08x, id %u, proxy_id %u, rem_ipaddr %08x",
-		       state->ipaddr,
+		      ("state: ipaddr %08x, id %u, proxy_id %u, remote_ip %08x",
+		       state->client_ip,
 		       state->id,
 		       state->proxy_id,
-		       state->rem_ipaddr));
+		       state->remote_ip));
 		
-                if (state->proxy_id == r->id
-		    && state->rem_ipaddr == r->ipaddr) {
+                if (state->ref_ip == ref_ip
+		    && state->proxy_id == r->id
+		    && state->remote_ip == r->ipaddr) {
 			debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x, proxy_id %d %d, server_addr %#8x %#8x", 
 				   qr->id, state->id,
-				   qr->ipaddr, state->ipaddr,
+				   qr->ipaddr, state->client_ip,
 				   qr->server_id, state->proxy_id,
-				   server->addr, state->rem_ipaddr));
+				   server->addr, state->remote_ip));
         
-			if (state->ipaddr == qr->ipaddr
+			if (state->client_ip == qr->ipaddr
 			    && state->id  == qr->id
 			    && state->proxy_id == qr->server_id
-			    && state->rem_ipaddr == server->addr) {
+			    && state->remote_ip == server->addr) {
 				debug(1,("EQUAL!!!"));
 				return 0;
 			}
@@ -183,11 +169,12 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
         p->avp_strvalue = emalloc(p->avp_strlength);
         
         proxy_state = (PROXY_STATE *)p->avp_strvalue;
-	       
-        proxy_state->ipaddr = radreq->ipaddr; /*FIXME: get_socket_addr(fd);*/
+
+	proxy_state->ref_ip = ref_ip;
+        proxy_state->client_ip = radreq->ipaddr;
         proxy_state->id = radreq->id;
         proxy_state->proxy_id = radreq->server_id;
-        proxy_state->rem_ipaddr = server->addr;
+        proxy_state->remote_ip = server->addr;
 
 	avl_add_pair(&plist, p);
 

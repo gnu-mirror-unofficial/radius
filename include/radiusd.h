@@ -123,10 +123,11 @@ typedef struct client {
 } CLIENT;
 
 typedef struct proxy_state {
-        UINT4                   ipaddr;
-        UINT4                   id;
-        UINT4                   proxy_id;
-        UINT4                   rem_ipaddr;
+	UINT4 ref_ip;             /* Radius server IP */
+        UINT4 proxy_id;           /* Proxy ID assigned by the server */
+        UINT4 remote_ip;          /* Remote radius server IP */
+        UINT4 client_ip;          /* IP of the requesting client */ 
+        UINT4 id;                 /* Radius request ID */
 } PROXY_STATE;
 
 typedef struct {
@@ -368,7 +369,7 @@ void radiusd_set_postconfig_hook(void (*f)(void *, void *), void *p, int once);
 
 
 /* exec.c */
-int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **, int, char **);
+int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **, int);
 void filter_cleanup(pid_t pid, int status);
 int filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
 int filter_acct(char *name, RADIUS_REQ *req);

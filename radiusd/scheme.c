@@ -692,3 +692,39 @@ scheme_eval_boolean_expr(char *expr)
 }
 
 #endif
+
+int
+scheme_eval_avl (radiusd_request_t *request,
+		 grad_avp_t *lhs, grad_avp_t *rhs,
+		 grad_avp_t **reply,
+		 grad_avp_t **pfailed)
+{
+#ifdef USE_SERVER_GUILE
+	int rc = 0;
+        grad_avp_t *p;
+        
+        if (!use_guile) {
+                grad_log_req(L_ERR, request->request,
+                             _("Guile authentication disabled in config"));
+                return -1;
+        }
+
+	for (p = rhs; p; p = p->next) {
+		if (p->attribute == DA_SCHEME_PROCEDURE) {
+			rc = scheme_auth(p->avp_strvalue, request, lhs,
+					 reply); 
+			if (rc) {
+				if (pfailed)
+					*pfailed = p;
+				break;
+			}
+                }
+        }
+
+	return rc;
+#else
+        grad_log_req(L_ERR, request->request,
+                     _("Guile authentication not available"));
+        return -1;
+#endif
+}

@@ -50,6 +50,7 @@ static int max_rehash = sizeof (hash_size) / sizeof (hash_size[0]);
 
 Symbol * alloc_sym(char *, unsigned);
 static unsigned int hashval(unsigned char *s, unsigned bias);
+static void _sym_add(Symtab *symtab, unsigned h, Symbol *sp);
 
 Symtab *
 symtab_create(esize, elfree)
@@ -81,6 +82,22 @@ hashval(s, bias)
 	return h % bias;
 }
 
+void
+_sym_add(symtab, h, sp)
+	Symtab *symtab;
+	unsigned h;
+	Symbol *sp;
+{
+	sp->next = NULL;
+	if (symtab->sym[h]) {
+		Symbol *prev;
+		for (prev = symtab->sym[h]; prev->next; prev = prev->next)
+			;
+		prev->next = sp;
+	} else
+		symtab->sym[h] = sp;
+}
+
 int
 symtab_rehash(symtab)
 	Symtab *symtab;
@@ -110,9 +127,7 @@ symtab_rehash(symtab)
 
 				h = hashval((unsigned char *) sym->name,
 					    hash_size[symtab->hash_num]);
-				sym->next = symtab->sym[h];
-				symtab->sym[h] = sym;
-
+				_sym_add(symtab, h, sym);
 				sym = next;
 			}
 		}
@@ -161,14 +176,7 @@ sym_install(symtab, name)
 	h = hashval((unsigned char *)name, hash_size[symtab->hash_num]);
 
 	sp = alloc_sym(name, symtab->elsize);
-	sp->next = NULL;
-	if (symtab->sym[h]) {
-		Symbol *prev;
-		for (prev = symtab->sym[h]; prev->next; prev = prev->next)
-			;
-		prev->next = sp;
-	} else
-		symtab->sym[h] = sp;
+	_sym_add(symtab, h, sp);
 	symtab->elcnt++;
 	return sp;
 }

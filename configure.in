@@ -12,7 +12,7 @@
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.95.93)
+AM_INIT_AUTOMAKE(gnu-radius, 0.95.94)
 AM_CONFIG_HEADER(config.h)
 
 ## * Available linguas
@@ -223,6 +223,24 @@ case "$ST" in
 			RADPID_DIR="$ETC_DIR/raddb"
 			;;
 esac
+
+AC_MSG_CHECKING(for log directory path)
+AC_ARG_WITH(log-dir,
+[  --with-log-dir=PATH     Use PATH instead of default log directory pah],
+	[case "x$withval" in
+	 x/*) RADLOG_DIR=$withval;;
+         *)  AC_MSG_ERROR(Argument must be an absolute pathname);;
+         esac])
+AC_MSG_RESULT($RADLOG_DIR)
+
+AC_MSG_CHECKING(for pidfile directory path)
+AC_ARG_WITH(pid-dir,
+[  --with-pid-dir=PATH     Use PATH instead of default podfile location],
+	[case "x$withval" in
+	 x/*) RADPID_DIR=$withval;;
+         *)  AC_MSG_ERROR(Argument must be an absolute pathname);;
+         esac])
+AC_MSG_RESULT($RADPID_DIR)
 
 AC_SUBST(RADPID_DIR)
 AC_DEFINE_UNQUOTED(RADLOG_DIR, "$RADLOG_DIR")

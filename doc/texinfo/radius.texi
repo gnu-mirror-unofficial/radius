@@ -71,27 +71,36 @@ original English.
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 @sp 2
-Published by the Free Software Foundation, @*
-59 Temple Place - Suite 330, @*
-Boston, MA 02111-1307, USA
+Published by:
+@table @asis
+@item GNU Press
+Website: www.gnupress.org
+@item a division of the 
+General: press@@gnu.org
+@item Free Software Foundation
+Orders: sales@@gnu.org
+@item 59 Temple Place, Suite 330
+Tel: 617-542-5942
+@item Boston, MA 02111-1307 USA
+Fax: 617-542-2652
+@end table
 
-Permission is granted to make and distribute verbatim copies of
-this manual provided the copyright notice and this permission notice
-are preserved on all copies.
+Permission is granted to copy, distribute, and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation: the
+Invariant Sections being ``Free Software'' and ``Free Software Needs
+Free Documentation''; the Front-Cover Texts being ``A GNU Manual'' and
+with the Back-Cover Texts as in (a) below.
 
-Permission is granted to copy and distribute modified versions of this
-manual under the conditions for verbatim copying, provided that the
-entire
-resulting derived work is distributed under the terms of a permission
-notice identical to this one.
+(a) The Back-Cover Text is: You are free to copy and modify this GNU
+Manual.  Buying copies from GNU Press supports the FSF in developing
+GNU and promoting software freedom.
 
-Permission is granted to copy and distribute translations of this manual
-into another language, under the above conditions for modified versions,
-except that this permission notice may be stated in a translation
-approved by the Foundation.
+@sp2
+Cover art by Etienne Suvasa.  Cover design by Jonathan Richard.
 @end titlepage
 
 @node Top, Intro, , (dir)

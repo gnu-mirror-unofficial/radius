@@ -165,6 +165,40 @@ stat_find_port(nas, port_no)
 	return port;
 }
 
+int
+stat_get_port_index(nas, port_no)
+	NAS *nas;
+	int port_no;
+{
+	PORT_STAT *port;
+	
+	for (port = stat_base + 1; port < stat_base + 1 + maxstat; port++) {
+		if (port->ip == 0)
+			break;
+		if (port->ip == nas->ipaddr && port->port_no == port_no)
+			return port - stat_base + 1;
+	}
+	return 0;
+}
+
+int
+stat_get_next_port_no(nas, port_no)
+	NAS *nas;
+	int port_no;
+{
+	PORT_STAT *port;
+	int next = STAT_MAX_PORT_COUNT;
+	
+	for (port = stat_base + 1; port < stat_base + 1 + maxstat; port++) {
+		if (port->ip == 0)
+			break;
+		if (port->ip == nas->ipaddr &&
+		    port->port_no > port_no &&
+		    port->port_no < next)
+			next = port->port_no;
+	}
+	return (next == STAT_MAX_PORT_COUNT) ? 0 : next; 
+}
 
 void
 stat_update(ut, status)

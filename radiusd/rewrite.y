@@ -4854,7 +4854,7 @@ interpret(fcall, req, type, datum)
                 datum->ival = rw_rt.rA;
                 break;
         case String:
-                datum->sval = (char*) rw_rt.rA;
+                datum->sval = make_string((char*) rw_rt.rA);
                 break;
         default:
                 abort();

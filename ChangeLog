@@ -1,3 +1,35 @@
+2003-11-01  Sergey Poznyakoff  
+
+	Added tunnel protocol support (RFC 2868)
+	
+	* NEWS: Updated.
+	* include/radius.h (AP_ENCRYPT_RFC2138)
+	(AP_ENCRYPT_RFC2868): New defines.
+	(encrypt_tunnel_password,decrypt_tunnel_password): New functions.
+	* include/radiusd.h (proxy_request_recode): Changed prototype.
+	* lib/client.c (_encode_pairlist): Decode attributes that have
+	AP_ENCRYPT bits set.
+	* lib/cryptpass.c: Rewritten to match both rfc 2138 and 2868.
+	(encrypt_text,decrypt_text)
+	(encrypt_tunnel_password,decrypt_tunnel_password): New functions.
+	* lib/dict.c (_dict_attribute): Handle new flags 'E' and 'T'.
+	Removed handling or non-existing bit AP_REQ_CMP (however, 'c'
+	flag is still recognized for compatibility. It's a no-op now).
+	* raddb/dictionary (User-Password,CHAP-Password): Mark with E.
+	* raddb/dict/tunnel (Tunnel-Password): Mark with T
+	* radiusd/auth.c (sfn_validate): Be more picky about selecting
+	the new state.
+	(req_decrypt_password): Handle both AP_ENCRYPT bits.
+	* radiusd/forward.c: Updated calls to proxy_request_recode().
+	* radiusd/proxy.c (proxy_request_recode): Changed declaration.
+	Handle both AP_ENCRYPT bits.
+	(proxy_receive): Recode server reply pairs.
+	* radiusd/radius.c (radius_decrypt_request_pairs)
+	(radius_destroy_pairs,_extract_pairs): Handle both AP_ENCRYPT
+	bits.
+	* radiusd/radutil.c (attr_to_str): Handle both AP_ENCRYPT bits
+	* radiusd/rewrite.y (rw_attrs0): Handle both AP_ENCRYPT bits
+
 2003-10-31  Sergey Poznyakoff
 
 	*  radiusd/radius.c: (radius_send_reply): Bugfix

@@ -1,3 +1,7 @@
+2003-11-01  Sergey Poznyakoff 
+
+	* doc/texinfo/extensions.texi: Minor change
+
 2003-10-26  Sergey Poznyakoff  
 
 	* configure.texi: Minor change

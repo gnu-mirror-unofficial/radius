@@ -1,14 +1,16 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-10-31
+GNU Radius NEWS -- history of user-visible changes. 2003-11-01
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
-Version 1.1.91:
+Version 1.1.92:
 
 * New features:
 
 ** Support for Status-Server request.
+
+** Support for Tunnel Protocol (RFC 2865)
 
 ** The main configuration file raddb/config allows to specify several
 Rewrite source files to be loaded instead of the single predefined
@@ -114,6 +116,13 @@ appears only on the first file.
 Used in `auth' block. Normally radiusd does not send access-reject
 message if access-request contained invalid user name. Setting
 this option to `yes' alters this behavior.
+
+** Dictionary
+
+Flag 'E' marks attributes encrypted as per RFC 2138. Currently
+these are User-Password and CHAP-Password. 
+
+Flag 'F' marks attribute encrypted as per RFC 2868.
 
 * Emacs files: Improved radconf-mode.el
 

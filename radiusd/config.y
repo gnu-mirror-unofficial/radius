@@ -125,6 +125,7 @@ static ACL *find_netlist(char*);
 static int yylex();
 static void putback(char *tok, int length);
 
+static int got_listen;
 static int first_time = 1;
 static int debug_config;
 
@@ -138,6 +139,11 @@ static void asgn(void *base, Value *value, int type, int once);
 	int bool;
 	UINT4 ipaddr;
 	Value value;
+	HOSTDECL hostdecl;
+	struct {
+		HOSTDECL *head;
+		HOSTDECL *tail;
+	} hostlist;
 	struct {
 		int severity;
 	} category;
@@ -159,7 +165,7 @@ static void asgn(void *base, Value *value, int type, int once);
 
 %token EOL
 %token T_ALLOW T_AUTH T_CATEGORY T_DENY T_DETAIL T_FILE T_INFO
-%token T_IDENT T_LEVEL T_LOGGING T_NETWORK T_OPTION T_USEDBM
+%token T_IDENT T_LEVEL T_LISTEN T_LOGGING T_NETWORK T_OPTION T_USEDBM
 %token T_CHECKRAD_ASSUME_LOGGED T_DELAY T_DETAIL T_HOST           
 %token T_EXEC_PROGRAM_GROUP T_EXEC_PROGRAM_USER T_LOG_DIR T_MAX_REQUESTS
 %token T_PORT T_REQUEST_CLEANUP_DELAY T_RETRY T_SPAWN T_STRIP_NAMES   
@@ -182,6 +188,8 @@ static void asgn(void *base, Value *value, int type, int once);
 %type <number> facility severity
 %type <category> category_name
 %type <category_def> category_list category_def
+%type <hostdecl> host
+%type <hostlist> hostlist listen_stmt
 %type <number> obs_option_list obs_option_string level level_list
 
 %%
@@ -266,7 +274,17 @@ errmark         : EOL
                 ;
 
         /* Auth statement */
-auth_stmt       : T_AUTH '{' auth_list '}'
+auth_stmt       : auth '{' auth_list '}'
+                  {
+			  if (!got_listen)
+				  listen_auth(NULL);
+		  }
+                ;
+
+auth            : T_AUTH
+                  {
+			  got_listen = 0;
+		  }
                 ;
 
 auth_list       : auth_line
@@ -281,7 +299,13 @@ auth_line       : /* empty */ EOL
                 | auth_def EOL
                 ;
 
-auth_def        : T_PORT value
+auth_def        : listen_stmt
+                  {
+			  got_listen = 1;
+			  listen_auth($1.head);
+			  free_slist((struct slist*)$1.head, NULL);
+		  }
+                | T_PORT value
                   {
 			  asgn(&auth_port, &$2, AT_PORT, 1);
 		  }      
@@ -319,7 +343,17 @@ auth_def        : T_PORT value
                 ;
 
         /* Acct statement */
-acct_stmt       : T_ACCT '{' acct_list '}'
+acct_stmt       : acct '{' acct_list '}'
+                  {
+			  if (!got_listen)
+				  listen_acct(NULL);
+		  }
+                ;
+
+acct            : T_ACCT
+                  {
+			  got_listen = 0;
+		  }
                 ;
 
 acct_list       : acct_line
@@ -334,7 +368,13 @@ acct_line       : /* empty */ EOL
                 | acct_def EOL
                 ;
 
-acct_def        : T_PORT value
+acct_def        : listen_stmt
+                  {
+			  got_listen = 1;
+			  listen_acct($1.head);
+			  free_slist((struct slist*)$1.head, NULL);
+		  }
+                | T_PORT value
                   {
 			  asgn(&acct_port, &$2, AT_PORT, 1);
 		  }      
@@ -362,28 +402,6 @@ acct_def        : T_PORT value
 			  }      */
                 ;
 
-
-        /* cntl statement */
-cntl_stmt       : T_CNTL '{' cntl_list '}'
-                ;
-
-cntl_list       : cntl_line
-                | cntl_list cntl_line
-                | cntl_list error errmark
-                  {
-			  yyclearin; yyerrok;
-		  }
-                ;
-
-cntl_line       : /* empty */ EOL
-                | cntl_def EOL
-                ;
-
-cntl_def        : T_PORT value
-                  {
-			  asgn(&cntl_port, &$2, AT_PORT, 1);
-		  }
-                ;
 
         /* Proxy statement */
 proxy_stmt      : T_PROXY '{' proxy_list '}'
@@ -947,6 +965,11 @@ value           : T_STRING
 			  $$.type = AT_IPADDR;
 			  $$.v.ipaddr = $1;
 		  }
+                | '*'
+                  {
+			  $$.type = AT_IPADDR;
+			  $$.v.ipaddr = INADDR_ANY;
+		  }
                 | T_BOOL
                   {
 			  $$.type = AT_BOOL;
@@ -956,6 +979,49 @@ value           : T_STRING
                   {
 			  $$.type = AT_INT;
 			  $$.v.number = $1;
+		  }
+                ;
+
+listen_stmt     : T_LISTEN hostlist
+                  {
+			  $$ = $2;
+		  }
+                | T_LISTEN hostlist error 
+                  {
+			  free_slist((struct slist*)$2.head, NULL);
+			  yyclearin; yyerrok;
+			  $$.head = NULL;
+		  }
+                ;
+
+hostlist        : host
+                  {
+			  $$.head = alloc_entry(sizeof(*$$.head));
+			  $$.head->ipaddr = $1.ipaddr;
+			  $$.head->port = $1.port;
+			  $$.head->next = NULL;
+			  $$.tail = $$.head;
+		  }
+                | hostlist ',' host
+                  {
+			  HOSTDECL *hp = alloc_entry(sizeof(*hp));
+			  hp->ipaddr = $3.ipaddr;
+			  hp->port = $3.port;
+			  hp->next = NULL;
+			  $$.tail->next = hp;
+			  $$.tail = hp;
+		  }
+                ;
+
+host            : value
+                  {
+			  asgn(&$$.ipaddr, &$1, AT_IPADDR, 0);
+			  $$.port = 0;
+		  }
+                | value ':' value
+                  {
+			  asgn(&$$.ipaddr, &$1, AT_IPADDR, 0);
+			  asgn(&$$.port, &$3, AT_PORT, 0);
 		  }
                 ;
 
@@ -979,6 +1045,34 @@ obs_option_string: T_STRING
 				  $$ = 0;
 		  }
                 ;
+
+        /* cntl statement */
+cntl_stmt       : cntl '{' cntl_list '}'
+                ;
+
+cntl            : T_CNTL
+                  {
+			  radlog(L_WARN,
+				 _("%s:%d: ignoring obsolete cntl statement"),
+				 filename, line_num);
+		  }
+                ;
+
+cntl_list       : cntl_line
+                | cntl_list cntl_line
+                | cntl_list error errmark
+                  {
+			  yyclearin; yyerrok;
+		  }
+                ;
+
+cntl_line       : /* empty */ EOL
+                | cntl_def EOL
+                ;
+
+cntl_def        : T_PORT value
+                ;
+
 %%
 	   
 int
@@ -1260,7 +1354,7 @@ asgn(base, value, type, once)
 					 value->v.string);
 				  return;
 			  }
-			  type = AT_INT;
+			  value->type = AT_INT;
 			  break;
 		default:
 			break;
@@ -1283,7 +1377,7 @@ asgn(base, value, type, once)
 				       value->v.string);
 			}
 			value->v.ipaddr = ipaddr;
-			type = AT_IPADDR;
+			value->type = AT_IPADDR;
 			break;
 		default:
 			break;

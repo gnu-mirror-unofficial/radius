@@ -659,4 +659,10 @@ scheme_try_auth(int auth_type, grad_request_t *req,
 	return 1;
 }
 
+int
+scheme_eval_boolean_expr(char *expr)
+{
+	return -1;
+}
+
 #endif

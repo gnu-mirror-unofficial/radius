@@ -114,13 +114,37 @@ below.
 The list of attribute-value pairs used for authentication.
 
 @item Reply List
-The list of attribute-value pairs which will be sent in the response
+The list of attribute-value pairs that will be sent in the response
 packet to the NAS.
-
 @end table
 
+Upon receiving an authentication request, radius uses the following rules:
 
+@table @asis
+@item 1. Retrieve the user's profile.
+Radiusd looks up a @code{User-Name} attribute in the incoming
+packet. The value of this attribute is used as a look-up key for finding
+user's profile. 
+@item 2. Verify user's password
+The incoming request must contain @code{Password} or
+@code{CHAP-Password} attribute. The value of @code{Auth-Type} checklist
+attribute is used to choose the method of verifying this password (See
+@xref{Authentication}.) If password check fails, the request
+gets negative response.
+@item 3. Compare request pairlist and checklist of the retrieved profile.
+The list of attribute-value pairs from the request is compaired against
+the checklist of the user's profile. If the lists do not match, then control
+passes to rule 1. The rules of comparison are described below.
+@item 4. Append A/V pairs from the reply list to the response packet.
+Before appending, the pairs are evaluated. If the reply list contains
+attribute @code{Fall-Through} and its value is @code{Yes}, then control
+is passed to rule 1 again. Otherwise the authentication stops.
+@end table
 
+The authentication is successful if the request satisfied at least one
+of profiles retrieved in step 1.
+
+The 
 @comment *L2****************************************************************
 @node Requests, Processing requests, User Profile, Operation
 @chapter Radius requests

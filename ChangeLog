@@ -1,5 +1,15 @@
 2001-09-30 Sergey Poznyakoff
 
+	* Makefile.am: Added alphadist rule. Put both alpha rules
+	under MAINTAINER_MODE conditional.
+	* configure.in: Allow for colon-separated pathlists in 
+	--with-{include|lib}-path.
+	* raddb/Makefile.am: Fixed permissions on installed files.
+
+	* doc/texinfo/operation.texi: Updated.
+
+2001-09-30 Sergey Poznyakoff
+
 	Started rewriting documentation.
 
 	* doc/texinfo/radius.texinfo: removed

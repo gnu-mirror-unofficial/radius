@@ -34,24 +34,8 @@ extern struct request_class request_class[];
 static REQUEST *first_request;
 pthread_mutex_t request_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-#define Pthread_mutex_lock(m) \
- do { \
-      debug(100,("locking " #m)); \
-      pthread_mutex_lock(m);\
-      debug(100,("locked " #m)); \
- } while (0)
-
-#define Pthread_mutex_unlock(m) \
- do { \
-      debug(100,("unlocking " #m)); \
-      pthread_mutex_unlock(m);\
-      debug(100,("unlocked " #m)); \
- } while (0)
-
-#define request_list_block() \
- Pthread_mutex_lock(&request_list_mutex)
-#define request_list_unblock() \
- Pthread_mutex_unlock(&request_list_mutex)
+#define request_list_block()   Pthread_mutex_lock(&request_list_mutex)
+#define request_list_unblock() Pthread_mutex_unlock(&request_list_mutex)
         
 static void request_free(REQUEST *req);
 static void request_drop(int type, void *data, void *orig_data, int fd,
@@ -59,9 +43,14 @@ static void request_drop(int type, void *data, void *orig_data, int fd,
 static void request_xmit(int type, int code, void *data, int fd);
 static void request_cleanup(int type, void *data);
 static void *request_thread0(void *arg);
+static int request_process_command();
 
 static pthread_mutex_t request_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t request_cond = PTHREAD_COND_INITIALIZER;
+
+static request_thread_command_fp request_command;
+static void *request_command_arg;
+static int request_command_count;
 
 int
 request_start_thread()
@@ -94,6 +83,9 @@ request_thread0(arg)
 	pthread_cleanup_push(rad_cleanup_thread0, NULL);
         while (1) {
                 REQUEST *req;
+
+		request_process_command();
+		
                 while (req = request_get())
                         request_handle(req);
                 Pthread_mutex_lock(&request_mutex);
@@ -114,6 +106,34 @@ request_signal()
         debug(100,("Signalling"));
         pthread_cond_signal(&request_cond);
         Pthread_mutex_unlock(&request_mutex);
+}
+
+int
+request_process_command()
+{
+	if (request_command) {
+		(*request_command)(request_command_arg);
+		request_command_count++;
+		return 1;
+	}
+	return 0;
+}
+
+void
+request_thread_command(fun, data)
+	request_thread_command_fp fun;
+	void *data;
+{
+        Pthread_mutex_lock(&request_mutex);
+	request_command = fun;
+	request_command_arg = data;
+	request_command_count = 0;
+        debug(100,("Signalling"));
+        pthread_cond_broadcast(&request_cond);
+        Pthread_mutex_unlock(&request_mutex);
+	while (request_command_count < num_threads)
+		;
+	request_command = NULL;
 }
 
 void
@@ -488,3 +508,4 @@ request_handle(req)
         log_close();
         debug(1, ("exiting"));
 }
+

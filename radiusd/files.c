@@ -100,7 +100,7 @@ static int user_find_sym(char *name, RADIUS_REQ *req,
 int user_find_db(char *name, RADIUS_REQ *req,
 			VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #endif
-
+static PAIR_LIST *file_read(int cf_file, char *name);
 
 int
 comp_op(op, result)
@@ -167,9 +167,9 @@ add_user_entry(symtab, filename, line, name, check, reply)
 	if (strncmp(name, "BEGIN", 5) == 0) 
 		name = "BEGIN";
 
-	if ((check == NULL && reply == NULL) ||
-	    fix_check_pairs(name, line, &check) ||
-	    fix_reply_pairs(name, line, &reply)) {
+	if ((check == NULL && reply == NULL)
+	    || fix_check_pairs(CF_USERS, filename, line, name, &check)
+	    || fix_reply_pairs(CF_USERS, filename, line, name, &reply)) {
 		radlog(L_ERR,
 		       _("%s:%d: discarding user `%s'"),
 		       filename,
@@ -212,6 +212,7 @@ free_user_entry(sym)
 }
 
 struct temp_list {
+	int cf_file;
 	PAIR_LIST *head;
 	PAIR_LIST *tail;
 };
@@ -226,6 +227,18 @@ add_pairlist(closure, filename, line, name, check, reply)
 {
 	PAIR_LIST *pl;
 	
+	if ((check == NULL && reply == NULL)
+	    || fix_check_pairs(closure->cf_file, filename, line, name, &check)
+	    || fix_reply_pairs(closure->cf_file, filename, line, name, &reply)) {
+		radlog(L_ERR,
+		       _("%s:%d: discarding entry `%s'"),
+		       filename,
+		       line, name);
+		avl_free(check);
+		avl_free(reply);
+		return 0;
+	}
+
 	pl = Alloc_entry(PAIR_LIST);
 	pl->name = estrdup(name);
 	pl->check = check;
@@ -249,11 +262,13 @@ read_users(name)
 }
 
 PAIR_LIST *
-file_read(name)
+file_read(cf_file, name)
+	int cf_file;
 	char *name;
 {
 	struct temp_list tmp;
 
+	tmp.cf_file = cf_file;
 	tmp.head = tmp.tail = NULL;
 	parse_file(name, &tmp, add_pairlist);
 	return tmp.head;
@@ -1969,14 +1984,14 @@ reload_data(what, do_radck)
 	case reload_huntgroups:
 		pairlist_free(&huntgroups);
 		path = mkfilename(radius_dir, RADIUS_HUNTGROUPS);
-		huntgroups = file_read(path);
+		huntgroups = file_read(CF_HUNTGROUPS, path);
 		efree(path);
 		break;
 		
 	case reload_hints:
 		pairlist_free(&hints);
 		path = mkfilename(radius_dir, RADIUS_HINTS);
-		hints = file_read(path);
+		hints = file_read(CF_HINTS, path);
 		efree(path);
 		if (!use_dbm) 
 			*do_radck = 1;

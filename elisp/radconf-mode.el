@@ -39,6 +39,10 @@
 ;; You may also wish to modify the following variables:
 ;;   radconf-level-indent  -- Amount of indentation per block nesting level.
 
+(eval-when-compile
+  ;; We use functions from these modules
+  (mapcar 'require '(info)))
+
 (defvar radconf-mode-syntax-table nil
   "Syntax table used in radconf-mode buffers.")
 
@@ -344,6 +348,7 @@ Key bindings:
 	completion-ignore-case nil)
 
   (use-local-map radconf-mode-map))
-  
+
+(require 'info) 
 (provide 'radconf-mode)
 ;;; radius-mode ends

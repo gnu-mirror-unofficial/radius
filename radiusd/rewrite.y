@@ -3225,7 +3225,7 @@ optimize()
 static INSTR *rw_code;          /* Code segment */
 static pctr_t rw_pc;            /* PC when compiling the code */
 static size_t rw_codesize;      /* Length of code segment */ 
-int rewrite_stack_size;         /* Size of stack+heap (global)  */
+int rewrite_stack_size = 4096;  /* Size of stack+heap (global)  */
 
 void
 code_init()

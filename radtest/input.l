@@ -243,6 +243,11 @@ set{WS}.*\n {
 	return SET;
 }
 {IDENTIFIER} {
+	int n = grad_request_name_to_code(yytext);
+	if (n != 0) {
+		yylval.number = n;
+		return NUMBER;
+	}
 	add_str(yytext,yyleng);
         yylval.string = end_str();
         return NAME;

@@ -316,6 +316,8 @@ void string_copy(char *d, char *s, int  len);
 char *format_pair(VALUE_PAIR *pair);
 char *format_ipaddr(UINT4 ipaddr);
 int format_string_visual(char *buf, int runlen, char *str, int len);
+char *op_to_str(int op);
+int str_to_op(char *str);
 
 /* cryptpass.c */
 void encrypt_password(VALUE_PAIR *pair, char *password,

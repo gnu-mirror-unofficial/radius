@@ -149,8 +149,9 @@ comp_op(op, result)
  * parser
  */
 int
-add_user_entry(symtab, line, name, check, reply)
+add_user_entry(symtab, filename, line, name, check, reply)
 	Symtab *symtab;
+	char *filename;
 	int line;
 	char *name;
 	VALUE_PAIR *check, *reply;
@@ -169,7 +170,8 @@ add_user_entry(symtab, line, name, check, reply)
 	    fix_check_pairs(name, line, &check) ||
 	    fix_reply_pairs(name, line, &reply)) {
 		radlog(L_ERR,
-		       _("users:%d: discarding user `%s'"),
+		       _("%s:%d: discarding user `%s'"),
+		       filename,
 		       line, name);
 		avl_free(check);
 		avl_free(reply);
@@ -214,8 +216,9 @@ struct temp_list {
 };
 
 int
-add_pairlist(closure, line, name, check, reply)
+add_pairlist(closure, filename, line, name, check, reply)
 	struct temp_list *closure;
+	char *filename;
 	int line;
 	char *name;
 	VALUE_PAIR *check, *reply;
@@ -1893,6 +1896,13 @@ checkdbm(users, ext)
 
 
 static int reload_data(enum reload_what what, int *do_radck);
+int
+m(char *s, int d)
+{
+	int fd = dup(0);
+	radlog(L_ERR, "%s:%d: next fd: %d", s, d, fd);
+	close(fd);
+}
 
 int
 reload_data(what, do_radck)
@@ -2053,28 +2063,56 @@ dump_pairs(fp, pair)
 	FILE       *fp;
 	VALUE_PAIR *pair;
 {
+	int etype;
+	
 	for (; pair; pair = pair->next) {
 		fprintf(fp, "\t\t%s %s ", pair->name, 
 			op_tab[pair->operator].name);
+
 		switch (pair->type) {
 		case PW_TYPE_STRING:
-			fprintf(fp, "(STRING) %s", pair->strvalue);
+			fprintf(fp, "(STRING) ");
 			break;
 
 		case PW_TYPE_INTEGER:
-			fprintf(fp, "(INTEGER) %ld", pair->lvalue);
+			fprintf(fp, "(INTEGER) ");
 			break;
 
 		case PW_TYPE_IPADDR:
-			fprintf(fp, "(IP) %lx", pair->lvalue);
+			fprintf(fp, "(IP) ");
 			break;
 		
 		case PW_TYPE_DATE:
-			fprintf(fp, "(DATE) %ld", pair->lvalue);
+			fprintf(fp, "(DATE) ");
 			break;
 			
 		default:
-			fprintf(fp, "(%d)", pair->type);
+			fprintf(fp, "(%d) ", pair->type);
+		}
+
+		if (pair->eval) {
+			etype = PW_TYPE_STRING;
+			fprintf(fp, "=");
+		} else
+			etype = pair->type;
+		
+		switch (etype) {
+		case PW_TYPE_STRING:
+			fprintf(fp, "%s", pair->strvalue);
+			break;
+
+		case PW_TYPE_INTEGER:
+			fprintf(fp, "%ld", pair->lvalue);
+			break;
+
+		case PW_TYPE_IPADDR:
+			fprintf(fp, "%lx", pair->lvalue);
+			break;
+		
+		case PW_TYPE_DATE:
+			fprintf(fp, "%ld", pair->lvalue);
+			break;
+			
 		}
 		fprintf(fp, "\n");
 	}

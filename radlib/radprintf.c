@@ -579,7 +579,8 @@ radprint(f, fmt, ap)
 				}
 				ret += n;
 				
-				switch (pair->type) {
+				switch (pair->eval ? PW_TYPE_STRING :
+					pair->type) {
 				case PW_TYPE_STRING:
 					n = pairstr_format(f, pair);
 					break;
@@ -587,8 +588,8 @@ radprint(f, fmt, ap)
 				case PW_TYPE_INTEGER:
 					if (pair->name)
 						dval = value_lookup(
-							       pair->lvalue,
-						               pair->name);
+							pair->lvalue,
+							pair->name);
 					else
 						dval = NULL;
 					
@@ -600,19 +601,20 @@ radprint(f, fmt, ap)
 							      dval->name);
 					break;
 				case PW_TYPE_IPADDR:
-					n = radprintv(f, "%I", pair->lvalue);
+					n = radprintv(f, "%I",
+						      pair->lvalue);
 					break;
 				case PW_TYPE_DATE:
 					strftime(buf, sizeof(buf),
 						 "%b %e %Y",
 						 localtime(
-						    (time_t *)&pair->lvalue));
+					       	 (time_t *)&pair->lvalue));
 					n = radprintv(f, "\"%s\"", buf);
 					break;
 				default:
 					n = radprintv(f, "[UNKNOWN DATATYPE]");
 				}
-
+				
 				if (n == -1) {
 					ret = n;
 					goto error;

@@ -615,10 +615,9 @@ hints_setup(RADIUS_REQ *req)
 		name_pair = avp_create_string(DA_USER_NAME, "");
                 orig_name_pair = NULL;
         } else {
-                orig_name_pair = avp_dup(name_pair);
-                orig_name_pair->attribute = DA_ORIG_USER_NAME;
-                orig_name_pair->name = "Orig-User-Name";
-        }
+                orig_name_pair = avp_create_string(DA_ORIG_USER_NAME,
+						   name_pair->avp_strvalue);
+	}
 
         debug(1, ("called for `%s'", name_pair->avp_strvalue));
         

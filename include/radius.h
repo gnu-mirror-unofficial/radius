@@ -315,7 +315,6 @@ void string_copy(char *d, char *s, int  len);
 #define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
 char *format_pair(VALUE_PAIR *pair);
 char *format_ipaddr(UINT4 ipaddr);
-void debug_pair(char *prefix, VALUE_PAIR *pair);
 int format_string_visual(char *buf, int runlen, char *str, int len);
 
 /* cryptpass.c */

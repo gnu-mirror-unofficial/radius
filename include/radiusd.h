@@ -278,7 +278,6 @@ int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
 void rad_acct_xmit(int type, int code, void *data, int fd);
 
 /* radiusd.c */
-void debug_pair(char *, VALUE_PAIR *);
 void sig_cleanup(int);
 int stat_request_list(QUEUE_STAT);
 void *scan_request_list(int type, int (*handler)(), void *closure);

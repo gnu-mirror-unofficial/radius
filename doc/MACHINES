@@ -1,0 +1,41 @@
+This is a list of platforms GNU Radius is known to compile and run on.
+If you compile it on a platform not listed here, please drop me a note.    
+
+Intel x86
+    i386-pc-linux-gnu
+    i686-pc-linux-gnu
+    i386-unknown-freebsd4.4
+    i386-pc-solaris2.7
+    
+Alpha
+    alpha-unknown-freebsd4.4
+
+    There is a bug in GCC 2.95.3 for this platform, which is triggered
+    by -O2 option to the compiler. To avoid the bug, set the CFLAGS
+    variable before running configure, e.g.:
+
+             CFLAGS=-g ./configure
+
+    GCC issues the warning:
+
+         warning: cast from pointer to integer of different size
+
+    when compiling the following source files: radlib/rx.h, radlib/rx.c,
+    radiusd/rewrite.y, radiusd/checkrad.c
+    It can safely be ignored.
+
+Sparc
+    sparc-sun-solaris2.8   (SunOS 5.8 Generic sun4u sparc SUNW,Ultra-5_10)
+
+AIX (4.3.3)
+    Radius 0.95 works. Radius 0.96 was not checked.
+    
+
+Local Variables:
+mode: indented-text
+indent-tabs-mode: nil
+tab-stop-list: (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76)
+left-margin: 4
+fill-column: 74
+version-control: never
+End:

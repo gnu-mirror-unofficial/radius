@@ -169,17 +169,25 @@ the constructed entry is also appended to WTMP_FILE.")
                         break;
                         
                 case RADUTMP_FIELD_PROTO:
-                        /* Prototype */
+                        /* Protocol */
                         if (SCM_IMP(elt) && SCM_INUMP(elt)) 
                                 ut.proto = SCM_INUM(elt);
-                        else if (SCM_IMP(elt) && SCM_CHARP(elt))
-                                ut.proto = SCM_CHAR(elt);
-                        else
+                        else if (SCM_IMP(elt) && SCM_CHARP(elt)) {
+                                DICT_VALUE *dv;
+
+                                dv = value_name_to_value(SCM_ROCHARS(elt),
+                                                         DA_FRAMED_PROTOCOL);
+
+                                if (dv)
+                                        scm_misc_error(FUNC_NAME,
+                                                       "~S: Unknown proto",
+                                                       SCM_LIST1(elt));
+                                ut.proto = dv->value;
+                        } else
                                 scm_misc_error(FUNC_NAME,
-                                               "~S: Proto should be integer or character",
+                                               "~S: Proto should be integert or\ string",
                                                SCM_LIST1(elt));
                         break;
-                        
                         
                 case RADUTMP_FIELD_PORT_TYPE:
                         /* Port type */

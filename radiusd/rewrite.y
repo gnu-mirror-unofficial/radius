@@ -5070,7 +5070,35 @@ bi_request_code_string()
 	const char *s = auth_code_abbr(code);
 	pushstr(s, strlen(s));
 }
-	
+
+static void
+bi_request_source_ip()
+{
+	assert_request_presence();
+	pushn((RWSTYPE) mach.req->ipaddr);
+}
+
+static void
+bi_request_source_port()
+{
+	assert_request_presence();
+	pushn((RWSTYPE) mach.req->udp_port);
+}
+
+static void
+bi_request_id()
+{
+	assert_request_presence();
+	pushn((RWSTYPE) mach.req->id);
+}
+
+static void
+bi_request_code()
+{
+	assert_request_presence();
+	pushn((RWSTYPE) mach.req->code);
+}
+
 static void
 rw_regerror(const char *prefix, regex_t *rx, int rc)
 {
@@ -5416,6 +5444,12 @@ static builtin_t builtin[] = {
 	{ bi_ngettext, "ngettext", String, "ssi" },
 	{ bi_dngettext, "dngettext", String, "sssi" },
 	{ bi_textdomain, "textdomain", String, "s" },
+	/* Request internals */
+	{ bi_request_source_ip,   "request_source_ip", Integer, "" },
+	{ bi_request_source_port, "request_source_port", Integer, "" },
+	{ bi_request_id, "request_id", Integer, "" },
+	{ bi_request_code, "request_code", Integer, "" },
+	
 	{ NULL }
 };
 

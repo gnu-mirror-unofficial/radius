@@ -21,6 +21,7 @@
 
 #include <radius.h>
 #include <radsql.h>
+#include <pth.h>
 
 static SQL_DISPATCH_TAB *sql_dispatch_tab[] = {
 	NULL,
@@ -64,6 +65,7 @@ disp_sql_reconnect(type, conn_type, conn)
 	int conn_type;
 	struct sql_connection *conn;
 {
+	pth_yield(NULL);
 	return disp_sql_entry(type)->reconnect(conn_type, conn);
 }
 
@@ -72,6 +74,7 @@ disp_sql_disconnect(type, conn)
 	int type;
 	struct sql_connection *conn;
 {
+	pth_yield(NULL);
 	disp_sql_entry(type)->disconnect(conn);
 }
 
@@ -82,6 +85,7 @@ disp_sql_query(type, conn, query, report_cnt)
 	char *query;
 	int *report_cnt;
 {
+	pth_yield(NULL);
 	return disp_sql_entry(type)->query(conn, query, report_cnt);
 }
 
@@ -91,6 +95,7 @@ disp_sql_getpwd(type, conn, query)
 	struct sql_connection *conn;
 	char *query;
 {
+	pth_yield(NULL);
 	return disp_sql_entry(type)->getpwd(conn, query);
 }
 
@@ -100,6 +105,7 @@ disp_sql_exec(type, conn, query)
 	struct sql_connection *conn;
 	char *query;
 {
+	pth_yield(NULL);
 	return disp_sql_entry(type)->exec_query(conn, query);
 }
 
@@ -109,6 +115,7 @@ disp_sql_column(type, data, ncol)
 	void *data;
 	int ncol;
 {
+	pth_yield(NULL);
 	return disp_sql_entry(type)->column(data, ncol);
 }
 
@@ -118,6 +125,7 @@ disp_sql_next_tuple(type, conn, data)
 	struct sql_connection *conn;
 	void *data;
 {
+	pth_yield(NULL);
 	return disp_sql_entry(type)->next_tuple(conn, data);
 }
 
@@ -127,5 +135,6 @@ disp_sql_free(type, conn, data)
 	struct sql_connection *conn;
 	void *data;
 {
+	pth_yield(NULL);
 	return disp_sql_entry(type)->free(conn, data);
 }

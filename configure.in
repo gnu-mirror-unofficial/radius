@@ -12,7 +12,7 @@
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.96-alpha.2)
+AM_INIT_AUTOMAKE(gnu-radius, 0.95.90)
 AM_CONFIG_HEADER(config.h)
 
 ## * Available linguas
@@ -526,9 +526,13 @@ AC_PATH_PROG(GMSGFMT, $PROG, missing, $PATH:/usr/bin)
 
 AC_SUBST(GUILE_INCLUDES)
 AC_SUBST(GUILE_LIBS)
+AC_SUBST(RADSCM)
+AC_SUBST(TESTDIR)
 if test x$GUILE_CONFIG != xno; then
 	GUILE_INCLUDES=`guile-config compile`
 	GUILE_LIBS=`guile-config link`
+	RADSCM=radscm
+	TESTDIR=test.sh
 fi
 
 AC_SUBST(BUILD_NAS_SCM)
@@ -554,12 +558,16 @@ AC_OUTPUT(Makefile m4/Makefile \
           raduse/Makefile radzap/Makefile \
 	  radscm/Makefile \
           radscripts/Makefile doc/Makefile \
-	  doc/texinfo/Makefile doc/man/Makefile po/Makefile \
-          doc/man/config.so \
+	  doc/texinfo/Makefile doc/man/Makefile doc/man/config.so \
+          doc/rfc/Makefile \
+          mibs/Makefile \
+          po/Makefile \
           elisp/Makefile \
           raddb/Makefile \
-          client/Makefile \
+	  client/Makefile \
           client/nas/Makefile \
           client/pam_radius/Makefile \
-          test/Makefile)
+          test/Makefile test/raddb/Makefile \
+          scripts/Makefile scripts/guile/Makefile \
+          contrib/Makefile)
 

@@ -155,7 +155,7 @@ static int deref_parm(unsigned num, char *p);
 %}
 
 WS [ \t][ \t]*
-IDENTIFIER [a-zA-Z_\-][a-zA-Z_\-0-9.]*
+IDENTIFIER [a-zA-Z_][a-zA-Z_0-9\.-]*
 D [0-9]+
 D3 [0-9]{1,3}
 DQ {D3}\.{D3}\.{D3}\.{D3}
@@ -172,49 +172,85 @@ print   return PRINT;
 send    return SEND;
 expect  return EXPECT;
 exit    return EXIT;
+begin   return T_BEGIN;
+end     return T_END;
+if      return IF;
+else    return ELSE;
+while   return WHILE;
+do      return DO;
+break   return BREAK;
+continue return CONTINUE;
 {IDENTIFIER} {
-        yylval.string = grad_estrdup(yytext);
+	add_str(yytext,yyleng);
+        yylval.string = end_str();
         return NAME;
 }
-\${IDENTIFIER} return deref_var(yytext+1, NULL);
+\${IDENTIFIER}- {
+	add_str(yytext+1,yyleng-2);
+	yylval.deref.name = end_str();
+	yylval.deref.repl = NULL;
+	yyless(yyleng-1);
+	return IDENT;
+}
+\${IDENTIFIER} {
+	add_str(yytext+1,yyleng-1);
+	yylval.deref.name = end_str();
+	yylval.deref.repl = NULL;
+	return IDENT;
+}
+\$\{{IDENTIFIER}\}- {
+	add_str(yytext+2, yyleng-4);
+        yylval.deref.name = end_str();
+	yylval.deref.repl = NULL;
+	yyless(yyleng-1);
+        return IDENT;
+}
 \$\{{IDENTIFIER}\} {
-        int type;
-        char *name = grad_estrdup(yytext+2);
-        name[yyleng-3] = 0;
-        type = deref_var(yytext+2, NULL);
-        grad_free(name);
-        return type;
+	add_str(yytext+2, yyleng-3);
+        yylval.deref.name = end_str();
+	yylval.deref.repl = NULL;
+        return IDENT;
+}
+\$\{{IDENTIFIER}:[=:?\-&].*\}- {
+	char *p;
+	add_str(yytext+2, yyleng-4);
+        yylval.deref.name = end_str();
+	p = strchr(yylval.deref.name, ':');
+	*p++ = 0;
+	yylval.deref.repl = p;
+	yyless(yyleng-1);
+        return IDENT;
 }
 \$\{{IDENTIFIER}:[=:?\-&].*\} {
-        char *name, *p;
-        int type;
-        
-        name = grad_estrdup(yytext+2);
-        name[yyleng-3] = 0;
-        p = strchr(name, ':');
-        *p++ = 0;
-        type = deref_var(name, p);
-        grad_free(name);
-        return type;
+	char *p;
+	add_str(yytext+2, yyleng-3);
+        yylval.deref.name = end_str();
+	p = strchr(yylval.deref.name, ':');
+	*p++ = 0;
+	yylval.deref.repl = p;
+        return IDENT;
 }
-\${D}  return deref_parm(strtoul(yytext+1, NULL, 0), NULL);
-\$\{{D}\} return deref_parm(strtoul(yytext+2, NULL, 0), NULL);
+\${D}  {
+	yylval.parm.number = strtoul(yytext+1, NULL, 0);
+	yylval.parm.repl = NULL;
+	return PARM;
+}
+\$\{{D}\} {
+	yylval.parm.number = strtoul(yytext+2, NULL, 0);
+	yylval.parm.repl = NULL;
+	return PARM;
+}
 \$\{{D}:[=:?\-&].*\} {
-        char *name, *p;
-        int type;
-        
-        name = grad_estrdup(yytext+2);
-        name[yyleng-3] = 0;
-        p = strchr(name, ':');
-        *p++ = 0;
-        type = deref_parm(strtoul(name, NULL, 0), p);
-        grad_free(name);
-        return type;
+	char *p;
+	yylval.parm.number = strtoul(yytext+2, &p, 0);
+	p++;
+	add_str(p, strlen(p)-1);
+	yylval.parm.repl = end_str();
+	return PARM;
 }
 \"[^\\"]*\" {
-        yylval.string = grad_emalloc(yyleng - 1);
-        memcpy(yylval.string, yytext+1, yyleng - 2);
-        yylval.string[yyleng-2] = 0;
+        add_str(yytext+1, yyleng-2);
+        yylval.string = end_str();
         return QUOTE;
 }
 \"[^\\"]*\n {
@@ -257,7 +293,7 @@ exit    return EXIT;
 <STRING>[^\\"]*\" {
         BEGIN(INITIAL);
         add_str(yytext, yyleng - 1);
-        yylval.string = grad_estrdup(end_str());
+        yylval.string = end_str();
         return QUOTE;
 }
 {DQ} {
@@ -265,7 +301,7 @@ exit    return EXIT;
         return IPADDRESS;
 }
 {D} {
-        yylval.number = atoi(yytext);
+        yylval.number = strtol(yytext, NULL, 0);
         return NUMBER;
 }
 {WS}    ;
@@ -334,6 +370,7 @@ close_input()
         obstack_free(&string_stk, NULL);
 }
 
+
 void
 add_num(int skip, int base, char *text, int leng)
 {
@@ -366,6 +403,7 @@ add_chr(int c)
 char *
 end_str()
 {
+	obstack_1grow(&string_stk, 0);
         return obstack_finish(&string_stk);
 }
 
@@ -393,167 +431,46 @@ backspace(int c)
         return c;
 }
 
-int
-deref_var(char *name, char *p)
+char *
+number_to_str(long num)
 {
-        int type;
-        union datum datum;
-        size_t n;
-        
-        yylval.ident = (Variable*) grad_sym_lookup(vartab, name);
-        if (yylval.ident) 
-                return IDENT;
-        else if (!p) {
-                parse_error("variable %s used before definition", name);
-                yylval.ident = grad_sym_install(vartab, name);
-                yylval.ident->type = Undefined;
-                return IDENT;
-        }
-
-        switch (*p++) {
-        case '=':
-                yylval.ident = (Variable*) grad_sym_install(vartab, name);
-                yylval.ident->type = parse_datum(p, &yylval.ident->datum);
-                type = IDENT;
-                break;
-                
-        case '-':
-                switch (parse_datum(p, &datum)) {
-                case Undefined:
-                        parse_error("variable %s used before definition",
-				    name);
-                        yylval.ident = grad_sym_install(vartab, name);
-                        yylval.ident->type = Undefined;
-                        type = IDENT;
-                        break;
-                        
-                case Integer:
-                        yylval.number = datum.number;
-                        type = NUMBER;
-                        break;
-                        
-                case Ipaddress:
-                        yylval.ipaddr = datum.ipaddr;
-                        type = IPADDRESS;
-                        break;
-                        
-                case String:
-                        yylval.string = datum.string;
-                        type = QUOTE;
-                        break;
-                        
-                default:
-                        grad_log(L_CRIT,
-                                 "%s:%d: FATAL ERROR",
-                                 __FILE__, __LINE__);
-                        abort();
-                }
-                break;
-                
-        case '?':
-                if (*p) 
-                        fprintf(stderr, "%s\n", p);
-                else
-                        fprintf(stderr, "%s: variable unset\n", name);
-                exit(1);
-                                
-        case ':':
-                if (*p)
-                        printf("%s", p);
-                else
-                        printf("(%s:%lu)%s? ",
-                               source_locus.file,
-                               (unsigned long)source_locus.line,
-                               name);
-                p = NULL;
-                n = 0;
-                getline(&p, &n, stdin);
-                yylval.string = grad_estrdup(p);
-                free(p);
-                type = QUOTE;
-                break;
-                
-        case '&':
-                if (!*p)
-                        asprintf(&p, "(%s:%lu)%s? ",
-                                 source_locus.file,
-                                 source_locus.line,
-                                 name);
-                p = getpass(p);
-                if (!p)
-                        exit(0);
-                yylval.string = grad_estrdup(p);
-                type = QUOTE;
-                break;
-        }
-        
-        return type;
+	char buf[64];
+	sprintf(buf, "%lu", num);
+	add_str(buf, strlen(buf));
+	return end_str();
 }
 
-int
-deref_parm(unsigned num, char *p)
+char *
+ipaddr_to_str(grad_uint32_t ipaddr)
 {
-        size_t n;
-        
-        if (num < x_argc && x_argv[num]) {
-                yylval.string = grad_estrdup(x_argv[num]);
-                return QUOTE;
-        }
-        
-        if (!p) {
-                yylval.string = grad_estrdup("");
-                return QUOTE;
-        }
-        
-        switch (*p++) {
-        case '=':
-                if (num > x_argmax) {
-                        x_argmax = num;
-                        x_argv = grad_erealloc(x_argv,
-					       sizeof(x_argv[0]) * (num + 1));
-                }
-                x_argv[num] = grad_estrdup(p);
-                x_argc = num+1;
-                yylval.string = x_argv[num];
-                break;
-                
-        case '-':
-                yylval.string = grad_estrdup(p);
-                break;
-                
-        case '?':
-                if (*p) 
-                        fprintf(stderr, "%s\n", p);
-                else
-                        fprintf(stderr, "parameter %d unset\n", num);
-                exit(1);
-                                
-        case ':':
-                if (*p)
-                        printf("%s", p);
-                else
-                        printf("(%s:%lu)%d? ",
-                               source_locus.file,
-                               (unsigned long) source_locus.line,
-                               num);
-                p = NULL;
-                n = 0;
-                getline(&p, &n, stdin);
-                yylval.string = grad_estrdup(p);
-                free(p);
-                break;
-                
-        case '&':
-                if (!*p)
-                        asprintf(&p, "(%s:%lu)%d? ",
-                                 source_locus.file,
-                                 (unsigned long) source_locus.line,
-                                 num);
-                p = getpass(p);
-                if (!p)
-                        exit(0);
-                yylval.string = grad_estrdup(p);
-                break;
-        }
-        return QUOTE;
+	char buf[DOTTED_QUAD_LEN];
+	grad_ip_iptostr(ipaddr, buf);
+	add_str(buf, strlen(buf));
+	return end_str();	
+}
+
+void
+radtest_start_string(char *str)
+{
+	/* FIXME: Make sure no leading garbage appears */
+	add_str(str, strlen(str));
+}
+
+void
+radtest_add_string(char *str)
+{
+	add_str(str, strlen(str));
+}
+
+char *
+radtest_end_string()
+{
+	return end_str();
+}
+
+void
+radtest_free_strings()
+{
+	obstack_free(&string_stk, NULL);
+	obstack_init(&string_stk);
 }

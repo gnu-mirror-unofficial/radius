@@ -149,7 +149,7 @@ main(int argc, char **argv)
 {
         char *p;
         int index;
-	Variable *var;
+	radtest_variable_t *var;
 	
         grad_app_setup();
         init_symbols();
@@ -174,7 +174,7 @@ main(int argc, char **argv)
         if (!srv_queue)
                 return 1;
 
-	var = (Variable*)grad_sym_lookup(vartab, "SOURCEIP");
+	var = (radtest_variable_t*)grad_sym_lookup(vartab, "SOURCEIP");
 	var->datum.ipaddr = srv_queue->source_ip;
 		
 	if (timeout)
@@ -283,24 +283,24 @@ main(int argc, char **argv)
 void
 init_symbols()
 {
-        Variable *var;
+        radtest_variable_t *var;
         
-        vartab = grad_symtab_create(sizeof(Variable), NULL);
-        var = (Variable*) grad_sym_install(vartab, "REPLY_CODE");
-        var->type = Integer;
-        var = (Variable*) grad_sym_install(vartab, "REPLY");
-        var->type = Vector;
-	var = (Variable*) grad_sym_install(vartab, "SOURCEIP");
-	var->type = Ipaddress;
+        vartab = grad_symtab_create(sizeof(radtest_variable_t), NULL);
+        var = (radtest_variable_t*) grad_sym_install(vartab, "REPLY_CODE");
+        var->type = rtv_integer;
+        var = (radtest_variable_t*) grad_sym_install(vartab, "REPLY");
+        var->type = rtv_avl;
+	var = (radtest_variable_t*) grad_sym_install(vartab, "SOURCEIP");
+	var->type = rtv_ipaddress;
 }
 
 void
 assign(char *s)
 {
         char *p;
-        Variable *var;
-        union datum datum;
-        int type = Undefined;
+        radtest_variable_t *var;
+        radtest_datum_t datum;
+        radtest_data_type type = rtv_undefined;
         
         p = strchr(s, '=');
         if (!p) {
@@ -310,28 +310,28 @@ assign(char *s)
         *p++ = 0;
 
         type = parse_datum(p, &datum);
-        if (type == Undefined)
+        if (type == rtv_undefined)
                 return;
-        var = (Variable*)grad_sym_install(vartab, s);
+        var = (radtest_variable_t*)grad_sym_install(vartab, s);
         var->type = type;
         var->datum = datum;
 }
 
-int
-parse_datum(char *p, union datum *dp)
+radtest_data_type
+parse_datum(char *p, radtest_datum_t *dp)
 {
-        int type = Undefined;
+        radtest_data_type type = rtv_undefined;
         int length;
         
         if (*p == '"') {
                 length = strlen(++p);
                 if (length == 0 || p[length-1] != '"') {
                         fprintf(stderr, _("assign: missing closing quote\n"));
-                        return Undefined;
+                        return rtv_undefined;
                 }
                 p[length-1] = 0;
                 
-                type = String;
+                type = rtv_string;
                 dp->string = grad_estrdup(p);
         } else if (isdigit(*p)) {
                 char *endp;
@@ -339,52 +339,29 @@ parse_datum(char *p, union datum *dp)
                 /* This can be either an integer or an IP address */
                 dp->number = strtol(p, &endp, 0);
                 if (*endp == 0) {
-                        type = Integer;
+                        type = rtv_integer;
                 } else {
                         /* IP address */
                         if ((dp->ipaddr = grad_ip_gethostaddr(p)) != 0)
-                                type = Ipaddress;
+                                type = rtv_ipaddress;
                         else {
                                 fprintf(stderr, _("assign: invalid IP address: %s\n"), p);
-                                return Undefined;
+                                return rtv_undefined;
                         }
                 } 
         } else if (strchr(p, '.')) {
                 /* IP address */
                 if ((dp->ipaddr = grad_ip_gethostaddr(p)) != 0)
-                        type = Ipaddress;
+                        type = rtv_ipaddress;
                 else {
                         fprintf(stderr, _("assign: invalid IP address: %s\n"), p);
-                        return Undefined;
+                        return rtv_undefined;
                 }
         } else {
-                type = String;
+                type = rtv_string;
                 dp->string = grad_estrdup(p);
         }
         return type;
-}
-
-char *
-print_ident(Variable *var)
-{
-        char buf[64];
-        switch (var->type) {
-        case Undefined:
-                return grad_estrdup("UNDEFINED");
-                break;
-        case Integer:
-                sprintf(buf, "%d", var->datum.number);
-                return grad_estrdup(buf);
-        case Ipaddress:
-                grad_ip_iptostr(var->datum.ipaddr, buf);
-                return grad_estrdup(buf);
-        case String:
-                return grad_estrdup(var->datum.string);
-                break;
-        case Vector:
-                return grad_estrdup("VECTOR");
-        }
-	return NULL;
 }
 
 void
@@ -403,103 +380,84 @@ print_pairs(FILE *fp, grad_avp_t *pair)
 }
 
 void
-var_print(Variable *var)
+var_print(radtest_variable_t *var)
 {
         char buf[DOTTED_QUAD_LEN];
         if (!var)
                 return;
         switch (var->type) {
-        case Undefined:
+        case rtv_undefined:
                 printf("UNDEFINED");
                 break;
-        case Integer:
+		
+        case rtv_integer:
                 printf("%d", var->datum.number);
                 break;
-        case Ipaddress:
+		
+        case rtv_ipaddress:
                 printf("%s", grad_ip_iptostr(var->datum.ipaddr, buf));
                 break;
-        case String:
+		
+        case rtv_string:
                 printf("%s", var->datum.string);
                 break;
-        case Vector:
-                printf("{");
-                print_pairs(stdout, var->datum.vector);
-                printf("}");
-                break;
-        case Builtin:
-                var->datum.builtin.print();
+		
+        case rtv_avl:
+                printf("(");
+                print_pairs(stdout, var->datum.avl);
+                printf(")");
                 break;
         }
 }
 
 int
-var_free(Variable *var)
+var_free(radtest_variable_t *var)
 {
         switch (var->type) {
-        case String:
+        case rtv_string:
                 grad_free(var->datum.string);
                 break;
-        case Vector:
-                grad_avl_free(var->datum.vector);
+        case rtv_avl:
+                grad_avl_free(var->datum.avl);
                 break;
         }
 }
 
 void
-tempvar_free(Variable *var)
-{
-	if (var) {
-		if (var->name)
-			return; /* named variables are not freed */
-		var_free(var);
-	}
-}
-
-void
-radtest_send(int port, int code, Variable *var, grad_symtab_t *cntl)
+radtest_send(int port, int code, grad_avp_t *avl, grad_symtab_t *cntl)
 {
         grad_request_t *auth;
-	Variable *p;
-	grad_avp_t *pair;
+	radtest_variable_t *p;
 	
         if (reply_list)
                 grad_avl_free(reply_list);
         reply_list = NULL;
         reply_code = 0;
         
-        if (var) {
-		if (var->type != Vector) {
-			parse_error(_("wrong datatype: expected vector"));
-			return;
-		}
-		pair = var->datum.vector;
-	} else
-		pair = NULL;
-
 	if (!cntl) {
-		auth = grad_client_send(srv_queue, port, code, pair);
+		auth = grad_client_send(srv_queue, port, code, avl);
 	} else {
 		int id;
 		u_char vector[AUTH_VECTOR_LEN];
 		int sflags = 0;
 		int retry = 1;
-		Variable *delay = (Variable*)grad_sym_lookup(cntl, "delay");
+		radtest_variable_t *delay = (radtest_variable_t*)grad_sym_lookup(cntl, "delay");
 		
-		p = (Variable*)grad_sym_lookup(cntl, "repeat");
+		p = (radtest_variable_t*)grad_sym_lookup(cntl, "repeat");
 		if (p)
 			retry = p->datum.number;
-		p = (Variable*)grad_sym_lookup(cntl, "id");
+		p = (radtest_variable_t*)grad_sym_lookup(cntl, "id");
 		if (p) {
 			sflags |= RADCLT_ID;
 			id = p->datum.number;
 		}
-		p = (Variable*)grad_sym_lookup(cntl, "keepauth");
+		p = (radtest_variable_t*)grad_sym_lookup(cntl, "keepauth");
 		if (p && p->datum.number) 
 			sflags |= RADCLT_AUTHENTICATOR;
 		auth = grad_client_send0(srv_queue,
 					 port,
 					 code,
-					 pair,
+					 avl,
 					 0,
 					 &id,
 					 vector);
@@ -509,7 +467,7 @@ radtest_send(int port, int code, Variable *var, grad_symtab_t *cntl)
 			auth = grad_client_send0(srv_queue,
 						 port,
 						 code,
-						 var->datum.vector,
+						 avl,
 						 sflags,
 						 &id,
 						 vector);
@@ -519,17 +477,16 @@ radtest_send(int port, int code, Variable *var, grad_symtab_t *cntl)
 	if (!auth)
 		return;
         reply_code = auth->code;
-        var = (Variable*)grad_sym_lookup(vartab, "REPLY_CODE");
-        var->type = Integer;
-        var->datum.number = reply_code;
+        p = (radtest_variable_t*)grad_sym_lookup(vartab, "REPLY_CODE");
+        p->type = rtv_integer;
+        p->datum.number = reply_code;
 
         reply_list = grad_client_decrypt_pairlist(grad_avl_dup(auth->request),
 						  auth->vector, auth->secret);
 
-        var = (Variable*)grad_sym_lookup(vartab, "REPLY");
-        var->type = Vector;
-        var->datum.vector = NULL;
-        var->datum.vector = reply_list;
+        p = (radtest_variable_t*)grad_sym_lookup(vartab, "REPLY");
+        p->type = rtv_avl;
+        p->datum.avl = reply_list;
         grad_request_free(auth);
 }
 

@@ -85,7 +85,7 @@ open_dbm(name, dbmfile)
 	char *name;
 	DBM_FILE *dbmfile;
 {
-	return dbminit(path);
+	return dbminit(name);
 }
 
 int

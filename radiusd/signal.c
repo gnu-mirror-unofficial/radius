@@ -124,7 +124,7 @@ _signal_entry_runqueue (sig, type, e)
 	for (q = e->head; q; ) {
 		struct _signal_queue *next = q->next;
 		if (q->type == type) {
-			rc = q->handler (sig, q->data, e);
+			rc = q->handler (sig, q->data, (rad_sigid_t) q, e);
 			if (rc == 0)
 				break;
 		}

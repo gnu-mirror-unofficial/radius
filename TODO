@@ -21,7 +21,6 @@ hidden list.
 separate function
 
 * The server:
-** Should NAS-IP-Address be added to the request, if it does not contain one?
 ** Support rfc2433.txt  rfc2548.txt  rfc2759.txt
 ** Support for LDAP
 ** Add \ line continuation to read_raddb_files.

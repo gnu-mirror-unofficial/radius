@@ -1,3 +1,18 @@
+2004-07-05  Sergey Poznyakoff  
+
+	* TODO: Updated
+	* lib/readline.c: New file
+	* lib/Makefile.am: Added readline.c
+	* radiusd/Makefile.am (radiusd_LDADD): Added libradextra.a
+	* radtest/keywords: New file
+	* radtest/completion.skel: New file
+	* radtest/Makefile.am: Added completion.c, completion.skel
+	* radtest/gram.y: Removed invocations of prompt().
+	* radtest/input.l: Added custom I/O routines and completion
+	capabilities.
+	* scripts/comptab.awk: New file
+	* scripts/Makefile.am: Added comptab.awk
+
 2004-07-01  Sergey Poznyakoff
 
 	* lib/debug.c (auth_code_str): Renamed to grad_request_code_name

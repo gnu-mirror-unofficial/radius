@@ -29,20 +29,26 @@ UnixTimestamp ::= TEXTUAL-CONVENTION
        DESCRIPTION "Regular Unix timestamp encoded as an integer"
        SYNTAX Integer32 (1..'ffffffff'h)
 
-gnu-radius OBJECT-IDENTITY
+gnu OBJECT-IDENTITY
+       STATUS  current
+       DESCRIPTION
+             "The OID assigned to GNU by the IANA."
+        ::= { enterprises 11591 }
+
+radius OBJECT-IDENTITY
        STATUS  current
        DESCRIPTION
              "The OID assigned to GNU Radius project by the IANA."
-        ::= { enterprises 9163 }
+        ::= { gnu 1 }
 
-radiusStatistics  OBJECT IDENTIFIER ::= { gnu-radius 3 }
+radiusStatistics  OBJECT IDENTIFIER ::= { radius 3 }
 
 radiusStatMIB MODULE-IDENTITY
-       LAST-UPDATED "0000320010Z"
+       LAST-UPDATED "0212101800Z"
        ORGANIZATION "Free Software Foundation"
        CONTACT-INFO
               " Sergey Poznyakoff
-                email: gray@farlep.net"
+                email: gray@gnu.org"
        DESCRIPTION
              "The MIB module for entities implementing the statistics
               agent of GNU Radius project."

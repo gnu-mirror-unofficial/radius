@@ -301,34 +301,78 @@ static struct mib_data {
 	oid_AccServNoRecords,                snmp_acct_v_handler,&acct_closure,
 	oid_AccServUnknownTypes,             snmp_acct_v_handler,&acct_closure,
 
+#ifdef SNMP_COMPAT_0_96
+	
 	/* Server */
-	oid_radiusServerUpTime,              snmp_serv_handler, NULL,
-	oid_radiusServerResetTime,           snmp_serv_handler, NULL,
-	oid_radiusServerState,               snmp_serv_handler, NULL,
+	oid_grad_radiusServerUpTime,         snmp_serv_handler, NULL,
+	oid_grad_radiusServerResetTime,      snmp_serv_handler, NULL,
+	oid_grad_radiusServerState,          snmp_serv_handler, NULL,
 
 	/* Variable oids */
-	oid_queueIndex,        snmp_serv_queue_handler, &queue_closure,
-	oid_queueName,         snmp_serv_queue_handler, &queue_closure,	
-	oid_queueActive,       snmp_serv_queue_handler, &queue_closure,	
-	oid_queueHeld,         snmp_serv_queue_handler, &queue_closure,	
-	oid_queueTotal,        snmp_serv_queue_handler, &queue_closure,	
+	oid_grad_queueIndex,   snmp_serv_queue_handler, &queue_closure,
+	oid_grad_queueName,    snmp_serv_queue_handler, &queue_closure,	
+	oid_grad_queueActive,  snmp_serv_queue_handler, &queue_closure,	
+	oid_grad_queueHeld,    snmp_serv_queue_handler, &queue_closure,	
+	oid_grad_queueTotal,   snmp_serv_queue_handler, &queue_closure,	
 
-	oid_memoryNumClasses,      snmp_serv_mem_summary,   NULL,
-	oid_memoryNumBuckets,      snmp_serv_mem_summary,   NULL,
-	oid_memoryBytesAllocated,  snmp_serv_mem_summary,   NULL,
-	oid_memoryBytesUsed,       snmp_serv_mem_summary,   NULL,
+	oid_grad_memoryNumClasses,      snmp_serv_mem_summary,   NULL,
+	oid_grad_memoryNumBuckets,      snmp_serv_mem_summary,   NULL,
+	oid_grad_memoryBytesAllocated,  snmp_serv_mem_summary,   NULL,
+	oid_grad_memoryBytesUsed,       snmp_serv_mem_summary,   NULL,
 	
-	oid_classIndex,	           snmp_serv_class_handler, &mem_closure,
-	oid_classSize,		   snmp_serv_class_handler, &mem_closure,
-	oid_classElsPerBucket,     snmp_serv_class_handler, &mem_closure,
-	oid_classNumBuckets,	   snmp_serv_class_handler, &mem_closure,
-	oid_classElsUsed,          snmp_serv_class_handler, &mem_closure,
+	oid_grad_classIndex,	        snmp_serv_class_handler, &mem_closure,
+	oid_grad_classSize,	        snmp_serv_class_handler, &mem_closure,
+	oid_grad_classElsPerBucket,     snmp_serv_class_handler, &mem_closure,
+	oid_grad_classNumBuckets,	snmp_serv_class_handler, &mem_closure,
+	oid_grad_classElsUsed,          snmp_serv_class_handler, &mem_closure,
 	
-	oid_memoryMallocBlocks,	   snmp_serv_mem_summary,   NULL,
-	oid_memoryMallocBytes,	   snmp_serv_mem_summary,   NULL,
+	oid_grad_memoryMallocBlocks,	snmp_serv_mem_summary,   NULL,
+	oid_grad_memoryMallocBytes,	snmp_serv_mem_summary,   NULL,
 	
 	/* Statistics */
-	oid_StatIdent,                       snmp_stat_handler, NULL,
+	oid_grad_StatIdent,             snmp_stat_handler, NULL,
+	oid_grad_StatUpTime,	        snmp_stat_handler, NULL,
+	oid_grad_StatConfigReset,       snmp_stat_handler, NULL,
+	oid_grad_StatTotalLines,        snmp_stat_handler, NULL,
+	oid_grad_StatTotalLinesInUse,   snmp_stat_handler, NULL,
+	oid_grad_StatTotalLinesIdle,    snmp_stat_handler, NULL,
+
+	/* Variable oids */
+	oid_grad_NASIndex1,             snmp_stat_nas1, &nas_closure,
+	oid_grad_NASIndex2,             snmp_stat_nas2, &nas_closure,
+	oid_grad_NASIndex3,             snmp_stat_nas3, &nas_closure,
+	oid_grad_NASIndex4,             snmp_stat_nas4, &nas_closure,
+
+	oid_grad_NASAddress,		snmp_nas_table, &nas_table,
+	oid_grad_NASID,			snmp_nas_table, &nas_table,
+	oid_grad_NASLines,		snmp_nas_table, &nas_table,
+	oid_grad_NASLinesInUse,		snmp_nas_table, &nas_table,
+	oid_grad_NASLinesIdle,		snmp_nas_table, &nas_table,
+
+	oid_grad_StatPortIndex1,        snmp_port_index1, &port_closure,
+	oid_grad_StatPortIndex2,        snmp_port_index2, &port_closure,
+
+	/* port table */
+	oid_grad_StatPortNASIndex,	snmp_port_table, &port_table,
+	oid_grad_StatPortID,		snmp_port_table, &port_table,
+	oid_grad_StatPortFramedAddress,	snmp_port_table, &port_table,
+	oid_grad_StatPortTotalLogins,   snmp_port_table, &port_table,
+	oid_grad_StatPortStatus,	snmp_port_table, &port_table,
+	oid_grad_StatPortStatusChangeTimestamp,   snmp_port_table, &port_table,
+	oid_grad_StatPortUpTime,	snmp_port_table, &port_table,
+	oid_grad_StatPortLastLoginName,	snmp_port_table, &port_table,
+	oid_grad_StatPortLastLoginTimestamp,  snmp_port_table, &port_table,
+	oid_grad_StatPortLastLogoutTimestamp, snmp_port_table, &port_table,
+	oid_grad_StatPortIdleTotalTime,	snmp_port_table, &port_table,
+	oid_grad_StatPortIdleMaxTime,	snmp_port_table, &port_table,
+	oid_grad_StatPortIdleMaxTimestamp, snmp_port_table, &port_table,
+	oid_grad_StatPortInUseTotalTime, snmp_port_table, &port_table,
+	oid_grad_StatPortInUseMaxTime,	 snmp_port_table, &port_table,
+	oid_grad_StatPortInUseMaxTimestamp, snmp_port_table, &port_table,
+#endif
+	/* enterprise.gnu-radius subtree */
+	/* Statistics */
+	oid_StatIdent,	          	     snmp_stat_handler, NULL,
 	oid_StatUpTime,	                     snmp_stat_handler, NULL,
 	oid_StatConfigReset,                 snmp_stat_handler, NULL,
 	oid_StatTotalLines,                  snmp_stat_handler, NULL,
@@ -341,9 +385,9 @@ static struct mib_data {
 	oid_NASIndex3,                       snmp_stat_nas3, &nas_closure,
 	oid_NASIndex4,                       snmp_stat_nas4, &nas_closure,
 
-	oid_NASAddress,		             snmp_nas_table, &nas_table,
+	oid_NASAddress, 		     snmp_nas_table, &nas_table,
 	oid_NASID,			     snmp_nas_table, &nas_table,
-	oid_NASLines,			     snmp_nas_table, &nas_table,
+	oid_NASLines,	                     snmp_nas_table, &nas_table,
 	oid_NASLinesInUse,		     snmp_nas_table, &nas_table,
 	oid_NASLinesIdle,		     snmp_nas_table, &nas_table,
 
@@ -351,25 +395,25 @@ static struct mib_data {
 	oid_StatPortIndex2,                  snmp_port_index2, &port_closure,
 
 	/* port table */
-	oid_StatPortNASIndex,		     snmp_port_table, &port_table,
-	oid_StatPortID,			     snmp_port_table, &port_table,
+	oid_StatPortNASIndex,	             snmp_port_table, &port_table,
+	oid_StatPortID,		             snmp_port_table, &port_table,
 	oid_StatPortFramedAddress,	     snmp_port_table, &port_table,
 	oid_StatPortTotalLogins,             snmp_port_table, &port_table,
-	oid_StatPortStatus,		     snmp_port_table, &port_table,
+	oid_StatPortStatus,	             snmp_port_table, &port_table,
 	oid_StatPortStatusChangeTimestamp,   snmp_port_table, &port_table,
-	oid_StatPortUpTime,		     snmp_port_table, &port_table,
+	oid_StatPortUpTime,	             snmp_port_table, &port_table,
 	oid_StatPortLastLoginName,	     snmp_port_table, &port_table,
-	oid_StatPortLastLoginTimestamp,	     snmp_port_table, &port_table,
+	oid_StatPortLastLoginTimestamp,      snmp_port_table, &port_table,
 	oid_StatPortLastLogoutTimestamp,     snmp_port_table, &port_table,
 	oid_StatPortIdleTotalTime,	     snmp_port_table, &port_table,
 	oid_StatPortIdleMaxTime,	     snmp_port_table, &port_table,
-	oid_StatPortIdleMaxTimestamp,	     snmp_port_table, &port_table,
-	oid_StatPortInUseTotalTime,	     snmp_port_table, &port_table,
+	oid_StatPortIdleMaxTimestamp,        snmp_port_table, &port_table,
+	oid_StatPortInUseTotalTime,          snmp_port_table, &port_table,
 	oid_StatPortInUseMaxTime,	     snmp_port_table, &port_table,
-	oid_StatPortInUseMaxTimestamp,	     snmp_port_table, &port_table,
-	
+	oid_StatPortInUseMaxTimestamp,       snmp_port_table, &port_table,
+
 };					    
-					    
+
 void
 snmp_tree_init()
 {
@@ -2314,10 +2358,16 @@ snmp_stat_nas(num, cmd, closure, subid, varp, errp)
 	struct nas_stat *nsp;
 	UINT4 ip;
 	struct snmp_var *var;
-
+	int len;
+	
 	switch (cmd) {
 	case MIB_NODE_GET:
-		if (num != 3 || OIDLEN((*varp)->name) != LEN_NASIndex4) {
+		if (SUBID((*varp)->name, 6) == 9163)
+			len = LEN_grad_NASIndex4;
+		else
+			len = LEN_NASIndex4;
+			
+		if (num != 3 || OIDLEN((*varp)->name) != len) {
 			*errp = SNMP_ERR_NOSUCHNAME;
 			return -1;
 		}
@@ -2487,7 +2537,6 @@ snmp_nas_table(cmd, closure, subid, varp, errp)
 	return 0;
 	
 }
-
 
 struct snmp_var *
 snmp_nas_table_get(subid, oid, errp)

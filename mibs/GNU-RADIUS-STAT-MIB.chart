@@ -1,5 +1,6 @@
 -- Enterprises tree:
 .1.3.6.1.4.1.9163.	(.iso.org.dod.internet.private.enterprises.gnu-radius.)
+.1.3.6.1.4.1.11591.1. (.iso.org.dod.internet.private.enterprises.gnu.radius.)
 -- -------------------------------------
 
        +-(3) radiusStatistics

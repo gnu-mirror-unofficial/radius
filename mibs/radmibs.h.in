@@ -77,71 +77,141 @@
 ~ AccServUnknownTypes			1,3,6,1,2,1,67,2,1,1,1,14,1,11
 					
 /* Enterprises subtree */			
-					
+
+/* enterprises.gnu-radius subtree: */
 /* Fixed oids */			
-= StatIdent				1,3,6,1,4,1,9163,3,1,1
-= StatUpTime				1,3,6,1,4,1,9163,3,1,2
-= StatConfigReset			1,3,6,1,4,1,9163,3,1,3
-= StatTotalLines			1,3,6,1,4,1,9163,3,1,4
-= StatTotalLinesInUse		        1,3,6,1,4,1,9163,3,1,5
-= StatTotalLinesIdle          		1,3,6,1,4,1,9163,3,1,6
+= grad_StatIdent			1,3,6,1,4,1,9163,3,1,1
+= grad_StatUpTime			1,3,6,1,4,1,9163,3,1,2
+= grad_StatConfigReset			1,3,6,1,4,1,9163,3,1,3
+= grad_StatTotalLines			1,3,6,1,4,1,9163,3,1,4
+= grad_StatTotalLinesInUse		1,3,6,1,4,1,9163,3,1,5
+= grad_StatTotalLinesIdle          	1,3,6,1,4,1,9163,3,1,6
 					
 /* Variable oids */			
-~ NASIndex1				1,3,6,1,4,1,9163,3,1,7,1,1
-~ NASIndex2				1,3,6,1,4,1,9163,3,1,7,1,1,-1
-~ NASIndex3				1,3,6,1,4,1,9163,3,1,7,1,1,-1,-1
-~ NASIndex4				1,3,6,1,4,1,9163,3,1,7,1,1,-1,-1,-1
-~ NASAddress				1,3,6,1,4,1,9163,3,1,7,1,2
-~ NASID					1,3,6,1,4,1,9163,3,1,7,1,3
-~ NASLines				1,3,6,1,4,1,9163,3,1,7,1,4
-~ NASLinesInUse				1,3,6,1,4,1,9163,3,1,7,1,5
-~ NASLinesIdle				1,3,6,1,4,1,9163,3,1,7,1,6
+~ grad_NASIndex1			1,3,6,1,4,1,9163,3,1,7,1,1
+~ grad_NASIndex2			1,3,6,1,4,1,9163,3,1,7,1,1,-1
+~ grad_NASIndex3			1,3,6,1,4,1,9163,3,1,7,1,1,-1,-1
+~ grad_NASIndex4			1,3,6,1,4,1,9163,3,1,7,1,1,-1,-1,-1
+~ grad_NASAddress			1,3,6,1,4,1,9163,3,1,7,1,2
+~ grad_NASID				1,3,6,1,4,1,9163,3,1,7,1,3
+~ grad_NASLines				1,3,6,1,4,1,9163,3,1,7,1,4
+~ grad_NASLinesInUse			1,3,6,1,4,1,9163,3,1,7,1,5
+~ grad_NASLinesIdle			1,3,6,1,4,1,9163,3,1,7,1,6
 
-~ StatPortIndex1			1,3,6,1,4,1,9163,3,1,8,1,1
-~ StatPortIndex2			1,3,6,1,4,1,9163,3,1,8,1,1,-1
+~ grad_StatPortIndex1			1,3,6,1,4,1,9163,3,1,8,1,1
+~ grad_StatPortIndex2			1,3,6,1,4,1,9163,3,1,8,1,1,-1
 
-~ StatPortNASIndex			1,3,6,1,4,1,9163,3,1,8,1,2
-~ StatPortID				1,3,6,1,4,1,9163,3,1,8,1,3
-~ StatPortFramedAddress			1,3,6,1,4,1,9163,3,1,8,1,4 
-~ StatPortTotalLogins			1,3,6,1,4,1,9163,3,1,8,1,5 
-~ StatPortStatus			1,3,6,1,4,1,9163,3,1,8,1,6 
-~ StatPortStatusChangeTimestamp		1,3,6,1,4,1,9163,3,1,8,1,7 
-~ StatPortUpTime			1,3,6,1,4,1,9163,3,1,8,1,8 
-~ StatPortLastLoginName			1,3,6,1,4,1,9163,3,1,8,1,9 
-~ StatPortLastLoginTimestamp		1,3,6,1,4,1,9163,3,1,8,1,10
-~ StatPortLastLogoutTimestamp		1,3,6,1,4,1,9163,3,1,8,1,11
-~ StatPortIdleTotalTime			1,3,6,1,4,1,9163,3,1,8,1,12
-~ StatPortIdleMaxTime			1,3,6,1,4,1,9163,3,1,8,1,13
-~ StatPortIdleMaxTimestamp		1,3,6,1,4,1,9163,3,1,8,1,14
-~ StatPortInUseTotalTime		1,3,6,1,4,1,9163,3,1,8,1,15
-~ StatPortInUseMaxTime			1,3,6,1,4,1,9163,3,1,8,1,16
-~ StatPortInUseMaxTimestamp		1,3,6,1,4,1,9163,3,1,8,1,17
+~ grad_StatPortNASIndex			1,3,6,1,4,1,9163,3,1,8,1,2
+~ grad_StatPortID			1,3,6,1,4,1,9163,3,1,8,1,3
+~ grad_StatPortFramedAddress		1,3,6,1,4,1,9163,3,1,8,1,4 
+~ grad_StatPortTotalLogins		1,3,6,1,4,1,9163,3,1,8,1,5 
+~ grad_StatPortStatus			1,3,6,1,4,1,9163,3,1,8,1,6 
+~ grad_StatPortStatusChangeTimestamp	1,3,6,1,4,1,9163,3,1,8,1,7 
+~ grad_StatPortUpTime			1,3,6,1,4,1,9163,3,1,8,1,8 
+~ grad_StatPortLastLoginName		1,3,6,1,4,1,9163,3,1,8,1,9 
+~ grad_StatPortLastLoginTimestamp	1,3,6,1,4,1,9163,3,1,8,1,10
+~ grad_StatPortLastLogoutTimestamp	1,3,6,1,4,1,9163,3,1,8,1,11
+~ grad_StatPortIdleTotalTime		1,3,6,1,4,1,9163,3,1,8,1,12
+~ grad_StatPortIdleMaxTime		1,3,6,1,4,1,9163,3,1,8,1,13
+~ grad_StatPortIdleMaxTimestamp		1,3,6,1,4,1,9163,3,1,8,1,14
+~ grad_StatPortInUseTotalTime		1,3,6,1,4,1,9163,3,1,8,1,15
+~ grad_StatPortInUseMaxTime		1,3,6,1,4,1,9163,3,1,8,1,16
+~ grad_StatPortInUseMaxTimestamp	1,3,6,1,4,1,9163,3,1,8,1,17
 
 /* Server */
 /* fixed oids */
-= radiusServerUpTime			1,3,6,1,4,1,9163,1,1
-= radiusServerResetTime			1,3,6,1,4,1,9163,1,2
-= radiusServerState			1,3,6,1,4,1,9163,1,3
+= grad_radiusServerUpTime		1,3,6,1,4,1,9163,1,1
+= grad_radiusServerResetTime		1,3,6,1,4,1,9163,1,2
+= grad_radiusServerState		1,3,6,1,4,1,9163,1,3
 
 /* variable oids */
-~ queueIndex				1,3,6,1,4,1,9163,1,4,1,1
-~ queueName				1,3,6,1,4,1,9163,1,4,1,2
-~ queueActive				1,3,6,1,4,1,9163,1,4,1,3
-~ queueHeld				1,3,6,1,4,1,9163,1,4,1,4
-~ queueTotal				1,3,6,1,4,1,9163,1,4,1,5
+~ grad_queueIndex			1,3,6,1,4,1,9163,1,4,1,1
+~ grad_queueName			1,3,6,1,4,1,9163,1,4,1,2
+~ grad_queueActive			1,3,6,1,4,1,9163,1,4,1,3
+~ grad_queueHeld			1,3,6,1,4,1,9163,1,4,1,4
+~ grad_queueTotal			1,3,6,1,4,1,9163,1,4,1,5
 
-= memoryNumClasses			1,3,6,1,4,1,9163,1,5,1
-= memoryNumBuckets			1,3,6,1,4,1,9163,1,5,2
-= memoryBytesAllocated			1,3,6,1,4,1,9163,1,5,3
-= memoryBytesUsed			1,3,6,1,4,1,9163,1,5,4
+= grad_memoryNumClasses			1,3,6,1,4,1,9163,1,5,1
+= grad_memoryNumBuckets			1,3,6,1,4,1,9163,1,5,2
+= grad_memoryBytesAllocated		1,3,6,1,4,1,9163,1,5,3
+= grad_memoryBytesUsed			1,3,6,1,4,1,9163,1,5,4
 
-~ classIndex				1,3,6,1,4,1,9163,1,5,5,1,1
-~ classSize				1,3,6,1,4,1,9163,1,5,5,1,2
-~ classElsPerBucket			1,3,6,1,4,1,9163,1,5,5,1,3
-~ classNumBuckets			1,3,6,1,4,1,9163,1,5,5,1,4
-~ classElsUsed				1,3,6,1,4,1,9163,1,5,5,1,5
+~ grad_classIndex			1,3,6,1,4,1,9163,1,5,5,1,1
+~ grad_classSize			1,3,6,1,4,1,9163,1,5,5,1,2
+~ grad_classElsPerBucket		1,3,6,1,4,1,9163,1,5,5,1,3
+~ grad_classNumBuckets			1,3,6,1,4,1,9163,1,5,5,1,4
+~ grad_classElsUsed			1,3,6,1,4,1,9163,1,5,5,1,5
 
-= memoryMallocBlocks			1,3,6,1,4,1,9163,1,5,6
-= memoryMallocBytes			1,3,6,1,4,1,9163,1,5,7
+= grad_memoryMallocBlocks		1,3,6,1,4,1,9163,1,5,6
+= grad_memoryMallocBytes		1,3,6,1,4,1,9163,1,5,7
+
+/* enterprises.gnu.radius subtree: */
+
+/* Fixed oids */			
+= StatIdent				1,3,6,1,4,1,11591,1,3,1,1
+= StatUpTime				1,3,6,1,4,1,11591,1,3,1,2
+= StatConfigReset			1,3,6,1,4,1,11591,1,3,1,3
+= StatTotalLines			1,3,6,1,4,1,11591,1,3,1,4
+= StatTotalLinesInUse		        1,3,6,1,4,1,11591,1,3,1,5
+= StatTotalLinesIdle          		1,3,6,1,4,1,11591,1,3,1,6
+					
+/* Variable oids */			
+~ NASIndex1				1,3,6,1,4,1,11591,1,3,1,7,1,1
+~ NASIndex2				1,3,6,1,4,1,11591,1,3,1,7,1,1,-1
+~ NASIndex3				1,3,6,1,4,1,11591,1,3,1,7,1,1,-1,-1
+~ NASIndex4				1,3,6,1,4,1,11591,1,3,1,7,1,1,-1,-1,-1
+~ NASAddress				1,3,6,1,4,1,11591,1,3,1,7,1,2
+~ NASID					1,3,6,1,4,1,11591,1,3,1,7,1,3
+~ NASLines				1,3,6,1,4,1,11591,1,3,1,7,1,4
+~ NASLinesInUse				1,3,6,1,4,1,11591,1,3,1,7,1,5
+~ NASLinesIdle				1,3,6,1,4,1,11591,1,3,1,7,1,6
+
+~ StatPortIndex1			1,3,6,1,4,1,11591,1,3,1,8,1,1
+~ StatPortIndex2			1,3,6,1,4,1,11591,1,3,1,8,1,1,-1
+
+~ StatPortNASIndex			1,3,6,1,4,1,11591,1,3,1,8,1,2
+~ StatPortID				1,3,6,1,4,1,11591,1,3,1,8,1,3
+~ StatPortFramedAddress			1,3,6,1,4,1,11591,1,3,1,8,1,4 
+~ StatPortTotalLogins			1,3,6,1,4,1,11591,1,3,1,8,1,5 
+~ StatPortStatus			1,3,6,1,4,1,11591,1,3,1,8,1,6 
+~ StatPortStatusChangeTimestamp		1,3,6,1,4,1,11591,1,3,1,8,1,7 
+~ StatPortUpTime			1,3,6,1,4,1,11591,1,3,1,8,1,8 
+~ StatPortLastLoginName			1,3,6,1,4,1,11591,1,3,1,8,1,9 
+~ StatPortLastLoginTimestamp		1,3,6,1,4,1,11591,1,3,1,8,1,10
+~ StatPortLastLogoutTimestamp		1,3,6,1,4,1,11591,1,3,1,8,1,11
+~ StatPortIdleTotalTime			1,3,6,1,4,1,11591,1,3,1,8,1,12
+~ StatPortIdleMaxTime			1,3,6,1,4,1,11591,1,3,1,8,1,13
+~ StatPortIdleMaxTimestamp		1,3,6,1,4,1,11591,1,3,1,8,1,14
+~ StatPortInUseTotalTime		1,3,6,1,4,1,11591,1,3,1,8,1,15
+~ StatPortInUseMaxTime			1,3,6,1,4,1,11591,1,3,1,8,1,16
+~ StatPortInUseMaxTimestamp		1,3,6,1,4,1,11591,1,3,1,8,1,17
+
+/* Server */
+/* fixed oids */
+= radiusServerUpTime			1,3,6,1,4,1,11591,1,1,1
+= radiusServerResetTime			1,3,6,1,4,1,11591,1,1,2
+= radiusServerState			1,3,6,1,4,1,11591,1,1,3
+
+/* variable oids */
+~ queueIndex				1,3,6,1,4,1,11591,1,1,4,1,1
+~ queueName				1,3,6,1,4,1,11591,1,1,4,1,2
+~ queueActive				1,3,6,1,4,1,11591,1,1,4,1,3
+~ queueHeld				1,3,6,1,4,1,11591,1,1,4,1,4
+~ queueTotal				1,3,6,1,4,1,11591,1,1,4,1,5
+
+= memoryNumClasses			1,3,6,1,4,1,11591,1,1,5,1
+= memoryNumBuckets			1,3,6,1,4,1,11591,1,1,5,2
+= memoryBytesAllocated			1,3,6,1,4,1,11591,1,1,5,3
+= memoryBytesUsed			1,3,6,1,4,1,11591,1,1,5,4
+
+~ classIndex				1,3,6,1,4,1,11591,1,1,5,5,1,1
+~ classSize				1,3,6,1,4,1,11591,1,1,5,5,1,2
+~ classElsPerBucket			1,3,6,1,4,1,11591,1,1,5,5,1,3
+~ classNumBuckets			1,3,6,1,4,1,11591,1,1,5,5,1,4
+~ classElsUsed				1,3,6,1,4,1,11591,1,1,5,5,1,5
+
+= memoryMallocBlocks			1,3,6,1,4,1,11591,1,1,5,6
+= memoryMallocBytes			1,3,6,1,4,1,11591,1,1,5,7
+
 
 

@@ -154,7 +154,7 @@ drv_dejagnu() {
         CONF=$LOCAL_CONF
     fi
     trap "stop_server $LOCAL_CONF $PROXY_CONF" 1 3 15
-    $RADTEST -d $CONF 
+    $RADTEST -d $CONF --no-interactive
     stop_server $LOCAL_CONF $PROXY_CONF
 }	     
 

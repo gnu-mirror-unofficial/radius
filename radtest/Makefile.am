@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2003 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2003,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -12,8 +12,8 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 bin_PROGRAMS    = radtest
-radtest_SOURCES = main.c gram.y input.l debugmod.c radtest.h
-radtest_LDADD   = ../lib/liblog.la @LIBGNURADIUS@ @LIBINTL@
+radtest_SOURCES = main.c gram.y input.l radtest.h
+radtest_LDADD   = @LIBGNURADIUS@ @LIBINTL@
 noinst_HEADERS  = gram.h
 INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/lib -I$(srcdir) @INCLUDEPATH@
 AM_YFLAGS = -vdt 
@@ -26,10 +26,9 @@ LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDE
 .c.ln:
 	$(LINT.c) -i $<
 
-radtest_ln=main.ln gram.ln input.ln debugmod.ln
+radtest_ln=main.ln gram.ln input.ln 
 lint: $(radtest_ln)
 	$(LINT.c) -u $(radtest_ln) -L../lib -llog -lrad 
 
-FILELIST:; @echo gram.y > .list
 endif
 

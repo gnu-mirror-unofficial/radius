@@ -394,10 +394,10 @@ acct_def        : listen_stmt
 			  asgn(&request_class[R_AUTH].cleanup_delay, &$2,
 			       AT_INT, 0);
 		  }      
-/*                | T_DETAIL T_BOOL             
+                | T_DETAIL value
                   {
-			  asgn(&auth_detail, &$2, AT_BOOL, 0);
-			  }      */
+			  asgn(&acct_detail, &$2, AT_BOOL, 0);
+		  }      
                 ;
 
 

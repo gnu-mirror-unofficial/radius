@@ -1,5 +1,22 @@
 2003-06-05  Sergey Poznyakoff 
 
+	* include/radiusd.h (PROXY_STATE): Revised.
+	(radius_exec_program): Removed unused last argument.
+	* radiusd/proxy.c: Likewise.
+	
+	* radiusd/auth.c: Removed legacy handling of
+	Service-Type=Authenticate-Only.
+	* radiusd/exec.c (radius_exec_program): Removed unused last
+	argument.
+	* radiusd/acct.c: Removed last argument in calls to
+	radius_exec_program().
+	* radiusd/log.c: Minor change.
+	* radiusd/radius.c (radius_req_failure,radius_respond): Update
+	statistics.
+	* radiusd/scheme.c (scheme_auth,scheme_acct): Added diagnostics.
+	
+2003-06-05  Sergey Poznyakoff 
+
 	* NEWS: Updated.
 	* include/radiusd.h (input_iterate_channels,rpp_count): New
 	functions.

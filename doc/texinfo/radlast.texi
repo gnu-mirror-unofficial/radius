@@ -2,8 +2,8 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Radlast, Raduse, Radwho, Top
-@chapter Radlast
+@node Radlast, Raduse, Radwho, Utility Programs
+@section Radlast
 @pindex radlast
 
 The @command{radlast} utility lists sessions of specified users, @NAS{}es,
@@ -37,7 +37,7 @@ output. It includes following fields:
 
 @comment *******************************************************************
 @node radlast options, , , Radlast
-@section @command{radlast} command line options
+@subsection @command{radlast} command line options
 @pindex @command{radlast}, options
 
 Use following command line options to control the behavior of
@@ -93,7 +93,7 @@ is assumed, i.e. the information selected by each argument
 is printed. This, however, does not apply to @option{-c} option. This option is
 always combined with the rest of command line by logical AND.
 
-The pseudo-user ~reboot logs in on every reboot of network access
+The pseudo-user @samp{~reboot} logs in on every reboot of network access
 server.
 
 If @command{radlast} is interrupted, it indicates to what date the search

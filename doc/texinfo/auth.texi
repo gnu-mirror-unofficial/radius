@@ -25,6 +25,7 @@ of @attr{Auth-Type} attribute in his profile.
 @section Accept Authentication Type
 @cindex Accept Authentication Type
 @cindex guest accounts, setting up
+@exindex guest accounts, setting up
 
 @subheading Synopsis
 @example
@@ -230,17 +231,18 @@ latter, and can thus be used to override default values specified
 in @file{nastypes}.
 
 Having determined the query method and its argument, Radius queries
-@NAS{} and analyses its output. To analyze it Radius uses user-supplied
-functions defined in file @file{raddb/rewrite}. The function to use
+@NAS{} and analyses its output. To analyze it, Radius uses user-supplied
+Rewrite functions defined in file @file{raddb/rewrite}. The function to use
 is specified by the @code{function=} argument to the method. It is
 called each time a line of output is received from the @NAS{} (for
 finger queries) or a variable is received (for SNMP queries). The
 process continues until the function returns 1 or the last line
 of output is read or a timeout occurs whichever comes first.
 
-If during processing @NAS{} reply the user-function returns 1 it is taken
-to mean the user's session is now active at the @NAS{}, if the end of
-output was reached during scanning it is taken to mean the user's
-session is not active.
+If the user-function returns 1 it is taken to mean the user's session is
+now active at the @NAS{}, otherwise, if it replies 0 or if the end of
+output is reached, it is taken to mean the user's session is not active.
 
-[FIXME]
+The syntax conventions for user-supplied functions are described in
+detail in @ref{Login verification functions}.
+

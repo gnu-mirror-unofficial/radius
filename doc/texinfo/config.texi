@@ -25,3 +25,7 @@
 @macro IP{}
 @sc{ip} address
 @end macro
+
+@macro UNIX{}
+@sc{unix}
+@end macro

@@ -19,11 +19,13 @@ radius_TEXINFOS=acct.texi\
  config.texi\
  configure.texi\
  debug.texi\
+ extensions.texi\
  intro.texi\
  invoke.texi\
  logging.texi\
  naming.texi\
  operation.texi\
+ programs.texi\
  radauth.texi\
  radctl.texi\
  radgrep.texi\

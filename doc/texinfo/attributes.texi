@@ -180,12 +180,12 @@ physical connection on the @NAS{}, not in the sense of a @sc{tcp} or
 @sc{udp} port number.
 
 Some @NAS{}es try to encode various information in the @attr{NAS-Port-Id}
-attribute value. For example MAX Ascend terminal server constructs
+attribute value. For example @sc{max a}scend terminal server constructs
 @attr{NAS-Port-Id} concatenating line type (one-digit), line number
 (two-digits), and the channel number (two-digits) thus producing
 a 5-digit port number. In order to ``normalize'' such encoded
 port numbers we recommend to use a rewrite function (@pxref{rewrite file}).
-A rewrite function for MAX Ascend servers is provided in the
+A rewrite function for @sc{max a}scend servers is provided in the
 distribution.
 
 @comment **************************************************************
@@ -1203,7 +1203,9 @@ Suppose the @file{users} file contains the following entry:
 @example
 DEFAULT Auth-Type = System,
                 Simultaneous-Use = 1
-        Exec-Program = "/usr/local/sbin/logauth %C@{User-Name@} %C@{Calling-Station-Id@}"
+        Exec-Program = "/usr/local/sbin/logauth \
+                        %C@{User-Name@} \
+                        %C@{Calling-Station-Id@}"
 @end example
 
 @noindent

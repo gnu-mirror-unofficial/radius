@@ -2,8 +2,8 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Radauth, Radctl, Radping, Top
-@chapter Radauth
+@node Radauth, Radctl, Radping, Utility Programs
+@section Radauth
 @pindex radauth
 
 The @command{radauth} utility sends the Radius server Access-Request
@@ -18,7 +18,7 @@ The @option{-v} or @option{--verbose} option forces @command{radauth} to be
 verbose on output.
 
 If you enter @samp{.} (dot) instead of the password, the program
-will disable echoing on the screen, prompt you to enter it,
+will disable echoing on the screen, prompt you to enter the password,
 and turn the echoing on again, thus preventing the password from being
 compromised.
 

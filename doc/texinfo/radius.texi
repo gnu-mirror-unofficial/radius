@@ -118,22 +118,9 @@ The radius daemon
 * Accounting::          Accounting methods.
 * Logging::             What gets logged and where.
 * Debugging::           An extensive logging information.
+* Extensions::          Extending radiusd.
 
-Controlling who and when was logged in
-* Radwho::              Show who is logged in by radius now.
-* Radlast::             Show the history of logins by radius.
-* Raduse::              Monitor the users in real time.
-
-Maintenance commands
-* Radzap::              Modify the login records.
-* Radgrep::             Quickly find the login record.
-* Radping::             Ping the remote machine by the username.
-* Radauth::             Check if a user can be authenticated.
-* Radctl::              Radctl monitor.
-* Builddbm::            Create DBM version of the @file{raddb/users} file.
-
-Guile interface
-* Radscm::              A guile interface to radius functions.
+* Utility Programs::
 
 Radius Attributes
 * Attribute list::      Some frequently used attributes.
@@ -150,14 +137,16 @@ Indices
 * Attribute Index::     Index of RADIUS attributes.
 * Concept Index::       Index of concepts.
 
-
-@end menu
-
 @ignore
 Enable this when necessary
+Here are some other nodes which are really inferiors of the ones
+already listed, mentioned here so you can get to them in one step:
+
+ --- The Detailed Node Listing ---
 @detailmenu
 @end detailmenu
 @end ignore
+@end menu
 
 @comment *******************************************************************
 @node Distrib, Copying, Top, Top
@@ -588,17 +577,8 @@ Public License instead of this License.
 @include acct.texi
 @include logging.texi
 @include debug.texi
-@include radwho.texi
-@include radlast.texi
-@include raduse.texi
-@include radzap.texi
-@include radgrep.texi
-@include radping.texi
-@include radauth.texi
-@include radctl.texi
-@include builddbm.texi
-@include radscm.texi
-
+@include extensions.texi
+@include programs.texi
 @include attributes.texi
 @include bugs.texi
 
@@ -633,6 +613,7 @@ Public License instead of this License.
 @printindex cp
 @page
 
+@summarycontents
 @contents
 
 @bye

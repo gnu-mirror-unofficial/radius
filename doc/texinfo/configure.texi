@@ -704,7 +704,7 @@ Add specified pathname to @code{%load-path} variable.
 Load the specified source file on startup.
 @end table
 
-[FIXME: xref to description of Guile interface]
+For the detailed description of Guile extensions interface, @xref{Guile}.
 
 @comment **L3***************************************************************
 @node  message, , guile, config file
@@ -769,7 +769,7 @@ a not-existent user-name as his authentication credentials.
 @item realm-quota
 This message is returned when the user is trying to log in using a
 realm, and number of users that are currently logged in from this realm
-reaches maximum value. For a description of realms, see @ref{Realms}.
+reaches maximum value. For a description of realms, @xref{Realms}.
 @item multiple-login
 This message is returned to the user, who has logged in more than
 allowed number of times. For description of how to set the maximum
@@ -1017,7 +1017,7 @@ The  @dfn{nas-specific} arguments currently implemented are:
 This is a boolean argument that controls the encryption of user
 passwords, longer than 16 octets. By default, @command{radiusd} uses
 method specified by @sc{rfc 2865}. However some @NAS{}es, most notably
-@sc{MAX Ascend} series, implement a broken method of encoding long
+@sc{max a}scend series, implement a broken method of encoding long
 passwords. This flag instructs @command{radiusd} to use broken method
 of password encryption for the given @NAS{}.
 @end table
@@ -1035,14 +1035,14 @@ For the list of nas-querying arguments,
 @exindex @file{naslist} file
 
 @example
-# @value{RADDB}/naslist: contains a list of Network Access Servers 
+# raddb/naslist: contains a list of Network Access Servers 
 #
 # Each record consists of following fields:
 #
 #       i.      A valid hostname or IP address for the client.
 #       ii.     The short name to use in the logfiles for this NAS.
 #       iii.    Type of device. Valid values are `true', `false' and
-#               those defined in @value{RADDB}/nastypes file.
+#               those defined in raddb/nastypes file.
 
 # NAS Name              Short Name      Type
 #----------------       ----------      ----
@@ -1062,8 +1062,7 @@ query @NAS{}es about active user sessions.
 @menu
 * Syntax: nastypes syntax.      Syntax described.
 * Example: nastypes example.    Example of nastypes file.
-* Check functions::             The check functions.
-* Standard types::              @NAS{} types defined in standard nastypes file.
+* Predefined NAS Types::        @NAS{} types defined in standard nastypes file.
 @end menu
 
 @comment **L3***************************************************************
@@ -1104,7 +1103,8 @@ The following arguments are predefined:
 
 @table @asis
 @item function=@var{s}
-Specifies the check function to use with this method (@pxref{Check functions}).
+Specifies the check function to use with this method
+(@pxref{Login verification functions}).
 This argument must be present. For description of how this function is
 applied, see @ref{Checking Simultaneous Logins}.
 @item port=@var{n}
@@ -1156,7 +1156,7 @@ Expands to port number + 1.
 @end table
 
 @comment **L3***************************************************************
-@node nastypes example, Check functions, nastypes syntax, nastypes file
+@node nastypes example, Predefined NAS Types, nastypes syntax, nastypes file
 @subsection Example of nastypes file.
 @exindex @file{nastypes} file
 
@@ -1178,143 +1178,62 @@ livingston snmp         oid=.1.3.6.1.4.1.307.3.2.1.1.1.5.%P,
 @end example
 
 @comment **L3***************************************************************
-@node Check functions, Standard types, nastypes example, nastypes file
-@subsection Check Functions
-
-@heading Syntax requirements
-
-A function listed in @code{function=} argument must be declared as
-follows:
-
-@example
-integer check(string str, string name, integer pid, string sid)
-@end example
-
-@noindent
-Its arguments are:
-
-@table @var
-@item str
-Input string. If the query method is @code{finger}, this is the string
-of output received from the @NAS{} with trailing newline stripped off. If
-the query method is @code{snmp}, this is the received variable value
-converted to its string representation.
-@item name
-User name.
-@item pid
-Port Id of the session.
-@item sid
-Session @sc{id}.
-@end table
-
-The function should return non-0 if the @var{str} argument matches user's
-session and 0 otherwise.
-
-@heading Examples
-
-Below are some examples of check functions:
-
-@subheading Checking UNIX finger output
-
-This function checks the line of output of a standard UNIX finger
-service. Field 1 contains username, field 3 --- Port @sc{id} (tty), and
-field 7 --- session @sc{id}.
-
-@example
-integer
-check_unix(string str, string name, integer pid, string sid)
-@{
-        return field(str, 1) == name &&
-               field(str, 3) == pid &&
-               field(str, 7) == sid;
-@}
-@end example
-
-To use this function, the following line must be present in
-@file{naslist}:
-
-@example
-#Type      Method       Arguments
-#----      ------       ---------
-unix       finger       function=check_unix
-@end example
-
-@noindent
-and the @NAS{} must be defined in @file{naslist} as follows:
-
-@example
-#Hostname       Shortname       Type    Arguments
-#---------      ---------       ----    ----------
-some.nas        A-NAS           unix
-@end example
-
-@subheading Checking user name
-
-SNMP queries to @NAS{}es of MAX Ascend and Cisco AS5300 series return
-a username. To check for it the following function can be used:
-
-@example
-integer
-check_username(string str, string name, integer pid, string sid)
-@{
-        return str == name;
-@}
-@end example
-
-@noindent
-
-The function is applied using following statements in
-@file{nastypes} file (@emph{please note}, that in this example
-the long lines are broken into several lines for readability):
-
-@example
-#Type   Method   Arguments
-#----   ------  -------------
-max     snmp    oid=.1.3.6.1.4.1.529.12.3.1.4.%d,
-                function=check_username
-as5300  snmp    oid=.1.3.6.1.4.1.9.9.150.1.1.3.1.2.%d,
-                function=check_username
-@end example
-
-To apply it to a given @NAS{}, the following must be specified in
-@file{naslist} file:
-
-@example
-#Hostname       Shortname       Type    Arguments
-#---------      ---------       ----    ----------
-some.nas        A-NAS           max     community=guessme
-@end example
-
-@comment **L3***************************************************************
-@node Standard types, , Check functions, nastypes file
+@node Predefined NAS Types, , nastypes example, nastypes file
 @subsection Standard @NAS{} types
 @cindex NAS types, standard
 
-The configuration files shipped with GNU radius contain information
-about following types of @NAS{}es:
+The @file{nastypes} shipped with version @value{VERSION} of GNU Radius
+defines following @NAS{} types:
 
 @table @asis
-@item unix
-Unix boxes are supposed to run finger service able to return information
+@item unix --- UNIX boxes running Finger
+This type suits for @sc{unix} boxes running finger service able to return information
 about dial-up users active on them. To enable finger checking of a unix
 host add following to your @file{naslist} file:
 @example
+@group
 #Hostname       Shortname   Type
 #--------       ---------   ----
-nas.name        T           unix    
+nas.name        T           unix
+@end group
 @end example
 
-@item MAX Ascend servers.
-There are two @NAS{} types defined to query MAX Ascend servers. Type
-@code{max} uses SNMP querying, type @code{max-f} uses finger. We
-recommend to use SNMP querying. Do not forget to specify
-your community in the @code{password=} argument.
-@item Cisco AS5300 series
-Type @code{as5300} supports SNMP queries, type @code{as5200-f} supports
-finger.
-@item Livingston Portmaster
+@item max-f --- MAX Ascend with Finger
+Use this type if you have MAX Ascend terminal server that answers finger
+queries. The @file{naslist} entry for such @NAS{} will look like:
+
+@example
+@group
+#Hostname       Shortname   Type  Flags
+#--------       ---------   ----  -----
+nas.name        T           max-f broken_pass
+@end group
+@end example
+
+@emph{Please note} the use of @code{broken_pass} flag. It is needed
+for most MAX Ascend servers (@pxref{naslist file}).
+
+@item max --- MAX Ascend, answering SNMP
+Use this type if you have MAX Ascend terminal server that answers SNMP
+queries. The @file{naslist} entry for such @NAS{} will look like:
+
+@example
+@group
+#Hostname       Shortname   Type  Flags
+#--------       ---------   ----  -----
+nas.name        T           max-f broken_pass,community=@var{comm}
+@end group
+@end example
+
+@noindent
+Replace @var{comm} with your actual SNMP community name.
+
+@item as5300-f --- Cisco AS5300 running finger
+@item as5300   --- Cisco AS5300 answering SNMP
+@item livingston --- Livingston Portmaster
 Type @code{livingston} queries portmaster using SNMP.
 @end table
+[FIXME]
 
 @comment *L2****************************************************************
 @node hints file, huntgroups file, nastypes file, Configuration files
@@ -1393,6 +1312,7 @@ DEFAULT NAS-IP-Address = 11.10.10.11, Rewrite-Function = "max_fixup"
 @section The @file{realms} file
 @cindex @file{realms} file
 @cindex @file{raddb/realms} file
+@cindex @samp{NOREALM}, special realm name
 
 The @file{raddb/realms} file lists remote Radius servers that are allowed to
 communicate with the local Radius server (@pxref{Realms}).
@@ -1403,7 +1323,8 @@ Two of them are mandatory. The fields are:
 @table @asis
 @item Realm name
 Specifies the name of the realm being defined, i.e. part of the login
-name after the @samp{@@} symbol.
+name after the @samp{@@} symbol. The special realm name @samp{NOREALM}
+matches user names without explicit realm.
 @item Remote server
 Specifies the remote server to which the requests for this realm should
 be forwarded. A port number can also be specified using syntax
@@ -1434,11 +1355,27 @@ the given value (@var{num}).
 @subsection An example of @file{realms} file
 @exindex @file{realms} file
 
+@subheading Example 1.
+
 @example
+@group
 # Realm                 Remote server[:port]            flags
 #----------------       ---------------------           --------
 that.net                radius.that.net                 nostrip
 dom.ain                 server.dom.ain:3000             strip,quota=20
+@end group
+@end example
+
+@subheading Example 2.
+
+@example
+@group
+# Realm                 Remote server[:port]            flags
+#----------------       ---------------------           --------
+NOREALM                 radius.server.net               
+that.net                radius.that.net                 nostrip
+dom.ain                 server.dom.ain:3000             strip,quota=20
+@end group
 @end example
 
 @comment *L2****************************************************************
@@ -1447,79 +1384,8 @@ dom.ain                 server.dom.ain:3000             strip,quota=20
 @cindex @file{users} file
 @cindex @file{raddb/users} file
 
-File @file{raddb/users} contains the database of Radius users.
-@xref{User Profiles}, for a description of its syntax.
-
-Each record in the file describes a user's profile. When trying
-to find a match for an input request, @command{radiusd} uses the
-following algorithm:
-
-@heading Matching rules
-
-@table @asis
-@item 1. Match the username
-If the username from the packet does not match the one in the record,
-the record does not match. @emph{Please note} that the special usernames
-@code{DEFAULT} or @code{DEFAULT%d} (%d means any decimal number) match
-any username.
-@item 2. Determine the authentication type and verify the user
-The value of the @attr{Auth-Type} attribute determines how the user
-is authenticated (@pxref{Auth-Type}).
-@item 3. Delete from the check-pair list A/V pairs internal to the server
-The internal A/V pairs are those with the attribute number greater than 255
-and the attributes from the following list:
-
-@itemize @minus
-        @item Expiration
-        @item Password
-@end itemize
-
-We will call the list thus generated an @dfn{Effective checklist}.
-@item 4. Compare the @dfn{Effective checklist} with the supplied pairlist.
-For each pair from the @dfn{Effective checklist} find a pair with the
-same attribute from the supplied pairlist. If no such pair is found, the
-comparison fails. Otherwise, compare the values from both attributes as
-if the value from the supplied list were at the left side from the
-comparison operator of the Effective checklist pair.
-
-This may seem a bit complicated. Lets consider an example. Suppose the
-check pair is:
-
-@example
-NAS-Port-Id <= 20
-@end example
-
-@noindent
-and the supplied pair is:
-
-@example
-NAS-Port-Id = 10
-@end example
-
-@noindent
-Then Radius will perform the following comparison:
-
-@example
-10 <= 20
-@end example
-
-@noindent
-which will, of course, succeed.
-@item 5. Process special reply attributes
-If the reply-pairs contain @attr{Strip-User-Name} attribute and its
-value is @code{Yes} (1), then any prefixes/suffixes are stripped off
-the value of @attr{User-Name} attribute.
-
-If the reply-pairs contain the @attr{Rewrite-Function} attribute, the
-function specified in the value of this attribute is applied. @xref{rewrite file}.
-
-If the reply pairs contain @attr{Fall-Through} attribute and its value is
-@code{Yes} (1) then Radius switches to the next record and goes back to
-the rule 1. Otherwise the matching process stops and returns the reply pairs
-from the record.
-@end table
-
-@xref{Attribute list,,Special attributes}.
+File @file{raddb/users} contains the list of @dfn{User Profiles}.
+For a description of its purpose, @xref{User Profiles}.
 
 @menu
 * Example: users example.       An example of @file{users} file.
@@ -1531,7 +1397,7 @@ from the record.
 @exindex @file{users} file
 
 @example
-
+@group
 ## The following entry is matched when the user appends ``.ppp'' to his
 ## username when logging in.
 ## The suffix is removed from the user name, then the password is
@@ -1544,14 +1410,18 @@ DEFAULT Suffix = ".ppp",
                 Strip-User-Name = Yes
         Service-Type = Framed-User,
                 Framed-Protocol = PPP
+@end group
 
+@group
 ## This is for SLIP users.
 ## This entry is matched when the auth request matches ``SLIP'' hint
 DEFAULT Hint = "SLIP",
                 Auth-Type = Mysql
         Service-Type = Framed-User
                 Framed-Protocol = SLIP
+@end group
 
+@group
 ## The following authenticates users using system passwd files.
 ## The users are allowed to log in from 7:55 to 23:05 on any weekday,
 ## except the weekend, and from 07:55 to 12:00 on Sunday.
@@ -1567,12 +1437,14 @@ DEFAULT Auth-Type = System,
                              %C@{Calling-Station-Id@} \
                              %C@{NAS-IP-Address@} \
                              %C@{NAS-Port-Id@}"
+@end group
 
+@group
 ## This particular user is authenticated via PAM. He is presented a
-## choice from @file{@value{RADDB}/menus/menu1} file.
+## choice from @file{raddb/menus/menu1} file.
 gray    Auth-Type = Pam
         Menu = menu1
-
+@end group
 @end example
 
 @comment *L2****************************************************************
@@ -1594,59 +1466,69 @@ comment.
 
 The @file{raddb/sqlserver} file configures the connection to @sc{sql} server.
 
-The file uses simple line-oriented @samp{@var{KEYWORD} @var{VALUE}}
-format. Comments are introduces by @samp{#} character.
-
-@heading Syntax overview
+The file uses simple line-oriented @samp{@var{keyword} --- @var{value}}
+format. Comments are introduced by @samp{#} character.
 
 The @file{sqlserver} statements can logically be subdivided into
-following groups:
+following groups: @dfn{SQL client parameters}, configuring the
+connection between @sc{sql} client and the server, @dfn{Authentication
+server parameters}, @dfn{Authorization parameters}, and
+@dfn{Accounting server parameters}.
 
-@subheading 1. SQL client parameters
-These specify the parameters for connecting to @sc{sql} server.
-The keywords are as follows:
+@menu
+* SQL client parameters::
+* Authentication server parameters::
+* Authorization parameters::
+* Accounting server parameters::
+@end menu
+
+@comment **L3***************************************************************
+@node SQL client parameters, Authentication server parameters,sqlserver file, sqlserver file
+@subsection SQL client parameters
+
+These parameters configure various aspects of connection between
+@sc{sql} client and the server.
 
 @table @code
-@item server @var{string}
-The name or @IP{} of the @sc{sql} server
 @item interface @var{iface-type}
-FIXME: describe
+Specifies the @sc{sql} interface to use. Currently supported values
+for @var{iface-type} are @code{mysql} and @code{postgres}. Depending
+on this, the default communication port number is set: it is 3306 for
+@code{interface mysql} and 5432 for @code{interface postgres}. Use of
+this statement is only meaningful when the package was configured with
+both @option{--with-mysql} and @option{--with-postgres} option.
+@item server @var{string}
+Specifies the hostname or @IP{} of the @sc{sql} server.
 @item port @var{number}
-@sc{sql} port number
+Sets the @sc{sql} communicaton port number. It can be omitted if your
+server uses the default port.
 @item login @var{string}
-The @sc{sql} user login name
+Sets the @sc{sql} user login name.
 @item password @var{password}
-The password 
-@end table
-
-@subheading 2. Configuration parameters
-These parameters set various aspects of the @sc{sql} engine:
-
-@table @code
+Sets the @sc{sql} user password.
 @item keepopen @var{bool}
 Specify whether @command{radiusd} should try to keep the connection open.
 When set to no (the default), @command{radiusd} will open new connection
 before the transaction and close it right after finishing it.
-We recommend setting @code{keepopen} to @code{yes} since opening a
-new connection can take a substantial amount of time and slow down
-the operation considerably.
+We recommend setting @code{keepopen} to @code{yes} for heavily loaded
+servers, since opening the new connection can take a substantial amount
+of time and slow down the operation considerably.
 @item idle_timeout @var{number}
 Set idle timeout in seconds for an open @sc{sql} connection.
 The connection is closed if it remains inactive longer that this amount
 of time.
 @end table
 
-@subheading 3. Authentication server parameters
-@example
-doauth @var{bool}
-auth_max_connections @var{bool}
-auth_db @var{string}
-auth_query @var{string}
-@end example
+@comment **L3***************************************************************
+@node Authentication server parameters, Authorization parameters, SQL client parameters, sqlserver file
+@subsection Authentication server parameters
+
+These parameters configure the @sc{sql} authentication. The general
+syntax is:
 
 @table @code
 @item doauth @var{bool}
-When set to @code{yes} enables authentication via @sc{sql}. All @code{auth_}
+When set to @code{yes}, enables authentication via @sc{sql}. All @code{auth_}
 keywords are ignored if @code{doauth} is set to @code{no}.
 @item auth_max_connections @var{bool}
 Specifies the maximum number of authentication @sc{sql} connections to keep
@@ -1657,127 +1539,272 @@ Specifies the name of the database containing authentication information.
 Specifies the @sc{sql} query to be used to obtain user's password from the
 database. The query should return exactly one string value --- the
 password.
+@item group_query @var{string}
+Specifies the query that retrieves the list of user groups the user
+belongs to. This query is used when @attr{Group} or @attr{Group-Name}
+attribute appears in the @LHS{} of a user's or hint's profile.
 @end table
 
-@subheading 4. Accounting parameters
+@subheading Example of Authentication server parameters
+
+Let's suppose the authentication information is kept in the tables
+@code{passwd} and @code{groups}.
+
+The @code{passwd} table contains user passwords. A user is allowed
+to have different passwords for different services. The table structure
+is:
+
 @example
-doacct @var{bool}
-acct_max_connections @var{number}
-acct_db @var{string}
-acct_start_query @var{string}
-acct_stop_query @var{string}
-acct_keepalive_query @var{string}
-acct_nasup_query @var{string}
-acct_nasdown_query @var{string}
+@group
+CREATE TABLE passwd (
+  user_name           varchar(32) binary default '' not null,
+  service             char(16) default 'Framed-PPP' not null,
+  password            char(64) 
+);
+@end group
 @end example
+
+@noindent
+Additionally, the table @code{groups} contains information about
+user groups a particular user belongs to. Its structure is:
+
+@example
+@group
+CREATE TABLE groups (
+  user_name           char(32) binary default '' not null,
+  user_group          char(32) 
+);
+@end group
+@end example
+
+@noindent
+The queries used to retrieve the information from these tables will
+then look like:
+
+@example
+@group
+auth_query  SELECT password
+            FROM passwd
+            WHERE user_name = '%C@{User-Name@}'
+            AND service = '%C@{Auth-Data@}'
+
+group_query SELECT user_group
+            FROM groups
+            WHERE user_name = '%C@{User-Name@}'
+@end group
+@end example
+
+It is supposed, that the information about the particular service a
+user is wishing to obtain, will be kept in @attr{Auth-Data} attribute
+in @LHS{} of a user's profile.
+
+@comment **L3***************************************************************
+@node Authorization parameters, Accounting server parameters, Authentication server parameters, sqlserver file
+@subsection Authorization parameters
+
+These parameters define queries used to retrieve the authorization
+information from the @sc{sql} database. All the queries refer to
+the authentication database.
+
+@table @code
+@item check_attr_query @var{string}
+This query must return a list of triplets:
+
+@example
+@var{attr-name}, @var{attr-value}, @var{opcode}
+@end example
+
+@noindent
+The query is executed before comparing the request with the profile
+entry. The values returned by the query are added to @LHS{} of the
+entry. @var{opcode} here means one of valid operation codes:
+@samp{=}, @samp{!=}, @samp{<}, @samp{>}, @samp{<=},
+@samp{>=}.
+
+@item reply_attr_query @var{string}
+This query must return pairs:
+
+@example
+@var{attr-name}, @var{attr-value}
+@end example
+
+@noindent
+The query is executed after a successful match, the values it
+returns are added to the @RHS{} list of the matched entry, and are
+therefore returned to the @NAS{} in the reply packet.
+@end table
+
+@subheading Example of Authorization Parameters
+
+Suppose your attribute information is stored in a @sc{sql} table of
+the following structure:
+
+@example
+@group
+CREATE TABLE attrib (
+  user_name varchar(32) default '' not null,
+  attr      char(32) default '' not null,
+  value     char(128),
+  op enum("=", "!=", "<", ">", "<=", ">=") default null
+);
+@end group
+@end example
+
+@noindent
+Each row of the table contains the attribute-value pair for a given
+user. If @code{op} field is @code{NULL}, the row describes @LHS{}
+(check) pair. Otherwise, it describes a @RHS{} (reply) pair. The
+authorization queries for this table will look as follows:
+
+@example
+@group
+check_attr_query  SELECT attr,value,op \
+                  FROM attrib \
+                  WHERE user_name='%u' \
+                  AND op IS NOT NULL
+
+reply_attr_query  SELECT attr,value \
+                  FROM attrib \
+                  WHERE user_name='%u' \
+                  AND op IS NULL
+@end group
+@end example
+
+@noindent
+Now, let's suppose the @file{raddb/users} contains only one entry:
+
+@example
+@group
+DEFAULT Auth-Type = SQL
+        Service-Type = Framed-User   
+@end group
+@end example
+
+@noindent
+And the @code{attrib} table contains following rows:
+
+@multitable @columnfractions .20 .30 .25 .10
+@item user_name @tab attr @tab value @tab op
+@item @code{jsmith} @tab @code{NAS-IP-Address} @tab @code{10.10.10.1} @tab
+@code{=}
+@item @code{jsmith} @tab @code{NAS-Port-Id} @tab @code{20} @tab @code{<=}
+@item @code{jsmith} @tab @code{Framed-Protocol} @tab @code{PPP} @tab @code{NULL}
+@item @code{jsmith} @tab @code{Framed-IP-Address} @tab
+@code{10.10.10.11} @tab @code{NULL}
+@end multitable
+
+@noindent
+Then, when the user @code{jsmith} is trying to authenticate, the
+following happens:
+
+@enumerate 1
+@item
+Radius finds the matching entry (@code{DEFAULT}) in the
+@file{raddb/users}.
+@item
+It queries the database using the @code{check_attr_query}. The
+triplets it returns are then added to the @LHS{} of the profile
+entry. Thus, the @LHS{} will contain:
+
+@example
+@group
+Auth-Type = SQL,
+NAS-IP-Address = 10.10.10.1,
+NAS-Port-Id <= 20
+@end group
+@end example
+@item
+Radius compares the incoming request with the @LHS{} pairs thus
+obtained. If the comparison fails, it rejects the authentication.
+@emph{Please note}, that the @attr{Auth-Type} attributes itself
+triggers execution of @code{auth_query}, described in the previous
+section.
+@item
+After a successful authentication, Radius queries the database,
+using @code{reply_attr_query}, and adds its return to the list
+of @RHS{} pairs. The @RHS{} pairs will then be:
+
+@example
+@group
+Service-Type = Framed-User,
+Framed-Protocol = PPP,
+Framed-IP-Address = 10.10.10.11
+@end group
+@end example
+
+This list is returned to the @NAS{} along with the authentication
+accept packet.
+@end enumerate
+
+Thus, this configuration allows the user @code{jsmith} to use only
+@NAS{} 10.10.10.1, ports from 1 to 20 inclusive. If the user meets
+these conditions, he is allowed to use @sc{ppp} service, and is
+assigned @IP{} @code{10.10.10.11}.
+
+
+@comment **L3***************************************************************
+@node Accounting server parameters, , Authorization parameters, sqlserver file
+@subsection Accounting parameters
+
+To perform the @sc{sql} accounting @command{radiusd} needs to know the
+database where it is to store the accounting information. This
+information is supplied by the following statements:
 
 @table @code
 @item doacct @var{bool}
 When set to @code{yes} enables @sc{sql} accounting. All @code{acct_}
 keywords are ignored if @code{doacct} is set to @code{no}.
-@item acct_max_connections @var{number}
-Specifies the maximum number of accounting @sc{sql} connections to keep
-open. This parameter is ignored if @code{keepopen} is set to @code{no}.
 @item acct_db @var{string}
 Specifies the name of the database where the accounting information is
 to be stored.
-@item acct_start_query @var{string}
-Specifies the @sc{sql} query to be used when the @code{Start} accounting
-packet is received. The query should not return any value. Typically,
-this would be some @code{INSERT} statement (@pxref{Queries}).
-@item acct_stop_query @var{string}
-Specifies the @sc{sql} query to be used when the @code{Stop} accounting
-packet is received. The query should not return any value. Typically,
-this would be some @code{UPDATE} statement.
-@item acct_stop_query @var{string}
-Specifies the @sc{sql} query to be executed upon arrival of an keepalive
-(update) accounting packet. The query should not return any value. Typically,
-this would be some @code{UPDATE} statement.
-@item acct_nasup_query @var{string}
-Specifies the @sc{sql} query to be used when a @NAS{} sends
-@code{Accounting-On} packet (@pxref{Accounting requests}). The query should
-not return any value. 
-@item acct_nasdown_query @var{string}
-Specifies the @sc{sql} query to be used when a @NAS{} sends
-@code{Accounting-Off} packet (@pxref{Accounting requests}). The query should
-not return any value. 
+@item acct_max_connections @var{number}
+Specifies the maximum number of accounting @sc{sql} connections to keep
+open. This parameter is ignored if @code{keepopen} is set to @code{no}.
 @end table
 
-@menu
-* Queries::                     Writing SQL query templates.
-* Example: sqlserver example.   An example of @file{sqlserver} file.
-@end menu
+Further, @command{radiusd} needs to know which information it is
+to store into the database and when. Each of five accounting request
+types (@pxref{Accounting requests}) has a @sc{sql} query associated with
+it. Thus, when radius receives an accounting request, it determines
+the query to use by the value of @attr{Acct-Status-Type} attribute.
 
-@comment **L3***************************************************************
-@node Queries, sqlserver example, , sqlserver file
-@subsection Writing SQL query templates
-@cindex SQL query templates
-@cindex writing SQL query templates
-
-The @command{radiusd} server sends @sc{sql} server a query on one of the
-following events:
-
-@table @asis
-@item Authentication
-@sc{sql} authentication is enabled (@pxref{SQL Auth}), and a user
-having @attr{Auth-Type} of @code{SQL} (or @code{Mysql}) is being authenticated.
-@item Accounting
-@sc{sql} accounting is enabled (@pxref{SQL Accounting}), and the received request
-has @attr{Acct-Status-Type} attribute set to one of the following values:
-
-@itemize @bullet
-@item Start
-@item Stop
-@item Accounting-On
-@item Accounting-Off
-@end itemize
-@end table
-
-The queries to use for each of these types are set up in the file
-@file{sqlserver}. This chapter describes in detail how to write such
-queries.
-
-@heading Authentication quieries
-
-@subheading @code{auth_query} template.
-
-This specifies a template for the query to use when authenticating a
-user via @sc{sql}. This query will be used when authenticating a user which has
-
-@example
-Auth-Type = SQL
-@end example
-@noindent
-set in his profile (@pxref{users file}). Radius expects this query to return
-the MD5 encrypted password for the given user. When no such user
-is found in the database, the query should return NULL. The
-following statement
-
-@example
-auth_query select password from passwd where user_name='%u'
-@end example
-
-@noindent
-is a valid query.
-
-@heading Accounting queries
-
-There are four templates:
+Following statemens define the accounting queries:
 
 @table @code
-@item acct_start_query
-A query to execute when receiving an accounting start request.
-@item acct_stop_query
-A query to execute when receiving an accounting start request.
-@item acct_nasup_query
-A query to execute when receiving an Accounting-On request.
-@item acct_nasdown_query
-A query to execute when receiving an Accounting-Off request.
+@item acct_start_query @var{string}
+Specifies the @sc{sql} query to be used when @dfn{Session Start Packet}
+is received. Typically, this would be some @code{INSERT} statement
+(@pxref{Queries}).
+@item acct_stop_query @var{string}
+Specifies the @sc{sql} query to be used when @dfn{Session Stop Packet}
+is received. Typically, this would be some @code{UPDATE} statement.
+@item acct_stop_query @var{string}
+Specifies the @sc{sql} query to be executed upon arrival of a
+@dfn{Keepalive Packet}. Typically, this would be some @code{UPDATE} statement.
+@item acct_nasup_query @var{string}
+Specifies the @sc{sql} query to be used upon arrival of an
+@dfn{Accounting Off Packet}.
+@item acct_nasdown_query @var{string}
+Specifies the @sc{sql} query to be used when a @NAS{} sends
+@dfn{Accounting On Packet}.
 @end table
 
-Let's suppose we have an accounting table of the following structure:
+None of these queries should return any values.
+
+@menu
+* Queries::                     Writing SQL acounting query templates.
+@end menu
+
+@comment ***L4**************************************************************
+@node Queries, , , Accounting server parameters
+@subsubsection Writing SQL accounting query templates
+@cindex SQL accounting query templates
+@cindex writing SQL accounting query templates
+
+Let's suppose you have an accounting table of the following structure:
 
 @example
+@group
 CREATE TABLE calls (
   status              int(3),
   user_name           char(32),
@@ -1791,135 +1818,19 @@ CREATE TABLE calls (
   connect_term_reason int(4),
   framed_ip_address   char(17),
   called_station_id   char(32),
-  calling_station_id  char(32),
-  KEY name_sess (user_name,acct_session_id)
+  calling_station_id  char(32)
 );
+@end group
 @end example
 
-On receiving the @code{Start} record we would insert a record into this
+On receiving the @dfn{Session Start Packet} we would insert a record into this
 table with @code{status} set to 1. At this point the columns
 @code{acct_session_time}, @code{acct_input_octets},
 @code{acct_output_octets} as well as @code{connect_term_reason} are
-unknown, so we will set them to 0.
-
-Then, when the @code{Stop} request arrives we will look up the record
-having @code{status} = 1 and @code{user_name} and @code{acct_session_id}
-coinciding with attributes @attr{User-Name} and @attr{Acct-Session-Id}
-of the request and update it setting
+unknown, so we will set them to 0:
 
 @example
-status = 2
-acct_session_time = value of Acct-Session-Time attribute
-acct_input_octets = value of Acct-Input-Octets attribute
-acct_output_octets = value of Acct-Output-Octets attribute
-connect_term_reason = value of Acct-Terminate-Cause attribute
-@end example
-
-@noindent
-Thus every record with @code{status} = 1 will represent the active
-session and every record with @code{status} = 2 will represent
-the finished and correctly closed record.
-
-Further, there may be times when it is necessary to bring some @NAS{}
-down. To correctly close the currently active sessions on this @NAS{}
-we will define a @code{acct_nasdown_query} so that it would
-set @code{status} column to 2 and update @code{acct_session_time}
-in all records having @code{status} = 1 and 
-@code{nas_ip_address} equal to @IP{} of the @NAS{}. Thus, all
-sessions on a given @NAS{} will be closed correctly even when it is
-reloaded. The @code{acct_session_time} can be computed as difference
-between the current time and the time stored in @code{event_date_time}
-column.
-
-We have not covered only one case: when a @NAS{} is crashed, e.g. due to
-a power failure. In this case it does not have a time to send
-@code{Accounting-Off} request and all its records remain open. But when
-the power supply is restored, the @NAS{} will send an @code{Accounting-On}
-request, so we define a @code{acct_nasup_query} to 
-set @code{status} column to 3 and update @code{acct_session_time}
-in all open records belonging to this @NAS{}. Thus we will know that
-each record having @code{status} = 3 represents a crashed session.
-
-For an illustration of this approach, see @ref{sqlserver example}.
-
-@comment **L3***************************************************************
-@node sqlserver example, , Queries, sqlserver file
-@subsection An example of @file{sqlserver} file.
-@exindex @file{sqlserver} file
-
-This example supposes you have the single database called RADIUS
-with the following tables in it:
-
-@subheading passwd
-This table keeps authentication information. It is created as
-
-@example
-CREATE TABLE passwd(
-  user_name           char(32),
-  password            char(64),
-  UNIQUE (user_name)
-);
-@end example
-
-@subheading calls
-This table accumulates user session statistics. Its structure is:
-
-@example
-CREATE TABLE calls (
-  status              int(3),
-  user_name           char(32),
-  event_date_time     datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-  nas_ip_address      char(17),
-  nas_port_id         int(6),
-  acct_session_id     char(16) DEFAULT '' NOT NULL,
-  acct_session_time   int(11),
-  acct_input_octets   int(11),
-  acct_output_octets  int(11),
-  connect_term_reason int(4),
-  framed_ip_address   char(17),
-  unused              int(1),
-  called_station_id   char(32),
-  calling_station_id  char(32),
-  KEY name_sess (user_name,acct_session_id)
-);
-@end example
-
-Assuming this the @file{sqlserver} could contain:
-
-@example
-######
-## sqlserver configuration
-
-## General settings
-##
-server localhost
-port 3306
-login radius
-password password
-
-keepopen yes
-idle_timeout 14400
-
-
-#########
-## Authentication service
-##
-
-# Enable authentication via SQL
-doauth yes
-
-auth_max_connections 16
-auth_db RADIUS
-auth_query select password from passwd where user_name='%u'
-
-#########
-# Accounting-relevant settings
-
-# Enable SQL accounting
-doacct yes
-acct_max_connections 16
-acct_db RADIUS
-
+@group
 # Query to be used on session start
 acct_start_query     INSERT INTO calls \
                      VALUES(%C@{Acct-Status-Type@},\
@@ -1933,10 +1844,35 @@ acct_start_query     INSERT INTO calls \
                             0,\
                             0,\
                             '%C@{Framed-IP-Address@}',\
-                            0,\
                             '%C@{Called-Station-Id@}',\
                             '%C@{Calling-Station-Id@}')
+@end group
+@end example
 
+Then, when the @dfn{Session Stop Packet} request arrives we will look up
+the record having @code{status} = 1, @code{user_name} matching the
+value of @attr{User-Name} attribute, and @code{acct_session_id} matching
+that of @attr{Acct-Session-Id} attribute. Once the record is found,
+we will update it, setting
+
+@example
+@group
+status = 2
+acct_session_time = value of Acct-Session-Time attribute
+acct_input_octets = value of Acct-Input-Octets attribute
+acct_output_octets = value of Acct-Output-Octets attribute
+connect_term_reason = value of Acct-Terminate-Cause attribute
+@end group
+@end example
+
+@noindent
+Thus, every record with @code{status} = 1 will represent the active
+session and every record with @code{status} = 2 will represent
+the finished and correctly closed record. The constructed
+@code{acct_stop_query} is then:
+
+@example
+@group
 # Query to be used on session end
 acct_stop_query      UPDATE calls \
                      SET status=%C@{Acct-Status-Type@},\
@@ -1944,527 +1880,83 @@ acct_stop_query      UPDATE calls \
                          acct_input_octets=%C@{Acct-Input-Octets@},\
                          acct_output_octets=%C@{Acct-Output-Octets@},\
                          connect_term_reason=%C@{Acct-Terminate-Cause@} \
-                         WHERE user_name='%C@{User-Name@}' AND status = 1
+                     WHERE user_name='%C@{User-Name@}' \
+                     AND status = 1 \
+                     AND acct_session_id='%C@{Acct-Session-Id@}' 
+@end group
+@end example
 
+Upon receiving a @dfn{Keepalive Packet} we will update the information
+stored with @code{acct_start_query}:
 
-# Query to be used when a NAS is brought up, i.e. when it sends 
-# Accounting-On packet
-# NOTE: It sets status 3 so that we can always tell which records
-#       have been closed due to NAS hard reset.
-acct_nasup_query   \
-    UPDATE calls \
-       SET status=3,\
-     acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
-    WHERE status=1 AND nas_ip_address='%C@{NAS-IP-Address@}'
+@example
+@group
+acct_alive_query  UPDATE calls \
+                  SET acct_session_time=%C@{Acct-Session-Time@},\
+                      acct_input_octets=%C@{Acct-Input-Octets@},\
+                      acct_output_octets=%C@{Acct-Output-Octets@},\
+                      framed_ip_address=%C@{Framed-IP-Address@} \
+                  WHERE user_name='%C@{User-Name@}' \
+                  AND status = 1 \
+                  AND acct_session_id='%C@{Acct-Session-Id@}'
+@end group
+@end example
 
+Further, there may be times when it is necessary to bring some @NAS{}
+down. To correctly close the currently active sessions on this @NAS{}
+we will define a @code{acct_nasdown_query} so that it would
+set @code{status} column to 2 and update @code{acct_session_time}
+in all records having @code{status} = 1 and 
+@code{nas_ip_address} equal to @IP{} of the @NAS{}. Thus, all
+sessions on a given @NAS{} will be closed correctly when it brought
+down. The @code{acct_session_time} can be computed as difference
+between the current time and the time stored in @code{event_date_time}
+column:
+
+@example
+@group
 # Query to be used when a NAS goes down, i.e. when it sends 
 # Accounting-Off packet
-acct_nasdown_query   \
-    UPDATE calls \
-       SET status=2,\
-     acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
-    WHERE status=1 AND nas_ip_address='%C@{NAS-IP-Address@}'
+acct_nasdown_query UPDATE calls \
+                   SET status=2,\
+                       acct_session_time=unix_timestamp(now())-\
+                               unix_timestamp(event_date_time) \
+                   WHERE status=1 \
+                   AND nas_ip_address='%C@{NAS-IP-Address@}'
+@end group
+@end example
 
-## EOF
+We have not covered only one case: when a @NAS{} crashes, e.g. due to
+a power failure. In this case it does not have a time to send
+@code{Accounting-Off} request and all its records remain open. But when
+the power supply is restored, the @NAS{} will send an
+@dfn{Accounting On packet}, so we define a @code{acct_nasup_query} to 
+set @code{status} column to 3 and update @code{acct_session_time}
+in all open records belonging to this @NAS{}. Thus we will know that
+each record having @code{status} = 3 represents a crashed session.
+The query constructed will be:
+
+@example
+@group
+# Query to be used when a NAS goes up, i.e. when it sends 
+# Accounting-On packet
+acct_nasup_query   UPDATE calls \
+                   SET status=3,\
+                       acct_session_time=unix_timestamp(now())-\
+                               unix_timestamp(event_date_time) \
+                   WHERE status=1 \
+                   AND nas_ip_address='%C@{NAS-IP-Address@}'
+@end group
 @end example
 
 @comment *L2****************************************************************
 @node rewrite file, menus file, sqlserver file, Configuration files
-@section The @file{rewrite} file
-@cindex @file{rewrite} file
-@cindex @file{raddb/rewrite} file
-
-Some @NAS{}es are very particular about the information they send with
-the requests. There are cases when the information they send
-is hardly usable or even just unusable. For example, a
-Cisco AS5300 terminal server used as a voice over IP router packs
-a lot of information into its @attr{Acct-Session-Id} attribute. Though
-the information stored there is otherwise relevant, it makes proper
-accounting impossible since the @attr{Acct-Session-Id} attributes
-in the start and stop packets of the same session become different, and
-thus Radius cannot determine which stop corresponds to which start 
-(@pxref{Acct-Session-Id}).
-
-In order to cope with such @NAS{}es, GNU Radius provides a rewrite
-feature which can be applied to incoming packet in order to normalize
-it, i.e. to convert it to the form prescribed by RFCs and understandable
-by Radius.
-
-This is done by writing special functions, storing them in the
-@file{raddb/rewrite} file and creating a huntgroup for the @NAS{}
-(@pxref{huntgroups file}), which applies the function to any packet coming
-from that @NAS{}.
-
-For example, in the case of AS5300 router, a corresponding rewrite
-function parses the @attr{Acct-Session-Id} attribute, selects
-various fields from it, stores them in proper attributes, creating
-them if necessary and, finally replaces @attr{Acct-Session-Id} with
-its real value, which is the same for start and stop records
-corresponding to a single session. Thus all the information that
-came with the packet is preserved, but the packet itself is made
-usable for proper accounting.
-
-@menu
-* Syntax: Rewrite syntax.       The syntax of rewrite functions.
-* Usage: Rewrite usage.         Applying rewrite functions to packets
-                                coming from particular @NAS{}.
-* Examples: Rewrite examples.   Examples of various rewrite functions.
-@end menu
-
-@comment **L3***************************************************************
-@node Rewrite syntax, Rewrite usage, , rewrite file
-@subsection The syntax of rewrite functions.
-@cindex rewrite file, syntax
-
-The syntax of rewrite functions resembles closely the C syntax.
-
-@subheading Data types
-There are only two data types: @code{integer} and @code{string}, 
-the two being coercible to each other in the sense that a string
-can be coerced to an integer if it contains a valid ASCII representation
-of a decimal, octal or hex number, and the integer can always be coerced
-to a string, the result of such coercion being the ASCII string with
-decimal representation of the number.
-
-@subheading Symbols
-A symbol is a lexical token. The following symbols are recognized:
-
-@table @asis
-@item Arithmetical operators
-These are @samp{+}, @samp{-}, @samp{*}, @samp{/} representing the basic
-arithmetical operations and @samp{%} meaning remainder.
-
-@item Comparison operators
-These are: @samp{==}, @samp{!=}, @samp{<}, @samp{<=}, @samp{>},
-@samp{>=} with the meaning equal to what they have in C, @samp{=~}
-meaning ``matches a regular expression'' and @samp{!~} meaning
-``does not match a regular expression''.
-
-@item Unary operators.
-These are: @samp{-} and @samp{+} for unary plus and minus,
-@samp{!} for boolean negation and @samp{*} for testing the
-existence of an attribute.
-
-@item Boolean operators.
-These are: @samp{&&} and @samp{||}.
-
-@item Parentheses @samp{(} and @samp{)}
-These are used to change the precedence of operators, to introduce
-type casts (type coercions), to declare functions and to pass actual
-arguments to functions.
-
-@item Curly braces (@samp{@{} and @samp{@}})
-These are used to delimit blocks of code.
-
-@item Numbers
-Numbers follow usual C convention for integers.
-
-@item Characters
-These follow usual C convention for characters. A character is
-represented internally by an integer keeping its ASCII code.
-
-@item Quoted strings
-These follow usual C conventions for strings.
-
-@item Attribute values
-This are represented either as
-
-@example
-@samp{%}@var{number}
-@end example
-
-@noindent
-which returns the value of an attribute @var{number} from the request
-packet, or
-
-@example
-@samp{%[}@var{attribute-name}@samp{]}
-@end example
-
-@noindent
-which returns the value of an attribute @var{attribute-name} from the
-request packet. @var{attribute-name} should be a valid Radius dictionary
-name. @xref{dictionary file}.
-
-@item Identifiers
-Represent functions and variables. These are described in the next section.
-
-@item Previous regexp match references
-This are the tokens in the form:
-
-@example
-@samp{\}@var{number}
-@end example
-
-@noindent
-This means the @var{number}th subexpression from the recent regexp
-match. The match references are always string expressions.
-
-@end table
-
-@subheading Identifiers
-A valid identifier is a string of characters meeting the following
-requirements:
-
-@enumerate 1
-@item It starts with either a lower- or uppercase letter of the Latin
-alphabet or any of the following symbols: @samp{_}, @samp{$}.
-@item It consists of alphanumeric characters, underscores(@samp{_}) and
-dollar signs (@samp{$}).
-@end enumerate
-
-@subheading Function declarations
-The function is declared as follows:
-
-@example
-@var{type} @var{function-name} (@var{parameter-list})
-@end example
-
-@noindent
-where @var{type} specifies the return type of the function,
-@var{function-name} declares the symbolic name of the function and
-@var{parameter-list} declares the formal parameters to the function.
-It is a comma-separated list of declarations in the form:
-
-@example
-@var{type} @var{parm-name}
-@end example
-
-@noindent
-@var{type} being the parameter type, and @var{parm-name} being its
-symbolic name. Both @var{function-name} and @var{parm-name} should
-be valid identifiers.
-
-@subheading Variable declarations
-
-There is no global variables in rewrite code. All variables are local.
-The local variables are declared right after the opening curly brace
-(@samp{@{}) and before any executable statements. The declaration
-takes form:
-
-@example
-@var{type} @var{ident_list} ;
-@end example
-
-@noindent
-Here @var{ident_list} is a list of variable names. @emph{Please note}
-that, unlike in C, no assignments are allowed in variable declarations.
-
-@subheading Executable statements
-
-These are: expressions, assignments, conditional statements and
-return statements.
-
-@subheading Expressions
-
-An expression is either of the following:
-
-@itemize @bullet
-@item A variable identifier
-@item A type coercion expression
-@item An arithmetic expression
-@item A boolean expression
-@item An assignment
-@item A function call
-@end itemize
-
-@subheading Type coercion
-The type coercion is like a type cast in C. Its syntax is
-
-@example
-@samp{(} @var{type} @samp{)} @var{ident}
-@end example
-
-@noindent
-the result of type coercion is as follows:
-
-@multitable @columnfractions .20 .20 .60
-@item @var{type} @tab Variable type @tab Resulting conversion
-
-@item integer
-@tab integer
-@tab No conversion. This results in the same integer value.
-
-@item integer
-@tab string
-@tab If the string value of the variable is a valid ASCII representation
-of the integer number (either decimal, octal or hex) it is converted to
-the integer, otherwise the result of the conversion is undefined.
-
-@item string
-@tab integer
-@tab The ASCII representation (in decimal) of the integer number. 
-
-@item string
-@tab string
-@tab No conversion. This results in the same string value.
-
-@end multitable
-
-@subheading Assignment
-An assignment is:
-
-@example
-@var{ident} = @var{expression} ;
-@end example
-
-@noindent
-The variable @var{ident} is assigned the value of @var{expression}.
-
-@subheading Function calls
-These take the form:
-
-@example
-@var{ident} ( @var{arg-list} )
-@end example
-
-@noindent
-where @var{ident} is the identifier representing the function,
-@var{arg-list} is a comma-separated list of expressions supplying
-actual arguments to the function. The function @var{ident} 
-references can be either a compiled function or a built-in
-function.
-
-@emph{Please note} that, unlike in C, the mismatch between the
-number of actual arguments and number of formal parameters in the
-compiled function declaration is not an error but rather a warning.
-
-@subheading Built-in functions.
-The following built-in functions are provided:
-
-@table @asis
-@item integer length(string s);
-Returns the length of string @code{s}.
-
-@item integer index(string s, integer c);
-Returns the index of the first occurrence of the character @code{c} in
-the string @code{s}. Returns -1 if no such occurrence is found.
-
-@item integer rindex(string s, integer i);
-Returns the index of the last occurrence of the character @code{c} in
-the string @code{s}. Returns -1 if no such occurrence is found.
-
-@item string substr(string s, integer start, integer length);
-Returns the at most @code{length} substring of @code{s} starting at
-position @code{start}.
-
-@end table
-
-All character positions in strings are counted from 0.
-
-@comment **L3***************************************************************
-@node Rewrite usage, Rewrite examples, Rewrite syntax, rewrite file
-@subsection Applying rewrite functions.
-@cindex rewrite file, usage
-@cindex rewrite file, applying functions
-
-To apply a rewrite function to packets coming from a particular @NAS{},
-the name of the function should be listed in @attr{Rewrite-Function}
-attribute of the huntgroup for this @NAS{} (@pxref{Rewrite-Function}).
-@xref{huntgroups file}.
-
-For example, suppose you need to apply function @code{max_fixup} to
-all packets coming from @NAS{} 11.10.10.11. Then you would write the
-following in your @file{huntgroups file} file:
-
-@example
-## This defines the packet rewriting function for the server 11.10.10.11
-DEFAULT NAS-IP-Address = 11.10.10.11, Rewrite-Function = "max_fixup"
-        NULL
-@end example
-
-The function @code{max_fixup} must be declared as:
-
-@example
-integer max_fixup()
-@{
-@}
-@end example
-
-@xref{huntgroups example}.
-
-@comment **L3***************************************************************
-@node Rewrite examples, , Rewrite usage, rewrite file
-@subsection Examples of various rewrite functions.
-@cindex rewrite file, examples
-
-The examples found in this chapter are working functions that can be
-used with various existing @NAS{} types. They are taken from the
-@file{rewrite} file contained in distribution of GNU Radius.
-
-@subheading 1. Port rewriting for MAX Ascend terminal servers
-
-Some MAX Ascend terminal servers pack additional information
-into @attr{NAS-Port-Id} attribute. The port number is constructed as
-as XYYZZ, where X = 1 for digital, X = 2 for analog, YY is line number
-(1 for first PRI/T1/E1, 2 for second, so on), and ZZ = channel number
-(on the PRI or Channelized T1/E1).
-
-The following rewrite functions are intended to compute the integer
-port number in the range (1 .. @var{portcnt}), where @var{portcnt}
-represents the real number of physical ports available on the @NAS{}.
-Such port number can be used, for example, with
-@attr{Add-Port-To-IP-Address} attribute (@pxref{Add-Port-To-IP-Address}).
-
-@example
-@group
-/*
- * decode MAX port number
- * input: P        --  The value of NAS-Port-Id attribute
- *        portcnt  --  number of physical ports on the NAS
- */
-integer
-max_decode_port(integer P, integer portcnt)
-@{
-    if (P > 9999) @{
-        integer s, l, c;
-
-        s = P / 10000;
-        l = (P - (10000 * s))/100; 
-        c = P - ((10000 * s) + (100 * l)); 
-        return (c-1) + (l-1) * portcnt;
-    @}
-    return P;
-@}
-@end group
-
-@group
-/*
- * Interface function for MAX terminal server with 23 ports.
- * Note that it saves the received NAS-Port-Id attribute in the
- * Orig-NAS-Port-Id attribute. The latter must be defined somewhere
- * in the dictionary
- */
-integer
-max_fixup()
-@{
-    %[Orig-NAS-Port-Id] = %[NAS-Port-Id]; # Preserve original data
-    %[NAS-Port-Id] = max_decode_port(%[NAS-Port-Id], 23);
-    return 0;
-@}
-@end group
-@end example
-
-@subheading 2. Session ID parsing for Cisco AS 5300 series
-
-Cisco AS 5300 with VoIP IOS encodes a lot of other information into its
-@attr{Acct-Session-Id}. The pieces of information are separated by
-@samp{/} character. The part of @attr{Acct-Session-Id} up to first
-@samp{/} character is the actual session @sc{id}.
-
-On the other hand, its accounting packets lack @attr{NAS-Port-Id},
-though they may contain the vendor-specific pair with code 2
-(vendor PEC 9), which is the string in the form @samp{ISDN 9:D:999}
-(@samp{9} represents a decimal digit). The number after the last
-@samp{:} character can be used as a port number.
-
-The following code parses @attr{Acct-Session-Id} attribute and stores
-the information it contains in various other attributes, generates
-normal @attr{Acct-Session-Id} and attempts to generate
-@attr{NAS-Port-Id} attribute.
-
-@example
-@group
-/* 
- * The port rewriting function for Cisco AS5300 used for VoIP.
- * This function is used to generate NAS-Port-Id pair on the basis
- * of vendor-specific pair 2. If the latter is in the form 
- * "ISDN 9:D:999" (where each 9 represents a decimal digit), then 
- * the function returns the number after the last colon. This is
- * used as a port number.
- */
-integer
-cisco_pid(string A)
-@{
-    if (A =~ 
-        ".*\([0-9][0-9]*\):[A-Z0-9][A-Z0-9]*:\([0-9][0-9]*\)") @{
-        return (integer)\2;
-    @}
-    return -1;
-@}
-@end group
-
-@group
-/*
- * This function parses the packed session id.
- * The actual sid is the number before the first slash character.
- * Other possibly relevant fields are also parsed out and saved 
- * in the Voip-* A/V pairs. The latter should be defined somewhere
- * in the dictionary.
- * Please note, that the regular expression in this example
- * spans several lines for readability. It should be on one 
- * line in real file.
- */
-string
-cisco_sid(string S)
-@{
-   if (S =~ "\(.[^/]*\)/[^/]*/[^/]*/\([^/]*\)/\([^/]*\)/
-             \([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)
-             /\([^/]*\).*") @{
-       %[Voip-Connection-ID] = \2;
-       %[Voip-Call-Leg-Type] = \3;
-       %[Voip-Connection-Type] = \4;
-       %[Voip-Connect-Time] = \5;
-       %[Voip-Disconnect-Time] = \6;
-       %[Voip-Disconnect-Cause] = \7;
-       %[Voip-Remote-IP] = \8;
-       return \1;
-   @} 
-   return S;
-@}
-@end group
-
-@group
-/*
- * Normalize cisco AS5300 packets
- */
-integer
-cisco_fixup()
-@{
-    integer pid;
-
-    if ((pid = cisco_pid(%[Cisco-PRI-Circuit])) != -1) @{
-        if (*%[NAS-Port-Id])
-           %[Orig-NAS-Port-Id] = %[NAS-Port-Id];
-        %[NAS-Port-Id] = pid;
-    @}
-    if (*%[Acct-Session-Id]) @{
-        %[Orig-Acct-Session-Id] = %[Acct-Session-Id];
-        %[Acct-Session-Id] = cisco_sid(%[Acct-Session-Id]);
-    @}
-    return 0;
-@}
-@end group
-@end example
-
-@subheading 3. Username rewriting for NT machines.
-
-Users coming from Windows NT machines often authenticate themselves as
-@samp{NT_DOMAIN\username}. The following function selects the username part
-and stores it in the @attr{User-Name} attribute:
-
-@example
-@group
-integer
-login_nt(string uname)
-@{
-    integer i;
-        
-    if ((i = index(uname, '\\')) != -1)
-        return substr(uname, i+1, -1);
-    return uname;
-@}
-
-integer
-nt_rewrite()
-@{
-    %[Orig-User-Name] = %[User-Name];
-    %[User-Name] = login_nt(%[User-Name]);
-    return 0;
-@}
-@end group
-@end example
-
+@section rewrite file
+@cindex rewrite file
+
+The file @file{raddb/rewrite} contains definitions of Rewrite extension
+functions. For information regarding Rewrite extension language
+@xref{Rewrite}.
 
 @comment *L2****************************************************************
 @node menus file, Macro substitution, rewrite file, Configuration files
@@ -2497,8 +1989,7 @@ The menu files are stored in directory @file{raddb/menus}.
 @cindex  menu, syntax
 
 A menu file is a text file containing a menu declaration and any number
-of choice descriptions. It can be either a single-level menu or can
-reference other menus.
+of choice descriptions. The menus can be nested to an arbitrary depth.
 
 A comment is introduced by a @samp{#} character. All characters from
 this one up to the end of line are discarded.
@@ -2645,23 +2136,58 @@ of corresponding attributes:
 @table @code
 @item %Cnum
 (num is a decimal number). This variable is replaced by the value of
-attribute number `num'. The attribute is looked up in the check
+attribute number `num'. The attribute is looked up in the incoming request
 pairlist.
 @item %C@{attr-name@}
 This is replaced by the value of attribute named `attr-name'. The
-attribute is looked up in the check pairlist.
+attribute is looked up in the incoming request pairlist.
 @item %Rnum
 (num is a decimal number). This variable is replaced by the value of
 attribute number `num'. The attribute is looked up in the reply
 pairlist.
 @item %R@{attr-name@}
 This is replaced by the value of attribute named `attr-name'. The
-attribute is looked up in the @RHS{} pairlist.
+attribute is looked up in the reply pairlist.
 @item %D
 This is replaced by current date/time (localtime).
 @item %G
 This is replaced by current date/time in GMT.
 @end table
+
+The ``@samp{@{@}} form'' allows to specify default value for the
+substitution. The default value will be used when no such attribute
+is encountered in the pairlist. The syntax for specifying the default
+value resembles that of shell environment variables. 
+
+The substitution @code{%C@{@var{attr-name}:-@var{defval}@}} is expanded
+to the value of @var{attr-name} attribute, if it is present in the
+request pairlist, and to @var{defval} otherwise. For example:
+
+@example
+        %C@{Acct-Session-Time:-0@}
+@end example
+
+@noindent
+will return the value of Acct-Session-Time attribute or 0 if it
+doesn't exist in the request pairlist.
+
+The substitition @code{%C@{@var{attr-name}:=@var{defval}@}} is expanded
+to the value of @var{attr-name} attribute. If this attribute is not
+present in the request pairlist, it will be created and assigned the
+value @var{defval}. E.g.:
+
+@example
+        %C@{Acct-Session-Time:=0@}
+@end example
+
+The substitution @code{%C@{@var{attr-name}:?@var{message}@}} is expanded
+to the value of @var{attr-name} attribute, if it is present. Otherwise
+the diagnostic message ``@var{attr-name}: @var{message}'' is issued to
+the log error channel, and string ``@var{message}'' is returned.
+
+The substitition @code{%C@{@var{attr-name}:+@var{retval}@}} is expanded
+to empty string if the attribute @var{attr-name} is present in the
+referenced pairlist. Othervise it is expanded to @var{retval}.
 
 You can also use the following shortcuts:
 

@@ -2,15 +2,15 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Radwho, Radlast, Debugging, Top
-@chapter Radwho
+@node Radwho, Radlast, , Utility Programs
+@section Radwho
 @pindex radwho
 
 @command{Radwho} displays the list of users currently logged in by the
 Radius server.
 
 Default output information is made compatible with that of the standard
-UNIX finger(1) utility. For each user the following information is
+@UNIX{} finger(1) utility. For each user the following information is
 displayed: login name, name, connection protocol, @NAS{} port, login date,
 @NAS{} name, assigned @IP{} or corresponding network name.
 
@@ -44,7 +44,7 @@ Duration of the session.
 
 @comment *L2****************************************************************
 @node radwho options, , , Radwho
-@section Radwho command line options
+@subsection Radwho command line options
 @cindex radwho, command line options
 
 The following command line options can be used to modify the behavior
@@ -97,7 +97,7 @@ behavior of fingerd(8) utility. Use this option if starting
 @command{radwho} from the /etc/inetd.conf line like this:
 
 @example
-finger  stream  tcp   nowait  nobody   /usr/sbin/radwho radwho -fL
+finger stream tcp nowait nobody /usr/sbin/radwho radwho -fL
 @end example
 
 @noindent

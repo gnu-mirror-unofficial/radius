@@ -2,8 +2,8 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Raduse, Radzap, Radlast, Top
-@chapter Raduse
+@node Raduse, Radzap, Radlast, Utility Programs
+@section Raduse
 @pindex raduse
 
 The @command{raduse} utility shows the usage of dialup lines in the
@@ -18,7 +18,7 @@ realtime.
 
 @comment *L2****************************************************************
 @node raduse display, raduse options, , Raduse
-@section Display
+@subsection Display
 @cindex raduse display
 @cindex display, raduse
 
@@ -47,6 +47,7 @@ duration was perceived.
 The example of default display:
 
 @example
+@group
 uptime    90+20:35         Sun Dec 17 12:21                                    
 235 lines,  71 active, 164 idle. Pool load 0.30                                
                                                                                
@@ -71,6 +72,7 @@ max          006  3014 roland                 00:39 Sun Dec 17 11:41
              42+02:10       22:28 Sun Sep 24 13:46 - 12:15                     
              48+17:39       05:30 Fri Nov 24 01:57 - 07:28                     
 max          007  2937 [idle]                 00:06 Sun Dec 17 12:15           
+@end group
 @end example
 
 This default display can be altered using command line options or
@@ -78,7 +80,7 @@ interactive commands
 
 @comment *L2****************************************************************
 @node raduse options, raduse commands, raduse display, Raduse
-@section Raduse Command Line Options
+@subsection Raduse Command Line Options
 @cindex raduse, command line options
 
 The following options modify the behavior of @command{raduse}:
@@ -128,7 +130,7 @@ Display short usage summary.
 
 @comment *L2****************************************************************
 @node raduse commands, , raduse options, Raduse
-@section Raduse Interactive Commands
+@subsection Raduse Interactive Commands
 
 The following commands are understood when @command{raduse} is in
 interactive mode. Some commands require an argument. Such commands
@@ -138,36 +140,35 @@ it displays a prompt and waits for user to enter the necessary data.
 After processing each command the screen is updated immediately,
 no matter was the command understood or not.
 
-@table @code
-@item RET
+@table @kbd
+@item @key{RET}
 Refresh the screen immediately
-@item SPC
+@item @key{SPC}
 Refresh the screen immediately
 @item C-l
 Clear and redraw the display.
-@item ^
+@item @key{^}
 (Caret) go to the first page.
-@item b
+@item @key{b}
 Toggle brief display mode.
 @item C-b
 Move one page backwards.
 @item C-f
 Move one page forwards.
-@item i
+@item @key{i}
 Toggle idle line display on or off.
-@item j
+@item @key{j}
 Move one line forwards.
-@item k
+@item @key{k}
 Move one line backwards.
-@item G
+@item @key{G}
+@itemx @key{$}
 Move to the last page.
-@item $
-Move to the last page.
-@item q
+@item @key{q}
 Quit the program
-@item s @var{arg}
+@item @key{s} @var{arg}
 Change the number of seconds to delay between screen updates. 
-@item t @var{arg}
+@item @key{t} @var{arg}
 Display lines on a given Network Access Servers. The user is
 prompted to input the @NAS{} names. The names should be separated by
 whitespace. The word @samp{all} returns to display of all @NAS{} lines.

@@ -239,6 +239,76 @@ port or the @NAS{} does not distinguish among its ports.
 If the Accounting-Request packet includes a Framed-IP-Address,
 that attribute @emph{must} contain the actual @IP{} of the user.
 
+There are five types of accounting packets, which differ by the value of
+@attr{Acct-Status-Type} attribute. These are:
+
+@table @dfn
+@item Session Start Packet.
+The session start packet is sent after the user has successfully passed
+the authentication and has started to receive the requested service. It
+must contain at least following attributes:
+
+@itemize @bullet
+@item Acct-Status-Type = Start
+@item User-Name
+@item Acct-Session-Id
+@item NAS-IP-Address
+@item NAS-Port-Id
+@end itemize
+
+@item Session Stop Packet.
+The Session Stop Packet is sent after the user has disconnected. It
+conveys the information about the duration of the session, number
+of octets transferred, etc. It must contain at least the following
+attributes:
+
+@itemize @bullet
+@item Acct-Status-Type = Stop
+@item User-Name
+@item NAS-IP-Address
+@item Acct-Session-Id
+@end itemize
+
+The last three of them are used to find the corresponding
+@dfn{Session Start Packet}.
+
+@item Keepalive Packet
+The keepalive packet is sent by the @NAS{} when it obtains some
+new information about the user's session, e.g. it has determined
+its @IP{} or has changed the connection speed, etc. The packet must
+contain at least following attributes:
+
+@itemize @bullet
+@item Acct-Status-Type = Alive
+@item User-Name
+@item NAS-IP-Address
+@item Acct-Session-Id
+@end itemize
+
+@item Accounting Off Packet
+By sending this packet @NAS{} requests that radius mark all sessions
+registered from this @NAS{} as finished. Receiving this packet usually
+means that the @NAS{} is to be shut down, or is about to change its
+configuration in a way that requires all currently opened sessions to
+be shut down. The packet must contain at least the following attributes:
+
+@itemize @bullet
+@item Acct-Status-Type = Accounting-Off
+@item NAS-IP-Address
+@end itemize
+
+@item Accounting On Packet
+By sending this packet, the @NAS{} informs radius that it is ready
+to accept the incoming connections. Usually this packet is sent
+after startup, or after a major reconfiguration of the @NAS{}. It
+must contain at least the following attributes:
+
+@itemize @bullet
+@item Acct-Status-Type = Accounting-Off
+@item NAS-IP-Address
+@end itemize
+@end table
+
 @comment *L2****************************************************************
 @node Matching Rule, Request processing, Requests, Operation
 @section Matching Rule
@@ -412,7 +482,7 @@ does not, the request is rejected. In short, a huntgroup requires
 that any request matching its @LHS{} must match also its
 @RHS{}. The @dfn{Label} part of the rule is not used in
 comparisons, instead it is used to label huntgroups. All entries
-with same label form a single huntgroup. The special attribute
+with the same label form a single huntgroup. The special attribute
 @attr{Huntgroup-Name} can be used to request a match against a
 particular huntgroup (@pxref{Huntgroup-Name}). 
 
@@ -422,15 +492,39 @@ particular huntgroup (@pxref{Huntgroup-Name}).
 @node User Profiles, , Huntgroups, Request processing
 @subsection User Profiles
 @cindex User Profiles
+@cindex Authentication
 
-@dfn{User Profiles} are the per-user matching rules. The input request
-is compared with the @dfn{User Profiles} after it has passed both
-@dfn{Hints} and @dfn{Huntgroups}. The @dfn{User Profiles} are used
-only for authentication requests. A request passes the authentication
-only if it matches one or several user profiles and the reply pairs
-collected from @RHS{} of these profiles allow the authentication.
+@dfn{User Profiles} are the per-user matching rules
+(@pxref{Matching Rule}). Any incoming authentication request is compared
+with the @dfn{User Profiles} after it has passed both @dfn{Hints} and
+@dfn{Huntgroups}. @command{Radiusd} selects from the @dfn{User Profiles}
+those rules, whose @dfn{Label} matches the value of @attr{User-Name}
+attribute from the incoming request.
 
-For a request to match a given user profile, the 
+The selected profiles form the list of authentication rules for
+the request. In order for a profile to be selected, its label must
+either coincide literally with the @attr{User-Name} value, or
+it must be one of special labels @code{DEFAULT} and @code{BEGIN}.
+The rules in the authentication list are ordered as follows: first
+go all the profiles with @code{BEGIN} label, they are followed
+by the profiles, whose labels match the @attr{User-Name} literally,
+and, finally, these are followed by rules labeled with @code{DEFAULT}.
+@footnote{For compatibility with other implementations of radius, GNU
+Radius treats profile labels in the form @code{DEFAULT%d}, where @code{%d}
+represents a decimal number, in the same way it treats @code{DEFAULT}
+labels. The same applies to @code{BEGIN} labels.} Within each of the
+three sub-lists the rules preserve the order in which they appear in
+@file{raddb/users} file. Once the list is constructed, it is scanned
+sequentially until the rule is found, whose @LHS{} matches the incoming
+request. If no such rule is found, then the authentication
+fails. Otherwise, the contents of its @RHS{} is appended to @dfn{Reply
+List} being constructed. If the @RHS{} of the matched rule contains attribute
+@attr{Fall-Through} with the value @code{Yes}, the matching continues.
+When the list is exhausted, the authentication result is sent back
+to the @NAS{} along with the A/V pairs collected in the @dfn{Reply
+List}.
 
-(@pxref{Matching Rule}). 
+[FIXME: links to the description of raddb/users and auth]
+
+
 

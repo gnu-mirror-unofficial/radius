@@ -1,3 +1,12 @@
+2001-12-10 Sergey Poznyakoff
+
+	Updated and restructured documentation:
+	
+	* doc/texinfo/programs.texi: (new)
+	* doc/texinfo/extensions.texi: (new)
+	* doc/texinfo/Makefile.am: Added new files.
+	* doc/texinfo/*.texi: Updated.
+	
 2001-11-29 Sergey Poznyakoff
 	
 	* include/parser.h: Namespace normalization.

@@ -2,16 +2,17 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Radzap, Radgrep, Raduse, Top
-@chapter Radzap
+@node Radzap, Radgrep, Raduse, Utility Programs
+@section Radzap
 @pindex radzap
+@cindex Deleting hung user sessions
 
 @command{radzap} searches the Radius accounting database for matching login
 records and closes them.
 
 At least one of @option{-n}, @option{-p} options or username must be
 specified. If they are used in conjunction, they are taken as if
-joined by logical AND operation.
+joined by logical @sc{and} operation.
 
 @samp{radzap} operates in two modes: silent and confirm. The silent
 mode is enabled by default. When run in this mode, radzap deletes

@@ -2,8 +2,8 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Radgrep, Radping, Radzap, Top
-@chapter Radgrep
+@node Radgrep, Radping, Radzap, Utility Programs
+@section Radgrep
 @pindex radgrep
 
 This utility allows to quickly lookup the user in the radius accounting

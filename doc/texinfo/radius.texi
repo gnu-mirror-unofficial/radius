@@ -57,7 +57,16 @@ Software Foundation raise funds for GNU development.''
 
 @dircategory GNU radius
 @direntry
-* Radius: (radius).     The GNU Radius
+* Radius: (radius).           GNU Radius.
+* radwho: (radius)Radwho.     Show who is logged in by radius now.
+* radlast: (radius)Radlast.   Show the history of logins by radius.
+* radzap: (radius)Radzap.     Modify the login records.
+* radgrep: (radius)Radgrep.   Quickly find the login record.
+* radping: (radius)Radping.   Ping the remote machine by the username.
+* radauth: (radius)Radauth.   Check if a user can be authenticated.
+* radctl: (radius)Radctl.     Radctl monitor.
+* builddbm: (radius)Builddbm. Create DBM version of the @file{raddb/users} file.
+* radscm: (radius).Radscm.    A Guile interface to radius functions.
 @end direntry
 
 

@@ -37,10 +37,6 @@ plaintext database file to operate upon.
 .IP -d
 Specifies alternate directory for the \fBRadius\fR users database
 files. This defaults to \*(RD.
-.IP -i
-Specifies alternate input file.
-.IP -h
-Outputs short usage summary and exits with 0 exit code.
 .SH FILES
 .IP \*(RD/users
 Default plaintext database.

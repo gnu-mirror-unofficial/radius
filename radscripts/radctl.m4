@@ -66,7 +66,7 @@ chan_signal() {
     
 	reload) 
            TEST($RUNNING -eq 0) && {
-	       echo $PROCESS
+	       echo "$PROCESS"
 	       exit 1
 	   }
 	   kill -HUP  $PID && echo "Reloading configs";;
@@ -84,7 +84,7 @@ chan_signal() {
 	   stop;;
 
 	which)
-	   echo $PROCESS;;
+	   echo "$PROCESS";;
 
 	restart)
 	   stop
@@ -93,7 +93,7 @@ chan_signal() {
 
 	dump)
 	   TEST($RUNNING -eq 0) && {
-	       echo $PROCESS
+	       echo "$PROCESS"
 	       exit 1
 	   }
 	   kill -USR2 $PID && echo "Dumping users database";;

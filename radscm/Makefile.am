@@ -71,6 +71,9 @@ ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_L
 
 GUILE_DOC_SNARF=$(top_srcdir)/scripts/guile/$(GUILE_SNARF_VERSION)/guile-doc-snarf
 
+gnuradius.scm: $(libradscm_la_SOURCES:.c=.inc)
+radiusd.scm: $(libservscm_a_SOURCES:.c=.exp)
+
 SUFFIXES=.x .doc .inc .exp .scm4 .scm
 
 .c.x:
@@ -90,8 +93,8 @@ SUFFIXES=.x .doc .inc .exp .scm4 .scm
 	sed -n 's/SCM_DEFINE *(.[^,]*, *\"\([^"][^"]*\)\".*/[ \1]dnl/p' $< > $@
 
 .scm4.scm:
-	m4 -DVERSION=$(VERSION) -DLIBDIR=$(libdir) \
-	   -DBUILDDIR=$(top_builddir)/radscm $< > $@
+	m4 -DVERSION=$(VERSION) -DLIBDIR="`cd $(libdir);pwd`" \
+	   -DBUILDDIR="`cd $(top_builddir)/radscm;pwd`" $< > $@
 
 guile-procedures.txt: $(DOT_DOC_FILES)
 	cat $(DOT_DOC_FILES) > $@

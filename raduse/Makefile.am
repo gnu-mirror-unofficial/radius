@@ -12,7 +12,7 @@
 bin_PROGRAMS    = raduse
 raduse_SOURCES = raduse.c session.c stat.c raduse.h
 raduse_LDADD   = ../snmplib/libradsnmp.a ../lib/liblog.la ../lib/librad.la ../lib/libdebug.la @LIBINTL@
-INCLUDES        = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/lib @INCLUDEPATH@
+INCLUDES       = @RADIUS_INCLUDE_PATH@
 
 SUFFIXES=.S .c .ln .o .s
 

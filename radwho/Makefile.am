@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2003 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2003,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -13,7 +13,7 @@
 bin_PROGRAMS    = radwho
 radwho_SOURCES = radwho.c 
 radwho_LDADD   = @LIBGNURADIUS@ @LIBINTL@
-INCLUDES        = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/lib @INCLUDEPATH@
+INCLUDES        = @RADIUS_INCLUDE_PATH@
 AM_CPPFLAGS=@PATHFLAGS@
 
 SUFFIXES=.S .c .ln .o .s

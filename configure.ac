@@ -20,7 +20,7 @@
 AC_PREREQ(2.59)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 1.2.90, bug-gnu-radius@gnu.org)
+AC_INIT(GNU Radius, 1.2.91, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -31,6 +31,9 @@ AC_SUBST(BUILD_TARGET)
 AC_SUBST(INCLUDEPATH)
 AC_SUBST(YACC_OPTS)
 AC_SUBST(RADIUS_PID)
+
+AC_SUBST(RADIUS_INCLUDE_PATH)
+RADIUS_INCLUDE_PATH='-I$(top_builddir) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)/include/radius -I$(top_srcdir)/include/radius'
 
 ## * Checks for programs.
 AC_PROG_CC
@@ -800,6 +803,8 @@ AH_BOTTOM([
 
 AC_SUBST(LIBGNURADIUS)
 LIBGNURADIUS='${top_builddir}/lib/libgnuradius.la'
+
+RADIUS_INCLUDE_PATH="$RADIUS_INCLUDE_PATH $INCLUDEPATH"
 
 AC_OUTPUT(Makefile 
           intl/Makefile 

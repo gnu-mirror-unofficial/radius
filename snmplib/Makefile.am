@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -22,5 +22,5 @@ libradsnmp_a_SOURCES=asn1.c snmp_mem.c snmp_oid.c snmp_pdu.c \
                   snmp_recv.c snmp_send.c snmp_sess.c snmp_var.c \
                   snmp_err.c snmp_mib.c
 
-INCLUDES= -I$(top_srcdir)/include -I$(top_builddir)/include @INCLUDEPATH@
+INCLUDES = @RADIUS_INCLUDE_PATH@
 

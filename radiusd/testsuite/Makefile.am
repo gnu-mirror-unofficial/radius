@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2003 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2003,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -20,7 +20,7 @@ test_dirs = config lib radiusd
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES=core *~ err out
 endif
-INCLUDES=-I$(top_srcdir)/include -I$(top_builddir)/include @INCLUDEPATH@
+INCLUDES=@RADIUS_INCLUDE_PATH@
 noinst_PROGRAMS=findport
 findport_SOURCES=findport.c
 SUBDIRS=raddb proxy 

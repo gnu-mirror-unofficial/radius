@@ -47,7 +47,7 @@ radiusd_SOURCES = \
 radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ @LIBGNURADIUS@ @READLINE_LIBS@ @LIBINTL@
 BUILT_SOURCES   = config.c rewrite.c
 MAINTAINERCLEANFILES=config.c rewrite.c y.output
-INCLUDES = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/lib @INCLUDEPATH@ @GUILE_INCLUDES@
+INCLUDES = @RADIUS_INCLUDE_PATH@ @GUILE_INCLUDES@
 AM_CPPFLAGS=@PATHFLAGS@ -DRADIUS_DATADIR=\"$(pkgdatadir)/$(VERSION)\"
 EXTRA_DIST      = config.y rewrite.y .gdbinit
 YLWRAP = $(SHELL) $(top_srcdir)/scripts/ylwrap

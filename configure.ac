@@ -610,18 +610,6 @@ AC_ARG_ENABLE(snmp,
 	esac])
 	
 ## **************
-## TTL -- retained for backward compatibility.
-## **************
-
-USE_NOTIFY=no
-AC_ARG_ENABLE(notify,
-	[],
-	[case $enableval in
-		yes)		USE_NOTIFY=yes;;
-		no)		;;
-	 esac])
-
-## **************
 ## Directories
 ## **************
 PAMDIR='$(prefix)/lib/security'
@@ -714,8 +702,14 @@ AC_OUTPUT(Makefile m4/Makefile  intl/Makefile po/Makefile.in
           scripts/guile/1.6/Makefile 
           contrib/Makefile)
 
-if test "x$USE_NOTIFY" = xyes; then
-  echo "** WARNING: --enable-notify is obsolete, use ttl.scm instead. Please"
-  echo "** WARNING: consult file NEWS for a description on how to do that."
+if test "x$USE_SERVER_GUILE" = xyes; then
+        cat <<EOF
+WARNING: You have used --with-server-guile flag. Please note
+that enabling Guile support in the multithreaded server is
+temporarly discouraged due to the thread-unsafe nature of
+libguile. This limitation will disappear when the thread-safe
+version of Guile is released.
+EOF
 fi
+
 

@@ -17,6 +17,12 @@
 
 /* $Id$ */
 
+#ifndef _REENTRANT
+# define _REENTRANT
+#endif
+
+@TOP@
+
 #undef DEF_AUTH_PORT
 #undef DEF_ACCT_PORT
 
@@ -31,9 +37,6 @@
 
 #define DBM_DBM  1
 #define DBM_NDBM 2
-
-
-@TOP@
 
 @BOTTOM@
 

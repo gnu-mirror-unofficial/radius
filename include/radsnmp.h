@@ -57,6 +57,7 @@ typedef struct {
 } Auth_server_stat;
 
 struct nas_stat {
+	struct nas_stat *next;
 	int index;
 	UINT4 ipaddr;
 	counter ports_active;

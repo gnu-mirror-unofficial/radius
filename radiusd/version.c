@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <radiusd.h>
 #include <radargp.h>
+#include <radpaths.h>
 
 static char *sys_def[] = {
 #if defined(__alpha)
@@ -162,7 +163,7 @@ version(stream, state)
         fprintf(stream, _("Compilation platform: "));
         for (i = 0; sys_def[i]; i++)
                 fprintf(stream, "%s ", sys_def[i]);
-
+ 
         fprintf(stream, _("\nDebugging flags: "));
         for (i = 0; debug_flag_str[i]; i++) {
                 fprintf(stream, "%s ", debug_flag_str[i]);

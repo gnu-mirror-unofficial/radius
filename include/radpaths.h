@@ -15,28 +15,8 @@
    along with this program; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-/* Provide reasonable defaults */
+#define RADDB_DIR SYSCONFDIR "/raddb"
 
-#ifndef ETC_DIR
-# define ETC_DIR "/etc"
-#endif
-#define RADDB_DIR ETC_DIR "/raddb"
-
-#ifndef RADLOG_DIR
-# if defined(sun)
-#  define RADLOG_DIR "/usr/adm"
-# else
-#  define RADLOG_DIR "/var/log"
-# endif
-#endif
-
-#ifndef RADPID_DIR
-# if defined(sun)
-#  define RADPID_DIR RADDB_DIR
-# else
-#  define RADPID_DIR "/var/run"
-# endif
-#endif
 #define RADIUSD_PID_FILE "radiusd.pid"
 
 #define RADIUS_DIR              RADDB_DIR

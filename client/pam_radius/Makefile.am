@@ -16,6 +16,7 @@ EXTRA_LTLIBRARIES = pam_radius.la
 pam_radius_la_SOURCES = pam_radius.c
 pam_radius_la_LIBADD = -lpam ../../lib/librad.la ../../lib/libdebug.la @LTLIBINTL@
 INCLUDES = -I$(top_builddir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
+AM_CPPFLAGS=@PATHFLAGS@
 
 pam_radius_la_LDFLAGS = -module -avoid-version -no-undefined -rpath $(pamdir) \
  -Wl,-Bsymbolic

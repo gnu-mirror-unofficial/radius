@@ -56,7 +56,8 @@ librad_la_LIBADD = $(LIBADD:.o=.lo)
 liblog_la_SOURCES=applog.c 
 libdebug_la_SOURCES=debugmod.c
 AM_LDFLAGS=-all-static
-AM_CFLAGS=-static -DLOCALEDIR=\"$(localedir)\"
+AM_CFLAGS=-static
+AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\" @PATHFLAGS@
 
 BUILT_SOURCES=users_gram.c users_lex.c
 MAINTAINERCLEANFILES=users_gram.c users_gram.h users_lex.c

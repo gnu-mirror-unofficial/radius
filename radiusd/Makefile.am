@@ -45,9 +45,9 @@ radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ .
 BUILT_SOURCES   = config.c rewrite.c
 MAINTAINERCLEANFILES=config.c rewrite.c y.output
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/lib @INCLUDEPATH@ @GUILE_INCLUDES@
+AM_CPPFLAGS=@PATHFLAGS@
 EXTRA_DIST      = config.y rewrite.y .gdbinit
 YLWRAP = $(SHELL) $(top_srcdir)/ylwrap
-GPERF=@GPERF@
 
 config.c: $(srcdir)/config.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/config.y \

@@ -159,14 +159,29 @@ free_acl(acl)
 /* Application-specific */
 
 struct mib_node_t *mib_tree;
-int snmp_auth_handler(enum var_subid_cmd cmd, void *closure, subid_t subid,
+int snmp_auth_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		      struct snmp_var **varp, int *errp);
-int snmp_auth_v_handler(enum var_subid_cmd cmd, void *closure, subid_t subid,
+int snmp_auth_v_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 			struct snmp_var **varp, int *errp);
-int snmp_acct_handler(enum var_subid_cmd cmd, void *closure, subid_t subid,
+int snmp_acct_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		      struct snmp_var **varp, int *errp);
-int snmp_acct_v_handler(enum var_subid_cmd cmd, void *closure, subid_t subid,
+int snmp_acct_v_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 			struct snmp_var **varp, int *errp);
+int snmp_stat_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		      struct snmp_var **varp, int *errp);
+int snmp_stat_nas(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		  struct snmp_var **varp, int *errp);
+
+struct auth_mib_closure {
+	int nas_index;
+};
+
+struct nas_closure {
+	UINT4 ipaddr;
+};
+
+struct auth_mib_closure auth_closure, acct_closure;
+struct nas_closure nas_closure;
 
 static struct mib_data {
 	oid_t oid;
@@ -192,27 +207,27 @@ static struct mib_data {
 	oid_AuthServTotalUnknownTypes,       snmp_auth_handler, NULL,
 
 	/* Variable oids */
-	oid_AuthClientIndex,                 snmp_auth_v_handler, NULL,
-	oid_AuthClientAddress,               snmp_auth_v_handler, NULL,      
-	oid_AuthClientID,                    snmp_auth_v_handler, NULL,      
-	oid_AuthServAccessRequests,          snmp_auth_v_handler, NULL,      
-	oid_AuthServDupAccessRequests,       snmp_auth_v_handler, NULL,      
-	oid_AuthServAccessAccepts,           snmp_auth_v_handler, NULL,      
-	oid_AuthServAccessRejects,           snmp_auth_v_handler, NULL,      
-	oid_AuthServAccessChallenges,        snmp_auth_v_handler, NULL,      
-	oid_AuthServMalformedAccessRequests, snmp_auth_v_handler, NULL,      
-	oid_AuthServBadAuthenticators,       snmp_auth_v_handler, NULL,      
-	oid_AuthServPacketsDropped,          snmp_auth_v_handler, NULL,      
-	oid_AuthServUnknownTypes,            snmp_auth_v_handler, NULL,
-
+	oid_AuthClientIndex,                 snmp_auth_v_handler,&auth_closure,
+	oid_AuthClientAddress,               snmp_auth_v_handler,&auth_closure,
+	oid_AuthClientID,                    snmp_auth_v_handler,&auth_closure,
+	oid_AuthServAccessRequests,          snmp_auth_v_handler,&auth_closure,
+	oid_AuthServDupAccessRequests,       snmp_auth_v_handler,&auth_closure,
+	oid_AuthServAccessAccepts,           snmp_auth_v_handler,&auth_closure,
+	oid_AuthServAccessRejects,           snmp_auth_v_handler,&auth_closure,
+	oid_AuthServAccessChallenges,        snmp_auth_v_handler,&auth_closure,
+	oid_AuthServMalformedAccessRequests, snmp_auth_v_handler,&auth_closure,
+	oid_AuthServBadAuthenticators,       snmp_auth_v_handler,&auth_closure,
+	oid_AuthServPacketsDropped,          snmp_auth_v_handler,&auth_closure,
+	oid_AuthServUnknownTypes,            snmp_auth_v_handler,&auth_closure,
+	
 	/* Accounting */
 	/* Fixed oids */
 	oid_AccServIdent,                    snmp_acct_handler, NULL,
-	oid_AccServUpTime,                   snmp_acct_handler, NULL,       
-	oid_AccServResetTime,                snmp_acct_handler, NULL,      
-	oid_AccServConfigReset,              snmp_acct_handler, NULL,      
-	oid_AccServTotalRequests,            snmp_acct_handler, NULL,      
-	oid_AccServTotalInvalidRequests,     snmp_acct_handler, NULL,      
+	oid_AccServUpTime,                   snmp_acct_handler, NULL,
+	oid_AccServResetTime,                snmp_acct_handler, NULL,
+	oid_AccServConfigReset,              snmp_acct_handler, NULL,
+	oid_AccServTotalRequests,            snmp_acct_handler, NULL,
+	oid_AccServTotalInvalidRequests,     snmp_acct_handler, NULL,    
 	oid_AccServTotalDupRequests,         snmp_acct_handler, NULL,      
 	oid_AccServTotalResponses,           snmp_acct_handler, NULL,      
 	oid_AccServTotalMalformedRequests,   snmp_acct_handler, NULL,      
@@ -222,18 +237,29 @@ static struct mib_data {
 	oid_AccServTotalUnknownTypes,        snmp_acct_handler, NULL,      
 
 	/* Variable oids */
-	oid_AccClientIndex,                  snmp_acct_v_handler, NULL,      
-	oid_AccClientAddress,                snmp_acct_v_handler, NULL,
-	oid_AccClientID,                     snmp_acct_v_handler, NULL,
-	oid_AccServPacketsDropped,           snmp_acct_v_handler, NULL,
-	oid_AccServRequests,                 snmp_acct_v_handler, NULL,
-	oid_AccServDupRequests,              snmp_acct_v_handler, NULL,
-	oid_AccServResponses,                snmp_acct_v_handler, NULL,
-	oid_AccServBadAuthenticators,        snmp_acct_v_handler, NULL,
-	oid_AccServMalformedRequests,        snmp_acct_v_handler, NULL,
-	oid_AccServNoRecords,                snmp_acct_v_handler, NULL,
-	oid_AccServUnknownTypes,             snmp_acct_v_handler, NULL,
+	oid_AccClientIndex,                  snmp_acct_v_handler,&acct_closure,
+	oid_AccClientAddress,                snmp_acct_v_handler,&acct_closure,
+	oid_AccClientID,                     snmp_acct_v_handler,&acct_closure,
+	oid_AccServPacketsDropped,           snmp_acct_v_handler,&acct_closure,
+	oid_AccServRequests,                 snmp_acct_v_handler,&acct_closure,
+	oid_AccServDupRequests,              snmp_acct_v_handler,&acct_closure,
+	oid_AccServResponses,                snmp_acct_v_handler,&acct_closure,
+	oid_AccServBadAuthenticators,        snmp_acct_v_handler,&acct_closure,
+	oid_AccServMalformedRequests,        snmp_acct_v_handler,&acct_closure,
+	oid_AccServNoRecords,                snmp_acct_v_handler,&acct_closure,
+	oid_AccServUnknownTypes,             snmp_acct_v_handler,&acct_closure,
 
+	/* Statistics */
+	oid_StatIdent,                       snmp_stat_handler, NULL,
+	oid_StatUpTime,	                     snmp_stat_handler, NULL,
+	oid_StatConfigReset,                 snmp_stat_handler, NULL,
+	oid_StatTotalLines,                  snmp_stat_handler, NULL,
+	oid_StatTotalLinesInUse,             snmp_stat_handler, NULL,
+	oid_StatTotalLinesIdle,              snmp_stat_handler, NULL,
+
+	/* Variable oids */
+/*	oid_NASIndex,                        snmp_stat_nas, &nas_closure,*/
+	
 };					    
 					    
 void
@@ -244,6 +270,9 @@ snmp_tree_init()
 	
 	snmp_init(0, 0, (snmp_alloc_t)emalloc, (snmp_free_t)efree);
 
+	auth_closure.nas_index = 1;
+	acct_closure.nas_index = 1;
+	
 	for (p = mib_data; p < mib_data + NITEMS(mib_data); p++) {
 		mib_insert(&mib_tree, p->oid, &node);
 		if (p->handler) {
@@ -471,6 +500,9 @@ int mib_set_try(struct mib_node_t *node, struct snmp_var **varp,
 int mib_set(struct mib_node_t *node, struct snmp_var **varp);
 oid_t mib_node_oid(struct mib_node_t *node);
 
+int mib_down(struct mib_node_t *node, oid_t oid);
+void mib_reset(struct mib_node_t *node);
+
 /* For a given node generate its oid. Note: When not needed anymore, the
    oid should be freed by snmp_free */
 oid_t 
@@ -483,9 +515,45 @@ mib_node_oid(node)
 	oid = oid_create(node->index+1);
 	if (!oid)
 		return oid;
-	for (i = node->index; node && i >= 0; i--, node = node->up) 
-		SUBID(oid,i) = node->subid;
+	for (i = node->index; node && i >= 0; i--, node = node->up) {
+		SUBID(oid,i) = (node->subid != SUBID_X) ?
+			         node->subid :
+			         (subid_t)(*node->handler)(MIB_NODE_GET_SUBID,
+							   node->closure,
+							   0,
+							   NULL, NULL);
+	}
 	return oid;
+}
+
+void
+mib_reset(node)
+	struct mib_node_t *node;
+{
+	if (node->subid == SUBID_X) {
+		(*node->handler)(MIB_NODE_RESET, node->closure,
+				 0,
+				 NULL, NULL);
+	}
+}
+		
+int
+mib_down(node, oid)
+	struct mib_node_t *node;
+	oid_t oid;
+{
+	if (node->subid == SUBID_X) {
+		if (OIDLEN(oid) <= node->index) {
+		    (*node->handler)(MIB_NODE_RESET, node->closure,
+				     0,
+				     NULL, NULL);
+		    return 0;
+		} else if ((*node->handler)(MIB_NODE_NEXT, node->closure,
+					    SUBID(oid,node->index),
+					    NULL, NULL) == 0) 
+			return 0;
+	}
+	return 1;
 }
 
 /* Get next node.
@@ -515,7 +583,9 @@ mib_get_next(node, varp, errp)
 	*errp = SNMP_ERR_NOERROR;
 
 	do {
-		if (found_node->down == NULL && found_node->next == NULL) {
+		if (found_node->next == NULL &&
+		    found_node->down == NULL &&
+		    mib_down(found_node, oid)) {
 			node = NULL;
 		} else {
 			int depth = 0;
@@ -524,9 +594,12 @@ mib_get_next(node, varp, errp)
 				if (depth++ && node->handler)
 					break;
 				
-				if (node->next)
+				if (node->next) {
 					node = node->next;
-				else
+					mib_reset(node);
+				} else if (node->subid == SUBID_X) {
+					mib_down(node, oid);
+				} else
 					node = node->down;
 			}
 		}
@@ -534,13 +607,25 @@ mib_get_next(node, varp, errp)
 		if (!node) {
 			/* The subtree is exhausted. Roll back until we find
 			   first non-traversed down link */
+			debug(2, ("rolling back from %d:%d",
+				  found_node->index,
+				  found_node->subid));
 			while (node = found_node->up) {
+				mib_reset(node);
 				if (node->down && node->down != found_node)
+					break;
+				if (node->subid == SUBID_X &&
+				    mib_down(node, oid))
 					break;
 				found_node = node;
 			}
 
 			if (node)
+				debug(2, ("rollback stopped at %d:%d",
+					  node->index,
+					  node->subid));
+
+			if (node && node->subid != SUBID_X)
 				node = node->down;
 
 		}
@@ -563,9 +648,10 @@ mib_get_next(node, varp, errp)
 			     temp_var->name)));
 			 
 	*varp = temp_var;
-	(*node->handler)(VAR_SUBID_GET, found_node->closure,
-			 SUBID(temp_var->name,OIDLEN(temp_var->name)-1),
-			 varp, errp);
+	(*found_node->handler)(MIB_NODE_GET,
+			       found_node->closure,
+			       SUBID(temp_var->name,OIDLEN(temp_var->name)-1),
+			       varp, errp);
 	snmp_var_free(temp_var);
 	return 0;
 }
@@ -591,7 +677,7 @@ mib_get(node, varp, errp)
 		return -1;
 	}
 
-	return (*node->handler)(VAR_SUBID_GET, node->closure,
+	return (*node->handler)(MIB_NODE_GET, node->closure,
 				SUBID(oid,OIDLEN(oid)-1),
 				varp, errp);
 }
@@ -616,7 +702,7 @@ mib_set_try(node, varp, errp)
 		return -1;
 	}
 	
-	if ((*node->handler)(VAR_SUBID_SET_TRY, node->closure,
+	if ((*node->handler)(MIB_NODE_SET_TRY, node->closure,
 			     SUBID(oid,OIDLEN(oid)-1),
 			     varp, errp) != 0) 
 		return -1;
@@ -642,7 +728,7 @@ mib_set(node, varp)
 		return -1;
 	}
 	
-	return (*node->handler)(VAR_SUBID_SET, node->closure,
+	return (*node->handler)(MIB_NODE_SET, node->closure,
 				SUBID(oid,OIDLEN(oid)-1),
 				varp, NULL);
 }
@@ -817,12 +903,12 @@ variable_cmp(v1, v2)
 /* Auth sub-tree */
 
 struct snmp_var *snmp_auth_var_get(subid_t subid, oid_t oid, int *errp);
-int snmp_auth_set(subid_t subid, struct snmp_var **vp, int *errp);
+int snmp_auth_var_set(subid_t subid, struct snmp_var **vp, int *errp);
 
 /* Handler function for fixed oids from the authentication subtree */
 int
 snmp_auth_handler(cmd, closure, subid, varp, errp)
-	enum var_subid_cmd cmd;
+	enum mib_node_cmd cmd;
 	void *closure;
 	subid_t subid;
 	struct snmp_var **varp;
@@ -831,18 +917,18 @@ snmp_auth_handler(cmd, closure, subid, varp, errp)
 	oid_t oid = (*varp)->name;
 	
 	switch (cmd) {
-	case VAR_SUBID_GET:
+	case MIB_NODE_GET:
 		if ((*varp = snmp_auth_var_get(subid, oid, errp)) == NULL)
 			return -1;
 		break;
 		
-	case VAR_SUBID_SET:
+	case MIB_NODE_SET:
 		return snmp_auth_var_set(subid, varp, errp);
 		
-	case VAR_SUBID_SET_TRY:
+	case MIB_NODE_SET_TRY:
 		return snmp_auth_var_set(subid, varp, errp);
 		
-	case VAR_SUBID_RESET:
+	case MIB_NODE_RESET:
 		break;
 		
 	default: /* unused: should never get there */
@@ -966,7 +1052,7 @@ snmp_auth_var_get(subid, oid, errp)
 }
 
 int
-snmp_acct_var_set(subid, vp, errp)
+snmp_auth_var_set(subid, vp, errp)
 	subid_t subid;
 	struct snmp_var **vp;
 	int *errp;
@@ -975,7 +1061,7 @@ snmp_acct_var_set(subid, vp, errp)
 		*errp = SNMP_ERR_NOERROR;
 		switch (subid) {
 		
-		case MIB_KEY_AuthServConfigReset:
+		case MIB_KEY_AccServConfigReset:
 			if ((*vp)->type != ASN_INTEGER ||
 			    (*vp)->var_int != serv_reset) {
 				*errp = SNMP_ERR_BADVALUE;
@@ -991,11 +1077,11 @@ snmp_acct_var_set(subid, vp, errp)
 		*vp = snmp_var_dup(*vp);
 		
 		switch (subid) {
-
-		case MIB_KEY_AuthServConfigReset:
-			server_stat->auth.status = serv_init;
+			
+		case MIB_KEY_AccServConfigReset:
+			server_stat->acct.status = serv_init;
 			radlog(L_INFO,
-			     _("auth server re-initializing on SNMP request"));
+			     _("acct server re-initializing on SNMP request"));
 			break;
 
 		}
@@ -1006,17 +1092,17 @@ snmp_acct_var_set(subid, vp, errp)
 /* Variable oids */
 
 void get_auth_nasstat(NAS *nas, struct snmp_var *var, int ind);
-int snmp_auth_v_handler(enum var_subid_cmd cmd, void *closure,
+int snmp_auth_v_handler(enum mib_node_cmd cmd, void *closure,
 			subid_t subid, struct snmp_var **varp,
 			int *errp);
 struct snmp_var *snmp_auth_var_v_get(subid_t subid, struct snmp_var *var,
 				     int *errp);
-void snmp_auth_var_next(struct snmp_var **varp, int *errp);
+int snmp_auth_var_next(subid_t subid, struct auth_mib_closure *closure);
 
 /* Handler function for variable oid of the authentication subtree */ 
 int
 snmp_auth_v_handler(cmd, closure, subid, varp, errp)
-	enum var_subid_cmd cmd;
+	enum mib_node_cmd cmd;
 	void *closure;
 	subid_t subid;
 	struct snmp_var **varp;
@@ -1025,52 +1111,46 @@ snmp_auth_v_handler(cmd, closure, subid, varp, errp)
 	NAS *nas;
 	
 	switch (cmd) {
-	case VAR_SUBID_GET:
+	case MIB_NODE_GET:
 		if ((*varp = snmp_auth_var_v_get(subid, *varp, errp)) == NULL)
 			return -1;
 		break;
 		
-	case VAR_SUBID_SET:
-	case VAR_SUBID_SET_TRY:
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
 		/* None of these can be set */
 		if (errp)
 			*errp = SNMP_ERR_NOSUCHNAME;
 		return -1;
 		
-	case VAR_SUBID_COMPARE: 
+	case MIB_NODE_COMPARE: 
 		return 0;
 		
-	case VAR_SUBID_NEXT:
-		snmp_auth_var_next(varp, errp);
+	case MIB_NODE_NEXT:
+		return snmp_auth_var_next(subid+1, closure);
+
+	case MIB_NODE_GET_SUBID:
+		return ((struct auth_mib_closure*)closure)->nas_index;
+		
+	case MIB_NODE_RESET:
+		((struct auth_mib_closure*)closure)->nas_index = 1;
 		break;
 		
-	case VAR_SUBID_RESET:
-
 	}
 	
 	return 0;
 }
 
-void
-snmp_auth_var_next(varp, errp)
-	struct snmp_var **varp;
-	int *errp;
+int
+snmp_auth_var_next(subid, closure)
+	subid_t subid;
+	struct auth_mib_closure *closure;
 {
-	struct snmp_var *ans;
-	subid_t subid = SUBID((*varp)->name, OIDLEN((*varp)->name)-1)+1;
+	if (!findnasbyindex(subid)) 
+		return -1;
 
-	if (!findnasbyindex(subid)) {
-		*errp = SNMP_ERR_NOSUCHNAME;
-		return;
-	}
-
-	if (!(ans = snmp_var_create((*varp)->name))) {
-		*errp = SNMP_ERR_GENERR;
-		return;
-	}
-
-	SUBID(ans->name, OIDLEN(ans->name)-1) = subid;
-	
+	closure->nas_index = subid;
+	return 0;
 }
 
 struct snmp_var *
@@ -1203,12 +1283,12 @@ get_auth_nasstat(nas, var, key)
 /* ************************************************************************* */
 /* Accounting sub-tree */
 struct snmp_var *snmp_acct_var_get(subid_t subid, oid_t oid, int *errp);
-int snmp_acct_set(subid_t subid, struct snmp_var **vp, int *errp);
+int snmp_acct_var_set(subid_t subid, struct snmp_var **vp, int *errp);
 
 /* Handler function for fixed oids from the authentication subtree */
 int
 snmp_acct_handler(cmd, closure, subid, varp, errp)
-	enum var_subid_cmd cmd;
+	enum mib_node_cmd cmd;
 	void *closure;
 	subid_t subid;
 	struct snmp_var **varp;
@@ -1217,18 +1297,18 @@ snmp_acct_handler(cmd, closure, subid, varp, errp)
 	oid_t oid = (*varp)->name;
 	
 	switch (cmd) {
-	case VAR_SUBID_GET:
+	case MIB_NODE_GET:
 		if ((*varp = snmp_acct_var_get(subid, oid, errp)) == NULL)
 			return -1;
 		break;
 		
-	case VAR_SUBID_SET:
+	case MIB_NODE_SET:
 		return snmp_acct_var_set(subid, varp, errp);
 		
-	case VAR_SUBID_SET_TRY:
+	case MIB_NODE_SET_TRY:
 		return snmp_acct_var_set(subid, varp, errp);
 		
-	case VAR_SUBID_RESET:
+	case MIB_NODE_RESET:
 		break;
 		
 	default: /* unused: should never get there */
@@ -1346,7 +1426,7 @@ snmp_acct_var_get(subid, oid, errp)
 }
 
 int
-snmp_auth_var_set(subid, vp, errp)
+snmp_acct_var_set(subid, vp, errp)
 	subid_t subid;
 	struct snmp_var **vp;
 	int *errp;
@@ -1355,7 +1435,7 @@ snmp_auth_var_set(subid, vp, errp)
 		*errp = SNMP_ERR_NOERROR;
 		switch (subid) {
 		
-		case MIB_KEY_AccServConfigReset:
+		case MIB_KEY_AuthServConfigReset:
 			if ((*vp)->type != ASN_INTEGER ||
 			    (*vp)->var_int != serv_reset) {
 				*errp = SNMP_ERR_BADVALUE;
@@ -1371,11 +1451,11 @@ snmp_auth_var_set(subid, vp, errp)
 		*vp = snmp_var_dup(*vp);
 		
 		switch (subid) {
-			
-		case MIB_KEY_AccServConfigReset:
-			server_stat->acct.status = serv_init;
+
+		case MIB_KEY_AuthServConfigReset:
+			server_stat->auth.status = serv_init;
 			radlog(L_INFO,
-			     _("acct server re-initializing on SNMP request"));
+			     _("auth server re-initializing on SNMP request"));
 			break;
 
 		}
@@ -1384,17 +1464,16 @@ snmp_auth_var_set(subid, vp, errp)
 }
 
 void get_acct_nasstat(NAS *nas, struct snmp_var *var, int key);
-int snmp_acct_v_handler(enum var_subid_cmd cmd, void *closure,
+int snmp_acct_v_handler(enum mib_node_cmd cmd, void *closure,
 			subid_t subid, struct snmp_var **varp,
 			int *errp);
 struct snmp_var *snmp_acct_var_v_get(subid_t subid, struct snmp_var *var,
 				     int *errp);
-void snmp_acct_var_next(struct snmp_var **varp, int *errp);
 
 /* Handler function for variable oid of the authentication subtree */ 
 int
 snmp_acct_v_handler(cmd, closure, subid, varp, errp)
-	enum var_subid_cmd cmd;
+	enum mib_node_cmd cmd;
 	void *closure;
 	subid_t subid;
 	struct snmp_var **varp;
@@ -1403,53 +1482,34 @@ snmp_acct_v_handler(cmd, closure, subid, varp, errp)
 	NAS *nas;
 	
 	switch (cmd) {
-	case VAR_SUBID_GET:
+	case MIB_NODE_GET:
 		if ((*varp = snmp_acct_var_v_get(subid, *varp, errp)) == NULL)
 			return -1;
 		break;
 		
-	case VAR_SUBID_SET:
-	case VAR_SUBID_SET_TRY:
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
 		/* None of these can be set */
 		if (errp)
 			*errp = SNMP_ERR_NOSUCHNAME;
 		return -1;
 		
-	case VAR_SUBID_COMPARE: 
+	case MIB_NODE_COMPARE: 
 		return 0;
 		
-	case VAR_SUBID_NEXT:
-		snmp_acct_var_next(varp, errp);
-		break;
+	case MIB_NODE_NEXT:
+		return snmp_auth_var_next(subid+1, closure);
 		
-	case VAR_SUBID_RESET:
+	case MIB_NODE_GET_SUBID:
+		return ((struct auth_mib_closure*)closure)->nas_index;
+		
+	case MIB_NODE_RESET:
+		((struct auth_mib_closure*)closure)->nas_index = 1;
+		break;
 
 	}
 	
 	return 0;
-}
-
-/*FIXME: is the same as snmp_auth_var_next */
-void
-snmp_acct_var_next(varp, errp)
-	struct snmp_var **varp;
-	int *errp;
-{
-	struct snmp_var *ans;
-	subid_t subid = SUBID((*varp)->name, OIDLEN((*varp)->name)-1)+1;
-
-	if (!findnasbyindex(subid)) {
-		*errp = SNMP_ERR_NOSUCHNAME;
-		return;
-	}
-
-	if (!(ans = snmp_var_create((*varp)->name))) {
-		*errp = SNMP_ERR_GENERR;
-		return;
-	}
-
-	SUBID(ans->name, OIDLEN(ans->name)-1) = subid;
-	
 }
 
 struct snmp_var *
@@ -1569,6 +1629,113 @@ get_acct_nasstat(nas, var, key)
 		break;
 	}
 }
+
+/* ************************************************************************* */
+/* Statistics */
+struct snmp_var *snmp_stat_var_get(subid_t subid, oid_t oid, int *errp);
+int snmp_stat_var_set(subid_t subid, struct snmp_var **vp, int *errp);
+
+/* Handler function for fixed oids from the authentication subtree */
+int
+snmp_stat_handler(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	oid_t oid = (*varp)->name;
+	
+	switch (cmd) {
+	case MIB_NODE_GET:
+		if ((*varp = snmp_stat_var_get(subid, oid, errp)) == NULL)
+			return -1;
+		break;
+		
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
+		/*FIXME: return snmp_stat_var_set(subid, varp, errp); */
+		*errp = SNMP_ERR_BADVALUE;
+		return -1;
+		
+	case MIB_NODE_RESET:
+		break;
+		
+	default: /* unused: should never get there */
+		abort();
+
+	}
+	
+	return 0;
+}
+
+struct snmp_var *
+snmp_stat_var_get(subid, oid, errp)
+	subid_t subid;
+	oid_t oid;
+	int *errp;
+{
+	struct snmp_var *ret;
+	struct timeval tv;
+	struct timezone tz;
+	char *p;
+	
+	ret = snmp_var_create(oid);
+	*errp = SNMP_ERR_NOERROR;
+
+	switch (subid) {
+
+	case MIB_KEY_StatIdent:
+		p = make_server_ident();
+		ret->type = ASN_OCTET_STR;
+		ret->val_length = strlen(p);
+		ret->var_str = snmp_strdup(p);
+		efree(p);
+		break;
+
+	case MIB_KEY_StatUpTime:
+		gettimeofday(&tv, &tz);
+		ret->type = SMI_TIMETICKS;
+		ret->val_length = sizeof(counter);
+		ret->var_int = timeval_diff(&tv, &radstat.start_time);
+		break;
+
+	case MIB_KEY_StatConfigReset:
+		ret->type = ASN_INTEGER;
+		ret->val_length = sizeof(counter);
+		ret->var_int = serv_running;;
+		break;
+
+	case MIB_KEY_StatTotalLines:
+		ret->type = SMI_COUNTER32;
+		ret->val_length = sizeof(counter);
+		stat_count_ports();
+		ret->var_int = radstat.port_active_count
+			    + radstat.port_idle_count;
+		break;
+
+	case MIB_KEY_StatTotalLinesInUse:
+		ret->type = SMI_COUNTER32;
+		ret->val_length = sizeof(counter);
+		stat_count_ports();
+		ret->var_int = radstat.port_active_count;
+		break;
+
+	case MIB_KEY_StatTotalLinesIdle:
+		ret->type = SMI_COUNTER32;
+		ret->val_length = sizeof(counter);
+		stat_count_ports();
+		ret->var_int = radstat.port_idle_count;
+		break;
+		
+	default:
+		*errp = SNMP_ERR_NOSUCHNAME;
+		snmp_var_free(ret);
+		return NULL;
+	}
+	return ret;
+}
+
 #endif
 
 

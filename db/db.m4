@@ -18,8 +18,9 @@ dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 changequote({,})
 include(config.m4)
 include(INCLUDE)
+ifdef({DB_USER},,{define(DB_USER,{radius})})
+ifdef({DB_PWD},,{define({DB_PWD},{test})})
 divert{}dnl
-ifelse(MODE,{CREATE},{#! /bin/sh})
 CREATEDATABASE(RADIUS)
 
 CREATETABLE(passwd, {

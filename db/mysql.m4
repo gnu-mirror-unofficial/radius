@@ -45,12 +45,12 @@ define({DB_PRIV},{
 ifelse(MODE,{STRUCT},
 {
 USE mysql;
-DELETE FROM user WHERE user='radius';
-DELETE FROM db WHERE user='radius';
-GRANT INSERT,UPDATE,DELETE,SELECT on RADIUS.calls to radius@"%";
-GRANT SELECT on RADIUS.passwd to radius@'%';
-GRANT SELECT on RADIUS.groups to radius@'%';
-GRANT SELECT on RADIUS.attrib to radius@'%';
-UPDATE user set password=password("DB_PWD") where user="radius";
+DELETE FROM user WHERE user='DB_USER';
+DELETE FROM db WHERE user='DB_USER';
+GRANT INSERT,UPDATE,DELETE,SELECT on RADIUS.calls to DB_USER@'%';
+GRANT SELECT on RADIUS.passwd to DB_USER@'%';
+GRANT SELECT on RADIUS.groups to DB_USER@'%';
+GRANT SELECT on RADIUS.attrib to DB_USER@'%';
+UPDATE user set password=password('DB_PWD') where user='DB_USER';
 FLUSH PRIVILEGES;
 })})

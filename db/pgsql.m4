@@ -50,13 +50,13 @@ define({COMMA})
 define({DB_PRIV},{
 ifelse(MODE,{STRUCT},
 {
-CREATE USER "radius" WITH PASSWORD 'DB_PWD';
+CREATE USER "DB_USER" WITH PASSWORD 'DB_PWD';
 REVOKE ALL on "calls" from PUBLIC;
-GRANT INSERT,UPDATE,DELETE,SELECT on "calls" to "radius";
+GRANT INSERT,UPDATE,DELETE,SELECT on "calls" to "DB_USER";
 REVOKE ALL on "passwd" from PUBLIC;
-GRANT SELECT on "passwd" to "radius";
+GRANT SELECT on "passwd" to "DB_USER";
 REVOKE ALL on "groups" from PUBLIC;
-GRANT SELECT on "groups" to "radius";
+GRANT SELECT on "groups" to "DB_USER";
 REVOKE ALL on "attrib" from PUBLIC;
-GRANT SELECT on "attrib" to "radius";
+GRANT SELECT on "attrib" to "DB_USER";
 })})

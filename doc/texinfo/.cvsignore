@@ -2,3 +2,4 @@ Makefile
 Makefile.in
 radius.info*
 stamp-vti
+version.texi

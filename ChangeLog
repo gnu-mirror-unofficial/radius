@@ -1,5 +1,44 @@
-2001-11-25 Sergey Poznyakoff
+2001-11-26 Sergey Poznyakoff
 
+	* m4/guile.m4: Fixed bug: GUILE_INCLUDES and GUILE_LIBS were not
+	set if the information was cached.
+	* scripts/mktest.awk: Use double backslash to escape a dot
+	(inside a quoted string).
+	* radiusd/files.c: Allow for multiple Match-Profile attributes.
+	* radiusd/scheme.c: Removed scheme_load_path().
+	* radscm/rscm_lib.c: Added rscm_add_load_path() (from
+	radiusd/scheme.c). Add DATADIR to load path by default.
+	* radscm/radscm.h: Added rscm_add_load_path().
+	* radscm/rscm_syslog.c: Check the argument before passing it
+	to parse_facility().
+	* test/test.sh.m4: Fixed quoting bugs.
+	* test/dejagnu/.cvsignore: Added remote.exp.
+	
+	Provide basic support for computing the session timeout in real-
+	time. This obsoletes old `ttl notification' support. Requires
+	guile.
+	
+	* radscm/ttl.scm: Support for real-time session timeout
+	calculation.
+	* radscm/Makefile.am: Added ttl.scm
+	
+	Removed old `notify' support.
+	
+	* configure.in: Emit warning if --enable-notify is used.
+	* acconfig.h: Removed USE_NOTIFY
+	* radiusd/version.c: Likewise.
+	* radiusd/notify.c: (removed)
+	* radiusd/Makefile.am: Removed notify.c
+	* include/radiusd.h: Removed notify-related stuff.
+	* radiusd/acct.c: Likewise.
+	* radiusd/auth.c: Likewise.
+	* raddb/config.syntax: Likewise.
+	* doc/texinfo/configure.texi: Likewise.
+	* radiusd/config.y: Display warning on encountering `notify'
+	statements. Use rscm_add_load_path().
+	
+2001-11-25 Sergey Poznyakoff
+					 
 	* m4/guile.m4: Control guile version. It should be >= 1.4
 	* m4/rx.m4: Rewritten basing on Jim Meyering's jm_INCLUDED_REGEX.
 	* configure.in: Use rad_REPLACE_REGEX.
@@ -152,7 +191,7 @@
 	* test/dejagnu/s.radiusd/Makefile.am: Added Match.exp and
 	Scheme.exp.
 	* test/dejagnu/s.radiusd/Testlist: Likewise.
-	* test/dejagnu/.cvsignore: Updatesd.
+	* test/dejagnu/.cvsignore: Updated.
 	
 	* test/raddb/auth.scm: (new) Scheme script to test
 	Scheme-Procedure attribute
@@ -185,7 +224,7 @@
 	 2. Each s.TOOLNAME directory contains Makefile.am with
 	    `all' goal aimed to create a corresponding TOOLNAME directory
 	    and populate it with properly numbered NAME.exp files.
-	    The file Testlist contains the list of tests in proper orded.
+	    The file Testlist contains the list of tests in proper order.
 	    /scripts/mktest.awk is used to number tests.
 	 3. Only s-directories are included in the distribution and are
 	    kept under CVS.
@@ -213,7 +252,7 @@
 
 	* configure.in: Use s.radiusd instead of radiusd.
 	* scripts/mktest.awk: Modified. 
-	* test/Makefile.am: Temporarly commented out TESTS assignment.
+	* test/Makefile.am: Temporarily commented out TESTS assignment.
 	* test/findport.c: Substitute %u in format string with user
 	login name (useful for testing Exec-Program attributes).
 	* test/test.sh: Modified EXPR. Zero out logfiles before starting.
@@ -373,7 +412,7 @@
 	* doc/texinfo/radscm.texi: Likewise.
 
 	Resurrected radtest. It will be needed for planned DejaGNU
-	testsuit and also as a check tool for those who have not
+	testsuite and also as a check tool for those who have not
 	Guile installed on their system.
 
 	* radtest/Makefile.am: (new)
@@ -382,7 +421,7 @@
 	* radtest/main.c: (new)
 	* radtest/radtest.c: (new) 
 	* radtest/radtest.h: (new)
-	* radtest/.cvsigore: (new)
+	* radtest/.cvsignore: (new)
 
 2001-11-13 Sergey Poznyakoff
 
@@ -416,7 +455,7 @@
 
 	* radlib/dict.c: Fixed a very gross bug in valnum_cmp:
 	it was comparing names instead of values, which led to
-	inpredictable coredumps.
+	unpredictable coredumps.
 
 	* NEWS: Added clause about Password-Location attribute.
 	* configure.in: Increased patchlevel.
@@ -560,7 +599,7 @@
 	* radiusd/radutil.c: Split off radius_xlate0 from radius_xlate.
 	Fixed a couple of bugs.
 
-	* raddb/dictionary: New atrribute Password-Expire-Days.
+	* raddb/dictionary: New attribute Password-Expire-Days.
 
 	* raddb/config.syntax: Example of message statement.
 	
@@ -718,8 +757,8 @@
 
 2001-10-15 Sergey Poznyakoff
 
-	* radiusd/auth.c: Allow for teminating \0 in mach->userpass.
-	* radiusd/proxy.c: Allow for teminating \0 in password buffer.
+	* radiusd/auth.c: Allow for terminating \0 in mach->userpass.
+	* radiusd/proxy.c: Allow for terminating \0 in password buffer.
 	* radiusd/radutil.c: Removed superfluous string[AUTH_STRING_LEN] = 0. 
 	* radlib/cryptpass.c: decrypt_password(): Append terminating
 	null.
@@ -733,7 +772,7 @@
 
 	* radiusd/config.y: Fixed action for `level: T_STRING' to work
 	with `upto' severity specs (e.g.: `category debug').
-	* raddb/config: Added default channel ang category statements.
+	* raddb/config: Added default channel and category statements.
 	
 2001-10-14 Sergey Poznyakoff
 
@@ -899,7 +938,7 @@
 	Crypt-Local means it is stored in a crypted form. The difference
 	is that the value of password itself can be retrieved from
 	different places, depending on the value of a new server attribute,
-	Password-Location. The absense of this attribute means that
+	Password-Location. The absence of this attribute means that
 	the password is stored in Password or Crypt-Password attribute
 	of the checklist in the users file. This provides backward
 	compatibility with the previous implementations.
@@ -920,7 +959,7 @@
 	* include/radiusd.h: Removed rad_check_password proto.
 	* include/radsql.h: Changed rad_sql_pass() proto: accept two
 	arguments and return a character string.
-	* radiusd/sql.c: rad_sql_pass() returns a ponter to retrieved user
+	* radiusd/sql.c: rad_sql_pass() returns a pointer to retrieved user
 	password. The storage is allocated dynamically and must be efree'd.
 
 	* raddb/dictionary: New attribute Password-Location describes 
@@ -1198,7 +1237,7 @@
 	* radlib/log.c: Removed.
 	* radlib/logger.c: (new) Provide basic log functionality.
 	It is part of librad library. Programs willing to use
-	logger.c must define function vlog() which is suppsoed to
+	logger.c must define function vlog() which is supposed to
 	do the actual formatting and outputting job.
 	* radlib/applog.c: (new) Logger system for rad.* applications.
 	It is part of liblog library.

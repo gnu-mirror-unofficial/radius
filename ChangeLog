@@ -11,14 +11,25 @@
 	* test/guile: new directory
 	* test/guile/Makefile.am: (new)
 	* test/guile/test.scm: (new) Moved from ..
+	* test/dejagnu: new dir
+	* test/dejagnu/Makefile.in: (new)
+	* test/dejagnu/.cvsignore: (new)
+	* test/dejagnu/lib: (new)
 	* test/Makefile.am: Added new subdirs: guile and dejagnu.
 	Removed raddb/radctl.rc dependencies. Added those for
 	raddb/client.conf.in.
+	* test/test.sh: Reflect changes in subdir layout.
 	* test/raddb/radctl.rc.in: Removed.
 	* test/raddb/client.conf.in: (new)
 	* test/raddb/Makefile.am: Removed radctl.rc.in, added
 	client.conf.in.
-	
+	* test/raddb/.cvsignore: Likewise. 
+	* test/guile/.cvsignore: (new)
+	* radtest/.cvsignore: Updated.
+
+	* doc/texinfo/attributes.texi: Expanded tabs
+	* doc/texinfo/configure.texi: Likewise
+
 2001-11-15 Sergey Poznyakoff
 
 	* Makefile.am: Added radtest.

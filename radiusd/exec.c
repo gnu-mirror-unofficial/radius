@@ -47,33 +47,114 @@
 #include <rewrite.h>
 
 int
-radius_change_uid(struct passwd *pwd)
+radius_get_user_ids(RADIUS_USER *usr, const char *name)
 {
-	if (pwd->pw_gid != 0 && setgid(pwd->pw_gid)) {
-		radlog(L_ERR|L_PERROR,
-		       _("setgid(%d) failed"), pwd->pw_gid);
-		return -1;
+	struct passwd *pwd = getpwnam(name);
+
+	if (!pwd) {
+		radlog(L_ERR, _("no such user: %s"), name);
+		return 1;
 	}
-	if (pwd->pw_uid != 0) {
-#if defined(HAVE_SETEUID)
-		if (seteuid(pwd->pw_uid)) {
-			radlog(L_ERR|L_PERROR,
-			       _("seteuid(%d) failed (ruid=%d, euid=%d)"),
-			       pwd->pw_uid, getuid(), geteuid());
-			return -1;
-		}
-#elif defined(HAVE_SETREUID)
-		if (setreuid(0, pwd->pw_uid)) {
-			radlog(L_ERR|L_PERROR,
-			       _("setreuid(0,%d) failed (ruid=%d, euid=%d)"),
-			       pwd->pw_uid, getuid(), geteuid());
-			return -1;
-		}
-#else
-# error "*** NO WAY TO SET EFFECTIVE UID IN radius_change_uid() ***"
-#endif
-	}
+	string_replace(&usr->username, name);
+	usr->uid = pwd->pw_uid;
+	usr->gid = pwd->pw_gid;
 	return 0;
+}
+
+int
+radius_switch_to_user(RADIUS_USER *usr)
+{
+	int rc = 0;
+	gid_t emptygidset[1];
+
+	if (usr->username == NULL)
+		return 0;
+	
+	/* Reset group permissions */
+	emptygidset[0] = usr->gid ? usr->gid : getegid();
+	if (geteuid() == 0 && setgroups(1, emptygidset)) {
+		radlog(L_ERR|L_PERROR,
+		       _("setgroups(1, %d) failed"),
+		       emptygidset[0]);
+		rc = 1;
+	}
+
+	/* Switch to the user's gid. On some OSes the effective gid must
+	   be reset first */
+
+#if defined(HAVE_SETEGID)
+	if ((rc = setegid(usr->gid)) < 0)
+		radlog(L_ERR|L_PERROR,
+		       _("setegid(%d) failed"), usr->gid);
+#elif defined(HAVE_SETREGID)
+	if ((rc = setregid(usr->gid, usr->gid)) < 0)
+		radlog(L_ERR|L_PERROR,
+		       _("setregid(%d,%d) failed"), usr->gid, usr->gid);
+#elif defined(HAVE_SETRESGID)
+	if ((rc = setresgid(usr->gid, usr->gid, usr->gid)) < 0)
+		radlog(L_ERR|L_PERROR,
+		       _("setresgidd(%d,%d,) failed"),
+		       usr->gid, usr->gid, usr->gid);
+#endif
+
+	if (rc == 0 && usr->gid != 0) {
+		if ((rc = setgid(usr->gid)) < 0 && getegid() != usr->gid) 
+			radlog(L_ERR|L_PERROR,
+			       _("setgid(%d) failed"), usr->gid);
+		if (rc == 0 && getegid() != usr->gid) {
+			radlog(L_ERR,
+			       _("cannot set effective gid to %d"),
+			       usr->gid);
+			rc = 1;
+		}
+	}
+
+	/* Now reset uid */
+	if (rc == 0 && usr->uid != 0) {
+		uid_t euid;
+
+		if (setuid(usr->uid)
+		    || geteuid() != usr->uid
+		    || (getuid() != usr->uid
+			&& (geteuid() == 0 || getuid() == 0))) {
+			
+#if defined(HAVE_SETREUID)
+			if (geteuid() != usr->uid) {
+				if (setreuid(usr->uid, -1) < 0) { 
+					radlog(L_ERR|L_PERROR,
+					       _("setreuid(%d,-1) failed"),
+					       usr->uid);
+					rc = 1;
+				}
+				if (setuid(usr->uid) < 0) {
+					radlog(L_ERR|L_PERROR,
+					       _("second setuid(%d) failed"),
+					       usr->uid);
+					rc = 1;
+				}
+			} else
+#endif
+				{
+					radlog(L_ERR|L_PERROR,
+					       _("setuid(%d) failed"),
+					       usr->uid);
+					rc = 1;
+				}
+		}
+	
+
+		euid = geteuid();
+		if (usr->uid != 0 && setuid(0) == 0) {
+			radlog(L_ERR, _("seteuid(0) succeeded"));
+			rc = 1;
+		} else if (usr->uid != euid && setuid(euid) == 0) {
+			radlog(L_ERR, _("cannot drop non-root setuid privileges"));
+			rc = 1;
+		}
+
+	}
+
+	return rc;
 }
 
 /* Execute a program on successful authentication.
@@ -90,7 +171,6 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
         FILE *fp;
         int line_num;
         char buffer[RAD_BUFFER_SIZE];
-        struct passwd *pwd;
 	pid_t pid;
 	int status;
 	RETSIGTYPE (*oldsig)();
@@ -99,17 +179,6 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
                 radlog(L_ERR,
    _("radius_exec_program(): won't execute, not an absolute pathname: %s"),
                        cmd);
-                return -1;
-        }
-
-        /* Check user/group
-           FIXME: This should be checked *once* after re-reading the
-           configuration */
-        pwd = getpwnam(exec_user);
-        if (!pwd) {
-                radlog(L_ERR,
-    _("radius_exec_program(): won't execute, no such user: %s"),
-                       exec_user);
                 return -1;
         }
 
@@ -151,7 +220,7 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
 
                 chdir("/tmp");
 
-                if (radius_change_uid(pwd))
+                if (radius_switch_to_user(&exec_user))
 			exit(2);
 		
                 execvp(argv[0], argv);
@@ -227,16 +296,7 @@ radius_run_filter(int argc, char **argv, char *errfile, int *p)
 {
 	pid_t  pid;
 	int    rightp[2], leftp[2];
-	struct passwd *pwd;
 	int i;
-
-        pwd = getpwnam(exec_user);
-        if (!pwd) {
-                radlog(L_ERR,
-		       _("won't execute, no such user: %s"),
-                       exec_user);
-                return -1;
-        }
 
 	pipe(leftp);
 	pipe(rightp);
@@ -268,7 +328,7 @@ radius_run_filter(int argc, char **argv, char *errfile, int *p)
 		for (i = getmaxfd(); i > 2; i--)
 			close(i);
 
-		if (radius_change_uid(pwd))
+		if (radius_switch_to_user(&exec_user))
 			exit(2);
 		execvp(argv[0], argv);
 		

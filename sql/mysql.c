@@ -33,6 +33,7 @@
 #include <radsql.h>
 
 #include <mysql/mysql.h>
+#include <mysql/errmsg.h>
 
 #define MYSQL_AUTH SQL_AUTH
 #define MYSQL_ACCT SQL_ACCT
@@ -69,8 +70,10 @@ do_mysql_query(struct sql_connection *conn, char *query)
                 
 		grad_log(L_ERR, "[MYSQL] %s", mysql_error(mysql));
 
-		rad_mysql_disconnect(conn, 0);
-		return ret;
+		if (mysql_errno(mysql) != CR_SERVER_GONE_ERROR) {
+			rad_mysql_disconnect(conn, 0);
+			return ret;
+		}
         }
         debug(1,("FAILURE"));
         grad_log(L_ERR, "[MYSQL] %s", _("gave up on connect"));

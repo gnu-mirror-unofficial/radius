@@ -60,11 +60,11 @@ logging {
 		print-severity yes;     # Synonim for the above
 		print-milliseconds yes; # Print timestamp with milliseconds
 		print-category yes;     # Print category description
-		prefix-hook "log-prefix"  # Overrides global prefix-hook
-                suffix-hook "log-suffix"  # Overrides global suffix-hook
+		prefix-hook "log-prefix"; # Overrides global prefix-hook
+                suffix-hook "log-suffix"; # Overrides global suffix-hook
 	};
 
-	# This defines output channel that sends it info to syslog whith
+	# This defines output channel that sends its info to syslog whith
 	# facility `auth' and priority `notice'
 	channel notice {
 		syslog auth.notice;
@@ -87,13 +87,17 @@ logging {
 	};
 
 	# Debugging information
-	# Level is a comma-separated list of debugging levels. Each
-	# debugging level can be specified either as:
-	#	module=level	-- which sets the level for the given module
-	# or
-	#	module		-- which is the same as module=100.
-	# The list of module names can be found in radiusd/debugmod.c
-	# Any non-ambiguous abbreviation of a module name is allowed.	
+	# Argument to "level" statement is a comma-separated list of
+	# debugging specifiers. Each specifier is:
+	#
+	#	module[=level]
+	#
+	# Module is the source file name. Any non-ambiguous abbreviation
+	# of the file name is also allowed.
+	# Optional level sets the debugging level for that module. Allowed
+	# values for level are 0 to 100. The greater the level value is, the
+	# more detailed debugging info is output. 0 disables debugging.
+	# If level is ommitted, it defaults to 100.
 	category debug {
 		channel info;
 		level radiusd=1,files;
@@ -171,6 +175,11 @@ acct {
 	#
 	# listen no;
 
+	# Do the system accouting (default). If you disable this,
+	# make sure you provide an alternative method of multiple
+	# login checking (see mlc section below)
+	system yes;
+	
         # Do the request detail accounting (default)
 	detail yes;
 

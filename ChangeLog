@@ -1,3 +1,10 @@
+2004-09-12  Sergey Poznyakoff
+
+	* tests/atlocal.in (make_raddb): Bugfix
+	* include/radius/radargp.h: Removed include <config.h>: out of
+	place in installed header.
+	* radiusd/radutil.c (radiusd_request_free): Fixed memory leak.
+
 2004-09-10  Sergey Poznyakoff
 
 	* snmplib/asn1.c (asn_decode_string): Fix datatype of count

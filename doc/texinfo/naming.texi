@@ -2,9 +2,9 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Naming conventions, Operation, Glossary, Top
-@chapter Naming conventions.
-@cindex naming conventions
+@node Naming Conventions, Operation, Glossary, Top
+@chapter Naming Conventions
+@cindex Naming conventions
 
 This chapter describes file naming conventions used throughout this
 document.
@@ -45,7 +45,7 @@ time. By default these are:
 
 @item Accounting directory
 @cindex Accounting directory
-@cindex radacct
+@cindex @file{radacct}, accounting directory
 @tab radacct
 @tab @value{RADACCT}
 

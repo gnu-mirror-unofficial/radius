@@ -1,5 +1,18 @@
 2001-12-14 Sergey Poznyakoff
 
+	* radscm/radsession.in: (new) Source for radsession script
+	  (ex- session.scm).
+	* radscm/session.scm: (removed)
+	* radscm/.cvsignore: Added radsession
+	* radscm/Makefile.am: Removed session.scm, added radsession.in.
+	
+	* README: Updated to reflect introduction of radsession.
+	* doc/texinfo/client.texi: Likewise.
+	
+	* configure.in: Raised patchlevel.
+	
+2001-12-14 Sergey Poznyakoff
+
 	* configure.in: Do not display --enable-notify with help
 	  output.
 	* raddb/Makefile.am: Create dict and menu subdirs if necessary.

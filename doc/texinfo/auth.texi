@@ -2,7 +2,7 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Authentication, Accounting, Configuration files, Top
+@node Authentication, Accounting, Configuration Files, Top
 @chapter Authentication
 
 An @dfn{Authentication Type} specifies which credentials the user
@@ -26,8 +26,8 @@ of @attr{Auth-Type} attribute in @LHS{} of a @file{users} entry.
 @node Accept Auth
 @section Accept Authentication Type
 @cindex Accept Authentication Type
-@cindex guest accounts, setting up
-@exindex guest accounts, setting up
+@cindex Guest accounts, setting up
+@exindex Guest accounts, setting up
 
 @dfn{Accept} is the simplest authentication type. Users with this
 authentication type will be authenticated successfully without checking
@@ -64,7 +64,7 @@ non-empty password.
 @node Reject Auth
 @section Reject Authentication Type
 @cindex Reject Authentication Type
-@cindex disabling user accounts
+@cindex Disabling user accounts
 
 The @dfn{Reject} authentication type causes the request to be rejected
 unconditionally. It can be used to disable a user account (For another
@@ -116,7 +116,7 @@ The @var{plaintext} is the user's plaintext password. Obviously,
 When the user is authenticated using such profile, its password
 is retrieved from the authentication database using @code{auth_query}.
 The configuration of @acronym{SQL} authentication is described in
-detail in @ref{Authentication server parameters}.
+detail in @ref{Authentication Server Parameters}.
 
 @comment *L2****************************************************************
 @node Encrypted Password Auth
@@ -153,7 +153,7 @@ The @attr{Crypt-Password} is a shortcut for the above notation:
 Using this profile, the user's password is retrieved from the
 authentication database using @code{auth_query}.
 The configuration of @acronym{SQL} authentication is described in
-detail on @ref{Authentication server parameters}.
+detail on @ref{Authentication Server Parameters}.
 
 The shortcut for this notation is @code{Auth-Type = SQL}.
 
@@ -268,7 +268,7 @@ Exec-Program-Wait = "@var{progname} @var{args}"
 The @var{progname} must be the full path to the program, @var{args} ---
 any arguments it needs. The usual substitutions may be used in
 @var{args} to pass any request attributes to the program
-(@pxref{Macro substitution}).
+(@pxref{Macro Substitution}).
 
 For a detailed description of @attr{Exec-Program-Wait} attribute and
 an example of its use, @xref{Exec-Program-Wait}.
@@ -277,7 +277,7 @@ an example of its use, @xref{Exec-Program-Wait}.
 @node Checking Simultaneous Logins
 @section Checking Simultaneous Logins
 @cindex Checking Simultaneous Logins
-@cindex simultaneous logins, checking for
+@cindex Simultaneous logins, checking for
 
 The number of sessions a user can have open simultaneously can be
 restricted by setting @attr{Simultaneous-Use} attribute in the user's
@@ -339,5 +339,5 @@ now active at the @NAS{}, otherwise, if it replies 0 or if the end of
 output is reached, it is taken to mean the user's session is not active.
 
 The syntax conventions for user-supplied functions are described in
-detail in @ref{Login verification functions}.
+detail in @ref{Login Verification Functions}.
 

@@ -2,8 +2,8 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Configuration files, Authentication, Invocation, Top
-@chapter Radius configuration files
+@node Configuration Files, Authentication, Invocation, Top
+@chapter Radius Configuration Files
 @cindex Radiusd configuration files
 @cindex Configuration files (radiusd)
 
@@ -13,7 +13,7 @@ package.
 These files are normally found in @value{RADDB} directory, which
 is defined at configuration time, although their location can be
 specified at runtime. In the discussion below we will refer to this
-directory by @file{raddb}. @xref{Naming conventions}.
+directory by @file{raddb}. @xref{Naming Conventions}.
 
 @menu
 * config file::         Run-time configuration options.
@@ -36,13 +36,13 @@ directory by @file{raddb}. @xref{Naming conventions}.
                         packets.
 * menus file::          Menus allow user to select the type of
                         service.
-* Macro substitution::  Macros which are expanded by the actual
+* Macro Substitution::  Macros which are expanded by the actual
                         attribute values.      
 @end menu
 
 @comment *L2****************************************************************
-@node config file, dictionary file, , Configuration files
-@section Run-time configuration options.
+@node config file
+@section Run-Time Configuration Options --- @file{raddb/config}
 @cindex Radiusd configuration
 @cindex @file{raddb/config} file
 
@@ -92,7 +92,7 @@ These are the basic statements:
 @end menu
 
 @comment **L3***************************************************************
-@node option, logging, , config file
+@node option
 @subsection @code{option} block
 @cindex Run-time options (radiusd)
 @kwindex option
@@ -157,9 +157,9 @@ Specifies the accounting directory.
 @end table
 
 @comment **L3***************************************************************
-@node logging, auth, option, config file
+@node logging
 @subsection @code{logging} block
-@cindex Logging (radiusd)
+@cindex Logging, @file{config} statement
 @kwindex logging
 
 @subheading Syntax:
@@ -198,8 +198,8 @@ The @code{logging} statement describes the course followed by
 @end menu
 
 @comment **L4***************************************************************
-@node category, channel, , logging
-@subsection @code{category} statement
+@node category
+@subsubsection @code{category} statement
 @cindex Logging category
 @kwindex category
 @kwindex channel
@@ -252,8 +252,8 @@ Include passwords for failed authentications.
 @end table
 
 @comment **L4***************************************************************
-@node channel, logging example, category, logging
-@subsection @code{channel} statement
+@node channel
+@subsubsection @code{channel} statement
 @cindex Logging channel
 @kwindex channel
 @kwindex file
@@ -270,7 +270,7 @@ a @code{channel} statement will use that channel.
 
 @command{radiusd} can write logging information to files or send it to
 syslog.  The @code{file} statement sends the channel's output to the
-named file (@pxref{Naming conventions}).  The @code{syslog} statement
+named file (@pxref{Naming Conventions}).  The @code{syslog} statement
 sends the channel's output to syslog with the specified facility and
 severity.
 
@@ -289,9 +289,9 @@ Add the priority name to the logging information.
 @end table
 
 @comment **L4***************************************************************
-@node logging example, , channel, logging
-@subsection Example of the @code{logging} statement
-@exindex logging statement
+@node logging example
+@subsubsection Example of the @code{logging} statement
+@exindex @command{logging} statement
 
 @example
 logging @{
@@ -332,7 +332,7 @@ logging @{
 @end example
 
 @comment **L3***************************************************************
-@node auth, acct, logging, config file
+@node auth
 @subsection @code{auth} statement
 @cindex Authentication service parameters
 @cindex Customizing authentication server
@@ -416,7 +416,7 @@ Determines if @command{radiusd} should spawn a child to process the request.
 @item detail
 When set to true, @command{radiusd} will produce the detailed log of each
 received packet in the file @file{radacct/NASNAME/detail.auth}.
-(@pxref{Naming conventions}).
+(@pxref{Naming Conventions}).
 
 @item strip-names
 Determines whether @command{radiusd} should strip any prefixes/suffixes
@@ -432,7 +432,7 @@ Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
 @end table
 
 @comment **L3***************************************************************
-@node acct, proxy, auth, config file
+@node acct
 @subsection @code{acct} statement
 @cindex Accounting service parameters
 @cindex Customizing accounting service
@@ -508,7 +508,7 @@ When set to @code{false}, disables detailed accounting
 @end table
 
 @comment **L3***************************************************************
-@node proxy, usedbm, acct, config file
+@node proxy
 @subsection @code{proxy} statement
 @cindex Proxy service parameters
 @cindex Customizing proxy server
@@ -541,7 +541,7 @@ the completed account request reside in the queue.
 @end table
 
 @comment **L3***************************************************************
-@node usedbm, snmp, proxy, config file
+@node usedbm
 @subsection @code{usedbm} statement
 @cindex DBM: enabling
 @cindex Enabling DBM
@@ -566,7 +566,7 @@ Use only the DBM database and ignore @file{raddb/users}.
 @end table
 
 @comment **L3***************************************************************
-@node snmp, guile, usedbm, config file
+@node snmp
 @subsection @code{snmp} statement 
 @cindex SNMP service parameters
 @cindex Customizing SNMP server
@@ -666,7 +666,7 @@ Deny access to SNMP service from any host in the group @var{network_name}.
 @end table
 
 @comment **L3***************************************************************
-@node guile, message, snmp, config file
+@node guile
 @subsection @code{guile} statement
 @cindex Guile interface configuration
 @cindex Customizing Radiusd Guile interface
@@ -709,7 +709,7 @@ Load the specified source file on startup.
 For the detailed description of Guile extensions interface, @xref{Guile}.
 
 @comment **L3***************************************************************
-@node  message, , guile, config file
+@node  message
 @subsection @code{message} statement
 @cindex Messages: configuring
 @cindex Customizing reply messages
@@ -744,7 +744,7 @@ message @{
 All variables in @code{message} block take a string argument. In
 @var{string} you can use the usual C backslash notation to represent
 non-printable characters. The use of %C@{@} and %R@{@} sequences
-is also allowed (@pxref{Macro substitution}).
+is also allowed (@pxref{Macro Substitution}).
 
 @subheading String statements
 @table @code
@@ -786,8 +786,8 @@ time, see @ref{Login-Time}.
 @end table
 
 @comment *L2****************************************************************
-@node dictionary file, clients file, config file, Configuration files
-@section Radius dictionary.
+@node dictionary file
+@section Dictionary of Attributes --- @file{raddb/dictionary}
 @cindex Radius dictionary
 @cindex @file{dictionary} file
 
@@ -832,14 +832,14 @@ There are following kinds of statements:
 @end menu
 
 @comment **L3***************************************************************
-@node Comment, $INCLUDE, dictionary file, dictionary file
+@node Comment
 @subsection Comments
 Comments are introduced by a pound sign (@samp{#}). Everything starting from
 the first occurrence of @samp{#} up to the end of line is ignored.
 
 @comment **L3***************************************************************
-@node $INCLUDE, VENDOR, Comment, dictionary file
-@subsection $INCLUDE statement.
+@node $INCLUDE
+@subsection $INCLUDE Statement
 @kwindex $INCLUDE (dictionary)
 
 @subheading Syntax
@@ -850,11 +850,11 @@ $INCLUDE @file{filename}
 @subheading Usage
 The @code{$INCLUDE} statement causes the contents of the file @file{filename}
 to be read in and processed. The file is looked up in the Radius database
-directory. @xref{Configuration files}.
+directory. @xref{Configuration Files}.
 
 @comment **L3***************************************************************
-@node VENDOR, ATTRIBUTE, $INCLUDE, dictionary file
-@subsection VENDOR statement
+@node VENDOR
+@subsection VENDOR Statement
 @kwindex VENDOR
 
 @subheading Syntax
@@ -873,7 +873,7 @@ VENDOR          Livingston      307
 @end example
 
 @comment **L3***************************************************************
-@node ATTRIBUTE, VALUE, VENDOR, dictionary file
+@node ATTRIBUTE
 @subsection ATTRIBUTE statement
 @kwindex ATTRIBUTE 
 @subheading Syntax
@@ -953,8 +953,8 @@ additivity of @attr{Service-Type} is set to @samp{Replace}. The
 attribute will be propagated through the proxy chain.
 
 @comment **L3***************************************************************
-@node VALUE, , ATTRIBUTE, dictionary file
-@subsection VALUE statement
+@node VALUE
+@subsection VALUE Statement
 @kwindex VALUE 
 
 @subheading Syntax
@@ -978,8 +978,8 @@ VALUE           Service-Type            Login-User              1
 @end example
 
 @comment *L2****************************************************************
-@node clients file, naslist file, dictionary file, Configuration files
-@section Clients list
+@node clients file
+@section Clients List --- @file{raddb/clients}
 @cindex @file{clients} file
 @cindex @file{raddb/clients} file
 
@@ -996,12 +996,12 @@ Lists the encryption key shared between the server and this @NAS{}.
 @end table
 
 @menu
-* Example: clients example.     An example of the clients file.
+* Example: clients example.     An example of clients file.
 @end menu
 
 @comment **L3***************************************************************
-@node clients example, , clients file, clients file
-@subsection An example of the clients file
+@node clients example
+@subsection Example of @file{clients} file
 @exindex @file{clients} file
 
 @example
@@ -1019,8 +1019,8 @@ merlin                  emrys
 @end example
 
 @comment *L2****************************************************************
-@node  naslist file, nastypes file, clients file ,Configuration files
-@section Naslist file
+@node  naslist file
+@section NAS List --- @file{raddb/naslist}
 @cindex @file{naslist} file
 @cindex @file{raddb/naslist} file
 @cindex MAX Ascend, broken passwords
@@ -1081,7 +1081,7 @@ For the list of nas-querying arguments,
 @end menu
 
 @comment **L3***************************************************************
-@node naslist example, , naslist file, naslist file
+@node naslist example
 @subsection Example of @file{naslist} file
 @exindex @file{naslist} file
 
@@ -1103,8 +1103,8 @@ merlin                  merlin          max
 @end example
 
 @comment *L2****************************************************************
-@node nastypes file, hints file, naslist file, Configuration files
-@section nastypes file
+@node nastypes file
+@section NAS Types --- @file{raddb/nastypes}
 @cindex @file{nastypes} file
 
 The @file{raddb/nastypes} file describes the ways to
@@ -1117,7 +1117,7 @@ query @NAS{}es about active user sessions.
 @end menu
 
 @comment **L3***************************************************************
-@node nastypes syntax, nastypes example,, nastypes file
+@node nastypes syntax
 @subsection Syntax of @file{raddb/nastypes}
 @cindex @file{nastypes} file, syntax of
 @cindex Syntax of @file{nastypes}
@@ -1155,7 +1155,7 @@ The following arguments are predefined:
 @table @asis
 @item function=@var{s}
 Specifies the check function to use with this method
-(@pxref{Login verification functions}).
+(@pxref{Login Verification Functions}).
 This argument must be present. For description of how this function is
 applied, see @ref{Checking Simultaneous Logins}.
 @item port=@var{n}
@@ -1207,7 +1207,7 @@ Expands to port number + 1.
 @end table
 
 @comment **L3***************************************************************
-@node nastypes example, Predefined NAS Types, nastypes syntax, nastypes file
+@node nastypes example
 @subsection Example of nastypes file.
 @exindex @file{nastypes} file
 
@@ -1229,7 +1229,7 @@ livingston snmp         oid=.1.3.6.1.4.1.307.3.2.1.1.1.5.%P,
 @end example
 
 @comment **L3***************************************************************
-@node Predefined NAS Types, , nastypes example, nastypes file
+@node Predefined NAS Types
 @subsection Standard @NAS{} types
 @cindex NAS types, standard
 
@@ -1286,8 +1286,8 @@ Type @code{livingston} queries portmaster using SNMP.
 @end table
 
 @comment *L2****************************************************************
-@node hints file, huntgroups file, nastypes file, Configuration files
-@section The @file{hints} configuration file.
+@node hints file
+@section Request Processing Hints --- @file{raddb/hints} 
 @cindex Hints
 @cindex @file{hints} file
 @cindex @file{raddb/hints} file
@@ -1312,8 +1312,8 @@ The only attributes that can be used in the check list are:
 @end menu
 
 @comment **L3***************************************************************
-@node hints example, , , hints file
-@subsection An example of @file{hints} file
+@node hints example
+@subsection Example of @file{hints} file
 @exindex @file{hints} file
 
 @example
@@ -1330,8 +1330,8 @@ DEFAULT         Suffix = ".slip",
 @end example
 
 @comment *L2****************************************************************
-@node huntgroups file, realms file, hints file, Configuration files
-@section The @file{huntgroups} file
+@node huntgroups file
+@section Huntgroups --- @file{raddb/huntgroups}
 @cindex Huntgroups
 @cindex @file{huntgroups} file
 @cindex @file{raddb/huntgroups} file
@@ -1347,8 +1347,8 @@ The file contains data in @dfn{Matching Rule} format (@pxref{Matching Rule}).
 @end menu
 
 @comment **L3***************************************************************
-@node huntgroups example, , , huntgroups file
-@subsection An example of @file{huntgroups} file.
+@node huntgroups example
+@subsection Example of @file{huntgroups} file.
 @exindex @file{huntgroups} file
 
 @example
@@ -1358,8 +1358,8 @@ DEFAULT NAS-IP-Address = 11.10.10.11, Rewrite-Function = "max_fixup"
 @end example
 
 @comment *L2****************************************************************
-@node realms file, users file, huntgroups file, Configuration files
-@section The @file{realms} file
+@node realms file
+@section List of Proxy Realms --- @file{raddb/realms}
 @cindex @file{realms} file
 @cindex @file{raddb/realms} file
 @cindex @samp{NOREALM}, special realm name
@@ -1378,9 +1378,9 @@ defines the empty realm, the name @samp{DEFAULT} defines the default
 realm (@pxref{Realms}).
 @item Remote server
 Specifies the remote server to which the requests for this realm should
-be forwarded. A port number can also be specified using syntax
-@var{hostname}:@var{port}. In this case the accounting port is computed as
-@var{port} + 1.
+be forwarded. A port number can also be specified using 
+@var{hostname}:@var{port} notation. In this case the accounting port is
+computed as @var{port} + 1.
 @item Flags (optional)
 @end table
 
@@ -1402,8 +1402,8 @@ the given value (@var{num}).
 @end menu
 
 @comment **L3***************************************************************
-@node realms example, , realms file, realms file
-@subsection An example of @file{realms} file
+@node realms example
+@subsection Example of @file{realms} file
 @exindex @file{realms} file
 
 @subheading Example 1.
@@ -1430,8 +1430,8 @@ dom.ain                 server.dom.ain:3000             strip,quota=20
 @end example
 
 @comment *L2****************************************************************
-@node users file, access.deny file, realms file, Configuration files
-@section The @file{users} file
+@node users file
+@section User Profiles --- @file{raddb/users}
 @cindex @file{users} file
 @cindex @file{raddb/users} file
 
@@ -1443,7 +1443,7 @@ For a description of its purpose, @xref{User Profiles}.
 @end menu
 
 @comment **L3***************************************************************
-@node users example, , , users file
+@node users example
 @subsection Example of @file{users} file
 @exindex @file{users} file
 
@@ -1499,8 +1499,8 @@ gray    Auth-Type = Pam
 @end example
 
 @comment *L2****************************************************************
-@node access.deny file, sqlserver file, users file, Configuration files
-@section @file{access.deny} file
+@node access.deny file
+@section List of Blocked Users --- @file{raddb/access.deny} 
 @cindex @file{access.deny} file
 @cindex @file{raddb/access.deny} file
 
@@ -1510,8 +1510,8 @@ separate line. As usual, the @samp{#} character introduces an end-of-line
 comment.
 
 @comment *L2****************************************************************
-@node sqlserver file, rewrite file, access.deny file, Configuration files
-@section sqlserver file
+@node sqlserver file
+@section SQL Configuration --- @file{raddb/sqlserver} 
 @cindex @file{sqlserver} file.
 @cindex @file{raddb/sqlserver} file.
 
@@ -1521,21 +1521,21 @@ The file uses simple line-oriented @samp{@var{keyword} --- @var{value}}
 format. Comments are introduced by @samp{#} character.
 
 The @file{sqlserver} statements can logically be subdivided into
-following groups: @dfn{SQL client parameters}, configuring the
+following groups: @dfn{SQL Client Parameters}, configuring the
 connection between @sc{sql} client and the server, @dfn{Authentication
-server parameters}, @dfn{Authorization parameters}, and
+Server Parameters}, @dfn{Authorization Parameters}, and
 @dfn{Accounting server parameters}.
 
 @menu
-* SQL client parameters::
-* Authentication server parameters::
-* Authorization parameters::
+* SQL Client Parameters::
+* Authentication Server Parameters::
+* Authorization Parameters::
 * Accounting server parameters::
 @end menu
 
 @comment **L3***************************************************************
-@node SQL client parameters, Authentication server parameters,sqlserver file, sqlserver file
-@subsection SQL client parameters
+@node SQL Client Parameters
+@subsection SQL Client Parameters
 
 These parameters configure various aspects of connection between
 @sc{sql} client and the server.
@@ -1571,8 +1571,8 @@ of time.
 @end table
 
 @comment **L3***************************************************************
-@node Authentication server parameters, Authorization parameters, SQL client parameters, sqlserver file
-@subsection Authentication server parameters
+@node Authentication Server Parameters
+@subsection Authentication Server Parameters
 
 These parameters configure the @sc{sql} authentication. The general
 syntax is:
@@ -1596,7 +1596,7 @@ belongs to. This query is used when @attr{Group} or @attr{Group-Name}
 attribute appears in the @LHS{} of a user's or hint's profile.
 @end table
 
-@subheading Example of Authentication server parameters
+@subheading Example of Authentication Server Parameters
 
 Let's suppose the authentication information is kept in the tables
 @code{passwd} and @code{groups}.
@@ -1650,8 +1650,8 @@ user is wishing to obtain, will be kept in @attr{Auth-Data} attribute
 in @LHS{} of a user's profile.
 
 @comment **L3***************************************************************
-@node Authorization parameters, Accounting server parameters, Authentication server parameters, sqlserver file
-@subsection Authorization parameters
+@node Authorization Parameters
+@subsection Authorization Parameters
 
 These parameters define queries used to retrieve the authorization
 information from the @sc{sql} database. All the queries refer to
@@ -1794,8 +1794,8 @@ assigned @IP{} @code{10.10.10.11}.
 
 
 @comment **L3***************************************************************
-@node Accounting server parameters, , Authorization parameters, sqlserver file
-@subsection Accounting parameters
+@node Accounting server parameters
+@subsection Accounting Parameters
 
 To perform the @sc{sql} accounting @command{radiusd} needs to know the
 database where it is to store the accounting information. This
@@ -1815,7 +1815,7 @@ open. This parameter is ignored if @code{keepopen} is set to @code{no}.
 
 Further, @command{radiusd} needs to know which information it is
 to store into the database and when. Each of five accounting request
-types (@pxref{Accounting requests}) has a @sc{sql} query associated with
+types (@pxref{Accounting Requests}) has a @sc{sql} query associated with
 it. Thus, when radius receives an accounting request, it determines
 the query to use by the value of @attr{Acct-Status-Type} attribute.
 
@@ -1847,10 +1847,11 @@ None of these queries should return any values.
 @end menu
 
 @comment ***L4**************************************************************
-@node Queries, , , Accounting server parameters
-@subsubsection Writing SQL accounting query templates
+@node Queries
+@subsubsection Writing SQL Accounting Query Templates
 @cindex SQL accounting query templates
-@cindex writing SQL accounting query templates
+@cindex Writing SQL accounting query templates
+@cindex SQL accounting query templates, writing of
 
 Let's suppose you have an accounting table of the following structure:
 
@@ -2001,18 +2002,20 @@ acct_nasup_query   UPDATE calls \
 @end example
 
 @comment *L2****************************************************************
-@node rewrite file, menus file, sqlserver file, Configuration files
-@section rewrite file
-@cindex rewrite file
+@node rewrite file
+@section Rewrite functions --- @file{raddb/rewrite}
+@cindex @file{rewrite}, configuration file
+@cindex @file{raddb/rewrite}, configuration file
 
 The file @file{raddb/rewrite} contains definitions of Rewrite extension
 functions. For information regarding Rewrite extension language
 @xref{Rewrite}.
 
 @comment *L2****************************************************************
-@node menus file, Macro substitution, rewrite file, Configuration files
-@section menus file
-@cindex menus file
+@node menus file
+@section Login Menus --- @file{raddb/menus}
+@cindex @file{menus}, configuration subdirectory
+@cindex @file{raddb/menus}, configuration subdirectory
 
 The menus is a way to allow user the choice between various services
 he could be provided. The menu functionality is enabled when Radius
@@ -2035,7 +2038,7 @@ The menu files are stored in directory @file{raddb/menus}.
 @end menu
 
 @comment ***L3**************************************************************
-@node menu syntax, menu example,, menus file
+@node menu syntax
 @subsection A menu file syntax.
 @cindex  menu, syntax
 
@@ -2056,7 +2059,7 @@ It is followed by comma-separated list of @AVP{}s which will be
 returned to the server when a user selects this choice.
 
 @comment ***L3**************************************************************
-@node menu example,, menu syntax, menus file
+@node menu example
 @subsection An example of menu files
 @exindex @file{menus} file
 
@@ -2170,8 +2173,8 @@ DEFAULT
 @end example
 
 @comment *L2****************************************************************
-@node Macro substitution, , menus file, Configuration files
-@section Substitution rules
+@node Macro Substitution
+@section Macro Substitution
 
 Some statements in the configuration files need to use the actual
 values of the attributes supplied with the request. These are:

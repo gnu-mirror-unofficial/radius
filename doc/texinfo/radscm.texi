@@ -5,7 +5,7 @@
 @node Radscm, , Builddbm, Utility Programs
 @section Radscm: A guile interface to radius functions.
 @pindex radscm
-@cindex guile interface
+@cindex Guile interface
 
 @command{Radscm} is a Scheme interpreter based on Guile with the addition
 of special functions and variables for communicating with
@@ -138,36 +138,6 @@ where:
 @item ACCT-NUM          @tab Accounting port number,
 @item CNTL-NUM          @tab Control channel port number.
 @end multitable
-@end deffn
-
-@deffn Function rad-dict-name->attr NAME-STR
-Returns a dictionary entry for the given attribute name or #f if
-no such name was found in the dictionary.
-The entry is a list of the form:
-
-@lisp
-        (NAME-STR ATTR-NUMBER TYPE-NUMBER VENDOR)
-@end lisp
-
-@noindent
-where:
-
-@multitable @columnfractions .40 .45
-@item NAME-STR          @tab is the attribute name,
-@item VALUE-NUMBER      @tab is the attribute number,
-@item TYPE-NUMBER       @tab is the attribute type,
-@item VENDOR
-@tab is the vendor PEC, if the attribute is a Vendor-Specific one, or #f otherwise.
-@end multitable
-@end deffn
-
-@deffn Function rad-dict-name->value ATTR VALUE-STR
-Returns the numeric value of the VALUE-STR symbolic value pertaining
-to attribute ATTR. ATTR can be either the attribute name or its number.
-@end deffn
-
-@deffn Function rad-dict-pec->vendor PEC-NUMBER
-Converts PEC to the vendor name
 @end deffn
 
 @deffn Function rad-read-no-echo PROMPT-STR

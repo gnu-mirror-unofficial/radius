@@ -51,13 +51,13 @@ users' sessions.
 @cindex Detailed Request Accounting
 
 Radius stores the detailed information about accounting packets it receives
-in files @* @file{radacct/@var{nasname}/detail} (@pxref{Naming conventions}), 
+in files @* @file{radacct/@var{nasname}/detail} (@pxref{Naming Conventions}), 
 where @var{nasname} is replaceed with the short name of the @NAS{} from
 the @file{raddb/naslist} file (@pxref{naslist file}).
 
 By default, this accounting type is always enabled, provided that
 @file{radacct} directory exists and is writable
-(@pxref{Naming conventions}). To turn the detailed accounting off,
+(@pxref{Naming Conventions}). To turn the detailed accounting off,
 use @code{detail} statement in @file{config} file. For more information
 about it, @xref{acct}.
 
@@ -156,7 +156,7 @@ Acct-Ext-Program = "@var{progname} @var{args}"
 The @var{progname} must be the full path to the program, @var{args} ---
 any arguments it needs. The usual substitutions may be used in
 @var{args} to pass any request attributes to the program
-(@pxref{Macro substitution}).
+(@pxref{Macro Substitution}).
 
 For a detailed description of @attr{Acct-Ext-Program},
 @xref{Acct-Ext-Program}.

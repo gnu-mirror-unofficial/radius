@@ -43,9 +43,9 @@ Duration of the session.
 @end menu
 
 @comment *L2****************************************************************
-@node radwho options, , , Radwho
-@subsection Radwho command line options
-@cindex radwho, command line options
+@node radwho options
+@subsection Radwho Command Line Options
+@cindex @command{radwho}, command line options
 
 The following command line options can be used to modify the behavior
 of the program:

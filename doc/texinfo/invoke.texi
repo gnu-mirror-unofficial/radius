@@ -2,8 +2,8 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Invocation, Configuration files, Operation, Top
-@chapter How to start the daemon.
+@node Invocation, Configuration Files, Operation, Top
+@chapter How to Start the Daemon.
 @cindex Radius daemon invocation
 @cindex Invoking the radius daemon
 @pindex radiusd
@@ -32,7 +32,7 @@ Enable detailed authentication logging. When this option is specified
 each authentication request is logged to the file
 @file{radacct/NASNAME/detail.auth}, where NASNAME is replaced by the
 short name of the @NAS{} from @file{raddb/naslist}
-@ref{Naming conventions}.
+@ref{Naming Conventions}.
 
 Config file equivalent: @code{auth @{ detail yes; @};}.
 

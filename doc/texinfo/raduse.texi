@@ -17,10 +17,10 @@ realtime.
 @end menu
 
 @comment *L2****************************************************************
-@node raduse display, raduse options, , Raduse
+@node raduse display
 @subsection Display
-@cindex raduse display
-@cindex display, raduse
+@cindex @command{raduse} display
+@cindex Display, raduse
 
 At the top of output the summary information is displayed. It consists
 of two lines. First line shows the statistic collection uptime and
@@ -79,9 +79,9 @@ This default display can be altered using command line options or
 interactive commands
 
 @comment *L2****************************************************************
-@node raduse options, raduse commands, raduse display, Raduse
+@node raduse options
 @subsection Raduse Command Line Options
-@cindex raduse, command line options
+@cindex @command{raduse}, command line options
 
 The following options modify the behavior of @command{raduse}:
 
@@ -129,7 +129,7 @@ Display short usage summary.
 
 
 @comment *L2****************************************************************
-@node raduse commands, , raduse options, Raduse
+@node raduse commands
 @subsection Raduse Interactive Commands
 
 The following commands are understood when @command{raduse} is in

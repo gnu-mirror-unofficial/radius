@@ -110,10 +110,10 @@ This Info file documents the version @value{VERSION} of the package.
 * Glossary::            The glossary.
 
 The radius daemon
-* Naming conventions::  Conventions about naming files and directories.
+* Naming Conventions::  Conventions about naming files and directories.
 * Operation::           How radius operates.
 * Invocation::          How to start the daemon.
-* Configuration files:: Radius configuration files.
+* Configuration Files:: Radius configuration files.
 * Authentication::      How the users are authenticated.
 * Accounting::          Accounting methods.
 * Logging::             What gets logged and where.
@@ -124,7 +124,7 @@ The radius daemon
 * Client Package::
 
 Radius Attributes
-* Attribute list::      Some frequently used attributes.
+* Attribute List::      Some frequently used attributes.
 
 Reporting Bugs and getting information
 * Bugs::                How to report a bug.

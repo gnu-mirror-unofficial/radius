@@ -26,7 +26,7 @@ days to answer.
 
 @comment *******************************************************************
 @node Info, , Bugs, Top
-@chapter Where to get info about GNU Radius
+@chapter Where to Get Info About GNU Radius
 
 The two places to look for any news regarding Radius are 
 the Radius homepage at @url{http://www.gnu.org/software/radius},

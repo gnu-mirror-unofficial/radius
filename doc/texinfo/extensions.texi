@@ -17,14 +17,14 @@ enabled. Use of Scheme requires Guile version 1.4 or higher.
 @end menu
 
 @comment *L1****************************************************************
-@node Rewrite, Guile, , Extensions
+@node Rewrite
 @section Rewrite
 @cindex Rewrite
 
 Rewrite is the GNU Radius extension language. Its name reflects the
 fact that it was originally designed to rewrite the broken request packets,
-so they could be processed as usual (@pxref{Rewriting incoming
-requests}). Beside this basic use, however, Rewrite functions are used
+so they could be processed as usual (@pxref{Rewriting Incoming
+Requests}). Beside this basic use, however, Rewrite functions are used
 in verifying the activity of user sessions
 (@pxref{Checking Simultaneous Logins}).
 
@@ -32,15 +32,15 @@ in verifying the activity of user sessions
 * Syntax Overview::
 * Quick Start::
 * Interaction with Radius::
-* Rewriting incoming requests::
-* Login verification functions::
-* Attribute creation functions::
+* Rewriting Incoming Requests::
+* Login Verification Functions::
+* Attribute Creation Functions::
 * Full Syntax Description::
 @end menu
 
 
 @comment *L2****************************************************************
-@node Syntax Overview, Quick Start, , Rewrite
+@node Syntax Overview
 @subsection Syntax Overview
 @cindex Rewrite, syntax overview
 
@@ -51,7 +51,7 @@ which are accessible to Rewrite functions via special notation
 @code{%[@var{attr}]}. 
 
 @comment *L2****************************************************************
-@node Quick Start, Interaction with Radius, Syntax Overview, Rewrite
+@node Quick Start
 @subsection Quick Start
 @cindex Rewrite, quick start introduction
 
@@ -97,7 +97,7 @@ return value has no special meaning.
 
 
 @comment *L2****************************************************************
-@node Interaction with Radius, Rewriting incoming requests, Quick Start, Rewrite
+@node Interaction with Radius
 @subsection Interaction with Radius
 @cindex Rewrite, usage
 @cindex Rewrite, applying functions
@@ -112,8 +112,8 @@ purpose. There are three major kinds of Rewrite functions:
 @end itemize
 
 @comment *L3****************************************************************
-@node Rewriting incoming requests, Login verification functions,Interaction with Radius, Rewrite
-@subsection Rewriting incoming requests
+@node Rewriting Incoming Requests
+@subsection Rewriting Incoming Requests
 @cindex Rewriting incoming requests
 
 The need of rewriting the incoming requests arises from the fact that
@@ -198,10 +198,9 @@ functions.
 @end menu
 
 @comment **L3***************************************************************
-@node Rewrite Examples, , , Rewriting incoming requests
-@subsubsection Examples of various rewrite functions.
-@cindex Rewrite, examples
-@exindex Rewrite
+@node Rewrite Examples
+@subsubsection Examples of Various Rewrite Functions.
+@exindex Rewrite functions
 
 The examples found in this chapter are working functions that can be
 used with various existing @NAS{} types. They are taken from the
@@ -381,8 +380,8 @@ nt_rewrite()
 @end example
 
 @comment *L2**************************************************************
-@node Login verification functions, Attribute creation functions,Rewriting incoming requests, Rewrite
-@subsection Login verification functions
+@node Login Verification Functions
+@subsection Login Verification Functions
 @cindex Rewrite, login verification functions
 
 A login verification function is invoked to process the output from the
@@ -424,7 +423,7 @@ session and 0 otherwise.
 @end menu
 
 @comment **L4*************************************************************
-@node Examples of login verification functions,,,Login verification functions
+@node Examples of login verification functions
 @subsubsection Examples of login verification functions
 @exindex Login verification functions
 
@@ -462,8 +461,8 @@ check_username(string str, string name, integer pid, string sid)
 @end example
 
 @comment **L3***************************************************************
-@node Attribute creation functions,Full Syntax Description, Login verification functions, Rewrite
-@subsection Attribute creation functions
+@node Attribute Creation Functions
+@subsection Attribute Creation Functions
 @cindex Rewrite, attribute creation functions
 
 These are the functions, used to create @RADIUS{} reply attributes. An
@@ -498,7 +497,7 @@ get_ip_address(integer base)
 @end example
 
 @comment *L2****************************************************************
-@node Full Syntax Description, , Attribute creation functions, Rewrite
+@node Full Syntax Description
 @subsection Full Syntax Description
 @cindex Rewrite, syntax of the language
 
@@ -512,9 +511,9 @@ get_ip_address(integer base)
 @end menu
 
 @comment **L4***************************************************************
-@node Data types, Symbols, , Full Syntax Description
+@node Data types
 @subsubsection Rewrite Data Types
-@cindex data types, Rewrite
+@cindex Data types, Rewrite
 @cindex Rewrite, data types
 
 There are only two data types: @code{integer} and @code{string}, 
@@ -525,9 +524,9 @@ to a string, the result of such coercion being the @sc{ascii} string with
 decimal representation of the number.
 
 @comment **L4***************************************************************
-@node Symbols, Identifiers, Data types, Full Syntax Description
+@node Symbols
 @subsubsection Rewrite Symbols
-@cindex symbols, Rewrite
+@cindex Symbols, Rewrite
 @cindex Rewrite, symbols
 
 A symbol is a lexical token. The following symbols are recognized:
@@ -623,9 +622,9 @@ utility.
 @end table
 
 @comment **L4***************************************************************
-@node Identifiers, Declarations, Symbols, Full Syntax Description
+@node Identifiers
 @subsubsection Rewrite Identifiers
-@cindex identifiers, Rewrite
+@cindex Identifiers, Rewrite
 @cindex Rewrite identifiers
 
 A valid identifier is a string of characters meeting the following
@@ -640,9 +639,9 @@ dollar signs (@samp{$}).
 
 
 @comment **L4***************************************************************
-@node Declarations, Statements, Identifiers, Full Syntax Description
+@node Declarations
 @subsubsection Rewrite Declarations
-@cindex declarations, Rewrite
+@cindex Declarations, Rewrite
 
 @subheading Function declarations
 
@@ -684,9 +683,9 @@ separated list of such identifiers. @emph{Please note} that, unlike in
 C, no assignments are allowed in variable declarations.
 
 @comment **L4***************************************************************
-@node Statements, Built-in Functions, Declarations, Full Syntax Description
+@node Statements
 @subsubsection Rewrite Statements
-@cindex statements, Rewrite
+@cindex Statements, Rewrite
 
 The Rewrite statements are: expressions, assignments, conditional
 statements and return statements. A statement is terminated by semicolon.
@@ -766,9 +765,9 @@ number of actual arguments and number of formal parameters in the
 compiled function declaration is not an error but rather a warning.
 
 @comment **L4***************************************************************
-@node Built-in Functions, , Statements, Full Syntax Description
+@node Built-in Functions
 @subsubsection Rewrite Built-in Functions
-@cindex built-in functions, Rewrite
+@cindex Built-in functions, Rewrite
 
 The following built-in functions are provided:
 
@@ -801,7 +800,7 @@ All character positions in strings are counted from 0.
 
 
 @comment *L1****************************************************************
-@node Guile, , Rewrite, Extensions
+@node Guile
 @section Guile
 @cindex Guile
 
@@ -829,7 +828,7 @@ address these issues in more detail.
 @end menu
 
 @comment **L2***************************************************************
-@node Data Representation, Authentication with Scheme, , Guile
+@node Data Representation
 @subsection Data Representation
 @cindex Guile, representation of Radius data
 
@@ -885,7 +884,7 @@ is written in Scheme as:
 @end lisp
         
 @comment **L2***************************************************************
-@node Authentication with Scheme, Accounting with Scheme, Data Representation, Guile
+@node Authentication with Scheme
 @subsection Authentication with Scheme
 @cindex Authentication with Scheme
 
@@ -923,7 +922,7 @@ described above. The @var{list} is a list of @AVP{}s to be added
 to the reply list. For example, the following function will always
 deny the authentication, returning appropriate message to the user:
 
-@exindex "Scheme authentication function"
+@exindex Scheme authentication function
 @lisp
 @group
 (define (decline-auth request-list check-list reply-list)
@@ -980,8 +979,8 @@ To trigger the invocation of the Scheme authentication function, assign
 its name to @attr{Scheme-Procedure} attribute in @RHS{} of a
 corresponding @file{raddb/users} profile. E.g.:
 
-@exindex "Invoking Scheme authentication function"
-@exindex "Scheme authentication function, invocation"
+@exindex Invoking Scheme authentication function
+@exindex Scheme authentication function, invocation
 @example
 @group
 DEFAULT Auth-Type = SQL
@@ -990,7 +989,7 @@ DEFAULT Auth-Type = SQL
 @end example
 
 @comment **L2***************************************************************
-@node Accounting with Scheme, Radius-Specific Functions, Authentication with Scheme, Guile
+@node Accounting with Scheme
 @subsection Accounting with Scheme
 @cindex Accounting with Scheme
 
@@ -1030,7 +1029,7 @@ the contents of the incoming request to a file:
 @end lisp
 
 @comment **L2***************************************************************
-@node Radius-Specific Functions, , Accounting with Scheme, Guile
+@node Radius-Specific Functions
 @subsection Radius-Specific Functions
 @cindex Radius-Specific Scheme Functions
 

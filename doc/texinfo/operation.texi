@@ -2,8 +2,8 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Operation, Invocation, Naming conventions, Top
-@chapter How Radius operates.
+@node Operation, Invocation, Naming Conventions, Top
+@chapter How Radius Operates
 @cindex @sc{nas}
 @cindex Network Access Server
 
@@ -64,9 +64,9 @@ server}.
 @cindex Attribute
 @cindex Attribute-Value pair
 @cindex A/V pair
-@cindex additivity of an attribute
-@cindex propagation of an attribute
-@cindex properties of an attribute
+@cindex Additivity of an attribute
+@cindex Propagation of an attribute
+@cindex Properties of an attribute
 
 The information the Radius requests carry is stored as a list of
 @dfn{Attribute-Value pairs}. Each pair consists of @dfn{Attribute
@@ -129,11 +129,11 @@ The new pair is appended to the end of the pair list.
 
 The attributes are declared in @file{raddb/dictionary} file. For a
 detailed description of it, @xref{ATTRIBUTE}.
-For information about particular attributes, @xref{Attribute list}.
+For information about particular attributes, @xref{Attribute List}.
 
 @comment *L2****************************************************************
 @node Requests
-@section Radius requests
+@section Radius Requests
 @cindex Request
 
 The term @dfn{request} means both the authentication/accounting request
@@ -164,15 +164,15 @@ request.
 @end table
 
 @menu
-* Authentication requests::
-* Accounting requests::
+* Authentication Requests::
+* Accounting Requests::
 @end menu
 
 @comment **L3***************************************************************
-@node Authentication requests
-@subsection Authentication requests
+@node Authentication Requests
+@subsection Authentication Requests
 @cindex Authentication requests
-@cindex requests, authentication
+@cindex Requests, authentication
 
 A @NAS{} sends authentication requests (packets with code Access-Request)
 to a @RADIUS{} server when a user is trying to connect to that @NAS{}. Such
@@ -238,10 +238,10 @@ response, and including the @attr{State} attribute from the
 Access-Challenge, if any. 
 
 @comment **L3***************************************************************
-@node Accounting requests
-@subsection Accounting requests
+@node Accounting Requests
+@subsection Accounting Requests
 @cindex Accounting requests
-@cindex requests, accounting
+@cindex Requests, accounting
 
 Accounting-Request packets are sent from a @NAS{} to a Radius server
 to allow for accounting of a service provided to a user.
@@ -379,7 +379,7 @@ to file. The following section describes these rules in detail.
 
 @comment *L2****************************************************************
 @node Request processing
-@section Processing requests
+@section Processing Requests
 @cindex Processing requests
 
 Upon receiving a request Radius applies to it a number of checks to
@@ -555,7 +555,7 @@ allows for applying several hints to a single packet.
 @item Rewrite-Function
 If this attribute is present, the specified rewrite function is invoked.
 @item Replace-User-Name
-The value of this attribute is expanded (@pxref{Macro substitution}),
+The value of this attribute is expanded (@pxref{Macro Substitution}),
 and replaces the value of @attr{User-Name} attribute from the request.
 @end table
 

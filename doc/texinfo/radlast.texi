@@ -36,8 +36,8 @@ output. It includes following fields:
 @end menu
 
 @comment *******************************************************************
-@node radlast options, , , Radlast
-@subsection @command{radlast} command line options
+@node radlast options
+@subsection Radlast Command Line Options
 @pindex @command{radlast}, options
 
 Use following command line options to control the behavior of

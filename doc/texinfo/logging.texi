@@ -48,5 +48,7 @@ By default, all messages in all levels are output to file
 @file{radlog/radius.log}. In addition, messages in level
 @code{CRIT} are also duplicated to the system console. These defaults
 can be overridden using @code{logging} statement in @file{raddb/config} file
-@ref{logging,,logging statement}, @ref{Naming conventions}.
+(@xref{logging,,logging statement}, for the description of logging
+statement syntax, @pxref{Naming Conventions} for information about the 
+locations of different radius configuration files).
 

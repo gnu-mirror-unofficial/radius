@@ -4,8 +4,8 @@
 @setfilename radius.info
 
 @comment **L3***************************************************************
-@node Attribute list, , , Top
-@chapter Attribute list
+@node Attribute List, , , Top
+@chapter Attribute List
 
 The following sections describe the most frequently used @RADIUS{}
 attributes. Each attribute is described as follows:
@@ -877,7 +877,7 @@ of GNU Radius, this attribute may be used in conjunction with
 of @acronym{PAM} service to use. This attribute is temporarily
 appended to the authentication request, so its value can be
 referenced to as @code{%C@{Auth-Data@}}. 
-@xref{Authentication server parameters}, for an example of
+@xref{Authentication Server Parameters}, for an example of
 of using @attr{Auth-Data} attribute in @file{raddb/sqlserver}:
 
 @comment **************************************************************
@@ -1217,7 +1217,7 @@ the full pathname and arguments for the program to be executed when the
 entry matches.
 
 The command line can reference any attributes from both check and reply
-pairlists using attribute macros (@pxref{Macro substitution}).
+pairlists using attribute macros (@pxref{Macro Substitution}).
 
 Before the execution of the program @command{radiusd} switches to
 uid and gid of user @code{daemon}, group @code{daemon}. You can
@@ -1258,7 +1258,7 @@ the full pathname and arguments for the program to be executed when the
 entry matches.
 
 The command line can reference any attributes from both check and reply
-pairlists using attribute macros @ref{Macro substitution}.
+pairlists using attribute macros @ref{Macro Substitution}.
 
 Before the execution of the program @command{radiusd} switches to
 uid and gid of user @code{daemon}, group @code{daemon}. You can
@@ -1326,7 +1326,7 @@ The @attr{Acct-Ext-Program} attribute can be used in @RHS{} of an
 of an external program to be executed for each accounting request.
 
 The command line can reference any attributes from both check and reply
-pairlists using attribute macros (@pxref{Macro substitution}).
+pairlists using attribute macros (@pxref{Macro Substitution}).
 
 Before the execution of the program @command{radiusd} switches to
 uid and gid of user @code{daemon}, group @code{daemon}. You can
@@ -1458,7 +1458,7 @@ VALUE      Replace-User-Name  Yes                  1
 
 Use this attribute to modify username from the incoming packet. The
 @attr{Replace-User-Name} can reference any attributes from both @LHS{}
-and @RHS{} pairlists using attribute macros @ref{Macro substitution}.
+and @RHS{} pairlists using attribute macros @ref{Macro Substitution}.
 
 For example the following @file{users} entry
 

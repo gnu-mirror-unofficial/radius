@@ -23,7 +23,7 @@ and accounting requests, and a set of accompanying programs designed to
 monitor the activity of the server and analyze the information it provides.
 
 @comment *******************************************************************
-@node Glossary, Naming conventions, Intro, Top
+@node Glossary, Naming Conventions, Intro, Top
 @unnumbered Radius Glossary
 
 Throughout this document the following terms are used:

@@ -143,10 +143,16 @@ pthread_attr_t thread_attr; /* Attribute for creating child threads */
 int max_threads = 128;  /* Maximum number of threads allowed */
 int num_threads = 0;    /* Number of threads currently spawned */
 
-static int need_reload = 0;  /* the reload of the configuration is needed */
-static int need_restart = 0; /* try to restart ourselves when set to 1 */
+#define CMD_NONE    0 /* No command */
+#define CMD_RELOAD  1 /* The reload of the configuration is needed */
+#define CMD_RESTART 2 /* Try to restart ourselves when set to 1 */
+#define CMD_MEMINFO 3 /* Dump memory usage statistics */
+#define CMD_DUMPDB  4 /* Dump authentication database */
+
+int daemon_command = CMD_NONE;
 
 static void check_reload();
+static void check_snmp_request();
 
 static void set_config_defaults();
 static void usage(void);
@@ -414,7 +420,7 @@ rad_daemon()
                 exit(0);
         }
 
-        chdir("/tmp");/*FIXME*/
+        chdir("/");
         umask(022);
         
         pid = getpid();
@@ -661,7 +667,7 @@ rad_cont()
 void
 schedule_restart()
 {
-        need_restart = 1;
+        daemon_command = CMD_RESTART;
 }
 
 /*
@@ -870,15 +876,31 @@ getmyip()
 void
 check_reload()
 {
-        if (need_restart)
-                rad_restart();
-        
-        if (need_reload) {
+	switch (daemon_command) {
+	case CMD_RELOAD:
                 reread_config(1);
-                need_reload = 0;
+                break;
+	case CMD_RESTART:
+                rad_restart();
+		break;
+	case CMD_MEMINFO:
+		meminfo();
+		break;
+	case CMD_DUMPDB:
+		dump_users_db();
+		break;
+	default:
+		check_snmp_request();
+		break;
         }
+	daemon_command = CMD_NONE;
+}
+
+void
+check_snmp_request()
+{
 #ifdef USE_SNMP
-        else if (server_stat.auth.status != saved_status) {
+        if (server_stat.auth.status != saved_status) {
                 switch (server_stat.auth.status) {
                 case serv_reset: /* Hard reset */
                         if (xargv[0][0] != '/') {
@@ -886,13 +908,13 @@ check_reload()
                                        _("can't restart: radiusd not started as absolute pathname"));
                                 break;
                         }
-                        schedule_restart();
+                        rad_restart();
                         break;
-                
+			
                 case serv_init:
                         reread_config(1);
                         break;
-
+			
                 case serv_running:
                         if (suspend_flag) {
                                 suspend_flag = 0;
@@ -917,6 +939,51 @@ check_reload()
         }
 #endif
 }       
+
+int
+meminfo_report(stat)
+        CLASS_STAT *stat;
+{
+        radlog(L_INFO,
+               "%9d   %1d    %9d %9d %9d %9d",
+               stat->elsize,
+               stat->cont, 
+               stat->elcnt,
+               stat->bucket_cnt,
+               stat->allocated_cnt,
+               stat->bucket_cnt * stat->elcnt);
+        return 0;
+}
+
+void
+meminfo()
+{
+        MEM_STAT stat;
+        
+        mem_get_stat(&stat);
+
+        radlog(L_INFO,
+               _("%lu classes, %lu buckets are using %lu bytes of memory"),
+               stat.class_cnt,
+               stat.bucket_cnt,
+               stat.bytes_allocated);
+        
+        if (stat.bytes_allocated) 
+                radlog(L_INFO,
+                       _("memory utilization: %ld.%1ld%%"),
+                       stat.bytes_used * 100 / stat.bytes_allocated,
+                       (stat.bytes_used * 1000 / stat.bytes_allocated) % 10);
+
+        radlog(L_INFO,
+               _("    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"));
+        
+        mem_stat_enumerate(meminfo_report, NULL);
+
+#ifdef LEAK_DETECTOR
+        radlog(L_INFO, _("malloc statistics: %d blocks, %d bytes"),
+               mallocstat.count, mallocstat.size);
+#endif
+}
 
 /* ************************************************************************* */
 /* Application-specific sockets */
@@ -1011,53 +1078,8 @@ sig_hup(sig)
         int sig;
 {
         radlog(L_INFO, _("got HUP. Reloading configuration now"));
-        need_reload = 1;
+        daemon_command = CMD_RELOAD;
         signal(SIGHUP, sig_hup);
-}
-
-int
-meminfo_report(stat)
-        CLASS_STAT *stat;
-{
-        radlog(L_INFO,
-               "%9d   %1d    %9d %9d %9d %9d",
-               stat->elsize,
-               stat->cont, 
-               stat->elcnt,
-               stat->bucket_cnt,
-               stat->allocated_cnt,
-               stat->bucket_cnt * stat->elcnt);
-        return 0;
-}
-
-void
-meminfo()
-{
-        MEM_STAT stat;
-        
-        mem_get_stat(&stat);
-
-        radlog(L_INFO,
-               _("%lu classes, %lu buckets are using %lu bytes of memory"),
-               stat.class_cnt,
-               stat.bucket_cnt,
-               stat.bytes_allocated);
-        
-        if (stat.bytes_allocated) 
-                radlog(L_INFO,
-                       _("memory utilization: %ld.%1ld%%"),
-                       stat.bytes_used * 100 / stat.bytes_allocated,
-                       (stat.bytes_used * 1000 / stat.bytes_allocated) % 10);
-
-        radlog(L_INFO,
-               _("    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"));
-        
-        mem_stat_enumerate(meminfo_report, NULL);
-
-#ifdef LEAK_DETECTOR
-        radlog(L_INFO, _("malloc statistics: %d blocks, %d bytes"),
-               mallocstat.count, mallocstat.size);
-#endif
 }
 
 /*ARGSUSED*/
@@ -1067,7 +1089,7 @@ sig_dumpdb(sig)
 {
         radlog(L_INFO, _("got INT. Dumping users db to `%s'"),
                RADIUS_DUMPDB_NAME);
-        dump_users_db();
+	daemon_command = CMD_DUMPDB;
         signal(sig, sig_dumpdb);
 }
 

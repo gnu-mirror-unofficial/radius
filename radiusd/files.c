@@ -370,17 +370,22 @@ match_user(sym, req, check_pairs, reply_pairs)
 			avl_free(check_tmp);
 			continue;
 		}
-		if (p = avl_find(sym->check, DA_MATCH_PROFILE)) {
-			debug(1, ("submatch: %s", p->strvalue));
-
-			if (!match_user(sym_lookup(user_tab, p->strvalue),
-					req, check_pairs, reply_pairs)) {
-				avl_free(check_tmp);
-				continue;
-			}
-		}			
 
 		found = 1;
+
+		for (p = avl_find(sym->check, DA_MATCH_PROFILE);
+                     p; 
+                     p = avl_find(p->next, DA_MATCH_PROFILE)) {
+			debug(1, ("submatch: %s", p->strvalue));
+
+			found = match_user(sym_lookup(user_tab, p->strvalue),
+			  	           req, check_pairs, reply_pairs);
+		}			
+
+		if (!found) {
+			avl_free(check_tmp);
+			continue;
+		}	
 
 		reply_tmp = avl_dup(sym->reply);
 		avl_merge(reply_pairs, &reply_tmp);
@@ -392,7 +397,9 @@ match_user(sym, req, check_pairs, reply_pairs)
 		avl_free(reply_tmp);
 		avl_free(check_tmp);
 
-		if (p = avl_find(sym->reply, DA_MATCH_PROFILE)) {
+		for (p = avl_find(sym->reply, DA_MATCH_PROFILE);
+                     p;
+                     p = avl_find(p->next, DA_MATCH_PROFILE)) {
 			debug(1, ("next: %s", p->strvalue));
 			match_user(sym_lookup(user_tab, p->strvalue),
 				   req, check_pairs, reply_pairs);

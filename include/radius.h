@@ -169,23 +169,23 @@ typedef struct value_pair {
 } VALUE_PAIR;
 
 typedef struct radius_req {
-	UINT4			ipaddr;
-	u_short			udp_port;
-	u_char			id;
-	u_char			code;
-	u_char			vector[AUTH_VECTOR_LEN];
-	u_char			*secret;
-	VALUE_PAIR		*request;
-	u_char			*data;		/* Raw received data */
-	int			data_len;       /* Length of raw data */
-	int                     data_alloced;   /* Was the data malloced */
+	UINT4			ipaddr;       /* Source IP address */
+	u_short			udp_port;     /* Source port */
+	u_char			id;           /* Request identifier */
+	u_char			code;         /* Request code */
+	u_char			vector[AUTH_VECTOR_LEN]; /* Rq authenticator */
+	u_char			*secret;      /* Shared secret */
+	VALUE_PAIR		*request;     /* Request pairs */
+	u_char			*data;	      /* Raw received data */
+	int			data_len;     /* Length of raw data */
+	int                     data_alloced; /* Was the data malloced */
         /* Proxy support fields */
-	char			*realm;         /* stringobj, actually */
-	int			validated;	/* Already md5 checked */
+	char			*realm;       /* stringobj, actually */
+	int			validated;    /* Already md5 checked */
 	UINT4			server_ipaddr;
 	UINT4			server_id;
-	VALUE_PAIR		*server_reply;	/* Reply from other server */
-	int			server_code;	/* Reply code from other srv */
+	VALUE_PAIR		*server_reply;/* Reply from other server */
+	int			server_code;  /* Reply code from other srv */
 } RADIUS_REQ;
 
 struct envar_t;
@@ -218,58 +218,59 @@ struct keyword {
 
 /* External variables */
 
-extern char		*progname;
-extern char     	*radius_dir;
-extern char	        *radlog_dir;
-extern char      	*radacct_dir;
-extern char             *radutmp_path;
-extern char             *radwtmp_path;
-extern char             *radstat_path;
-extern char             *radpid_dir;
-extern char             *bug_report_address;
+extern char *progname;
+extern char *radius_dir;
+extern char *radlog_dir;
+extern char *radacct_dir;
+extern char *radutmp_path;
+extern char *radwtmp_path;
+extern char *radstat_path;
+extern char *radpid_dir;
+extern char *bug_report_address;
 
 
 /* dict.c */
 #define VENDOR(x) (x >> 16)
 
-int		dict_init();
-DICT_ATTR	*attr_number_to_dict(int);
-DICT_ATTR       *attr_name_to_dict(char *);
-DICT_VALUE      *value_name_to_value(char *, int);
-DICT_VALUE      *value_lookup(UINT4, char *);
-int             vendor_id_to_pec(int);
-int             vendor_pec_to_id(int);
-char            *vendor_pec_to_name(int);
-int             vendor_name_to_id(char *);
+int dict_init();
+DICT_ATTR *attr_number_to_dict(int);
+DICT_ATTR *attr_name_to_dict(char *);
+DICT_VALUE *value_name_to_value(char *, int);
+DICT_VALUE *value_lookup(UINT4, char *);
+int vendor_id_to_pec(int);
+int vendor_pec_to_id(int);
+char *vendor_pec_to_name(int);
+int vendor_name_to_id(char *);
 
 
 /* md5.c */
 
-void		md5_calc(u_char *, u_char *, u_int);
+void md5_calc(u_char *, u_char *, u_int);
 /* md5crypt.c */
-char * md5crypt(const char *pw, const char *salt);
+char *md5crypt(const char *pw, const char *salt);
 
 /* avl.c */
 VALUE_PAIR *avp_alloc();
 void avp_free();
-void		avl_free(VALUE_PAIR *);
-VALUE_PAIR	*avl_find(VALUE_PAIR *, int);
-void		avl_delete(VALUE_PAIR **, int);
-void		avl_add_list(VALUE_PAIR **, VALUE_PAIR *);
-void		avl_add_pair(VALUE_PAIR **, VALUE_PAIR *);
-VALUE_PAIR     *avl_dup(VALUE_PAIR *from);
-VALUE_PAIR     *avp_dup(VALUE_PAIR *vp);
-void            avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr);
-VALUE_PAIR     *avp_create(int attr, int length, char *strval, int lval);
-void		avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
-void            avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
-			       int (*fun)(), void *closure);
+void avl_free(VALUE_PAIR *);
+VALUE_PAIR *avl_find(VALUE_PAIR *, int);
+void avl_delete(VALUE_PAIR **, int);
+void avl_add_list(VALUE_PAIR **, VALUE_PAIR *);
+void avl_add_pair(VALUE_PAIR **, VALUE_PAIR *);
+VALUE_PAIR *avl_dup(VALUE_PAIR *from);
+VALUE_PAIR *avp_dup(VALUE_PAIR *vp);
+void avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr);
+VALUE_PAIR *avp_create(int attr, int length, char *strval, int lval);
+void avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
+void avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
+		    int (*fun)(), void *closure);
 
-char *		ip_hostname (UINT4);
-UINT4		get_ipaddr (char *);
-int		good_ipaddr(char *);
-char *		ipaddr2str(char *, UINT4);
-UINT4		ipstr2long(char *);
+extern int do_not_resolve;
+char *ip_hostname (UINT4);
+UINT4 get_ipaddr (char *);
+int good_ipaddr(char *);
+char *ipaddr2str(char *, UINT4);
+UINT4 ipstr2long(char *);
 
 /* nas.c */
 NAS *nas_next(NAS *p);
@@ -303,13 +304,13 @@ VALUE_PAIR *install_pair(char *name, int op, char *valstr);
 
 
 /* util.c */
-struct passwd	*rad_getpwnam(char *);
-void		radreq_free(RADIUS_REQ *radreq);
-void            rad_lock(int fd, size_t size, off_t off, int whence);
-void            rad_unlock(int fd, size_t size, off_t off, int whence);
-char           *mkfilename(char *, char*);
-char           *mkfilename3(char *dir, char *subdir, char *name);
-int             backslash(int c);
+struct passwd *rad_getpwnam(char *);
+void radreq_free(RADIUS_REQ *radreq);
+void rad_lock(int fd, size_t size, off_t off, int whence);
+void rad_unlock(int fd, size_t size, off_t off, int whence);
+char *mkfilename(char *, char*);
+char *mkfilename3(char *dir, char *subdir, char *name);
+int backslash(int c);
 void string_copy(char *d, char *s, int  len);
 #define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
 char *format_pair(VALUE_PAIR *pair);

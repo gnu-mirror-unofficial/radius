@@ -199,8 +199,8 @@ rad_encode_pair(ap, pair)
                         pair->avp_strlength = strlen(pair->avp_strvalue);
 
                 len = pair->avp_strlength;
-                if (len >= AUTH_STRING_LEN) 
-                        len = AUTH_STRING_LEN - 1;
+                if (len > AUTH_STRING_LEN) 
+                        len = AUTH_STRING_LEN;
                 rc = rad_attr_write(ap, pair->avp_strvalue, len);
                 break;
                 
@@ -460,7 +460,7 @@ rad_decode_pair(attrno, ptr, attrlen)
                 return NULL;
         }
 
-        if ( attrlen >= AUTH_STRING_LEN ) {
+        if ( attrlen > AUTH_STRING_LEN ) {
                 debug(1, ("attribute %d too long, %d >= %d", attrno,
                           attrlen, AUTH_STRING_LEN));
                 return NULL;
@@ -477,7 +477,7 @@ rad_decode_pair(attrno, ptr, attrlen)
         switch (attr->type) {
 
         case TYPE_STRING:
-                /* attrlen always < AUTH_STRING_LEN */
+                /* attrlen always <= AUTH_STRING_LEN */
                 pair->avp_strlength = attrlen;
                 pair->avp_strvalue = string_alloc(attrlen + 1);
                 memcpy(pair->avp_strvalue, ptr, attrlen);

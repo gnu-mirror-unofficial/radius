@@ -314,8 +314,14 @@ radius_req_xmit(REQUEST *request, void *orig_data)
 int
 radius_req_failure(int type, struct sockaddr_in *addr)
 {
-	/*FIXME: should do:
-	  stat_inc(acct or auth, ntohl(addr->sin_addr.s_addr), num_bad_req);*/
+	switch (type) {
+	case R_AUTH:
+		stat_inc(auth, ntohl(addr->sin_addr.s_addr), num_bad_req);
+		break;
+
+	case R_ACCT:
+		stat_inc(acct, ntohl(addr->sin_addr.s_addr), num_bad_req);
+	}
 	return 0;
 }
 
@@ -329,8 +335,17 @@ radius_respond(REQUEST *req)
                 return 1;
         
         if (validate_client(radreq)) {
-                /*FIXME: update stats */
-                return -1;
+        	switch (req->type) {
+        	case R_AUTH:
+                	stat_inc(auth, radreq->ipaddr, num_dropped);
+                	break;
+
+        	case R_ACCT:
+                	stat_inc(acct, radreq->ipaddr, num_dropped);
+                	break;
+
+        	}
+ 		return -1;
         }
 
 	log_open(L_MAIN);

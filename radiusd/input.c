@@ -256,6 +256,52 @@ input_select(INPUT *input, struct timeval *tv)
 	return status;
 }
 
+int
+input_select_channel(INPUT *input, char *name, struct timeval *tv)
+{
+	CHANNEL *p;
+	int status;
+	fd_set readfds;
+	int fd_max = -1;
+	METHOD *m = list_locate(input->methods, name, _method_comp);
+
+	debug(100,("enter"));
+	
+	if (!m)
+		return -1;
+	if (!input->citr)
+		input->citr = iterator_create(input->channels);
+
+	FD_ZERO(&readfds);
+	for (p = iterator_first(input->citr); p;
+	     p = iterator_next(input->citr)) {
+		if (p->method == m) {
+			if (p->fd > fd_max)
+				fd_max = p->fd;
+			FD_SET(p->fd, &readfds);
+		}
+	}
+
+	if (fd_max == -1)
+		return -1;
+	
+	status = select(fd_max + 1, &readfds, NULL, NULL, tv);
+        
+	if (status == -1) {
+		if (errno == EINTR) 
+			return 0;
+	} else if (status > 0) {
+		debug(1, ("select returned %d", status));
+		
+		for (p = iterator_first(input->citr); p;
+		     p = iterator_next(input->citr)) 
+			if (FD_ISSET(p->fd, &readfds)) 
+				channel_handle(p);
+	} 
+	debug(100,("exit"));
+	return status;
+}
+
 struct iterate_closure {
 	char *name;
 	list_iterator_t fun;

@@ -1032,7 +1032,7 @@ server. Each record in the file consist of three fields:
 @item NAS name
 Specifies a hostname or @IP{} of the @NAS{}. The word @samp{DEFAULT} may
 be used in this field to match any @NAS{}.
-@footnote{Logins from DEFAULT @NAS{}es are not reported by213.130.0.5
+@footnote{Logins from DEFAULT @NAS{}es are not reported by
 @command{raduse}, neither are they reflected in SNMP variables.}
 @item Short Name
 This field defines a short name under which this @NAS{} will be listed

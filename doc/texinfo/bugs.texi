@@ -2,7 +2,7 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Bugs, Info, , Top
+@node Bugs, News, , Top
 @chapter Reporting Bugs
 
 It is possible you will encounter a bug in one of Radius programs. If this
@@ -25,10 +25,10 @@ Send your report to @email{bug-gnu-radius@@gnu.org}. Allow me a couple of
 days to answer.
 
 @comment *******************************************************************
-@node Info, , Bugs, Top
+@node News, , Bugs, Top
 @chapter Where to Get Info About GNU Radius
 
-The two places to look for any news regarding Radius are 
+The two places to look for any news regarding GNU Radius are 
 the Radius homepage at @url{http://www.gnu.org/software/radius},
 and the Radius project page at @url{http://savannah.gnu.org/projects/radius}.
 

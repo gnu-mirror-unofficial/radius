@@ -128,7 +128,7 @@ Radius Attributes
 
 Reporting Bugs and getting information
 * Bugs::                How to report a bug.
-* Info::                Where to get info about GNU radius.
+* News::                Where to get info about GNU radius.
 
 Indices
 * Program Index::       Index of programs.

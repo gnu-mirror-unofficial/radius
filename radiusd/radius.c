@@ -87,6 +87,8 @@ send_challenge(radreq, msg, state, fd)
         char *state;
         int fd;
 {
+	radreq->reply_pairs = NULL;
+	avl_move_attr(&radreq->reply_pairs, &radreq->request, DA_PROXY_STATE);
 	if (rad_srv_send_challenge(fd, radreq, msg, state))
 		stat_inc(auth, radreq->ipaddr, num_challenges);
 }

@@ -32,7 +32,8 @@ int getline (char **lineptr, size_t *n, FILE *stream);
 #endif
 
 int
-grad_read_raddb_file(char *filename, int vital, int (*fun)(), void *closure)
+grad_read_raddb_file(char *filename, int vital, char *delim,
+		     int (*fun)(), void *closure)
 {
         int    argc;
         char **argv;
@@ -55,6 +56,8 @@ grad_read_raddb_file(char *filename, int vital, int (*fun)(), void *closure)
                 }
         }
 
+	if (!delim)
+		delim = "";
 	loc.file = filename;
         loc.line = 0;
         while (getline(&lineptr, &bsize, input) > 0) {
@@ -67,7 +70,7 @@ grad_read_raddb_file(char *filename, int vital, int (*fun)(), void *closure)
 		}
 		if (lineptr[0] == 0)
 			continue;
-                if (argcv_get(lineptr, "", NULL, &argc, &argv) == 0) {
+                if (argcv_get(lineptr, delim, NULL, &argc, &argv) == 0) {
                         int n;
                         for (n = 0; n < argc && argv[n][0] != '#'; n++)
                                 ;

@@ -29,6 +29,7 @@ DRIVER=
 PROXY=0
 GUILE="#"
 SNMP="#"
+READLINE=--no-interactive
 
 while test $# -gt 0 
 do
@@ -51,6 +52,8 @@ do
         PROXY=1; [shift];;
     --zero-logs)
 	ZERO_LOGS=1; [shift];;
+    --readline)
+	READLINE=; [shift];;
     *)
 	echo "$PROG: wrong switch ($1)" >&2
 	exit 1;;
@@ -154,7 +157,7 @@ drv_dejagnu() {
         CONF=$LOCAL_CONF
     fi
     trap "stop_server $LOCAL_CONF $PROXY_CONF" 1 3 15
-    $RADTEST -d $CONF --no-interactive
+    $RADTEST -d $CONF $READLINE
     stop_server $LOCAL_CONF $PROXY_CONF
 }	     
 

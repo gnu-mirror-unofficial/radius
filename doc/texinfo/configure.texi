@@ -779,14 +779,14 @@ garbage collections. This is the default.
 @item load-path
 Add specified pathname to @code{%load-path} variable.
 @item load
-Load the specified source file on startup.
+Loads the specified source file on startup.
 @item outfile
 Redirects the standard output and standard error streams of the @code{Guile}
 functions to the given file. Unless the filename starts with @samp{/},
 it is taken relative to the current logging directory.
 @end table
 
-For the detailed description of Guile extensions interface, @xref{Guile}.
+For a detailed description of Guile extensions interface, @xref{Guile}.
 
 @comment **L3***************************************************************
 @node message

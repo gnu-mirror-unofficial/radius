@@ -343,7 +343,8 @@ deref_var(char *name, char *p)
         case '-':
                 switch (parse_datum(p, &datum)) {
                 case Undefined:
-                        parse_error("variable %s used before definition", name);
+                        parse_error("variable %s used before definition",
+				    name);
                         yylval.ident = grad_sym_install(vartab, name);
                         yylval.ident->type = Undefined;
                         type = IDENT;
@@ -431,7 +432,8 @@ deref_parm(unsigned num, char *p)
         case '=':
                 if (num > x_argmax) {
                         x_argmax = num;
-                        x_argv = grad_erealloc(x_argv, sizeof(x_argv[0])*(num+1));
+                        x_argv = grad_erealloc(x_argv,
+					       sizeof(x_argv[0]) * (num + 1));
                 }
                 x_argv[num] = grad_estrdup(p);
                 x_argc = num+1;

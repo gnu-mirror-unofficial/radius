@@ -121,6 +121,8 @@ int checkrad_assume_logged = 1;
 size_t max_requests = MAX_REQUESTS;
 size_t max_children = MAX_CHILDREN;
 unsigned process_timeout = PROCESS_TIMEOUT;
+unsigned radiusd_write_timeout = 0;
+unsigned radiusd_read_timeout = 0;
 char *exec_user = NULL;
 
 UINT4 warning_seconds;
@@ -1298,6 +1300,10 @@ struct cfg_stmt option_stmt[] = {
 	  NULL, NULL },
 	{ "process-idle-timeout", CS_STMT, NULL, cfg_get_integer, &process_timeout,
 	  NULL, NULL },
+	{ "master-read-timeout", CS_STMT, NULL,
+	  cfg_get_integer, &radiusd_read_timeout, NULL, NULL },
+	{ "master-write-timeout", CS_STMT, NULL,
+	  cfg_get_integer, &radiusd_write_timeout, NULL, NULL },
 	{ "exec-program-user", CS_STMT, NULL, cfg_get_string, &exec_user,
 	  NULL, NULL },
 	{ "log-dir", CS_STMT, NULL, cfg_get_string, &radlog_dir,

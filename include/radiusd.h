@@ -273,6 +273,8 @@ extern int checkrad_assume_logged;
 extern size_t max_requests;
 extern size_t max_children;
 extern unsigned process_timeout;
+extern unsigned radiusd_write_timeout;
+extern unsigned radiusd_read_timeout;
 extern char *exec_user;
 extern UINT4 expiration_seconds;
 extern UINT4 warning_seconds;

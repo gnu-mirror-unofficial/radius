@@ -1,3 +1,10 @@
+2003-05-22  Sergey Poznyakoff
+
+	* include/radiusd.h (scheme_redirect_output): New function.
+	* radiusd/scheme.c: Likewise
+	* radiusd/rpp.c (rpp_request_handler): Call
+	scheme_redirect_output().
+
 2003-05-06  Sergey Poznyakoff
 
 	* configure.ac: Raised version number.

@@ -64,6 +64,7 @@ enum reload_what {
 
 /* Request types
  */
+#define R_NONE -1
 #define R_AUTH  0        /* Radius authentication request */
 #define R_ACCT  1        /* Radius accounting request */
 #define R_PROXY 2        /* Radius auth/acct proxy request */
@@ -86,6 +87,12 @@ typedef struct request_class {
         void (*cleanup)();    /* Cleanup function */
 } REQUEST_CLASS;
 
+typedef struct socket_list SOCKET_LIST;
+struct request_handler_tab {
+        int (*success)(struct sockaddr *, int);
+        int (*respond)(int fd, struct sockaddr *, int, u_char *, int);
+        int (*failure)(struct sockaddr *, int);
+};
 
 #define RS_WAITING   0     /* Request waiting for processing */
 #define RS_PENDING   1     /* Request is being processed */
@@ -251,6 +258,7 @@ typedef struct snmp_req {
 /*
  *      Global variables.
  */
+extern SOCKET_LIST *socket_first;
 extern int radius_mode;
 extern int debug_flag;
 extern int auth_detail;
@@ -307,7 +315,6 @@ void schedule_restart();
 void radiusd_mainloop();
 void rad_req_drop(int type, RADIUS_REQ *req, RADIUS_REQ *orig, int fd,
 		  char *status_str);
-void socket_list_iterate(void (*fun)());
 int radiusd_mutex_lock(pthread_mutex_t *mutex, int type);
 int radiusd_mutex_unlock(pthread_mutex_t *mutex);
 void radiusd_pidfile_write(char *name);
@@ -506,3 +513,13 @@ void request_thread_command(request_thread_command_fp fun, void *data);
 /* checkrad.c */
 int checkrad(NAS *nas, struct radutmp *up);
 
+/* socklist.c */
+int socket_list_add(SOCKET_LIST **slist, int type, UINT4 ipaddr, int port);
+void socket_list_init(SOCKET_LIST *slist);
+int socket_list_open(SOCKET_LIST **slist);
+int socket_list_select(struct socket_list *list,
+		       struct request_handler_tab *ht,
+		       size_t numh,
+		       struct timeval *tv);
+void socket_list_close(SOCKET_LIST **slist);
+void socket_list_iterate(SOCKET_LIST *slist, void (*fun)());

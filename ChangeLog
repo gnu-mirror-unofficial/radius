@@ -1,5 +1,9 @@
 2001-11-27 Sergey Poznyakoff
 
+	Unified header comments. 
+
+2001-11-27 Sergey Poznyakoff
+
 	* m4/guile.m4: One more fix regarding GUILE_INCLUDES and
 	GUILE_LIBS.
 	* configure.in: Added libradlog.a to LIBRADSCM.

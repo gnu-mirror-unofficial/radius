@@ -1120,9 +1120,9 @@ rad_sql_pass(req, authdata)
 	
 	if (authdata) {
 		avl_add_pair(&req->request,
-			avp_create(DA_AUTH_DATA,
-				    strlen(authdata),
-				    authdata, 0));
+			     avp_create(DA_AUTH_DATA,
+					strlen(authdata),
+					authdata, 0));
 	}
 	query = radius_xlate(&stack, sql_cfg.auth_query, req, NULL);
 	avl_delete(&req->request, DA_AUTH_DATA);

@@ -260,6 +260,10 @@ The module understands following command line options:
 The default configuration file, $sysconfdir/raddb/client.conf, is installed
 by make install.
 
+** Support for computable session timeout 
+
+[FIXME]
+
 =============================================================================
 NEWS for version 0.95
 

@@ -50,25 +50,25 @@ EXTRA_DIST=$(raddb_files) client.conf.in
 DISTCLEANFILES=client.conf
 
 install-data-local:
-	@if [ ! -d $(raddbdir) ]; then \
-		${INSTALL} -d $(raddbdir); \
+	@if [ ! -d $(DESTDIR)$(raddbdir) ]; then \
+		${INSTALL} -d $(DESTDIR)$(raddbdir); \
 	fi
 	@for dir in $(raddb_subdirs); do \
-		if [ ! -d $(raddbdir)/$$dir ]; then \
-			${INSTALL} -d $(raddbdir)/$$dir; \
+		if [ ! -d $(DESTDIR)$(raddbdir)/$$dir ]; then \
+			${INSTALL} -d $(DESTDIR)$(raddbdir)/$$dir; \
 		fi; \
 	done
-	@if [ -r $(raddbdir)/users ]; then \
+	@if [ -r $(DESTDIR)$(raddbdir)/users ]; then \
 		echo '================================================================='; \
 		echo "Warning: The configuration directory $(raddbdir) already exists"; \
 		echo "Make sure your dictionary is up to date!"; \
 		echo '================================================================='; \
 	else \
 		for file in $(raddb_files_644); do \
-			${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(raddbdir)/$$file; \
+			${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(DESTDIR)$(raddbdir)/$$file; \
 		done; \
 		for file in $(raddb_files_600); do \
-			${INSTALL} -m 600 $(top_srcdir)/raddb/$$file $(raddbdir)/$$file; \
+			${INSTALL} -m 600 $(top_srcdir)/raddb/$$file $(DESTDIR)$(raddbdir)/$$file; \
 		done; \
 	fi
 

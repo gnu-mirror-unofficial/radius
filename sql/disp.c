@@ -38,7 +38,7 @@ disp_sql_interface_index(name)
 
 	for (i = 1; i < NDISP; i++)
 		if (sql_dispatch_tab[i]
-		    && strcmp(sql_dispatch_tab[i]->name, name))
+		    && strcmp(sql_dispatch_tab[i]->name, name) == 0)
 		    return i;
 	return 0;
 }

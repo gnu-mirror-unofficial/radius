@@ -1,0 +1,163 @@
+Ipalloc: A dynamic IP allocator.
+
+* Overview
+
+Ipalloc is a database-driven tool for dynamic allocation of framed
+IP addresses for Radius users. The allocation process attempts to
+return the last recently used IP on a per-user basis. The less time
+elapses between the logout and the next login, the higher are the
+user's chances to get the same IP as before.
+
+The tool is implemented as a Guile plug-in module.
+
+* Database description
+
+The pool of IP adresses is kept in two database tables.
+
+** Table naspools
+
+CREATE TABLE naspools (
+  nas character(17) default '0.0.0.0' not null,
+  pool character(8),
+  PRIMARY KEY (nas)
+);
+
+This table defines the pools for different terminal servers.
+
+** Table ippool
+
+CREATE TABLE ippool (
+  pool character(8) default 'DEFAULT' NOT NULL,
+  ipaddr character(17) default '' not null,
+  status character(4) default 'FREE' not null,
+  time timestamp NOT NULL,
+  user_name character(32)  default '' not null
+);
+
+Each row in this table represents a single IP adress. The address itself
+is stored in the field `ipaddr'. The field `pool' keeps the name of the
+pool for this IP. These two fields never change. The rest of fields
+keep the state of the row. They are:
+
+*** status
+
+Keeps the current status of the entry. See user_name below.
+
+*** time
+
+Date/time this entry was last modified
+
+*** user_name
+
+Keeps the user name associated with this address. The semantics of
+this field varies depending on the value of `status' according to the
+following table:
+
+Value of status   |	user_name meaning
+------------------+---------------------------------------------------------
+'FIXD'		  |	This user should always be given this IP address.
+'ASGN'		  |	The IP address is assigned to this user
+'RSRV'		  |	The IP address is temporarly reserved for this user. 
+'BLCK'		  |	The IP address is blocked and should never be used.
+------------------+---------------------------------------------------------
+
+* Operation
+
+Before processing each request, ippool retrieves from the naspools
+table the name of the IP pool for this NAS. The value of the
+RADIUS attribute NAS-IP-Address is used as the lookup key for
+this table.
+
+** Authentication
+
+When an authentication request arrives, ipalloc first attempts to
+find an IP the user was assigned at his last login. To do so, it
+looks up the database entries with the matching pool and user_name
+whose status is set to 'FREE' or 'RSRV'. If found, status columns of
+such entries are reset to 'RSRV'. Then, ipalloc selects the first
+entry and returns the value of its `ipaddr' column.
+
+Otherwise, if no matching entries were found, ipalloc selects the last
+recently used entry for this pool whose status is set to 'FREE', sets
+its status to 'RSRV', its user_name to the user name from the packet,
+and then returns the IP address associated with it.
+
+If no free entries are found, the above process is repeated 10 times with
+a 500 microseconds intervals between the retries (these numbers may
+be changed, see the chapter 'Configuring ipalloc.scm' below).
+
+Thus, after the processing of an authentication request, the entry listing
+the framed IP for the user is marked as 'RSRV'.
+
+** Start of the session
+
+When the session is started, an accounting request arrives with the
+Acct-Session-Type attribute set to Start. Then the ipalloc looks up
+the entry with the matching pool and user_name and the value of status
+filed set to 'RSRV'. If such an entry is found, its status is changed
+to 'ASGN', thus ensuring it will not be used until the user logs out.
+
+Otherwise, if no start request arrives, this entry will eventually
+be reused as described in the 'Authentication' paragraph above.
+
+** End of the session
+
+When the user ends the session, an accounting request arrives with the
+Acct-Session-Type attribute set to Stop. Upon its arrival, ipalloc
+looks up an entry with the values of poll and user_name matching the
+request, and status column set to 'ASGN'. If such an entry is found,
+its status is reset to 'FREE', thereby returning this entry to the pool.
+
+** Fixed and blocked IP addresses
+
+The allocation process makes sure the entries marked as 'BLCK' will never
+be used. On the other hand, marking an entry with 'FIXD' will ensure the
+user will always receive this IP address.
+
+* Usage
+
+The module is installed in $prefix/share/radius/ipalloc.scm. To
+enable it, modify the following files:
+
+** raddb/config 
+
+Add the following statement:
+
+guile {
+      load "ipalloc.scm";
+};
+
+** raddb/users
+
+Add the following entry:
+
+BEGIN   Scheme-Procedure = "ip-alloc"
+	Fall-Through = Yes
+
+This will ensure that the ip-alloc procedure will be called by each user
+profile.
+
+** raddb/hints
+
+To the beginning of file add the following entry:
+
+DEFAULT Scheme-Acct-Procedure = "ip-alloc-update"
+	Fall-Through = Yes
+
+* Configuring ipalloc.scm
+
+** Number of attempts and the delay between them.
+
+The variable `ipalloc-max-attempts' sets the maximum number of lookup
+attempts.
+
+The variable `ipalloc-sleep-time' sets the delay in microseconds
+between the two consecutive attempts.
+
+
+
+Local Variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+version-control: never
+End:

@@ -721,7 +721,7 @@ input   : dcllist
 	  }
         | expr
           {
-		  FUNCTION main;
+		  FUNCTION fmain;
 
                   if (errcnt) {
                           YYERROR;
@@ -729,10 +729,10 @@ input   : dcllist
 		  
 		  mtx_return($1);
                   
-		  memset(&main, 0, sizeof(main));
-		  main.name = "main";
-		  main.rettype = return_type = $1->gen.datatype;
-		  function = &main;
+		  memset(&fmain, 0, sizeof(fmain));
+		  fmain.name = "main";
+		  fmain.rettype = return_type = $1->gen.datatype;
+		  function = &fmain;
 
                   if (optimize() == 0) {
                           codegen();
@@ -1433,7 +1433,8 @@ read_number()
 {
         int c;
         int base;
-
+	int res;
+	
         c = yychar;
         if (c == '0') {
                 if (input() == 'x' || yychar == 'X') {
@@ -1444,8 +1445,22 @@ read_number()
                 }
         } else
                 base = 10;
-                
-        return read_num(c2d(c), base);
+
+	res = read_num(c2d(c), base);
+	if (base == 10 && yychar == '.') {
+		int n;
+
+		for (n = 0; n < 3 && yychar == '.'; n++) {
+			int val;
+			
+			input();
+			val = read_num(0, base);
+			res = (res << 8) + val;
+		}
+		if (n != 3)
+			res <<= 8 * (3-n);
+	}
+	return res;
 }
 
 int
@@ -5326,23 +5341,21 @@ rewrite_invoke(char *name, RADIUS_REQ *request, char *typestr, ...)
 char *
 rewrite_compile(char *expr)
 {
-	pctr_t save_pc = rw_pc;
 	int rc;
 	FUNCTION *fun;
-	char *name;
-	
-	asprintf(&name, "$%s$", expr);
+	char *name = emalloc(strlen(expr) + 3); 
+
+	sprintf(name, "$%s$", expr);
         fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
-        if (fun) {
-		free(name);
-		return fun->name;
+        if (!fun) {
+		rc = parse_rewrite_string(expr);
+		if (rc) {
+			efree(name);
+			return NULL;
+		}
+		function->name = name;
+		function_install(function);
 	}
-	
-	rc = parse_rewrite_string(expr);
-	if (rc)
-		return NULL;
-	function->name = name;
-	function_install(function);
 	return name;
 }
 
@@ -5460,6 +5473,7 @@ static int
 free_path(void *item, void *data ARG_UNUSED)
 {
 	efree(item);
+	return 0;
 }
 
 static RAD_LIST *source_candidate_list; /* List of modules that are to
@@ -5535,9 +5549,12 @@ _load_module(void *item, void *data ARG_UNUSED)
 	return 0;
 }
 
-static void
-rewrite_after_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
+void
+rewrite_load_all(void *a ARG_UNUSED, void *b ARG_UNUSED)
 {
+	if (!source_candidate_list)
+		return;
+	
 	/* For compatibility with previous versions load the
 	   file $radius_dir/rewrite, if no explicit "load" statements
 	   were given */
@@ -5545,7 +5562,6 @@ rewrite_after_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 		rewrite_load_module("rewrite");
 	
 	list_iterate(source_candidate_list, _load_module, NULL);
-	list_destroy(&source_candidate_list, free_path, NULL);
 #if defined(MAINTAINER_MODE)
         if (debug_on(100))
                 debug_dump_code();
@@ -5558,7 +5574,6 @@ rewrite_init()
 	rewrite_tab = symtab_create(sizeof(FUNCTION), function_free);
 	code_init();
 	radiusd_set_preconfig_hook(rewrite_before_config_hook, NULL, 0);
-	radiusd_set_postconfig_hook(rewrite_after_config_hook, NULL, 0);
 }
 
 

@@ -67,7 +67,7 @@ passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
 {
         char    password[AUTH_STRING_LEN+1];
         req_decrypt_password(password, req, pass_pair);
-        string_free(pass_pair->avp_strvalue);
+        efree(pass_pair->avp_strvalue);
         encrypt_password(pass_pair, password, new_vector, new_secret);
         /* Don't let the cleantext hang around */
         memset(password, 0, AUTH_STRING_LEN);
@@ -75,9 +75,6 @@ passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
 
 /* ************************************************************************* */
 /* Functions for finding the matching request in the list of outstanding ones.
- * There appear to be two cases: i) when the remote server retains the
- * Proxy-State A/V pair, which seems to correspond to RFC 2865,
- * and ii) when the remote server drops the Proxy-State pair.
  */
 
 int
@@ -114,7 +111,7 @@ proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
 		       state->proxy_id,
 		       state->rem_ipaddr));
 		
-                if (state->proxy_id   == r->id
+                if (state->proxy_id == r->id
 		    && state->rem_ipaddr == r->ipaddr) {
 			debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x, proxy_id %d %d, server_addr %#8x %#8x", 
 				   qr->id, state->id,
@@ -130,17 +127,8 @@ proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
 				return 0;
 			}
 		} 
-	} else if (qr->server_id) {
-		debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x",
-			   qr->server_id,
-			   r->id,
-			   server->addr,
-			   r->ipaddr));
-                        
-		if (r->ipaddr == server->addr
-		    && r->id == qr->server_id)
-			return 0;
 	}
+	
 	return 1;
 }
 
@@ -194,7 +182,7 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
         p->attribute = DA_PROXY_STATE;
         p->type = TYPE_STRING;
         p->avp_strlength = sizeof(PROXY_STATE);
-        p->avp_strvalue = string_alloc(p->avp_strlength);
+        p->avp_strvalue = emalloc(p->avp_strlength);
         
         proxy_state = (PROXY_STATE *)p->avp_strvalue;
 	       
@@ -295,20 +283,17 @@ proxy_send(REQUEST *req)
                         *realmname = 0;
         }
         
+	if (username[0]==0)
+		abort();
         string_replace(&namepair->avp_strvalue, username);
+	if (namepair->avp_strvalue[0]==0)
+		abort();
         namepair->avp_strlength = strlen(namepair->avp_strvalue);
 
         radreq->server_no = 0;
 	radreq->attempt_no = 0;
-	radreq->remote_user = string_create(username);
+	radreq->remote_user = estrdup(username);
 
-	req->update_size = sizeof(*upd) + strlen(realm->realm);
-	upd = emalloc(req->update_size);
-	upd->proxy_id = radreq->server_id;
-	upd->server_no = radreq->server_no;
-	strcpy(upd->realmname, realm->realm);
-	req->update = upd;
-	
         /* If there is no DA_CHAP_CHALLENGE attribute but there
            is a DA_CHAP_PASSWORD we need to add it since we can't
 	   use the request authenticator anymore - we changed it. */
@@ -322,7 +307,7 @@ proxy_send(REQUEST *req)
                 vp->attribute = DA_CHAP_CHALLENGE;
                 vp->type = TYPE_STRING;
                 vp->avp_strlength = AUTH_VECTOR_LEN;
-                vp->avp_strvalue = string_alloc(AUTH_VECTOR_LEN);
+                vp->avp_strvalue = emalloc(AUTH_VECTOR_LEN);
                 memcpy(vp->avp_strvalue, radreq->vector, AUTH_VECTOR_LEN);
                 avl_add_pair(&radreq->request, vp);
         }
@@ -330,6 +315,17 @@ proxy_send(REQUEST *req)
         efree(saved_username);
 	
 	proxy_send_request(req->fd, radreq);
+
+	/* Prepare update data. This should follow the proxy_send_request(),
+	   since it creates server_id and server_no */
+	req->update_size = sizeof(*upd) + strlen(realm->realm);
+	upd = emalloc(req->update_size);
+	upd->proxy_id = radreq->server_id;
+	upd->server_no = radreq->server_no;
+	strcpy(upd->realmname, realm->realm);
+	req->update = upd;
+	debug(100, ("Update id=%d, proxy_id=%d, realm=%s, server_no=%d",
+		    radreq->id,upd->proxy_id,upd->realmname,upd->server_no));
 	
         return 1;
 }

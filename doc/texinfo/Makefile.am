@@ -10,5 +10,28 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-info_TEXINFOS=radius.texinfo
-radius_TEXINFOS=attributes.texinfo config.texi
+info_TEXINFOS=radius.texi
+radius_TEXINFOS=acct.texi\
+ attributes.texi\
+ auth.texi\
+ bugs.texi\
+ builddbm.texi\
+ config.texi\
+ configure.texi\
+ debug.texi\
+ intro.texi\
+ invoke.texi\
+ logging.texi\
+ naming.texi\
+ operation.texi\
+ radauth.texi\
+ radctl.texi\
+ radgrep.texi\
+ radlast.texi\
+ radping.texi\
+ radscm.texi\
+ raduse.texi\
+ radwho.texi\
+ radzap.texi\
+ version.texi
+

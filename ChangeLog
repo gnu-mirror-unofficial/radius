@@ -1,3 +1,37 @@
+2004-05-07  Sergey Poznyakoff
+
+	* include/checkrad.h (METHOD_GUILE): New define
+	* include/radiusd.h (scheme_eval_boolean_expr): New decl
+	* include/radius/radius.h (grad_read_raddb_file): Changed
+	declaration
+	* lib/raddb.c (grad_read_raddb_file): Accept an additional
+	argument: a list of delimiters.
+	* lib/argcv.c: Properly handle quotes starting at the
+	middle of an argument (e.g. port="val")
+	* lib/client.c: Updated invocations of grad_read_raddb_file()
+	* lib/dict.c: Likewise
+	* lib/nas.c: Likewise
+	* lib/realms.c: Likewise
+	* radiusd/files.c: Likewise
+	
+	* lib/envar.c (grad_envar_assign): New function
+	All functions reorganized to better accomodate it.
+	* radiusd/checkrad.c: Implemented Guile check.
+	* radiusd/scheme.c (scheme_safe_exec): Optionally return
+	the Scheme result of the function. All handlers updated
+	accordingly.
+	(scheme_eval_boolean_expr): New function.
+
+2004-05-07  Sergey Poznyakoff 
+
+	* lib/argcv.c: Sync with the recent changes in mailutils
+	repository
+	* radiusd/checkrad.c (struct check_instance.stack): New member;
+	All callers updated accordingly.
+	(checkrad_xlat_new, checkrad_xlat_old): New functions
+	(ext_check): Initial implementation.
+	* radiusd/rpp.c (pipe_write,pipe_read): Do not continue on EINTR.
+	
 2004-05-02  Sergey Poznyakoff
 
 	* NEWS: Raised version number to 1.2.91

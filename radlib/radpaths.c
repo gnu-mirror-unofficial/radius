@@ -32,6 +32,7 @@ char	*radacct_dir;
 char    *radutmp_path;
 char    *radwtmp_path;
 char    *radstat_path;
+char    *bug_report_address = "bug-gnu-radius@gnu.org";
 
 void
 radpath_init()

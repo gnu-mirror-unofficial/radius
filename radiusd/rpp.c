@@ -344,6 +344,9 @@ struct rpp_request {
 	/* Raw data follow */
 };
 
+#define RPP_COMPLETE  0 /* Completion reply */
+#define RPP_UPDATE    1 /* Update reply */
+
 struct rpp_reply {
 	int code;
 	size_t size;
@@ -438,6 +441,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 #endif
 
 	while (1) {
+		int rc;
 		int len = rpp_fd_read(0, &frq, sizeof frq);
 		if (len != sizeof frq) {
 			radlog(L_ERR,
@@ -460,20 +464,14 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		req = request_create(frq.type, frq.fd, &frq.addr,
 				     data, frq.size);
 		req->status = RS_COMPLETED;
-		repl.code = request_handle(req, request_respond);
+		rc = request_handle(req, request_respond);
 			
 		/* Inform the master */
 		debug(1, ("notifying the master"));
-		repl.size = req->update_size;
+		repl.code = RPP_COMPLETE;
+		repl.size = 0;
 		rpp_fd_write(1, &repl, sizeof repl);
-		if (req->update) {
-			rpp_fd_write(1, req->update, req->update_size);
-			efree(req->update);
-			req->update = NULL;
-			req->update_size = 0;
-		}
-
-		if (repl.code)
+		if (rc)
 			request_free(req);
 	}
 	return 0;
@@ -493,7 +491,7 @@ rpp_input_handler(int fd, void *data)
 			data = emalloc(repl.size);
 			rpp_fd_read(fd, data, repl.size);
 		}
-
+		
 		if (p) {
 		        debug(1, ("updating pid %d", p->pid));
 			p->ready = 1;
@@ -501,6 +499,18 @@ rpp_input_handler(int fd, void *data)
 		} 
 		efree(data);
 	}
+	return 0;
+}
+
+int
+rpp_update(void *data, size_t size)
+{
+	struct rpp_reply repl;
+
+	repl.code = RPP_UPDATE;
+	repl.size = size;
+	rpp_fd_write(1, &repl, sizeof repl);
+	rpp_fd_write(1, data, size);
 	return 0;
 }
 

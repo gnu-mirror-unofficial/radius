@@ -435,6 +435,32 @@ radius_xlate(struct obstack *obp, char *str, grad_request_t *req, grad_avp_t *re
         return obstack_finish(obp);
 }
 
+char *
+util_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq)
+{
+	char *str;
+	
+	if (fmt[0] == '=') {
+		Datatype type;
+		Datum datum;
+
+		/*FIXME: Should be compiled!*/
+		if (rewrite_interpret(fmt+1, radreq, &type, &datum)) 
+			return NULL;
+		if (type != String) {
+			grad_log(L_ERR, "%s: %s",
+			         fmt+1, _("wrong return type"));
+			return NULL;
+		}
+		obstack_grow(sp, datum.sval, strlen(datum.sval)+1);
+		grad_free(datum.sval);
+		str = obstack_finish(sp);
+	} else {
+		str = radius_xlate(sp, fmt, radreq, NULL);
+	}
+	return str;
+}
+
 static void
 pair_set_value(grad_avp_t *p, Datatype type, Datum *datum)
 {
@@ -492,4 +518,6 @@ radius_eval_avl(grad_request_t *req, grad_avp_t *p)
 
 	return errcnt++;
 }
+
+
 

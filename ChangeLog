@@ -1,5 +1,6 @@
 2001-11-15 Sergey Poznyakoff
 
+	* configure.in: Incremented patchlevel.
 	* test/dejagnu/Makefile.in: removed
 	* test/dejagnu/Makefile.am: (new)
 	* test/dejagnu/.cvsignore: Updated

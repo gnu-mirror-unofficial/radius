@@ -1,4 +1,4 @@
-Changes in Radius 0.95.91
+Changes in Radius 0.95.93
 
 ** The format of raddb/config has changed a little.
 
@@ -186,22 +186,37 @@ To create the default radius database:
  Alternately, you can create text files, describing the database structure
  by running `make mysql.struct' or `make pgsql.struct'
 
-** User's reply pairs can be retrieved from the SQL database.
+** Check and reply pairs for user's profile can be retrieved from the 
+SQL database.
 
-To do so, use `attr_query' statement in the raddb/sqlserver file. The
-statement must return pairs Attrname--Value, where Attrname is the name
-of attribute, as listed in raddb/dictionary, Value is the value to be
-assigned to it. For example, given the following table:
+To do so, use `check_attr_query' and `reply_attr_query' statements in
+the raddb/sqlserver file. `reply_attr_query' must return pairs
+Attrname - Value, where Attrname is the name of attribute, as listed in
+raddb/dictionary, Value is the value to be assigned to it.
+Similarly, `check_attr_query' must return a list of triplets
+Attrname - Value - Op, where Op means one of comparison operators,
+allowed in check pairs: "=", "!=", "<", ">", "<=", ">=".
+
+For example, given the following table:
 
 CREATE TABLE attrib (
   user_name varchar(32) default '' not null,
   attr      char(32) default '' not null,
-  value     char(128)
+  value     char(128),
+  op enum("=", "!=", "<", ">", "<=", ">=") default null
 );
 
-the attr_query will look like:
+the queries will look like:
 
-attr_query  select attr,value from attrib where user_name='%u'
+reply_attr_query  select attr,value \
+                  from attrib \
+                  where user_name='%u' \
+                  and op is null
+
+check_attr_query  select attr,value,op \
+                  from attrib \
+                  where user_name='%u' \
+                  and op is not null
 
 ** raddb/sqlserver: query_buffer_size clause is obsolete.
 

@@ -1,4 +1,5 @@
 Makefile
+Makefile.in
 site.exp
 *.log
 *.sum

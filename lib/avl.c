@@ -76,7 +76,7 @@ avp_dup(VALUE_PAIR *vp)
         return ret;
 }
 
-/* Create a pair with given attribute, length and value; */
+/* Create a pair with given attribute */
 VALUE_PAIR *
 avp_create(int attr)
 {

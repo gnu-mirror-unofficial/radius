@@ -154,7 +154,7 @@ void *
 list_item(struct list *list, size_t n)
 {
 	struct list_entry *p;
-	if (n > list->count)
+	if (n >= list->count)
 		return NULL;
 	for (p = list->head; n > 0 && p; p = p->next, n--)
 		;

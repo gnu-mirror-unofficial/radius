@@ -523,7 +523,7 @@ logging_stmt_end(void *block_data, void *handler_data)
 int
 logging_stmt_begin(int finish, void *block_data, void *handler_data)
 {
-	/*FIXME*/
+	/*nothing to do?*/
 	return 0;
 }
 

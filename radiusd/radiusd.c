@@ -49,7 +49,9 @@ static char rcsid[] =
 #include <symtab.h>
 #include <radutmp.h>
 #include <rewrite.h>
-
+#ifdef USE_GUILE
+# include <libguile.h>
+#endif
 
 /* ********************** Request list handling **************************** */
 	
@@ -127,6 +129,7 @@ static int max_fd;
 static void add_socket_list(int fd, int (*s)(), int (*r)(), int (*f)());
 static void close_socket_list();
 static void rad_select();
+static void rad_main();
 
 /* Implementation functions */
 int auth_respond(int fd, struct sockaddr *sa, int salen,
@@ -159,6 +162,7 @@ Config config = {
 };
 
 UINT4			warning_seconds;
+int use_guile;
 
 UINT4			myip = INADDR_ANY;
 int			auth_port;
@@ -269,12 +273,8 @@ main(argc, argv)
 {
 	struct servent *svp;
 	int argval;
-	int t;
-	int fd;
-	int pid;
 	int radius_port = 0;
-	FILE *fp;
-	char *p;
+	int t;
 	
 	if ((progname = strrchr(argv[0], '/')) == NULL)
 		progname = argv[0];
@@ -394,6 +394,7 @@ main(argc, argv)
 			exit(1);
 		}
 	}
+	radpath_init();
 
 	log_set_default("default.log", -1, -1);
 	if (radius_mode != MODE_DAEMON)
@@ -439,25 +440,19 @@ main(argc, argv)
 		acct_port = ntohs(svp->s_port);
 	
 	snmp_init(0, 0, emalloc, efree);
-	/*
-	 *	Read config files.
-	 */
-	radpath_init();
-	reread_config(0);
 
-	switch (radius_mode) {
-	case MODE_CHECKCONF:
-		exit(0);
 
-	case MODE_TEST:
-		exit(test_shell());
-		
-#ifdef USE_DBM		
-	case MODE_BUILDDBM:
-		exit(builddbm(argv[optind]));
-#endif		
-	}
+	rad_main();
+}
 
+
+void
+rad_daemon()
+{
+	FILE *fp;
+	char *p;
+	int t;
+	
 #ifdef USE_SNMP
 	snmp_tree_init();
 #endif
@@ -466,7 +461,7 @@ main(argc, argv)
 	 *	Disconnect from session
 	 */
 	if (foreground == 0) {
-		pid = fork();
+		pid_t pid = fork();
 		if (pid < 0) {
 			radlog(L_CRIT, _("couldn't fork: %s"), strerror(errno));
 			exit(1);
@@ -507,7 +502,43 @@ main(argc, argv)
 #ifdef HAVE_SETVBUF
 	setvbuf(stdout, NULL, _IOLBF, 0);
 #endif
+}
+
+void
+rad_main()
+{
+#ifdef USE_GUILE
+	char *argv[] = { "radiusd", NULL };
 	
+	scm_boot_guile (1, argv, rad_boot, NULL);
+#else
+	rad_mainloop();
+#endif
+}	
+
+void
+rad_mainloop()
+{
+	rad_daemon();
+	
+	/*
+	 *	Read config files.
+	 */
+	reread_config(0);
+
+	switch (radius_mode) {
+	case MODE_CHECKCONF:
+		exit(0);
+
+	case MODE_TEST:
+		exit(test_shell());
+		
+#ifdef USE_DBM		
+	case MODE_BUILDDBM:
+		exit(builddbm(argv[optind]));
+#endif		
+	}
+
 	radlog(L_INFO, _("Ready to process requests."));
 
 	for(;;) {

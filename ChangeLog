@@ -1,3 +1,11 @@
+2004-03-18  Sergey Poznyakoff
+
+	* NEWS: Minor fix
+	* raddb/dict/ascend.vs: Added Ascend-IP-TOS-Precedence. Thanks
+	Andrey Mosienko
+	* radiusd/files.c (hints_setup): A rewrite function might have
+	installed the new User-Name. Take care not to discard it.
+
 2004-03-02  Sergey Poznyakoff
 
 	* raddb/dict/standard (CHAP-Password): Removed 'E' marker.

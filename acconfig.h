@@ -112,7 +112,7 @@
 
 #undef YACC_DEBUG
 
-#if defined(sun)
+#if defined(sun) && !defined(__EXTENSIONS__)
 # define __EXTENSIONS__
 #endif
 

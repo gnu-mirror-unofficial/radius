@@ -3,7 +3,14 @@
 	* radiusd/auth.c: Renamed MACH to AUTH_MACH. It caused
 	  trouble on Hurd.
 	* sql/disp.c: Removed stray pth.h
-
+	* doc/texinfo/radwho.texi: Typo
+	* doc/texinfo/auth.texi: Removed erroneous Password != ""
+	  from Auth-Type = Accept sample.
+	* m4/inaddr.m4: include <sys/types.h>
+	* radiusd/radiusd.c: Close all inherited descriptors right
+	  after entering main. It is needed when linking against
+	  GNU pth.
+	
 2002-03-17  Sergey Poznyakoff  
 
 	* radiusd/files.c (hints_setup): Use avp_free instead

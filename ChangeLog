@@ -1,3 +1,9 @@
+2003-10-09  Sergey Poznyakoff 
+
+	* lib/ascend.c: Fixed handling of generic Ascend-.*-Filter
+	attributes.
+	* lib/localtime_r.c: Added missing include.
+
 2003-10-01  Sergey Poznyakoff
 
 	* include/radiusd.h (radius_eval_avl): New function

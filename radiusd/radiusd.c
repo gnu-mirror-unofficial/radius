@@ -1158,19 +1158,30 @@ rad_cfg_listen_auth(int argc, cfg_value_t *argv,
 	}
 	
 	for (i = 1; i < argc; i++)  
-		if (argv[i].type != CFG_HOST) {
+		if (argv[i].type == CFG_NETWORK) {
+			if (argv[i].v.network.netmask != 0xffffffffL)
+				cfg_type_error(CFG_HOST);
+		} else if (argv[i].type != CFG_HOST) {
 			cfg_type_error(CFG_HOST);
 			errcnt++;
 		}
 	
 	if (errcnt == 0 && radius_mode == MODE_DAEMON) {
-		for (i = 1; i < argc; i++) 
-			if (udp_open(R_AUTH,
-				     argv[i].v.host.ipaddr,
-				     argv[i].v.host.port > 0 ?
-				     argv[i].v.host.port : auth_port,
-				     0))
+		for (i = 1; i < argc; i++) {
+			grad_uint32_t ip;
+			int port;
+
+			if (argv[i].type == CFG_NETWORK) {
+				ip = argv[i].v.network.ipaddr;
+				port = auth_port;
+			} else {
+				ip = argv[i].v.host.ipaddr;
+				port = argv[i].v.host.port;
+			} 
+			
+			if (udp_open(R_AUTH, ip, port, 0))
 				errcnt++;
+		}
 	}
 	if (errcnt == 0)
 		_opened_auth_sockets++;
@@ -1202,18 +1213,30 @@ rad_cfg_listen_acct(int argc, cfg_value_t *argv,
 	}
 	
 	for (i = 1; i < argc; i++)  
-		if (argv[i].type != CFG_HOST) {
+		if (argv[i].type == CFG_NETWORK) {
+			if (argv[i].v.network.netmask != 0xffffffffL)
+				cfg_type_error(CFG_HOST);
+		} else if (argv[i].type != CFG_HOST) {
 			cfg_type_error(CFG_HOST);
 			errcnt++;
 		}
 	
 	if (errcnt == 0 && radius_mode == MODE_DAEMON) {
-		for (i = 1; i < argc; i++) 
-			udp_open(R_ACCT,
-				 argv[i].v.host.ipaddr,
-				 argv[i].v.host.port > 0 ?
-				 argv[i].v.host.port : acct_port,
-				 0);
+		for (i = 1; i < argc; i++) {
+			grad_uint32_t ip;
+			int port;
+
+			if (argv[i].type == CFG_NETWORK) {
+				ip = argv[i].v.network.ipaddr;
+				port = acct_port;
+			} else {
+				ip = argv[i].v.host.ipaddr;
+				port = argv[i].v.host.port;
+			} 
+			
+			if (udp_open(R_ACCT, ip, port, 0))
+				errcnt++;
+		}
 	}
 	_opened_acct_sockets++;
 	return 0;

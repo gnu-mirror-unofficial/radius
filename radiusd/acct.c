@@ -342,12 +342,7 @@ rad_acct_system(radreq, dowtmp)
         }
 #endif
         
-        if (protocol == DV_FRAMED_PROTOCOL_PPP)
-                ut.proto = 'P';
-        else if (protocol == DV_FRAMED_PROTOCOL_SLIP)
-                ut.proto = 'S';
-        else
-                ut.proto = 'T';
+	ut.proto = protocol;
         ut.time = t - ut.delay;
 
         /* Process Accounting-On/Off records */
@@ -832,13 +827,14 @@ rad_check_multi(name, request, maxsimul, pcount)
                     && up->type == P_LOGIN) {
                         if (rad_check_ts(up) == 1) {
                                 count++;
-                                /*
-                                 *      Does it look like a MPP attempt?
-                                 */
-                                if (strchr("SCPA", up->proto)
-                                    && ipno
-                                    && up->framed_address == ipno)
+				/* Does it look like a MPP attempt? */
+				if (ipno && up->framed_address == ipno)
+					switch (up->proto) {
+					case DV_FRAMED_PROTOCOL_PPP:
+					case DV_FRAMED_PROTOCOL_SLIP:
+					case 256: /* Ascend MPP */
                                         mpp = 1;
+					}
                         } else {
                                 /* Hung record */
                                 up->type = P_IDLE;

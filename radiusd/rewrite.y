@@ -5102,7 +5102,37 @@ bi_sub()
 	pushn((RWSTYPE) temp_space_fix(base));
 }
 
+#define ISPRINT(c) (((unsigned char)c) < 128 && (isalnum(c) || c == '-'))
 
+static void
+bi_qprn()
+{
+	char *s = (char*)getarg(1);
+	char *p;
+	size_t count;
+
+	for (count = 0, p = s; *p; p++)
+		if (!ISPRINT(*p))
+			count++;
+
+	/* Each encoded character takes 3 bytes. */
+	p = heap_reserve(strlen(s) + 2*count + 1);
+	
+	pushn((RWSTYPE) p);
+	for (; *s; s++) {
+		if (ISPRINT(*s))
+			*p++ = *s;
+		else {
+			char buf[3];
+			snprintf(buf, sizeof buf, "%2X", *s);
+			*p++ = '%';
+			*p++ = buf[0];
+			*p++ = buf[1];
+		}
+	}
+	*p = 0;
+}
+	
 static builtin_t builtin[] = {
         { bi_length,  "length", Integer, "s" },
 	{ bi_index,   "index",  Integer, "si" },
@@ -5118,6 +5148,7 @@ static builtin_t builtin[] = {
 	{ bi_inet_aton, "inet_aton", Integer, "s" },
 	{ bi_sub, "sub", String, "sss" },
 	{ bi_gsub, "gsub", String, "sss" },
+	{ bi_qprn, "qprn", String, "s" },
 	{ NULL }
 };
 

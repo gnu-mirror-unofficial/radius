@@ -91,24 +91,41 @@ radius_change_uid(pwd)
 	}
 }
 
-struct exec_sigchild_data {
+struct wait_data {
+	rad_sigid_t id;
 	pid_t pid;
 	int status;
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
 };
 
 int
-exec_sigchild(pid, status, data)
-	pid_t pid;
-	int status;
-	void *data;
+wait_for_prog(int sig, void *data, void *owner)
 {
-	struct exec_sigchild_data *dp = data;
-	if (dp->pid == pid) {
-		dp->pid = 0;
-		dp->status = status;
+	struct wait_data *wd = data;
+	int rc = 1;
+	
+	if (pthread_mutex_trylock(&wd->mutex) == EBUSY)
 		return 1;
-	}
-	return 0;
+	pthread_cond_signal(&wd->cond);
+	pthread_mutex_unlock(&wd->mutex);
+	return rc;
+}
+
+int
+wait_for_prog_sync(int sig, void *data, void *owner)
+{
+}
+
+void
+signal_cleanup(void *data)
+{
+	struct wait_data *wd = data;
+	pthread_mutex_unlock(&wd->mutex);
+	pthread_mutex_destroy(&wd->mutex);
+	pthread_cond_destroy(&wd->cond);
+	rad_signal_remove(SIGCHLD, wd->id, NULL);
+	wd->id = 0;
 }
 
 /* Execute a program on successful authentication.
@@ -126,8 +143,6 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 {
         int p[2];
         int n;
-	pid_t pid;
-	int status;
         char *ptr, *errp;
         VALUE_PAIR *vp;
         FILE *fp;
@@ -135,7 +150,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         char buffer[RAD_BUFFER_SIZE];
         struct passwd pw, *pwd;
         struct cleanup_data cleanup_data;
-	sigset_t sigset;
+	struct wait_data wd;
 	
         if (cmd[0] != '/') {
                 radlog(L_ERR,
@@ -161,12 +176,16 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                         return -1;
                 }
         }
+
+	if (exec_wait) {
+		pthread_mutex_init(&wd.mutex, NULL);
+		pthread_cond_init(&wd.cond, NULL);
+		pthread_mutex_lock(&wd.mutex);
+		wd.id = rad_signal_install(SIGCHLD, SH_ASYNC, 
+		                           wait_for_prog, &wd);
+	} /* else FIXME*/
 	
-	sigemptyset(&sigset);
-	sigaddset(&sigset, SIGCHLD);
-	pthread_sigmask(SIG_BLOCK, &sigset, NULL);
-	
-        if ((pid = fork()) == 0) {
+        if ((wd.pid = fork()) == 0) {
                 int argc;
                 char **argv;
                 struct obstack s;
@@ -206,8 +225,14 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         }
 
         /* Parent branch */ 
-        if (pid < 0) {
+        if (wd.pid < 0) {
                 radlog(L_ERR|L_PERROR, "fork");
+		rad_signal_remove(SIGCHLD, wd.id, NULL);
+		if (exec_wait) {
+			pthread_mutex_unlock(&wd.mutex);
+			pthread_mutex_destroy(&wd.mutex);
+			pthread_cond_destroy(&wd.cond);
+		}
                 return -1;
         }
         if (!exec_wait)
@@ -220,10 +245,11 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 
         vp = NULL;
         line_num = 0;
-	
+
+	pthread_cleanup_push((void (*)(void*))signal_cleanup, &wd);
 	cleanup_data.vp = &vp;
 	cleanup_data.fp = fp;
-	cleanup_data.pid = pid;
+	cleanup_data.pid = wd.pid;
 	pthread_cleanup_push((void (*)(void*))rad_exec_cleanup, &cleanup_data);
 	
         while (ptr = fgets(buffer, sizeof(buffer), fp)) {
@@ -238,12 +264,15 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                 }
         }
 
-	sigwait(&sigset, &n);
-        while (waitpid(pid, &status, 0) != pid)
-		;
-	
+	while (1) {
+		pthread_cond_wait(&wd.cond, &wd.mutex);
+		if (waitpid(wd.pid, &wd.status, WNOHANG) == wd.pid) 
+			break;
+	}
+
 	pthread_cleanup_pop(0);
-	pthread_sigmask(SIG_UNBLOCK, &sigset, NULL);
+	pthread_cleanup_pop(1);
+	rad_signal_cleanup(SIGCHLD);
 
         fclose(fp);
 
@@ -252,8 +281,8 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 		avl_free(vp);
 	}
 
-        if (WIFEXITED(status)) {
-                status = WEXITSTATUS(status);
+        if (WIFEXITED(wd.status)) {
+                int status = WEXITSTATUS(wd.status);
                 debug(1, ("returned: %d", status));
                 if (status == 2) {
                         radlog(L_ERR,
@@ -262,8 +291,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                 }
                 return status;
         } else {
-		format_exit_status(buffer,
-				   sizeof buffer, status);
+		format_exit_status(buffer, sizeof buffer, wd.status);
 
 		radlog(L_ERR,
 		       _("external program `%s' %s"), cmd, buffer);
@@ -414,6 +442,12 @@ typedef struct filter_runtime_data Filter;
 struct filter_runtime_data {
 	Filter *next;
 	Filter_symbol *sym;
+
+	pthread_mutex_t mutex;      /* Mutex for sigid */
+	rad_sigid_t id;             /* Signal handler */ 
+	pid_t  oldpid;              /* Pid of the exited filter process */
+	int    status;              /* Exit status of it */
+	
 	pthread_t tid;              /* Thread ID of the thread this filter
 				       belongs to */
 	pid_t  pid;                 /* Pid of the filter process */
@@ -457,11 +491,6 @@ struct filter_symbol {
 static Symtab *filter_tab;
 static Filter_symbol filter_symbol;
 
-struct filter_sigchild_data {
-	pid_t pid;
-	int status;
-};
-
 static void filter_lock(Filter *filter);
 static void filter_unlock(Filter *filter);
 static void filter_close(Filter *filter);
@@ -499,41 +528,6 @@ void
 filter_cleanup()
 {
 	symtab_iterate(filter_tab, filter_cleanup_proc, NULL);
-}
-
-static int
-filter_cleanup_pid_proc(data, sym)
-	struct filter_sigchild_data *data;
-	Filter_symbol *sym;
-{
-	Filter *filter;
-
-	for (filter = sym->filter; filter; filter = filter->next) {
-		if (filter->pid == data->pid) {
-			char buffer[80];
-			format_exit_status(buffer,
-					   sizeof buffer, data->status);
-			radlog(L_ERR,
-			       _("filter %s (pid %d) %s (in: %u, out: %u)"),
-			       sym->name, filter->pid,
-			       buffer,
-			       filter->lines_input, filter->lines_output);
-
-			if (filter->input >= 0) {
-				close(filter->input);
-				filter->input = -1;
-			}
-			if (filter->output >= 0) {
-				close(filter->output);
-				filter->output = -1;
-			}
-
-			filter->pid = -1;
-			data->pid = 0;
-			return 1;
-		}
-	}
-	return 0;
 }
 
 static int
@@ -585,15 +579,29 @@ filter_unlock(filter)
 }
 
 int
-filter_sigchild(pid, status)
-	pid_t pid;
-	int status;
+filter_sigchld(int sig, void *data, void *owner)
 {
-	struct filter_sigchild_data data;
-	data.pid = pid;
-	data.status = status;
-	symtab_iterate(filter_tab, filter_cleanup_pid_proc, &data);
-	return data.pid;
+	Filter *filter = data;
+	int status;
+	
+	if (waitpid(filter->pid, &filter->status, WNOHANG) == filter->pid) {
+		if (filter->input >= 0) {
+			close(filter->input);
+			filter->input = -1;
+		}
+		if (filter->output >= 0) {
+			close(filter->output);
+			filter->output = -1;
+		}
+
+		filter->oldpid = filter->pid;
+		filter->pid = -1;
+		rad_signal_remove(SIGCHLD, filter->id, owner);
+		filter->id = 0;
+		
+		return 0;
+	}
+	return 1;
 }
 	
 void
@@ -614,6 +622,8 @@ filter_close(filter)
 	if (filter->pid > 0)
 		kill(filter->pid, SIGTERM);
 	filter->pid = -1;
+	rad_signal_remove(SIGCHLD, filter->id, NULL);
+	filter->id = 0;
 }
 
 static Filter *
@@ -650,20 +660,39 @@ filter_open(name, req, type, errp)
 		filter->tid = pthread_self();
 		filter->sym = sym;
 		filter->input = filter->output = -1;
+		pthread_mutex_init(&filter->mutex, NULL);
 		filter->next = sym->filter;
 		sym->filter = filter;
+	} else if (filter->pid <= 0) {
+		char buffer[80];
+		Filter_symbol *sym = filter->sym;
+		
+		format_exit_status(buffer, sizeof buffer, filter->status);
+		radlog(L_ERR,
+		       _("filter %s (pid %d) %s (in: %u, out: %u)"),
+		       sym->name, filter->oldpid,
+		       buffer,
+		       filter->lines_input, filter->lines_output);
 	}
 	
 	if (filter->pid <= 0) {
 		int pipe[2];
 
+		pthread_mutex_lock(&filter->mutex);
+		filter->id = rad_signal_install(SIGCHLD, SH_SYNC, 
+		                                filter_sigchld,
+						filter);
 		filter->pid = radius_run_filter(sym->argc, sym->argv,
 						sym->errfile,
 						pipe);
+		pthread_mutex_unlock(&filter->mutex);
+		
 		if (filter->pid < 0) {
 			radlog_req(L_ERR|L_PERROR, req,
 				   _("cannot run filter %s"),
 				   name);
+			rad_signal_remove(SIGCHLD, filter->id, NULL);
+			filter->id = 0;
 			filter = NULL;
 		} else { 
 			if (!sym->descr[R_AUTH].wait_reply
@@ -910,6 +939,7 @@ free_symbol_entry(sym)
 		Filter *next = filter->next;
 		if (filter->pid > 0)
 			filter_close(filter);
+		pthread_mutex_destroy(&filter->mutex);
 		mem_free(filter);
 		filter = next;
 	}

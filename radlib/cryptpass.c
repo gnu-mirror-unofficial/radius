@@ -136,3 +136,43 @@ decrypt_password(password, pair, vector, secret)
 	password[passlen] = 0;
 	efree(md5buf);
 }
+
+/* Decrypt a password encrypted using broken algorythm.
+   This is for use with such brain-damaged NASes as MAX ascend. */
+void
+decrypt_password_broken(password, pair, vector, secret)
+	char *password;   /* At least AUTH_STRING_LEN+1 characters long */
+	VALUE_PAIR *pair; /* Password pair */
+	char *vector;     /* Request authenticator */
+	char *secret;     /* Shared secret */
+{
+	int md5len;
+	char *md5buf;
+	char digest[AUTH_VECTOR_LEN];
+	char *cp;
+	int secretlen;
+	int passlen;
+	int i, j;
+	
+	/* Initialize password buffer */
+	/* FIXME: control length */
+	memcpy(password, pair->strvalue, pair->strlength);
+	passlen = pair->strlength;
+	
+	/* Prepare md5buf */
+	secretlen = strlen(secret);
+	md5len = secretlen + AUTH_VECTOR_LEN;
+	md5buf = emalloc(md5len);
+	memcpy(md5buf, secret, secretlen);
+
+	/* Compute next MD5 hash */
+	memcpy(md5buf + secretlen, vector, AUTH_VECTOR_LEN);
+	md5_calc(digest, md5buf, md5len);
+
+	for (i = 0; i < passlen; ) {
+		/* Decrypt next chunk */
+		for (j = 0; j < AUTH_VECTOR_LEN; j++, i++)
+			password[i] ^= digest[j];
+	}
+	efree(md5buf);
+}

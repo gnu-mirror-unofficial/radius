@@ -29,6 +29,7 @@ dictionaries=\
  dict/cisco\
  dict/compat\
  dict/livingston\
+ dict/microsoft\
  dict/standard\
  dict/tunnel\
  dict/usr\

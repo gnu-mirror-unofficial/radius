@@ -28,11 +28,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+snmp_alloc_t __snmp_alloc_fp = (snmp_alloc_t) malloc;
+snmp_free_t  __snmp_free_fp  = (snmp_free_t) free;
+
 void *
 snmp_alloc(size)
         size_t size;
 {
-        return (*snmp_def.alloc)(size);
+        return (*__snmp_alloc_fp)(size);
 }
 
 void
@@ -40,7 +43,7 @@ snmp_free(ptr)
         void *ptr;
 {
         if (ptr)
-                (*snmp_def.free)(ptr);
+                (*__snmp_free_fp)(ptr);
 }
 
 char *

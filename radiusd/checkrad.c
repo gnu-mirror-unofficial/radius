@@ -93,7 +93,7 @@ create_instance(struct check_instance *cptr, grad_nas_t *nas, struct radutmp *up
                          nas->shortname);
                 return NULL;
         }
-        cptr->name = up->orig_login;
+        cptr->name = up->orig_login[0] ? up->orig_login : up->login;
         cptr->port = up->nas_port;
         cptr->sid  = up->session_id;
         cptr->framed_ip = up->framed_address;

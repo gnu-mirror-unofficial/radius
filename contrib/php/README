@@ -1,0 +1,45 @@
+Received: from odessa.farlep.net (odessa.farlep.net [213.130.1.236]) 
+	by Mirddin.farlep.net with ESMTP id i7QHAq022191
+	for <gray@Mirddin.farlep.net>; Thu, 26 Aug 2004 20:10:52 +0300
+X-Mailutils-Message-Id: i7QHAq022191
+Organization: Farlep
+Received: from localhost (ecilop.farlep.net [213.130.1.227])
+	(authenticated bits=0)
+	by odessa.farlep.net (Schnaps?/Ja-Ja!/Farlep-Odessa-Mail) with ESMTP id i7QHAn7T021889
+	for <gray@Mirddin.farlep.net>; Thu, 26 Aug 2004 20:10:52 +0300
+Date: Thu, 26 Aug 2004 20:10:49 +0300
+From: Sergei Sinkovsky <glorybox@farlep.net>
+X-Mailer: The Bat! (v2.00)         CD5BF9353B3B7091
+Reply-To: Sergei Sinkovsky <glorybox@farlep.net>
+X-Priority: 3 (Normal)
+Message-ID: <100428618320.20040826201049@farlep.net>
+To: Sergey Poznyakoff <gray@Mirddin.farlep.net>
+Subject: Re: mod_radius.c module
+In-Reply-To: <200408261708.i7QH86022177@Mirddin.farlep.net>
+References: <200408261708.i7QH86022177@Mirddin.farlep.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Virus-Scanned: clamd / ClamAV version 0.70, clamav-milter version 0.70j
+X-Envelope-Date: Thu Aug 26 20:10:52 2004
+X-Envelope-Sender: glorybox@farlep.net
+
+Hello Sergey,
+
+Thursday, August 26, 2004, 8:08:06 PM, you wrote:
+
+SP> Hi Sergey,
+
+SP> I ask your permission to include mod_radius.c in the
+SP> next release of GNU Radius. Will you agree to distribute it
+SP> with the project under the terms of GPL?
+
+SP> Regards,
+SP> Segrey
+I grant my permission on including mod_radius.c in the next releases
+of GNU Radius and distributing it under the terms of GNU GPL.
+
+Sergei Sinkovski
+mailto:glorybox@farlep.net
+
+

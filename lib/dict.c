@@ -36,8 +36,8 @@
 
 static Symtab    *dict_attr_tab;
 static DICT_ATTR *dict_attr_index[DICT_INDEX_SIZE];
-static LIST /* of DICT_VALUE */ *dictionary_values;
-static LIST /* of DICT_VENDOR */ *dictionary_vendors;
+static RAD_LIST /* of DICT_VALUE */ *dictionary_values;
+static RAD_LIST /* of DICT_VENDOR */ *dictionary_vendors;
 static int         vendorno;
 
 /* ************************************************************************ */

@@ -43,10 +43,10 @@ struct cfg_memblock {
 	int line_num;
 };
 
-static LIST /* of struct cfg_memblock */ *cfg_memory_pool;
+static RAD_LIST /* of struct cfg_memblock */ *cfg_memory_pool;
  
-static LIST *_cfg_vlist_create(cfg_value_t *val);
-static void _cfg_vlist_append(LIST *vlist, cfg_value_t *val);
+static RAD_LIST *_cfg_vlist_create(cfg_value_t *val);
+static void _cfg_vlist_append(RAD_LIST *vlist, cfg_value_t *val);
 
 void *cfg_malloc(size_t size, void (*destructor)(void *));
  
@@ -79,7 +79,7 @@ static struct syntax_block *block;
 static void _cfg_push_block(struct cfg_stmt *stmt, cfg_end_fp end, void *data);
 static struct syntax_block *_cfg_pop_block();
 
-int _cfg_make_argv(cfg_value_t **argv, char *keyword, LIST *vlist);
+int _cfg_make_argv(cfg_value_t **argv, char *keyword, RAD_LIST *vlist);
 void _cfg_free_argv(int argc, cfg_value_t *argv);
 
 struct cfg_stmt *_cfg_find_keyword(struct cfg_stmt *stmt, char *str);
@@ -99,7 +99,7 @@ static char *curp;
         char *string;
         cfg_value_t value;
         cfg_network_t network;
-	LIST *vlist;
+	RAD_LIST *vlist;
 	struct cfg_stmt *stmt;
 };
 
@@ -511,7 +511,7 @@ _cfg_free_memory_pool()
 }
 
 int
-_cfg_make_argv(cfg_value_t **argv, char *keyword, LIST *vlist)
+_cfg_make_argv(cfg_value_t **argv, char *keyword, RAD_LIST *vlist)
 {
 	int argc;
 
@@ -546,23 +546,23 @@ _cfg_free_argv(int argc, cfg_value_t *argv)
 static void
 _cfg_vlist_destroy(void *arg)
 {
-	LIST **pl = arg;
+	RAD_LIST **pl = arg;
 	list_destroy(pl, NULL, NULL);
 }
 
 void
-_cfg_vlist_append(LIST *vlist, cfg_value_t *val)
+_cfg_vlist_append(RAD_LIST *vlist, cfg_value_t *val)
 {
 	cfg_value_t *vp = cfg_malloc(sizeof(*vp), NULL);
 	*vp = *val;
 	list_append(vlist, vp);
 }
 
-LIST *
+RAD_LIST *
 _cfg_vlist_create(cfg_value_t *val)
 {
-	LIST *vlist = list_create();
-	LIST **lp = cfg_malloc(sizeof(*lp), _cfg_vlist_destroy);
+	RAD_LIST *vlist = list_create();
+	RAD_LIST **lp = cfg_malloc(sizeof(*lp), _cfg_vlist_destroy);
 	*lp = vlist;
 	_cfg_vlist_append(vlist, val);
 	return vlist;

@@ -151,7 +151,7 @@ typedef struct {
         unsigned retries;       /* Number of re-sends to each server before
 				   giving up */
 	size_t buffer_size;     /* Size of the recv buffer */
-        LIST   *servers;        /* List of servers */
+        RAD_LIST   *servers;        /* List of servers */
 } RADIUS_SERVER_QUEUE;    
 
 struct value_pair;
@@ -563,7 +563,7 @@ Channel * log_mark();
 void log_release();
 
 void register_channel(Channel *chan);
-void register_category(int cat, int pri, LIST *chanlist);
+void register_category(int cat, int pri, RAD_LIST *chanlist);
 
 void set_debug_levels(char *str);
 int set_module_debug_level(char *name, int level);

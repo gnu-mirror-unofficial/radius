@@ -162,7 +162,7 @@ struct netdef {
 typedef struct netname NETNAME;
 struct netname {
 	char *name;
-	LIST /* of NETDEF */ *netlist;
+	RAD_LIST /* of NETDEF */ *netlist;
 };
 
 typedef struct community Community;
@@ -174,7 +174,7 @@ struct community {
 typedef struct access_control_list ACL;
 struct access_control_list {
         Community *community;   /* community or NULL to deny access */
-	LIST /* of NETDEF */ *netlist;
+	RAD_LIST /* of NETDEF */ *netlist;
 };
 
 struct radstat {

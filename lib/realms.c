@@ -26,7 +26,7 @@
 #include <envar.h>
 #include <list.h>
 
-static LIST /* of REALM */ *realms; 
+static RAD_LIST /* of REALM */ *realms; 
 
 struct _parse_data {
 	int (*fun)();

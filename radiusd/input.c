@@ -28,8 +28,8 @@
 struct input_system {
 	fd_set fdset;
 	int fd_max;
-	LIST *methods;    /* List of METHOD structures */
-	LIST *channels;   /* List of CHANNEL structures */
+	RAD_LIST *methods;    /* List of METHOD structures */
+	RAD_LIST *channels;   /* List of CHANNEL structures */
 	ITERATOR *citr;
 };
 

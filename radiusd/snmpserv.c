@@ -44,15 +44,15 @@ static void snmpserv_before_config_hook(void *unused1, void *unused2);
 static void snmpserv_after_config_hook(void *arg, void *unused);
 static void snmp_tree_init();
 
-static LIST /* of ACL */ *snmp_acl;
-static LIST /* of Community */ *commlist;
+static RAD_LIST /* of ACL */ *snmp_acl;
+static RAD_LIST /* of Community */ *commlist;
 Server_stat *server_stat;
 struct radstat radstat;
 
 /* ************************************************************************ */
 /* Configuration file */
 
-static LIST /* of NETNAME */ *netlist;
+static RAD_LIST /* of NETNAME */ *netlist;
 
 static int
 _netname_cmp(const void *item, const void *data)
@@ -181,7 +181,7 @@ check_acl(UINT4 ip, char *community)
 }
 
 void
-snmp_add_acl(Community *community, LIST /* of NETDEF */ *netlist)
+snmp_add_acl(Community *community, RAD_LIST /* of NETDEF */ *netlist)
 {
         ACL *acl;
 

@@ -37,7 +37,7 @@ struct list {
 
 struct iterator {
 	struct iterator *next;
-	LIST *list;
+	RAD_LIST *list;
 	struct list_entry *cur;
 	int advanced;
 };
@@ -80,7 +80,7 @@ iterator_current(ITERATOR *ip)
 }
 
 ITERATOR *
-iterator_create(LIST *list)
+iterator_create(RAD_LIST *list)
 {
 	ITERATOR *itr;
 

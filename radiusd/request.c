@@ -66,7 +66,7 @@ struct request_class request_class[] = {
         { NULL, }
 };
 
-static LIST *request_list; /* List of REQUEST structures */
+static RAD_LIST *request_list; /* List of REQUEST structures */
 
 
 /* ************************* General-purpose functions ********************* */

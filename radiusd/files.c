@@ -61,8 +61,8 @@ Symtab          *deny_tab;     /* raddb/access.deny */
 
 MATCHING_RULE   *huntgroups;   /* raddb/huntgroups */ 
 MATCHING_RULE   *hints;        /* raddb/hints */
-LIST /* of CLIENT */ *clients; /* raddb/clients */
-LIST /* of RADCK_TYPE */ *radck_type;   /* raddb/nastypes */
+RAD_LIST /* of CLIENT */ *clients; /* raddb/clients */
+RAD_LIST /* of RADCK_TYPE */ *radck_type;   /* raddb/nastypes */
 
 static struct keyword op_tab[] = {
         { "=", OPERATOR_EQUAL },

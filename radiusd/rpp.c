@@ -202,7 +202,7 @@ rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 
   
 
-static LIST *process_list; /* List of rpp_proc_t */
+static RAD_LIST *process_list; /* List of rpp_proc_t */
 
 rpp_proc_t *
 rpp_lookup_fd(int fd)

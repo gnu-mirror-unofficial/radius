@@ -20,7 +20,7 @@
 
 #include <list.h>
 
-typedef LIST envar_t;
+typedef RAD_LIST envar_t;
 
 envar_t *envar_parse(char *str);
 envar_t *envar_parse_argcv(int argc, char **argv);

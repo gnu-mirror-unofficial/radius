@@ -31,7 +31,7 @@ typedef struct envar {
 } ENVAR;
 
 static void
-envar_parse_internal(char *str, LIST **plist)
+envar_parse_internal(char *str, RAD_LIST **plist)
 {
         int i;
         int argc;
@@ -74,7 +74,7 @@ envar_parse_internal(char *str, LIST **plist)
 envar_t *
 envar_parse(char *str)
 {
-	LIST *list = NULL;
+	RAD_LIST *list = NULL;
         envar_parse_internal(str, &list);
         return list;
 }
@@ -82,7 +82,7 @@ envar_parse(char *str)
 envar_t *
 envar_parse_argcv(int argc, char **argv)
 {
-	LIST *list = NULL;
+	RAD_LIST *list = NULL;
         while (argc--) {
                 envar_parse_internal(*argv++, &list);
         }

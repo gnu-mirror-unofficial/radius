@@ -29,7 +29,7 @@
 #include <radiusd.h>
 
 static int logging_category = L_CAT(L_MAIN);
-static LIST /* of Channel*/ *chanlist;     /* List of defined channels */
+static RAD_LIST /* of Channel*/ *chanlist;     /* List of defined channels */
 
 static void log_to_channel(Channel *chan, int cat, int pri,
                            char *buf1, char *buf2, char *buf3);
@@ -385,7 +385,7 @@ _regcat(void *item, void *data)
 }
 
 void
-register_category(int cat, int pri, LIST *clist)
+register_category(int cat, int pri, RAD_LIST *clist)
 {
 	struct category_closure clos;
 
@@ -451,7 +451,7 @@ static struct category_def {
 	int init;
 	int cat;
 	int pri;
-        LIST /* of Channel */ *clist;
+        RAD_LIST /* of Channel */ *clist;
         int level;
 } cat_def;
 

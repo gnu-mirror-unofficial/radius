@@ -807,8 +807,8 @@ struct hook_rec {
 	int once; /* Run once and remove */
 };
 
-static LIST /* of struct hook_rec */ *preconfig;
-static LIST /* of struct hook_rec */ *postconfig;
+static RAD_LIST /* of struct hook_rec */ *preconfig;
+static RAD_LIST /* of struct hook_rec */ *postconfig;
 
 void
 radiusd_set_preconfig_hook(void (*f)(void *, void *), void *p, int once)
@@ -835,7 +835,7 @@ radiusd_set_postconfig_hook(void (*f)(void *, void *), void *p, int once)
 }
 
 struct hook_runtime_closure {
-	LIST *list;
+	RAD_LIST *list;
 	void *call_data;
 };
 

@@ -22,6 +22,7 @@
 #endif
 
 #include <radiusd.h>
+#include <obstack1.h>
 
 /* Build and send a reply to the incoming request.
    Input: code        -- Reply code.
@@ -482,13 +483,102 @@ radius_respond(REQUEST *req)
                            radreq->code); 
                 return -1;
         }       
+
+	radius_trace_path(radreq);
+	
         return 0;
 }
 
 void
 radius_req_register_locus(RADIUS_REQ *req, LOCUS *loc)
 {
-	/*if (!some_global_flag)
-  	     return; */
+	switch (req->code) {
+	case RT_AUTHENTICATION_REQUEST:
+	case RT_AUTHENTICATION_ACK:
+	case RT_AUTHENTICATION_REJECT:
+	case RT_ACCESS_CHALLENGE:
+		if (!auth_trace_rules)
+			return;
+		break;
+		
+	case RT_ACCOUNTING_REQUEST:
+	case RT_ACCOUNTING_RESPONSE:
+	case RT_ACCOUNTING_STATUS:
+	case RT_ACCOUNTING_MESSAGE:
+		if (!acct_trace_rules)
+			return;
+		break;
+
+	default:
+		return;
+	}
+
+	if (!req->locus_list)
+		req->locus_list = list_create();
+	
 	list_prepend(req->locus_list, loc);
+}
+
+struct trace_data {
+	struct obstack stk;
+	char *file;
+};
+
+static char *
+skip_common_substring(char *str, char *pat)
+{
+	char *start = str;
+
+	while (*str == *pat++) 
+		if (*str++ == '/')
+			start = str;
+	return start; 
+}
+
+static int
+_trace_path_compose(void *item, void *data)
+{
+	LOCUS *loc = item;
+	struct trace_data *td = data;
+	char buf[64];
+	
+	if (!td->file) {
+		td->file = loc->file;
+		obstack_grow(&td->stk, loc->file, strlen(loc->file));
+		obstack_1grow(&td->stk, ':');
+	} else if (strcmp(td->file, loc->file) == 0) {
+		obstack_1grow(&td->stk, ',');
+	} else {
+		char *p;
+		
+		obstack_1grow(&td->stk, ';');
+		obstack_1grow(&td->stk, ' ');
+		
+		p = skip_common_substring(loc->file, td->file);
+		obstack_grow(&td->stk, p, strlen(p));
+		obstack_1grow(&td->stk, ':');
+		td->file = loc->file;
+	}
+
+	snprintf(buf, sizeof buf, "%lu", (unsigned long) loc->line);
+	obstack_grow(&td->stk, buf, strlen(buf));
+	
+	return 0;
+}
+
+void
+radius_trace_path(RADIUS_REQ *req)
+{
+	struct trace_data td;
+	char *p;
+	
+	if (!req->locus_list)
+		return; 
+	
+	obstack_init(&td.stk);
+	td.file = NULL;
+	list_iterate(req->locus_list, _trace_path_compose, &td);
+	p = obstack_finish(&td.stk);
+	radlog_req(L_INFO, req, _("rule trace: %s"), p);
+	obstack_free(&td.stk, NULL);
 }

@@ -78,14 +78,14 @@ shmem_alloc(size_t size)
 		}
 		if (fstat(tempfd, &sb)) {
 			radlog(L_ERR|L_PERROR, _("can't stat `%s'"),
-			    radstat_path);
+			       radstat_path);
 			close(tempfd);
 			return -1;
 		}
 		if (sb.st_size < size) {
 			int c = 0;
 			init = 1;
-			lseek(tempfd, size, SEEK_SET);
+			lseek(tempfd, size - 1, SEEK_SET);
 			write(tempfd, &c, 1);
 		} else if (sb.st_size > size)
 			init = 1;

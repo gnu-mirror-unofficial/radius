@@ -40,9 +40,7 @@
 /* ************************************************************************* */
 /* Functions local to this module */
 
-/*
- *      Decode a password and encode it again.
- */
+/* Decode a password and encode it again. */
 static void
 passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
 	      RADIUS_REQ *req)
@@ -53,6 +51,40 @@ passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
         encrypt_password(pass_pair, password, new_vector, new_secret);
         /* Don't let the cleantext hang around */
         memset(password, 0, AUTH_STRING_LEN);
+}
+
+/* Decode a password and encode it again. */
+static void
+tunnel_passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
+		     RADIUS_REQ *req)
+{
+        char password[AUTH_STRING_LEN+1];
+	u_char tag;
+	
+	decrypt_tunnel_password(password, 
+				&tag, pass_pair,
+				req->vector, req->secret);
+        efree(pass_pair->avp_strvalue);
+	encrypt_tunnel_password(pass_pair,
+				tag, password, 
+				new_vector, new_secret);
+	memset(password, 0, AUTH_STRING_LEN);
+}
+
+VALUE_PAIR *
+proxy_request_recode(RADIUS_REQ *radreq, VALUE_PAIR *plist,
+		     u_char *secret, u_char *vector)
+{
+	VALUE_PAIR *p;
+
+	/* Recode password pair(s) */
+	for (p = plist; p; p = p->next) {
+		if (p->prop & AP_ENCRYPT_RFC2138)
+			passwd_recode(p, secret, vector, radreq);
+		else if (p->prop & AP_ENCRYPT_RFC2868)
+			tunnel_passwd_recode(p, secret, vector, radreq);
+	}
+	return plist;
 }
 
 /* ************************************************************************* */
@@ -139,20 +171,6 @@ proxy_send_pdu(int fd, RADIUS_SERVER *server, RADIUS_REQ *radreq,
 	return sendto(fd, pdu, size, 0, (struct sockaddr *)&sin, sizeof(sin));
 }
 
-VALUE_PAIR *
-proxy_request_recode(RADIUS_REQ *radreq, u_char *secret, u_char *vector)
-{
-	VALUE_PAIR *p, *plist = avl_dup(radreq->request);
-
-	/* Recode password pair(s) */
-	for (p = plist; p; p = p->next) {
-		if (p->attribute == DA_USER_PASSWORD
-		    || p->attribute == DA_CHAP_PASSWORD)
-			passwd_recode(p, secret, vector, radreq);
-	}
-	return plist;
-}
-
 int
 proxy_send_request(int fd, RADIUS_REQ *radreq)
 {
@@ -182,7 +200,8 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 
 	rad_clt_random_vector(vector);
 
-	plist = proxy_request_recode(radreq, server->secret, vector);
+	plist = proxy_request_recode(radreq, avl_dup(radreq->request),
+				     server->secret, vector);
 
 	/* Add a proxy-pair to the end of the request. */
 	p = avp_alloc();
@@ -400,8 +419,10 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
 
         /* Rebuild the RADIUS_REQ struct, so that the normal functions
            can process it. Take care not to modify oldreq! */
-        
-        radreq->server_reply = allowed_pairs;
+
+ 	radreq->server_reply = proxy_request_recode(radreq, allowed_pairs,
+						    oldreq->secret,
+						    oldreq->vector);
         radreq->validated    = 1;
         radreq->server_code  = radreq->code;
         radreq->code         = oldreq->code;

@@ -73,7 +73,11 @@ proc default_radiusd_version {} {
     regexp "Compilation flags: (.*)\r?" [lindex $tmp 3] m RADIUSFLAGS
     set flg [split $RADIUSFLAGS]
     for {set i 0} {$i < [llength $flg]} {incr i} {
-	set CAPABILITY([lindex $flg $i]) 1
+        if [regexp "(.*)=(.*)" [lindex $flg $i] var name value] {
+	    set CAPABILITY($name) $value
+	} else {
+	    set CAPABILITY([lindex $flg $i]) 1
+	}
     }
 }
 
@@ -106,15 +110,18 @@ proc default_radiusd_start {args} {
     append sw " "
     
     if [info exists CAPABILITY(USE_SERVER_GUILE)] {
-	append sw "--guile"
+	append sw "--guile "
+    } 
+    if [info exists CAPABILITY(USE_SNMP)] {
+	append sw "--snmp "
     } 
 
     if [info exists host_board] {
 	if [board_info $host_board exists top_srcdir] {
-	    append sw " --srcdir [board_info $host_board top_srcdir]"
+	    append sw "--srcdir [board_info $host_board top_srcdir]"
 	}
 	if [board_info $host_board exists top_builddir] {
-	    append sw " --builddir [board_info $host_board top_builddir]"
+	    append sw "--builddir [board_info $host_board top_builddir]"
 	}
     }
 

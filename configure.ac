@@ -229,6 +229,14 @@ if test ".$BUILD_INCLUDED_LIBINTL" = ".yes" ; then
 	INCLUDEPATH="$INCLUDEPATH -I\$(top_srcdir)/intl"
 fi
 
+# Initialize the test suite.
+AC_CONFIG_TESTDIR(tests)
+AC_CONFIG_FILES([tests/Makefile
+                 tests/atlocal
+                 tests/raddb/Makefile
+                 tests/proxy/Makefile]) 
+AM_MISSING_PROG([AUTOM4TE], [autom4te])
+
 ## * Provide top and bottom parts of config.h.
 AH_TOP([
 #ifndef _REENTRANT
@@ -989,9 +997,6 @@ AC_CONFIG_FILES(Makefile
           snmplib/Makefile 
 	  radscm/Makefile 
           radiusd/Makefile 
-          radiusd/testsuite/Makefile 
-          radiusd/testsuite/raddb/Makefile 
-          radiusd/testsuite/proxy/Makefile 
           radlast/Makefile 
           radwho/Makefile 
           radzap/Makefile

@@ -482,6 +482,8 @@ dup_string(str)
 	if (!str)
 		return NULL;
 	hp = (STRHDR*)str - 1;
+	if (hp->s.nref == 255) /* FIXME: use limits.h */
+		return make_string(str);
 	hp->s.nref++;
 	return str;
 }

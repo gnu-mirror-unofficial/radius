@@ -213,7 +213,6 @@ void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
 #define RLOG_AUTH               0x0001
 #define RLOG_AUTH_PASS          0x0002
 #define RLOG_FAILED_PASS        0x0004
-#define RLOG_PID                0x0008
 #define RLOG_DEFAULT            (RLOG_AUTH | RLOG_FAILED_PASS)
 
 /*

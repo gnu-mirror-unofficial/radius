@@ -1,4 +1,68 @@
-2004-08-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2004-08-26  Sergey Poznyakoff
+
+	* configure.ac: Renamed --without-server to --disable-server.
+	Added --enable-php and --with-php-moddir options.
+	* contrib/Makefile.am: Added php directory
+
+	* contrib/php: New directory
+	* contrib/php/Makefile.am: New file
+	* contrib/php/mod_radius.c: New file
+	* contrib/php/README: New file
+	
+	* include/radiusd.h: Further namespace cleanup
+	* include/radius/mem.h: Likewise
+	* include/radius/radius.h: Likewise
+	* lib/avl.c: Likewise
+	* lib/client.c: Likewise
+	* lib/cryptpass.c: Likewise
+	* lib/debug.c: Likewise
+	* lib/dict.c: Likewise
+	* lib/iputil.c: Likewise
+	* lib/leakdetect.c: Likewise
+	* lib/logger.c: Likewise
+	* lib/radpaths.c: Likewise
+	* lib/radpdu.c: Likewise
+	* lib/radsrv.c: Likewise
+	* lib/radutmp.c: Likewise
+	* lib/realms.c: Likewise
+	* lib/users.y: Likewise
+	* lib/util.c: Likewise
+	* radiusd/acct.c: Likewise
+	* radiusd/auth.c: Likewise
+	* radiusd/builddbm.c: Likewise
+	* radiusd/files.c: Likewise
+	* radiusd/forward.c: Likewise
+	* radiusd/log.c: Likewise
+	* radiusd/mlc.c: Likewise
+	* radiusd/proxy.c: Likewise
+	* radiusd/radck.c: Likewise
+	* radiusd/radius.c: Likewise
+	* radiusd/radiusd.c: Likewise
+	* radiusd/radutil.c: Likewise
+	* radiusd/rewrite.y: Likewise
+	* radiusd/snmpserv.c: Likewise
+	* radiusd/stat.c: Likewise
+	* radiusd/tsh.c: Likewise
+	* radlast/radlast.c: Likewise
+	* radscm/radscm.c: Likewise
+	* radscm/rscm_hash.c: Likewise
+	* radscm/rscm_lib.c: Likewise
+	* radtest/gram.y: Likewise
+	* radtest/main.c: Likewise
+	* radtest/runtime.c: Likewise
+	* raduse/session.c: Likewise
+	* raduse/stat.c: Likewise
+	* radzap/radzap.c: Likewise
+	* client/pam_radius/pam_radius.c: Likewise
+
+	* radiusd/testsuite/Makefile.am: Conditional compilation of radiusd
+	* radiusd/Makefile.am: Likewise.
+
+	* radiusd/testsuite/lib/radiusd.exp: Remove spurious global
+
+	* THANKS: Added Sergei Sinkovsky.
+	
+2004-08-18  Sergey Poznyakoff
 
 	Added initial support for loadable modules. 
 	

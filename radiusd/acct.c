@@ -180,7 +180,6 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
 {
         struct radutmp  ut;
         VALUE_PAIR *vp;
-        int rb_record = 0;
         int status = -1;
         int nas_address = 0;
         int protocol = -1;
@@ -188,55 +187,16 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         int ret = 0, rc;
         int port_seen = 0;
         char buf[MAX_LONGNAME];
-        
+
         /* A packet should have Acct-Status-Type attribute */
         if ((vp = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
                 radlog_req(L_ERR, radreq,
                            _("no Acct-Status-Type attribute"));
                 return -1;
         }
+
         status = vp->avp_lvalue;
-        if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_ON ||
-            status == DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF)
-                rb_record = 1;
 
-        if (!rb_record &&
-            (vp = avl_find(radreq->request, DA_USER_NAME)) == NULL) {
-
-                /* ComOS (up to and including 3.5.1b20) does not send
-                   standard DV_ACCT_STATUS_TYPE_ACCOUNTING_{ON|OFF}
-                   attributes upon reboot or restart.
-                   Instead it sends the packet with regular Start/Stop
-                   attributes, Acct-Session-Id of "00000000" and
-                   Acct-Session-Time of 0 or without Acct-Session-Time
-                   attribute at all.
-
-                   For backward compatibility we convert such packets to
-                   DV_ACCT_STATUS_TYPE_ACCOUNTING_{ON|OFF} */
-                
-                if ((!(vp = avl_find(radreq->request, DA_ACCT_SESSION_TIME))
-                     || vp->avp_lvalue == 0) 
-                    &&
-                    ((vp = avl_find(radreq->request, DA_ACCT_SESSION_ID)) != NULL
-                     && vp->avp_strlength == 8
-                     && memcmp(vp->avp_strvalue, "00000000", 8) == 0)) {
-
-                        radlog_req(L_INFO, radreq, 
-                                   _("converting reboot records"));
-                        if (status == DV_ACCT_STATUS_TYPE_STOP)
-                                status = DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF;
-                        if (status == DV_ACCT_STATUS_TYPE_START)
-                                status = DV_ACCT_STATUS_TYPE_ACCOUNTING_ON;
-                        rb_record = 1;
-
-                }
-        } 
-
-        /* Add any specific attributes for this username. */
-        if (!rb_record && vp != NULL) {
-                hints_setup(radreq);
-                presuf_setup(radreq->request);
-        }
         time(&t);
         memset(&ut, 0, sizeof(ut));
         ut.porttype = -1; /* Unknown so far */
@@ -599,6 +559,9 @@ rad_accounting(RADIUS_REQ *radreq, int activefd, int verified)
 {
         log_open(L_ACCT);
 
+        /* FIXME: hints_setup won't work without a username */
+	hints_setup(radreq);
+	presuf_setup(radreq->request);
         huntgroup_access(radreq);
 
 #if defined(RT_ASCEND_EVENT_REQUEST) && defined(RT_ASCEND_EVENT_RESPONSE)

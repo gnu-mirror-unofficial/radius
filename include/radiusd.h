@@ -271,15 +271,12 @@ int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
 void rad_acct_xmit(int type, int code, void *data, int fd);
 
 /* radiusd.c */
-void sig_cleanup(int);
 int stat_request_list(QUEUE_STAT);
 void *scan_request_list(int type, int (*handler)(), void *closure);
 int set_nonblocking(int fd);
-int master_process();
 int rad_flush_queues();
 void schedule_restart();
 void rad_mainloop();
-
 
 /* radius.c */
 int rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);

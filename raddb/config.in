@@ -53,6 +53,7 @@ acct {
 rewrite {
 	load "checknas.rw";
 	load "log-hook.rw";
+	load "nas-ip.rw";
 };
 
 @SNMP_CONFIG@snmp {

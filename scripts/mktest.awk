@@ -25,7 +25,7 @@ BEGIN {
 }
 /#.*/ { next }
 NF==0 { next }
-/+/ { INCR = $2; next }
+/\+/ { INCR = $2; next }
 { printf("%s %s/%s %s/%03d%s\n", CMD, SRCDIR, $1, DSTDIR, num, $1); num += INCR }
 
 	

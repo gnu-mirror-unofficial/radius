@@ -572,5 +572,6 @@ radiusd_request_free(radiusd_request_t *radreq)
         grad_free(radreq->reply_msg);
         grad_avl_free(radreq->server_reply);
 	grad_request_free(radreq->request);
+	grad_free(radreq);
 }
 

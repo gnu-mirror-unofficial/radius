@@ -488,7 +488,7 @@ AC_ARG_WITH(mysql,
                               AC_DEFINE(HAVE_LIBMYSQL)
                               RA_RADIUSD_LDADD($ra_cv_lib_mysqlclient_r)
                             ],
-			    [ AC_MSG_ERROR(-lmysqlclient_r not found) ],
+			    :,
                             [/usr/local/lib/mysql /usr/lib/mysql])
 
 	         if test "$USE_SQL" != "1"; then

@@ -541,6 +541,10 @@ static int regcomp_flags = 0;     /* Flags to be used with regcomps */
 static size_t rewrite_stack_size = 4096;  /* Size of stack+heap */
 static RWSTYPE *runtime_stack;
 static RWMACH mach;
+
+/* Default domain for gettext functions. It is initialized to PACKAGE
+   by default */
+static char *default_gettext_domain;
  
 
 /* ***************************************************************
@@ -1370,8 +1374,8 @@ static int
 input()
 {
         if (yyeof)
-                return 0;
-	if (infile) {
+                yychar = 0;
+	else if (infile) {
 		if ((yychar = getc(infile)) <= 0) {
 			yyeof++;
 			yychar = 0;
@@ -3540,7 +3544,7 @@ static int checkpop(int cnt);
 static int pushref(char *str, int from, int to);
 static char *heap_reserve(int size);
 static void pushs(RWSTYPE *sptr, int len);
-static void pushstr(char *str, int len);
+static void pushstr(const char *str, int len);
 
 static void rw_pushn();
 static void rw_pushs();
@@ -4033,7 +4037,7 @@ pushs(RWSTYPE *sptr, int len)
 }
 
 void
-pushstr(char *str, int len)
+pushstr(const char *str, int len)
 {
         char *s;
         strncpy(s = heap_reserve(len+1), str, len);
@@ -5343,6 +5347,50 @@ bi_unquote_string()
 	argcv_unquote_copy(p, s, len);
 }
 
+static void
+bi_textdomain()
+{
+	pushstr(default_gettext_domain, strlen (default_gettext_domain));
+	grad_string_replace(&default_gettext_domain, (const char*)getarg(1));
+}
+
+static void
+bi_gettext()
+{
+	const char *p = dgettext(default_gettext_domain,
+				 (const char*)getarg(1));
+	pushstr(p, strlen(p));
+}
+
+static void
+bi_dgettext()
+{
+	const char *p = dgettext((const char*)getarg(2),
+				 (const char*)getarg(1));
+	pushstr(p, strlen(p));
+}
+
+
+static void
+bi_ngettext()
+{
+	const char *p = dngettext(default_gettext_domain,
+				  (const char*) getarg(3),
+				  (const char*) getarg(2),
+				  (unsigned long) getarg(1));
+	pushstr(p, strlen(p));
+}
+
+static void
+bi_dngettext()
+{
+	const char *p = dngettext((const char*) getarg(4),
+		                  (const char*) getarg(3),
+				  (const char*) getarg(2),
+				  (unsigned long) getarg(1));
+	pushstr(p, strlen(p));
+}
+
 static builtin_t builtin[] = {
         { bi_length,  "length", Integer, "s" },
 	{ bi_index,   "index",  Integer, "si" },
@@ -5364,6 +5412,13 @@ static builtin_t builtin[] = {
 	{ bi_unquote_string, "unquote_string", String, "s" },
 	{ bi_quote_string, "quote_string", String, "s" },
 	{ bi_request_code_string, "request_code_string", String, "i" },
+	/* i18n support */
+	{ bi_gettext, "gettext", String, "s" },
+	{ bi_gettext, "_", String, "s" },
+	{ bi_dgettext, "dgettext", String, "ss" },
+	{ bi_ngettext, "ngettext", String, "ssi" },
+	{ bi_dngettext, "dngettext", String, "sssi" },
+	{ bi_textdomain, "textdomain", String, "s" },
 	{ NULL }
 };
 
@@ -5442,6 +5497,8 @@ rw_mach_init()
 	mach.stack = runtime_stack;
         mach.st = 0;                      /* Stack top */
         mach.ht = rewrite_stack_size - 1; /* Heap top */
+
+	grad_string_replace(&default_gettext_domain, PACKAGE);
 }
 
 static void
@@ -5771,7 +5828,7 @@ free_path(void *item, void *data ARG_UNUSED)
 }
 
 static grad_list_t *source_candidate_list; /* List of modules that are to
-					   be loaded */
+					      be loaded */
 
 int
 rewrite_stmt_term(int finish, void *block_data, void *handler_data)
@@ -5787,6 +5844,8 @@ rewrite_stmt_term(int finish, void *block_data, void *handler_data)
 
 		grad_free(runtime_stack);
 		runtime_stack = NULL;
+
+		regcomp_flags = 0;
 	} 
 	return 0;
 }

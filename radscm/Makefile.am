@@ -45,10 +45,12 @@ GUILE_DOC_SNARF=$(top_srcdir)/scripts/guile/guile-doc-snarf
 SUFFIXES=.x .doc
 
 .c.x:
+	AWK=$(AWK) \
 	$(GUILE_DOC_SNARF) $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) \
                            $< > $@ || { rm $@; false; }
 
 .c.doc:
+	AWK=$(AWK) \
 	$(GUILE_DOC_SNARF) $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) \
                            $< > /dev/null || { rm $@; false; }
 

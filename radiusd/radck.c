@@ -104,34 +104,9 @@ mark_list(struct check_datum *datum, User_symbol *sym, VALUE_PAIR *list)
         }
 }
 
-static int
-compile_pairs(VALUE_PAIR *pair)
-{
-	for (; pair; pair = pair->next) {
-		if (pair->eval_type == eval_interpret) {
-			char *symname = rewrite_compile(pair->avp_strvalue);
-			if (symname == 0) 
-				return -1;
-			pair->eval_type = eval_compiled;
-			efree(pair->avp_strvalue);
-			pair->avp_strvalue = symname;
-			pair->avp_strlength = strlen(symname);
-		}
-	}
-	return 0;
-}
-
 int
 pass1(struct check_datum *datum, User_symbol *sym)
 {
-	if (compile_pairs(sym->reply)) {
-                radlog_loc(L_ERR, &sym->loc,
-			   _("discarding entry %s"),
-			   sym->name);
-                symtab_delete(datum->symtab, (Symbol *)sym);
-                datum->count--;
-	}
-	
         mark_list(datum, sym, sym->check);
         mark_list(datum, sym, sym->reply);
         return 0;
@@ -207,6 +182,21 @@ check_dup_attr(VALUE_PAIR **prev, VALUE_PAIR *ptr, LOCUS *loc)
                 *prev = ptr;
 }
 
+static int
+compile_pair(VALUE_PAIR *pair)
+{
+	if (pair->eval_type == eval_interpret) {
+		char *symname = rewrite_compile(pair->avp_strvalue);
+		if (symname == 0) 
+			return -1;
+		pair->eval_type = eval_compiled;
+		efree(pair->avp_strvalue);
+		pair->avp_strvalue = symname;
+		pair->avp_strlength = strlen(symname);
+	}
+	return 0;
+}
+
 /*ARGSUSED*/
 int
 fix_check_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
@@ -275,7 +265,6 @@ fix_check_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
                         }
                         break;
                 }
-                
         }
 
         if (cf_file != CF_USERS)
@@ -405,13 +394,19 @@ fix_reply_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
                 case DA_FALL_THROUGH:
                         fall_through++;
                         break;
+
+		case DA_ADD_PORT_TO_IP_ADDRESS:
+			radlog_loc(L_ERR, loc,
+			     _("Use of Add-Port-To-IP-Address is deprecated"));
+			errcnt++;
                 }
+
+		if (compile_pair(p))
+			errcnt++;
         }
 
         if (strncmp(name, "BEGIN", 5) == 0 && fall_through == 0) {
-                radlog_loc(L_WARN, loc,
-			   "%s",
-			   _("BEGIN without Fall-Through"));
+                radlog_loc(L_WARN, loc, "%s", _("BEGIN without Fall-Through"));
         }
         return errcnt;
 }
@@ -465,5 +460,3 @@ TC(unsigned *R, int n)
                 rowi = (unsigned *) ((char *) rowi + rowsize);
         }
 }
-
-

@@ -15,27 +15,24 @@ bin_SCRIPTS=radping radgrep builddbm
 EXTRA_DIST=radscripts.m4 radctl.m4 radauth.m4 \
            radping.m4 radgrep.m4 builddbm.m4
 CLEANFILES=$(sbin_SCRIPTS) $(bin_SCRIPTS)
-
+M4_DEFINES=-DSRCDIR=$(srcdir) -DPROGNAME=$(sbindir)/radiusd \
+           -DBINDIR=$(bindir) -DSBINDIR=$(sbindir) -DDATADIR=$(pkgdatadir) \
+           -DPIDFILE=$(RADPID_DIR)/radiusd.pid -DPS=$(PS) \
+	   -DAWK=$(AWK) -DGETOPT=$(GETOPT)
 radctl: $(srcdir)/radctl.m4
-	$(M4) -DSRCDIR=$(srcdir) -DPROGNAME=$(sbindir)/radiusd \
-              -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
-              -DPIDFILE=$(RADPID_DIR)/radiusd.pid -DPS=$(PS) \
-	      -DAWK=$(AWK) $(srcdir)/radctl.m4 > radctl
+	$(M4) $(M4_DEFINES) $(srcdir)/radctl.m4 > radctl
 
 radgrep: $(srcdir)/radgrep.m4
-	$(M4) -DSRCDIR=$(srcdir) $(srcdir)/radgrep.m4 > radgrep
+	$(M4) $(M4_DEFINES) $(srcdir)/radgrep.m4 > radgrep
 
 radping: $(srcdir)/radping.m4
-	$(M4) -DSRCDIR=$(srcdir) -DAWK=$(AWK) -DGETOPT=$(GETOPT) \
-	       $(srcdir)/radping.m4 > radping
+	$(M4) $(M4_DEFINES) $(srcdir)/radping.m4 > radping
 
 radauth: $(srcdir)/radauth.m4
-	$(M4) -DSRCDIR=$(srcdir) -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
-              -DGETOPT=$(GETOPT) $(srcdir)/radauth.m4 > radauth
+	$(M4) $(M4_DEFINES) $(srcdir)/radauth.m4 > radauth
 
 builddbm: $(srcdir)/builddbm.m4
-	$(M4) -DSRCDIR=$(srcdir) -DSBINDIR=$(sbindir) \
-              $(srcdir)/builddbm.m4 > builddbm
+	$(M4) $(M4_DEFINES) $(srcdir)/builddbm.m4 > builddbm
 
 # Maintainer-specific part
 if MAINTAINER_MODE

@@ -1279,7 +1279,7 @@ realm_find(realm)
 	for (p = realms; p; p = p->next)
 		if (strcmp(p->realm, realm) == 0)
 			break;
-	if (!p) {
+	if (!p && strcmp(realm, "NOREALM")) {
 		for (p = realms; p; p = p->next)
 			if (strcmp(p->realm, "DEFAULT") == 0)
 				break;

@@ -15,8 +15,6 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#define RADIUS_MODULE_SIGNAL_C
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -50,8 +48,11 @@ static pthread_mutex_t signal_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t signal_cond = PTHREAD_COND_INITIALIZER;
 
 struct _signal_queue *
-_signal_queue_install (struct _signal_queue **phead,
-		       int type, rad_signal_t handler, void *data)
+_signal_queue_install (phead, type, handler, data)
+	struct _signal_queue **phead;
+	int type;
+	rad_signal_t handler;
+	void *data;
 {
 	struct _signal_queue *newq = emalloc (sizeof *newq);
 	newq->next = *phead;
@@ -63,7 +64,9 @@ _signal_queue_install (struct _signal_queue **phead,
 }
 
 int
-_signal_queue_remove (struct _signal_queue **phead, struct _signal_queue *item)
+_signal_queue_remove (phead, item)
+	struct _signal_queue **phead;
+	struct _signal_queue *item;
 {
 	struct _signal_queue *prev = NULL, *q;
 
@@ -81,27 +84,35 @@ _signal_queue_remove (struct _signal_queue **phead, struct _signal_queue *item)
 }
 
 void
-_signal_entry_init (struct _signal_entry *e)
+_signal_entry_init (e)
+	struct _signal_entry *e;
 {
 	pthread_mutex_init (&e->mutex, NULL);
 }
 
 void
-_signal_entry_lock (struct _signal_entry *e, const void *owner)
+_signal_entry_lock (e, owner)
+	struct _signal_entry *e;
+	const void *owner;
 {
 	if (e != owner)
 		pthread_mutex_lock (&e->mutex);
 }
 
 void
-_signal_entry_unlock (struct _signal_entry *e, const void *owner)
+_signal_entry_unlock (e, owner)
+	struct _signal_entry *e;
+	const void *owner;
 {
 	if (e != owner)
 		pthread_mutex_unlock (&e->mutex);
 }
 
 int
-_signal_entry_runqueue (int sig, int type, struct _signal_entry *e)
+_signal_entry_runqueue (sig, type, e)
+	int sig;
+	int type;
+	struct _signal_entry *e;
 {
 	int rc = 1;
 	struct _signal_queue *q;
@@ -125,7 +136,9 @@ _signal_entry_runqueue (int sig, int type, struct _signal_entry *e)
 }
 
 static void
-_signal_deliver (int sig, int type)
+_signal_deliver (sig, type)
+	int sig;
+	int type;
 {
 	unsigned i, pass;
 
@@ -141,9 +154,9 @@ _signal_deliver (int sig, int type)
 void
 _awake_signal_thread ()
 {
-	Pthread_mutex_lock (&signal_mutex);
+	pthread_mutex_lock (&signal_mutex);
 	pthread_cond_signal (&signal_cond);
-	Pthread_mutex_unlock (&signal_mutex);
+	pthread_mutex_unlock (&signal_mutex);
 }
 
 void
@@ -160,7 +173,8 @@ rad_signal_deliver ()
 
 
 void *
-signal_thread0 (void *arg)
+signal_thread0 (arg)
+	void *arg;
 {
 	while (1) {
 		int sig;
@@ -172,8 +186,8 @@ signal_thread0 (void *arg)
 		atime.tv_sec = now.tv_sec;
 		atime.tv_nsec = now.tv_usec * 1000 + 10;
 		
-		pthread_cond_timedwait (&signal_cond, &signal_mutex, &atime);
- 		for (sig = 0; sig < NSIG; sig++)
+		pthread_cond_wait (&signal_cond, &signal_mutex);//, &atime);
+		for (sig = 0; sig < NSIG; sig++)
 			_signal_deliver (sig, SH_ASYNC);
 		pthread_mutex_unlock (&signal_mutex);
 	}
@@ -193,14 +207,21 @@ _signal_start_thread ()
 }
 
 RETSIGTYPE
-signal_handler (int sig)
+signal_handler (sig)
+	int sig;
 {
-	sigtab[sig].count++;
-	_signal_deliver (sig, SH_SYNC);
+	if (sigtab[sig].head) {
+		sigtab[sig].count++;
+		_signal_deliver (sig, SH_SYNC);
+	}
 }
 
 rad_sigid_t
-rad_signal_install (int sig, int type, rad_signal_t handler, void *data)
+rad_signal_install (sig, type, handler, data)
+	int sig;
+	int type;
+	rad_signal_t handler;
+	void *data;
 {
 	struct _signal_entry *entry;
 	rad_sigid_t id;
@@ -225,7 +246,10 @@ rad_signal_install (int sig, int type, rad_signal_t handler, void *data)
 		sigaction (sig, &act, NULL);
 		_signal_entry_init (entry);
 	}
-		
+
+	if (!handler)
+		return NULL;
+	
 	_signal_entry_lock (entry, NULL);
 	id = (rad_sigid_t) _signal_queue_install (&entry->head, type,
 						  handler, data);
@@ -234,7 +258,10 @@ rad_signal_install (int sig, int type, rad_signal_t handler, void *data)
 }
 
 rad_sigid_t
-rad_signal_remove (int sig, rad_sigid_t id, const void *owner)
+rad_signal_remove (sig, id, owner)
+	int sig;
+	rad_sigid_t id;
+	const void *owner;
 {
 	struct _signal_entry *entry;
 
@@ -255,7 +282,8 @@ rad_signal_remove (int sig, rad_sigid_t id, const void *owner)
 }
 
 int
-rad_signal_cleanup(int sig)
+rad_signal_cleanup(sig)
+	int sig;
 {
 	if (sigtab[sig].count)
 		sigtab[sig].count--;

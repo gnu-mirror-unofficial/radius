@@ -71,7 +71,6 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 	int line_num;
 	char buffer[RAD_BUFFER_SIZE];
 	struct passwd *pwd;
-	struct group  *grp;
 #if 0
 	int saved_uid, saved_gid;
 #endif
@@ -93,28 +92,6 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
     _("radius_exec_program(): won't execute, no such user: %s"),
 		       config.exec_user);
 		return -1;
-	}
-	grp = getgrnam(config.exec_group);
-	if (!grp) {
-		radlog(L_ERR,
-    _("radius_exec_program(): won't execute, no such group: %s"),
-		       config.exec_group);
-		return -1;
-	} else if (pwd->pw_gid != grp->gr_gid) {
-		int ok = 0;
-		char **mp;
-
-		for (mp = grp->gr_mem; *mp; mp++)
-			if (strcmp(*mp, pwd->pw_name) == 0) {
-				ok++;
-				break;
-			}
-		if (!ok) {
-			radlog(L_ERR,
-     _("radius_exec_program(): won't execute, user %s not in group %s"),
-			       pwd->pw_name, grp->gr_name);
-			return -1;
-		}
 	}
 	
 	if (exec_wait) {
@@ -162,7 +139,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 		saved_gid = getegid();
 		#endif
 		
-		if (grp->gr_gid && setgid(grp->gr_gid)) {
+		if (pwd->pw_gid != 0 && setgid(pwd->pw_gid)) {
 			radlog(L_ERR|L_PERROR,
 			       _("setgid(%d) failed"), pwd->pw_gid);
 		}

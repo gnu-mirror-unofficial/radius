@@ -1,3 +1,4 @@
 # For detailed description, run:
 #       info Radius hints
 
+DEFAULT	Rewrite-Function = restore_nas_ip	Fall-Through = Yes

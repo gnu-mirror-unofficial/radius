@@ -1,5 +1,7 @@
+include(SRCDIR/radscripts.m4)dnl
 #! /bin/sh
-# $Id$
+# NOEDIT
+#
 # This file is part of GNU Radius.
 # Copyright (C) 2001,2003 Free Software Foundation, Inc.
 #
@@ -12,7 +14,7 @@
 # GNU Radius is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-include(SRCDIR/radscripts.m4)dnl
+
 PATH=$PATH:/sbin:/usr/sbin
 
 usage() {

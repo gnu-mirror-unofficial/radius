@@ -1,5 +1,7 @@
+include(SRCDIR/radscripts.m4)dnl
 #! /bin/sh
-# $Id$
+# NOEDIT
+#
 # This file is part of GNU Radius.
 # Copyright (C) 2000,2003 Free Software Foundation, Inc.
 #
@@ -18,7 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Radius; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-include(SRCDIR/radscripts.m4)dnl
 
 PATH=/bin:/usr/bin:/usr/ucb:$PATH; export PATH
 [PS]="PS"

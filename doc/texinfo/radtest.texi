@@ -8,33 +8,35 @@
 @pindex radtest
 @UNREVISED{}
 
-@command{Radtest} provides a simple radius client shell. Its main
-purpose is to provide a simple and convenient language for sending
-requests to @RADIUS{} servers and analyzing their reply packets.
+@command{Radtest} is a radius client shell, providing a simple and
+convenient language for sending requests to @RADIUS{} servers and
+analyzing their reply packets.
 
 @menu
-* Values and Variables::
-* Conversion Between Data Types::
+* Literal Values::
+* Reserved Keywords::
+* Variables::
+* Positional Parameters::
+* Expressions::
+* Function Definitions::
 * Interacting with Radius Servers::
 * Conditional Statements::
 * Loops::
 * Built-in Primitives::
-* Complete Radtest Syntax Description::
 @end menu
 
-@node Values and Variables
-@subsection Values and Variables
-@UNREVISED{}
+@node Literal Values
+@subsection Literal Values
 
-There are four basic data types in @command{radtest} language: integer,
-@IP{}, string and @AVP{} list.
+There are four basic data types in @command{radtest} language: @code{integer},
+@code{ipaddr}, @code{string} and @code{avlist}.
 
 @dfn{Integer} means a signed integer value in the range
 -2147483648..2147483647.
 
-@dfn{@IP{}} is an unsigned integer value suitable for representing
-@IP{}s. These can be input either as decimal numbers or as @IP{}s
-in usual ``dotted-quad'' notation.
+@dfn{Ipaddr} is an unsigned integer value suitable for representing
+@sc{ip}v4 addresses. These can be input either as decimal numbers or
+as @IP{}s in usual ``dotted-quad'' notation.
 
 @dfn{String} is an arbitrary string of characters. Any input token
 consisting of letters of Latin alphabet, decimal digits, underscores
@@ -99,7 +101,13 @@ A character whose ASCII value is represented by the hex number @samp{HH}.
 If the character following the backslash is not one of those
 specified, the backslash is ignored.
 
-@dfn{@AVP{} lists} are whitespace or comma-separated lists of
+@anchor{STRNUM}An important variant of @code{string} is a @dfn{numeric string},
+or @dfn{STRNUM} for short. A numeric string is a string that
+can be converted to a number, for example @code{"+2"}. This concept
+is used for type conversion between @code{integer} and @code{string}
+values.
+
+@dfn{Avlist} are whitespace or comma-separated lists of
 @RADIUS{} attribute-value pairs. A syntax for @AVP{} is
 
 @example
@@ -120,8 +128,603 @@ example of an @AVP{} list consisting of two pairs:
 @end group
 @end smallexample
 
+@noindent
+An empty pair list is represented by a pair of parentheses: @code{()}.
+
+@node Reserved Keywords
+@subsection Reserved Keywords
+
+The following keywords are reserved in @command{radtest}:
+
+@smallexample
+@group
+acct, and, auth, begin, break, case, continue, 
+do, else, end, exit, expect, getopt, if,       
+in, input, not, or, print, return, send,     
+set, shift, while    
+@end group
+@end smallexample
+
+The reserved keywords may be used as variable names, provided that
+the following requrements are met:
+
+@itemize @bullet
+@item In assignment, these names are quoted using single quotes.
+
+@smallexample
+'case' = 1
+@end smallexample
+
+@item When dereferencing, the use of curly braces is obligatory:
+
+@smallexample
+$@{case@} + 2
+@end smallexample
+@end itemize
+
+@node Variables
+@subsection Variables
+
+Variables are means of storing data values at one point of your
+program for using them in another parts of it. Variables can be
+assigned either in the program itself, or from the @command{radtest}
+command line.
+
+@menu
+* Using Variables::
+* Variable Assignments::
+* Dereferencing Variables::
+* Assignment Options::
+* Built-in Variables::
+@end menu
+
+@node Using Variables
+@subsubsection Using Variables
+
+The name of a variable must be a sequence of letters, digits,
+underscores and dashes, but it may not begin with a digit or dash. Notice,
+that in contrast to the majority of programming languages, use of
+dashes (minus signs) is allowed in user names. This is because
+traditionally @RADIUS{} attribute names contain dashes, so
+extending this practice to variable names makes @code{radtest}
+programs more consistent. On the other hand, this means that you
+should be careful when using minus sign as a subtraction
+operator (@pxref{dash-ambiguity}). Case is significant in variable names:
+@code{a} and @code{A} are different variables. 
+
+A name of a variable may coincide with one of @code{radtest} reserved
+keywords. @xref{Reserved Keywords}, for description on how to use such
+variables.
+
+A few variables have special built-in meanings (@pxref{Built-in Variables}). Such
+variables can be assigned and accessed just as any other ones. All
+built-in variables names are entirely upper-case.
+
+Variables are never declared, they spring into existence when
+an assignment is made to them. The type of a variable is determined
+by the type of the value assigned to it. 
+
+@node Variable Assignments
+@subsubsection Variable Assignments
+
+An @dfn{assignment} stores a new value into a variable. It's syntax
+is quite straightforward:
+
+@smallexample
+@var{variable} = @var{expression}
+@end smallexample
+
+@noindent
+As a result of the assignment, the @var{expression} is evaluated and
+its value is assigned to @var{variable}. If @var{variable} did not
+exist before the assignment, it is created. Otherwise, whatever old
+value it had before the assignment is forgotten.
+
+It is important to notice that variables do @emph{not} have
+permanent types. The type of a variable is the type of whatever
+value it currently holds. For example:
+
+@smallexample
+@group
+foo = 1
+print $foo @result{} 1
+foo = "bar"
+print $foo @result{} bar
+foo = ( User-Name = "antonius" NAS-IP-Address = 127.0.0.1 )
+print $foo @result{} ( User-Name = "antonius" NAS-IP-Address = 127.0.0.1 )
+@end group
+@end smallexample
+
+Another important point is that in @command{radtest}, assignment is
+not an expression, as it is in many other programming languages. So
+@code{C} programmers should resist temptation to use assignments in
+expressions. The following is @emph{not} correct:
+
+@smallexample
+x = y = 1
+@end smallexample
+
+Finally, if the variable name coincides with one of @command{radtest}
+keywords, it must be enclosed in single quotes:
+
+@smallexample
+'case' = 1
+@end smallexample
+
+@node Dereferencing Variables
+@subsubsection Dereferencing Variables
+
+@dfn{Dereferencing} a variable means accessing its value. The
+simplest form of dereferencing is by prepending a dollar sign
+to the variable name:
+
+@smallexample
+@group
+foo = 1
+print foo @result{} foo
+print $foo @result{} 1
+@end group
+@end smallexample
+
+@noindent
+Notice, that in the example above, the first @code{print} statement
+understands @code{foo} as a literal string, whereas the second one
+prints the value of the variable.
+
+Dereferencing an undefined variable produces error message:
+
+@smallexample
+print $x @error{} variable `x' used before definition
+@end smallexample
+
+Optionally, the variable name may be surrounded by curly braces.
+Both @code{$foo} and @code{$@{foo@}} are equivalent. The use of
+the latter form is obligatory only when the variable name coincides
+with one of the reserved keywords (@pxref{Reserved Keywords}).
+@anchor{dash-ambiguity}It also can be used to resolve ambiguity between using dash as
+a part of user name and as a subtraction operator:
+
+@smallexample
+@group
+long-name = 2
+$long-name @result{} 2
+$long-name-1 @error{} variable `long-name-1' used before definition
+$@{long-name@}-1 @result{} 1
+$long-name - 1 @result{} 1
+@end group
+@end smallexample
+
+We recommend to always surround @samp{-} with whitespace when it is
+used as arithmetic operator.
+
+The @code{$@{@}} notation also permits some operations similar to
+shell variable substitution.
+
+@table @asis
+@item $@{variable:-text@}
+Use default values. If @var{variable} is unset, return @var{text},
+otherwise return the value of the @var{variable}.
+
+@smallexample
+@group
+$x @error{} variable `x' used before definition
+$@{x:-1@} @result{} 1
+x = 2
+$@{x:-1@} @result{} 2
+@end group
+@end smallexample
+
+@item $@{variable:=text@}
+Assign default values. If @var{variable} is unset, @var{text} is
+assigned to it. The expression always returns the value of the
+variable.
+
+@smallexample
+@group
+$x @error{} variable `x' used before definition
+$@{x:=1@} @result{} 1
+$x @result{} 1
+@end group
+@end smallexample
+
+@item $@{variable:?text@}
+Display error if unset. If @var{variable} is unset, @var{text} is
+written to the standard error (if @var{text} is empty, the default
+diagnostic message is used) and further execution of the program is
+aborted. Otherwise, the value of @var{variable}
+is returned. 
+
+@smallexample
+@group
+$x @error{} variable `x' used before definition
+$@{x:?@} @error{} x: variable unset
+$@{x:?foobar@} @error{} foobar
+@end group
+@end smallexample
+
+@item $@{variable::text@}
+Prompt for the value if unset. If @var{variable} is unset,
+@command{radtest} prints @var{text} (or a default message, if it
+is empty), reads the standard input up to the newline character
+and returns the value read. Otherwise, the value of the variable
+is returned. This notation provides a convenient way for asking
+user to supply default values.
+
+@smallexample
+@group
+$@{x::@} @print{} (<teletype>:1)x?
+$@{x::Enter value of x: @} @print{} Enter value of x: 
+@end group
+@end smallexample
+
+@item $@{variable:&text@}
+Prompt for the value with echo turned off if unset. This is similar
+to the @code{$@{variable::text@}}, with the exception that the input
+value will not be echoed on the screen. This notation provides a
+convenient way for asking user to supply default values for variables
+(such as passwords, shared secrets, etc.) while preventing them from
+being compromised. 
+
+@end table
+
+@node Assignment Options
+@subsubsection Assignment Options
+
+You can set any @command{radtest} variable from the command line.
+There are two ways of doing so.
+
+First, you can use @dfn{variable assignment option} @option{--assign}
+(or @option{-a}). Its syntax is:
+
+@smallexample
+@group
+--assign @var{variable}=@var{text}
+-a @var{variable}=@var{text}
+@end group
+@end smallexample
+
+@noindent
+For example:
+
+@smallexample
+radtest -a foobar=5
+@end smallexample
+
+Another way is useful when you load a @code{radtest} program by
+@option{--file} or @option{-f}. This second way consists in including
+a variable assignment in the form
+
+@smallexample
+@var{variable}=@var{text}
+@end smallexample
+
+@noindent
+in the command line after the script name. For example:
+
+@smallexample
+radtest -f myprog.rad foo=5 addr=127.0.0.1
+@end smallexample
+
+@noindent
+This method is especially useful for executable scripts that are
+run using @code{#!} shell magic. Consider a simple script:
+
+@smallexample
+@group
+#! /usr/local/bin/radtest -f
+print $addr
+@end group
+@end smallexample
+
+@noindent
+The value of @var{addr} can be given to the script from the command
+line as in the example below:
+
+@smallexample
+myprog.rad addr=127.0.0.1
+@end smallexample
+
+@node Built-in Variables
+@subsubsection Built-in Variables
+
+The following variables are predefined:
+
+@table @var
+@item _
+
+Contains the result of last evaluated expression.
+
+@item REPLY_CODE
+
+Contains the last reply code received from the @RADIUS{} server
+(@code{integer}).
+
+@item REPLY
+
+Contains the @AVP{}s lastly received from the @RADIUS{} server
+(@code{avlist}).
+
+@item SOURCEIP
+
+Contains the source @IP{} of the @RADIUS{} client (@code{ipaddr}).
+By default, it equals the @IP{} set via @code{source_ip} statement
+in your @file{client.conf} file (@pxref{client.conf}).
+
+@end table
+
+@node Positional Parameters
+@subsection Positional Parameters
+@UNREVISED{}
+
+Normally @command{radtest} stops parsing its command line
+when it encounters either first non-optional argument
+(i.e. the one not starting with dash), or an argument consisting
+of two dashes. The rest of the command line starting from the
+first non-optional argument forms @dfn{positional parameters}.
+These parameters are said to form the @dfn{top-level environment}.
+
+Similarly, when invoking a user-defined function (@pxref{Function
+Definitions}), arguments passed to it are said to form the
+@dfn{current environment} of the function. These arguments are
+positional parameters for this function.
+
+Positional parameters are assigned numbers starting from 1. To access
+(@dfn{dereference}) a positional parameter, the syntax @code{$@var{n}}
+is used, where @var{n} is the number of the parameter. Alternative
+forms, such as @code{$@{@var{n}@}} or @code{$@{@var{n}:-text@}},
+can also be used. These work exactly as described in
+@ref{Dereferencing Variables}).
+
+Several things need to be mentioned:
+
+@itemize @bullet
+@item All top-level positional parameters have @code{string} data
+type, whereas the types of positional parameters in a function
+current environment are determined before inoking the function.
+
+@item Special notion @code{$0} returns the name of the function
+being evaluated. When used in the top-level environment, it returns
+the name of @command{radtest} program as given by @option{--file}
+(@option{-f}) option.
+
+@item Dereferencing non-existing parameter returns empty string. This
+differs from dereferencing non-existing variable, which results in
+error.
+
+@item @code{AWK} programmers should note that assignments
+(@pxref{Assignment Options}) are not included in the top level
+environment (see example below).
+@end itemize
+
+For example, suppose you run: 
+
+@smallexample
+radtest -f script.rad name foo=bar 5
+@end smallexample
+
+Then, the top-level environment of program @file{script.rad} consists
+of the following variables:
+
+@smallexample
+@group
+$0 @result{} script.rad
+$1 @result{} name
+$2 @result{} 5
+@end group
+@end smallexample
+
+@node Expressions
+@subsection Expressions
+
+An @dfn{expression} evaluates to a value, which can be printed,
+assigned to a variable, used in a conditional statement or passed
+to a function. As in other languages, expressions in @command{radtest}
+include literals, variable and positional parameter dereferences,
+function calls and combinations of these with various operators.
+
+@menu
+* Arithmetic Ops::
+* String Ops::
+* A/V List Ops::
+* Comparison Ops::
+* Boolean Ops::
+* Conversion Between Data Types::
+* Function Calls::
+* Precedence::
+@end menu
+
+@node Arithmetic Ops
+@subsubsection Arithmetic Operations
+
+@command{Radtest} provides the common arithmetic operators, which
+follow normal precedence rules (@pxref{Precedence}), and work as
+you would expect them to. The only notable exception is subtraction
+operator (minus) which can be used as part of a variable or attribute
+name, and therefore expressions like @code{$x-3} are ambiguous. This
+expression can be thought of either as a dereference of the variable
+@code{x-3} (@pxref{Dereferencing Variables}), or as subtraction of the value
+@code{3} from the value of the variable @code{x}. @command{Radtest}
+always resolves this ambiguityin the favor of variable dereference.
+Therefore we advise you to always surround minus sign by whitespace,
+if it is used as a subtraction operator. So, instead of @code{$x-3},
+write @code{$x - 3}. For other methods of solving this ambiguity,
+@xref{dash-ambiguity}.
+
+This table lists the arithmetic operators in order from highest
+precedence to lowest:
+
+@table @code
+@item - @var{x}
+Negation.
+
+@item + @var{x}
+Unary plus. This is equivalent to @code{@var{x}}. @FIXME{Should this
+imply converting @var{x} to integer?}
+
+@item @var{x} * @var{y}
+Multiplication.
+
+@item @var{x} / @var{y}
+Division.
+
+@item @var{x} % @var{y}
+Remainder.
+
+@item @var{x} + @var{y}
+Addition.
+
+@item @var{x} - @var{y}
+Subtraction.
+
+@end table
+
+Unary plus and minus have the same precedence, the multiplication,
+division and remainder all have the same precedence, and addition and
+subtraction have the same precedence.
+
+If @var{x} and @var{y} are of different data types, their
+values are first coerced to a common data type, selected
+using a set of rules (@pxref{Conversion Between Data Types}).
+
+@node String Ops
+@subsubsection String Operations
+
+There is only one string operation: concatenation. It is represented
+by plus sign, e.g.:
+
+@smallexample
+"string" + "ent" @result{} "stringent"
+@end smallexample
+
+@node A/V List Ops
+@subsubsection Operations on A/V Lists
+@UNREVISED{}
+
+The following operations are defined on A/V lists:
+
+@table @code
+@item @var{x} + @var{y}
+@dfn{Addition}. The @AVP{}s from @var{y} are added to @var{x}, honoring
+the respective pairs additivity (@pxref{Attributes,,additivity}).
+For example:
+
+@smallexample
+( User-Name = "foo" ) + ( Password = "bar" )
+@result{} ( User-Name = "foo" Password = "bar" )
+
+( User-Name = "foo" Service-Type = Login-User ) + \
+ ( Service-Type = Framed-User Password = "bar" )
+@result{} ( User-Name = "foo" \
+          Service-Type = Framed-User \
+          Password = "bar" )
+@end smallexample
+
+@item @var{x} - @var{y}
+@dfn{Subtraction}. The result of this operation is an A/V list
+consisting of pairs from @var{x}, which are not found in @var{y}.
+
+@smallexample
+( User-Name = "foo" Service-Type = Login-User ) - \
+( Service-Type = Framed-User )
+@result{} ( User-Name = "foo" )
+@end smallexample
+
+Notice, that only attribute name matters, its value is
+ignored@FIXME{Is this correct? Is there a better way to put it?
+should we provide an operation that whould compare both attribute
+number and its value?}
+
+@item @var{x} % @var{y}
+@dfn{Intersection}. The result of this operation is an @AVP{} list
+consisting of pairs from @var{x} which are also present in @var{y}.
+
+@smallexample
+( User-Name = "foo" Service-Type = Login-User ) - \
+( Service-Type = Framed-User )
+@result{} ( Service-Type = Login-User )
+@end smallexample
+
+@FIXME{Same as above.}
+@end table
+
+@node Comparison Ops
+@subsubsection Comparison Operations
+
+@dfn{Comparison expressions} compare operands for relationships
+such as equality. They return boolean values, i.e. @code{true}
+or @code{false}. The comparison operations are nonassociative,
+i.e. they cannot be used together as in:
+
+@smallexample
+# @emph{Wrong!}
+1 < $x < 2
+@end smallexample
+
+Use boolean operations (@pxref{Boolean Ops}) to group comparisons together.
+
+Comparison operations can only be used in conditional expressions.
+
+This table lists all comparison operators in order from highest
+precedence to lowest (notice, however, the comment after it):
+
+@table @code
+@item @var{x} = @var{y}
+True if @var{x} is equal to @var{y}. @code{C} and @code{AWK}
+programmers, please note @emph{single} equal sign!
+
+@item @var{x} != @var{y}
+True if @var{x} is not equal to @var{y}.
+
+@item @var{x} < @var{y}
+True if @var{x} is less than @var{y}.
+
+@item @var{x} <= @var{y}
+True if @var{x} is less than or equal to @var{y}.
+
+@item @var{x} > @var{y}
+True if @var{x} is greater than @var{y}.
+
+@item @var{x} >= @var{y}
+True if @var{x} is greater than or equal to @var{y}.
+@end table
+
+Operators @code{=} and @code{!=} have equal precedence. Operators
+@code{<}, @code{<=}, @code{>}, @code{>=} have equal precedence. 
+
+Most operators are defined for all @command{radtest} data types.
+However, only @code{=} and @code{!=} are defined for @code{avlist}s.
+Using any other comparison operator with @code{avlist}s produces
+error.
+
+If @var{x} and @var{y} are of different data types, their
+values are first coerced to a common data type, selected
+using a set of rules (@pxref{Conversion Between Data Types}).
+
+@node Boolean Ops
+@subsubsection Boolean Operations
+
+A @dfn{boolean operation} is a combination of comparison expressions.
+Boolean operations can only be used in conditional expressions.
+
+This table lists all comparison operators in order from highest
+precedence to lowest.
+
+@table @code
+@item not @var{x}
+@itemx ! @var{x}
+True if @var{x} is false.
+
+@item @var{x} and @var{y}
+True if both @var{x} and @var{y} are true. The subexpression @var{y}
+is evaluated only if @var{x} is true.
+
+@item @var{x} or @var{y}
+True if at least one of @var{x} or @var{y} is true. The subexpression @var{y}
+is evaluated only if @var{x} is false.
+@end table
+
 @node Conversion Between Data Types
-@subsection Conversion Between Data Types
+@subsubsection Conversion Between Data Types
 @UNREVISED{}
 
 The unary negation operand is always converted to @code{integer} type:
@@ -136,16 +739,16 @@ The unary negation operand is always converted to @code{integer} type:
 @end smallexample
 
 @noindent
-The unary @code{NOT} operand is converted using the following rules:
+The unary @code{not} operand is converted using the following rules:
 
 @enumerate 1
 @item If the operand is @code{integer}, no conversion is performed.
-@item If the operand is @code{STRNUM} @FIXME{explain what it is} or @IP{},
-it is converted to integer.
+@item If the operand is @code{STRNUM} (@pxref{STRNUM}) or
+@code{ipaddr}, it is converted to integer.
 @item If the operand is @code{string} (but is not @code{STRNUM}), the
-result of @code{NOT} is @code{true} only if the operand is an empty
+result of @code{not} is @code{true} only if the operand is an empty
 string.
-@item If the operand is @code{avl}, the result of @code{NOT} is
+@item If the operand is @code{avl}, the result of @code{not} is
 @code{true} if the list is empty.
 @end enumerate
 
@@ -172,17 +775,82 @@ operand's type according to the following rules:
 @item If one of the operands is literal, @command{radtest} attemtps
 to convert another operand to the literal data type. If this attempt
 fails, it goes on to rule 2.
-@item If one of operands is @code{STRNUM} @FIXME{explain what it is} and another is of numeric
-data type (i.e. either integer or @IP{}), the latter is converted
+@item If one of operands is @code{STRNUM} (@pxref{STRNUM}) and another is of numeric
+data type (i.e. either @code{integer} or @code{ipaddr}), the latter is converted
 to string representation.
-@item If one of the operands is @IP{} and another is
-an integer, the latter is converted to @IP{}.
-@item Otherwise, if one of the operands is string, second operand
+@item If one of the operands is @code{ipaddr} and another is
+@code{integer}, the latter is converted to @code{ipaddr}.
+@item Otherwise, if one of the operands is string, the second operand
 is also converted to string.
 @item Otherwise, the two operands are incompatible. @command{Radtest}
 prints appropriate diagnostics and aborts execution of the current
 statement.
 @end enumerate
+
+@node Function Calls
+@subsubsection Function Calls
+
+A @dfn{function} is a name for a particular sequence of statements. It
+is defined using special definition syntax (@pxref{Function
+Definitions}). Normally a function return some value. The way to
+use this value in an expression is with a @dfn{function call}
+expression, which consists of the function name followed by a
+comma-separated list of @dfn{arguments} in
+parentheses. The arguments are expressions which provide values for
+the function call environment (@pxref{Positional Parameters}. When
+there is more than one argument, they are separated by commas.
+@FIXME{Actually, commas in the argument list are optional. At least,
+now...} If there are no arguments, write just @samp{()} after the
+function name. Here are some examples:
+
+@smallexample
+@group
+foo()             no arguments
+bar(1)            one argument
+bar(1, "string")  two arguments
+@end group
+@end smallexample
+
+@node Precedence
+@subsubsection Operator Precedence (How Operators Nest)
+@UNREVISED{}
+
+@node Function Definitions
+@subsection Function Definitions
+
+A @dfn{function} is a name for a particular sequence of statements.
+The syntax for the function definition is:
+
+@smallexample
+@var{name}
+begin
+  @dots{}
+end
+@end smallexample
+
+@noindent
+where @var{name} is function name and @samp{@dots{}} represent a
+non-empty list of valid @command{radtest} statements.
+
+Notice that newline characters are obligatory after @var{name},
+@code{begin} and before the final @code{end} keyword.
+
+If the function accepts arguments, these can be referenced in the
+function body using @code{$@var{n}} notation (@pxref{Positional
+Parameters}). To return the value from the function @code{return}
+statement is used.
+
+For example, here is a function that computes sum of the squares
+of its two arguments:
+
+@smallexample
+@group
+hypo
+begin
+        return $1*$1 + $2*$2
+end
+@end group
+@end smallexample   
 
 @node Interacting with Radius Servers
 @subsection Interacting with Radius Servers
@@ -192,16 +860,84 @@ statement.
 @subsection Conditional Statements
 @UNREVISED{}
 
+@smallexample
+@group
+if @var{cond}
+  @var{stmt}
+@end group
+@end smallexample
+
+@smallexample
+@group
+if @var{cond}
+  @var{stmt-1} else @var{stmt-1} 
+@end group
+@end smallexample
+
+@smallexample
+@group
+case @var{expr} in
+@var{expr-1} ) @var{stmt-1}
+@var{expr-2} ) @var{stmt-2}
+...
+end
+@end group
+@end smallexample
+
 @node Loops
 @subsection Loops
 @UNREVISED{}
+
+@smallexample
+@group
+while @var{cond}
+  @var{stmt}
+@end group
+@end smallexample 
+
+@smallexample
+@group
+do
+  @var{stmt}
+while @var{cond}
+@end group
+@end smallexample  
 
 @node Built-in Primitives
 @subsection Built-in Primitives
 @UNREVISED{}
 
-@node Complete Radtest Syntax Description
-@subsection Complete Radtest Syntax Description
-@UNREVISED{}
+@deffn {Radtest built-in} getopt [@var{opt}] [@var{arg}] [@var{ind}]
+@end deffn
+
+@deffn {Radtest statement} input [@var{expr} @var{name}]
+@end deffn
+
+@deffn {Radtest statement} set @var{options}
+@end deffn
+
+@deffn {Radtest statement} shift [@var{expr}]
+@end deffn
+
+@deffn {Radtest statement} return [@var{expr}]
+@end deffn
+
+@deffn {Radtest statement} break [@var{expr}]
+@end deffn
+
+@deffn {Radtest statement} continue [@var{expr}]
+@end deffn
+
+@deffn {Radtest statement} exit [@var{expr}]
+@end deffn
+
+@deffn {Radtest statement} print [@var{expr-list}]
+@end deffn
+
+@deffn {Radtest statement} send [@var{flags}] auth|acct @var{code} @var{expr-or-pair-list}
+@end deffn
+
+@deffn {Radtest statement} expect @var{code} [@var{expr-or-pair-list}]
+@end deffn
 
 @c End of radtest.texi

@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2004-08-02
+GNU Radius NEWS -- history of user-visible changes. 2004-08-04
 Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
@@ -100,6 +100,11 @@ reduce the size of the executables.
 This is a guile module allowing to use libgnuradius functions. It
 supersedes radscm program, which has been removed.
 
+* Radtest
+
+The utility is rewritten from scratch. Now it provides a simple yet
+powerful scripting language useful for writing RADIUS client applications.
+
 * New contributions added to contrib/ directory.
 
 * Bugfixes
@@ -109,9 +114,6 @@ described in the documentation.
     
 ** Fixed several inconsistencies in parsing Ascend-Data-Filter and
 Ascend-Call-Filter attributes.
-
-** Fixed a long-standing bug in radtest that caused misinterpretation
-of optional arguments if the program was invoked from '#!' shell magic.
 
 
 Version 1.2:

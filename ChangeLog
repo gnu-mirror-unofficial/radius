@@ -1,3 +1,18 @@
+2004-08-04  Sergey Poznyakoff
+
+	* NEWS: Updated
+	* radtest/gram.y: New features: end-of-line after
+	`if' condition is optional.
+	Unary plus operation.
+	Empty pairlists.
+	* radtest/input.l: Added missing `or' and `and' keywords
+	* radtest/main.c: Fixed processing of command line variable
+	assignments.
+	Assign empty string to $0 if no file is given in the command
+	line.
+	* radtest/runtime.c: Implemented boolean shortcut evaluation.
+	Keep the value of the last evaluated expression in $_ variable.
+	
 2004-08-03  Sergey Poznyakoff
 
 	* radtest/gram.y: Further improved error handling.

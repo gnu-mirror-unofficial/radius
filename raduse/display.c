@@ -17,7 +17,6 @@
  *
  */
 
-#define _(s) s
 #ifndef lint
 static char rcsid[] = 
 "$Id$";

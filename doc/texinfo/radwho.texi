@@ -84,7 +84,9 @@ the same number of columns on each line of output.
 @itemx --finger
 Start in @command{fingerd} mode. In this mode @command{radwho} emulates the
 behavior of the @command{fingerd(8)} utility. Use this option if starting
-@command{radwho} from the @file{/etc/inetd.conf} line like this:
+@command{radwho} from the @file{/etc/inetd.conf} line like this @footnote{In this example the statement has been
+split on two lines to fit the page width. It must occupy a
+@emph{single line} in the real configuration file.}:
 
 @example
 finger stream tcp nowait nobody /usr/sbin/radwho

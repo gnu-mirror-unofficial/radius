@@ -49,8 +49,8 @@ configuration files.
 logged at the @code{Info} log level.
 
 @item which
-Reports the the running version of @command{radiusd}.
-
+Reports the running version of @command{radiusd}.
+@c [ FIXME ]
 @end table
 
 

@@ -89,11 +89,11 @@ hours and minutes.
 
 @end table
 
-If multiple arguments are given, the logical @sc{OR} operation between them
+If multiple arguments are given, the logical @sc{or} operation between them
 is assumed, i.e., the information selected by each argument
 is printed. This, however, does not apply to the @option{-c}
 option. That option is
-always combined with the rest of command line by logical @sc{AND}.
+always combined with the rest of command line by logical @sc{and}.
 
 The pseudo-user @samp{~reboot} logs in on every reboot of the network access
 server.

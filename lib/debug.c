@@ -33,9 +33,9 @@
 
 static struct keyword auth_codes[] = {
 #define D(a)  {#a, a}
-        D(RT_AUTHENTICATION_REQUEST),
-        D(RT_AUTHENTICATION_ACK),
-        D(RT_AUTHENTICATION_REJECT),
+        D(RT_ACCESS_REQUEST),
+        D(RT_ACCESS_ACCEPT),
+        D(RT_ACCESS_REJECT),
         D(RT_ACCOUNTING_REQUEST),
         D(RT_ACCOUNTING_RESPONSE),
         D(RT_ACCOUNTING_STATUS),
@@ -62,23 +62,24 @@ auth_code_str(int code)
 }
 
 static struct keyword auth_codes_abbr[] = {
-        { "AUTHREQ", RT_AUTHENTICATION_REQUEST }, 
-        { "AUTHACK", RT_AUTHENTICATION_ACK },     
-        { "AUTHREJ", RT_AUTHENTICATION_REJECT },  
-        { "ACCTREQ", RT_ACCOUNTING_REQUEST },     
-        { "ACCTRES", RT_ACCOUNTING_RESPONSE },    
-        { "ACCTSTA", RT_ACCOUNTING_STATUS },      
-        { "PASSREQ", RT_PASSWORD_REQUEST },       
-	{ "PASSACK", RT_PASSWORD_ACK },           
-        { "PASSREJ", RT_PASSWORD_REJECT },        
-        { "ACCTMSG", RT_ACCOUNTING_MESSAGE },     
-        { "CHALNGE", RT_ACCESS_CHALLENGE },
-	{ "SRVSTAT", RT_STATUS_SERVER },
-        { "ASCEND_TERM",   RT_ASCEND_TERMINATE_SESSION },
-	{ "ASCEND_EVTREQ", RT_ASCEND_EVENT_REQUEST },
-	{ "ASCEND_EVTRES", RT_ASCEND_EVENT_RESPONSE },
-        { "ASCEND_ALLCIP", RT_ASCEND_ALLOCATE_IP },
-        { "ASCEND_RELSIP", RT_ASCEND_RELEASE_IP },
+        { "Access-Request", RT_ACCESS_REQUEST }, 
+        { "Access-Accept", RT_ACCESS_ACCEPT },     
+        { "Access-Reject", RT_ACCESS_REJECT },  
+        { "Accounting-Request", RT_ACCOUNTING_REQUEST },     
+        { "Accounting-Response", RT_ACCOUNTING_RESPONSE },    
+        { "Accounting-Status", RT_ACCOUNTING_STATUS },      
+        { "Password-Request", RT_PASSWORD_REQUEST },       
+	{ "Password-Ack", RT_PASSWORD_ACK },           
+        { "Password-Reject", RT_PASSWORD_REJECT },        
+        { "Accounting-Message", RT_ACCOUNTING_MESSAGE },     
+        { "Access-Challenge", RT_ACCESS_CHALLENGE },
+	{ "Status-Server", RT_STATUS_SERVER },
+	{ "Status-Client", RT_STATUS_CLIENT },
+        { "Ascend-Terminate-Session",   RT_ASCEND_TERMINATE_SESSION },
+	{ "Ascend-Event-Request", RT_ASCEND_EVENT_REQUEST },
+	{ "Ascend-Event-Response", RT_ASCEND_EVENT_RESPONSE },
+        { "Ascend-Allocate-IP", RT_ASCEND_ALLOCATE_IP },
+        { "Ascend-Release-IP", RT_ASCEND_RELEASE_IP },
         { NULL }
 };
 

@@ -176,7 +176,7 @@ program       : /* empty */
 
 input         : lstmt
                 {
-			run_statement($1)
+			run_statement($1);
 		}
               | input lstmt
                 {
@@ -446,7 +446,7 @@ caselist      : casecond
               | caselist casecond
                 {
 			grad_list_append($1, $2);
-			$$ = $1
+			$$ = $1;
 		}
               ;
 

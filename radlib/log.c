@@ -49,28 +49,26 @@ initlog(name)
 		progname = name;
 }
 
-static int vlog(int lvl, int syserr, char *fmt, va_list ap);
+static void vlog(int lvl, char *file, int line, char *func_name, int errno,
+		 char *fmt, va_list ap);
+#define SP(p) ((p)?(p):"")
 
-int
-vlog(lvl, syserr, fmt, ap)
-	int lvl;
-	int syserr;
+void
+vlog(level, file, line, func_name, errno, fmt, ap)
+	int level;
+	char *file;
+	int line;
+	char *func_name;
+	int errno;
 	char *fmt;
 	va_list ap;
 {
 	char	*s = ":";
-	int errnum = errno;
 
 	fprintf(stderr, "%s: ", progname);
-	switch (lvl) {
-	case L_DBG:
+	switch (L_MASK(level)) {
+	case L_DEBUG:
 		s = "Debug: ";
-		break;
-	case L_AUTH:
-		s = "Auth: ";
-		break;
-	case L_PROXY:
-		s = "Proxy: ";
 		break;
 	case L_INFO:
 		s = "Info: ";
@@ -86,30 +84,72 @@ vlog(lvl, syserr, fmt, ap)
 		break;
 	}
 	radfprintf(stderr, s);
+	if (file) 
+		radfprintf(stderr, "%s:%d:%s: ", file, line, SP(func_name));
 	radvfprintf(stderr, fmt, ap);
-	if (syserr)
-		radfprintf(stderr, ": %s", strerror(errnum));
+	if (errno)
+		radfprintf(stderr, ": %s", strerror(errno));
         radfprintf(stderr, "\n");
-
-	return 0;
 }
 
 /*PRINTFLIKE2*/
-int
+void
 radlog(lvl, msg, va_alist)
 	int lvl;
 	char *msg;
 	va_dcl
 {
 	va_list ap;
-	int r;
+	int ec = 0;
 
-	r = lvl & L_PERROR;
-	lvl &= L_MASK;
+	if (lvl & L_PERROR)
+		ec = errno;
 	va_start(ap);
-	vlog(lvl, r, msg, ap);
+	vlog(lvl, NULL, 0, NULL, ec, msg, ap);
 	va_end(ap);
-
-	return 0;
 }
 
+void
+_dolog(level, file, line, func_name, fmt, va_alist)
+	int level;
+	char *file;
+	int line;
+	char *func_name;
+	char *fmt;
+	va_dcl
+{
+	va_list ap;
+	int ec = 0;
+	
+	if (level & L_PERROR)
+		ec = errno;
+	va_start(ap);
+	vlog(level, file, line, func_name, ec, fmt, ap);
+	va_end(ap);
+}
+
+void
+_debug_print(file, line, func_name, str)
+	char *file;
+	int line;
+	char *func_name;
+	char *str;
+{
+	_dolog(L_DEBUG, file, line, func_name, "%s", str);
+	free(str);
+}
+
+char *
+_debug_format_string(va_alist)
+	va_dcl
+{
+	va_list ap;
+	char *fmt;
+	char *str = NULL;
+	
+	va_start(ap);
+	fmt = va_arg(ap,char*);
+	vasprintf(&str, fmt, ap);
+	va_end(ap);
+	return str;
+}

@@ -1,0 +1,31 @@
+## Huntgroups.exp
+## Allow only ports 1-4 from fourth NAS
+
+DEFAULT NAS-IP-Address = 127.0.0.4
+	NAS-Port-Id >= 1,
+		NAS-Port-Id <= 4
+
+## Rewrite.exp
+DEFAULT NAS-IP-Address = 127.0.0.5,
+		NAS-Port-Id = 20212,
+		Rewrite-Function = "max_fixup"
+	NULL
+
+DEFAULT NAS-IP-Address = 127.0.0.5,
+		NAS-Port-Id = 2,
+		Rewrite-Function = "nt_fixup"
+	NULL
+	
+DEFAULT NAS-IP-Address = 127.0.0.5,
+		NAS-Port-Id = 3,
+		Rewrite-Function = "jetstream_fixup"
+	NULL
+
+DEFAULT NAS-IP-Address = 127.0.0.5,
+		Cisco-PRI-Circuit = "ISDN 2:D:123",
+		Rewrite-Function = "cisco_fixup"
+	NULL
+
+DEFAULT NAS-Identifier = COMOS,
+		Rewrite-Function = "comos_start_stop"
+	NULL

@@ -1,0 +1,30 @@
+#! /bin/sh
+# This file is part of GNU Radius testsuite.
+# Copyright (C) 2002,2003 Free Software Foundation, Inc.
+#
+# Written by Sergey Poznyakoff
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# GNU Radius is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+while read code name rest
+do
+	case "$code" in
+	AUTH)   case "$name" in
+		*ok)
+			echo "0 Reply-Message = \"Filter allows access\"";;
+		*)
+			echo "1 Reply-Message = \"Filter denies access\"";;
+		esac
+		;;
+	ACCT[12])
+		echo "0";;
+	*)      echo "ERROR: $code";;
+	esac
+done
+

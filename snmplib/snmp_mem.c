@@ -47,7 +47,7 @@ char *
 snmp_strdup(str)
 	char *str;
 {
-	int len = strlen(str+1);
+	int len = strlen(str)+1;
 	char *p = snmp_alloc(len);
 	if (p)
 		strcpy(p, str);

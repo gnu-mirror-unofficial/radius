@@ -9,12 +9,11 @@
 # This program is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-EXTRA_DIST=screen.h
 
 bin_PROGRAMS    = raduse
-raduse_SOURCES = raduse.c screen.c display.c 
-raduse_LDADD   = -lcurses -ltermcap ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la
-INCLUDES        = -I$(top_srcdir)/include @INCLUDEPATH@
+raduse_SOURCES = raduse.c session.c stat.c raduse.h
+raduse_LDADD   = ../snmplib/libradsnmp.a ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la
+INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
 
 SUFFIXES=.S .c .ln .o .s
 

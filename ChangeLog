@@ -11,6 +11,11 @@
 	  (sig_cleanup): Removed.
 	* radiusd/sql.c: (attach_sql_connection): Bugfix.
 
+	* include/log.h: New log option: LOG_TID -- print thread
+	  identifier.
+*	* radiusd/config.kw: New keyword 'print-tid'.
+	* radiusd/log.c: Handle LOG_TID bit.
+	
 2002-01-08  Sergey Poznyakoff  
 
 	* m4/inaddr.m4: (new) Check whether INADDR_LOOPBACK is defined.

@@ -1,3 +1,10 @@
+2002-05-13  Sergey Poznyakoff  
+
+	* po/no.po: Updated.
+	* radiusd/rewrite.y: Mutual locking was badly broken. Fixed.
+	  Notice that this version does not support recursive invocation
+	  (rewrite -> guile -> rewrite will deadlock).
+
 2002-05-12  Sergey Poznyakoff 
 
 	* po/no.po: New translations.

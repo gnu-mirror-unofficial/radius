@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-05-08 20:13+0300\n"
+"POT-Creation-Date: 2002-05-12 19:18+0300\n"
 "PO-Revision-Date: 2002-05-10 16:50+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
@@ -223,8 +223,8 @@ msgstr ""
 msgid "alloc_string(): string too long"
 msgstr "alloc_string(): strengen er for lang"
 
-#: radlib/raddb.c:52 radlib/raddb.c:56 rewrite.y:1204 rewrite.y:2592
-#: radiusd/rewrite.y:1204 radiusd/rewrite.y:2592
+#: radlib/raddb.c:52 radlib/raddb.c:56 rewrite.y:1178 rewrite.y:2571
+#: radiusd/rewrite.y:1178 radiusd/rewrite.y:2571
 #, c-format
 msgid "can't open file `%s'"
 msgstr "kan ikke åpne filen «%s»"
@@ -686,7 +686,7 @@ msgstr "%s:%d: guile ignorert: radiusd ble kompilert uten støtte for guile"
 msgid "%s:%d: wrong datatype (should be string)"
 msgstr "%s:%d: feil datatype (forventet streng)"
 
-#: radiusd/config.y:1176 rewrite.y:1459 radiusd/rewrite.y:1459
+#: radiusd/config.y:1176 rewrite.y:1433 radiusd/rewrite.y:1433
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
 msgstr "%s:%d: uventet slutt-på-fil i kommentar begynt på linje %d"
@@ -1264,7 +1264,7 @@ msgstr ""
 
 #: radiusd/radiusd.c:398
 msgid "You are calling outside your allowed timespan\n"
-msgstr ""
+msgstr "Forespørsel utenfor gyldig tidsintervall\n"
 
 #: radiusd/radiusd.c:523
 msgid "Ready to process requests."
@@ -1410,43 +1410,184 @@ msgstr "for mange forespørsler i køen"
 msgid "too many requests of this type"
 msgstr "for mange forespørsler av denne typen"
 
-#: rewrite.y:962 radiusd/rewrite.y:962
+#: rewrite.y:938 radiusd/rewrite.y:938
 #, c-format
 msgid "%s:%d: nothing to break from"
 msgstr ""
 
-#: rewrite.y:976 radiusd/rewrite.y:976
+#: rewrite.y:952 radiusd/rewrite.y:952
 #, c-format
 msgid "%s:%d: nothing to continue"
 msgstr ""
 
-#: rewrite.y:4653 rewrite.y:4755 radiusd/rewrite.y:4653 radiusd/rewrite.y:4755
+#: rewrite.y:1014 radiusd/rewrite.y:1014
+#, fuzzy, c-format
+msgid "%s:%d: undefined variable: %s"
+msgstr "%s:%d: felleskapen «%s» er ikke definert"
+
+#: rewrite.y:1511 radiusd/rewrite.y:1511
+#, c-format
+msgid "%s:%d: unterminated character constant"
+msgstr ""
+
+#: rewrite.y:1556 radiusd/rewrite.y:1556
+#, fuzzy, c-format
+msgid "%s:%d: unknown attribute %s"
+msgstr "%s:%d: ukjent attributt «%s»"
+
+#: rewrite.y:2271 rewrite.y:2901 radiusd/rewrite.y:2271 radiusd/rewrite.y:2901
+#, c-format
+msgid "%s:%d: implicit %s to %s coercion"
+msgstr ""
+
+#: rewrite.y:2291 rewrite.y:2343 radiusd/rewrite.y:2291 radiusd/rewrite.y:2343
+#, c-format
+msgid "%s:%d: implicit string to integer coercion"
+msgstr ""
+
+#: rewrite.y:2315 radiusd/rewrite.y:2315
+#, c-format
+msgid "%s:%d: operation not applicable for strings"
+msgstr ""
+
+#: rewrite.y:2365 radiusd/rewrite.y:2365
+#, c-format
+msgid "%s:%d: implicit integer to string coercion"
+msgstr ""
+
+#: rewrite.y:2434 rewrite.y:2504 radiusd/rewrite.y:2434 radiusd/rewrite.y:2504
+#, c-format
+msgid "%s:%d: (arg %d) implicit %s to %s coercion"
+msgstr ""
+
+#: rewrite.y:2451 rewrite.y:2518 radiusd/rewrite.y:2451 radiusd/rewrite.y:2518
+#, fuzzy, c-format
+msgid "%s:%d: too many arguments in call to %s"
+msgstr "%s:%d: for mange attributter"
+
+#: rewrite.y:2456 rewrite.y:2524 radiusd/rewrite.y:2456 radiusd/rewrite.y:2524
+#, fuzzy, c-format
+msgid "%s:%d: too few arguments in call to %s"
+msgstr "for få argumenter til %s"
+
+#: rewrite.y:2552 radiusd/rewrite.y:2552
+msgid "Undefined"
+msgstr ""
+
+#: rewrite.y:2554 radiusd/rewrite.y:2554
+msgid "integer"
+msgstr ""
+
+#: rewrite.y:2556 radiusd/rewrite.y:2556
+#, fuzzy
+msgid "string"
+msgstr "advarsel"
+
+#: rewrite.y:2558 radiusd/rewrite.y:2558
+msgid "UNKNOWN"
+msgstr ""
+
+#: rewrite.y:2875 radiusd/rewrite.y:2875
+#, fuzzy, c-format
+msgid "%s:%d: missing return statement"
+msgstr "%s:%d: mangler ]"
+
+#: rewrite.y:3003 rewrite.y:3014 radiusd/rewrite.y:3003 radiusd/rewrite.y:3014
+#, fuzzy, c-format
+msgid "%s:%d: divide by zero"
+msgstr "%s:%d: ugyldig type"
+
+#: rewrite.y:3599 radiusd/rewrite.y:3599
+#, fuzzy, c-format
+msgid "%s:%d: regexp error: %s"
+msgstr "%s: %d feil"
+
+#: rewrite.y:3647 radiusd/rewrite.y:3647
+msgid "out of pushdown space"
+msgstr ""
+
+#: rewrite.y:3664 rewrite.y:3694 radiusd/rewrite.y:3664 radiusd/rewrite.y:3694
+msgid "heap overrun"
+msgstr ""
+
+#: rewrite.y:3708 rewrite.y:3739 radiusd/rewrite.y:3708 radiusd/rewrite.y:3739
+msgid "out of popup"
+msgstr ""
+
+#: rewrite.y:3809 radiusd/rewrite.y:3809
+msgid "rewrite runtime error"
+msgstr ""
+
+#: rewrite.y:3926 radiusd/rewrite.y:3926
+#, fuzzy
+msgid "can't create A/V pair"
+msgstr "kan ikke opprette SNMP PDU: %s"
+
+#: rewrite.y:4134 rewrite.y:4150 radiusd/rewrite.y:4134 radiusd/rewrite.y:4150
+msgid "division by zero!"
+msgstr ""
+
+#: rewrite.y:4336 radiusd/rewrite.y:4336
+#, c-format
+msgid "rewrite regex failure: %s. Input: %s"
+msgstr ""
+
+#: rewrite.y:4388 radiusd/rewrite.y:4388
+msgid "pc out of range"
+msgstr ""
+
+#: rewrite.y:4560 radiusd/rewrite.y:4560
+#, fuzzy, c-format
+msgid "%s:%d: redefinition of function %s"
+msgstr "%s:%d: felleskapen «%s» er ikke definert"
+
+#: rewrite.y:4563 radiusd/rewrite.y:4563
+#, fuzzy, c-format
+msgid "%s:%d: previously defined here"
+msgstr "%s:%d: «%s» ble allerede inkludert her"
+
+#: rewrite.y:4636 rewrite.y:4738 radiusd/rewrite.y:4636 radiusd/rewrite.y:4738
 #, c-format
 msgid "function %s not defined"
 msgstr "Funksjonen %s er ikke definert"
 
-#: rewrite.y:4695 radiusd/rewrite.y:4695
+#: rewrite.y:4678 radiusd/rewrite.y:4678
 #, fuzzy, c-format
 msgid "%s(): wrong number of arguments (should be %d, passed %d)"
 msgstr "%s(): feil antall argumenter (forventet %d, overført %d)"
 
-#: rewrite.y:4737 radiusd/rewrite.y:4737
+#: rewrite.y:4720 radiusd/rewrite.y:4720
 #, c-format
 msgid "malformed function call: %s"
 msgstr "feilaktig funksjonkall: %s"
 
-#: rewrite.y:4745 radiusd/rewrite.y:4745
+#: rewrite.y:4728 radiusd/rewrite.y:4728
 msgid "missing '(' in function call"
 msgstr "mangler '(' i funksjonkall"
 
-#: rewrite.y:4749 radiusd/rewrite.y:4749
+#: rewrite.y:4732 radiusd/rewrite.y:4732
 msgid "missing ')' in function call"
 msgstr "mangler ')' i funksjonkall"
 
-#: rewrite.y:4827 radiusd/rewrite.y:4827
+#: rewrite.y:4773 radiusd/rewrite.y:4773
+#, fuzzy, c-format
+msgid "calling %s: expected ',' but found %s after arg %d"
+msgstr "forventet , men funnet %s"
+
+#: rewrite.y:4783 radiusd/rewrite.y:4783
+#, fuzzy, c-format
+msgid "too many arguments for %s"
+msgstr "for få argumenter til %s"
+
+#: rewrite.y:4809 radiusd/rewrite.y:4809
 #, c-format
 msgid "too few arguments for %s"
 msgstr "for få argumenter til %s"
+
+#: rewrite.y:4860 radiusd/rewrite.y:4860
+#, fuzzy, c-format
+msgid "function %s() requires %d parameters"
+msgstr "%s: flagget må ha et argument -- %s\n"
 
 #: radiusd/scheme.c:111
 #, fuzzy, c-format
@@ -2044,4 +2185,3 @@ msgstr ""
 #, c-format
 msgid "PQexec returned %s"
 msgstr ""
-

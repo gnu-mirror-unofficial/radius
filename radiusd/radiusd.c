@@ -30,6 +30,7 @@ static char rcsid[] =
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -107,7 +108,9 @@ int        debug_flag; /* can be raised from debugger only */
 int        log_mode;
 
 static int foreground; /* Stay in the foreground */
-static int spawn_flag; 
+static int spawn_flag;
+static int watch_interval; /* Delay in seconds between watcher wake-ups.
+			      If zero, watcher process will not be started */
 int use_dbm = 0;
 int open_acct = 1;
 int auth_detail = 0;
@@ -189,7 +192,10 @@ static void open_socket_list(HOSTDECL *hostlist, int defport, char *descr,
                              int (*s)(), int (*r)(), int (*f)());
 
 static void reread_config(int reload);
-static void rad_main();
+static void rad_daemon();
+static void rad_watcher();
+static void common_init();
+static void rad_main_loop();
 static void meminfo();
 
 int radius_mode = MODE_DAEMON;    
@@ -239,6 +245,8 @@ static struct argp_option options[] = {
          N_("Set debugging level"), 0},
         {"log-auth", 'y', NULL, 0,
          N_("Log authentications"), 0},
+	{"watcher", 'w', N_("NUMBER"), OPTION_ARG_OPTIONAL,
+	 N_("Start watcher process"), 0},
         {"log-auth-pass", 'z', NULL, 0,
          N_("Log users' passwords"), 0},
         {NULL, 0, NULL, 0, NULL, 0}
@@ -322,6 +330,12 @@ parse_opt (key, arg, state)
         case 'y':
                 log_mode |= RLOG_AUTH;    
                 break;
+	case 'w':
+		if (optarg)
+			watch_interval = strtoul(optarg, NULL, 0);
+		else
+			watch_interval = 10; /* Default interval */
+		break;
         case 'z':
                 log_mode |= RLOG_AUTH_PASS;
                 break;
@@ -398,7 +412,37 @@ main(argc, argv)
         
         snmp_init(0, 0, emalloc, efree);
 
-        rad_main();
+        switch (radius_mode) {
+        case MODE_CHECKCONF:
+                common_init();
+                exit(0);
+
+        case MODE_TEST:
+                common_init();
+                exit(test_shell());
+                
+#ifdef USE_DBM          
+        case MODE_BUILDDBM:
+                common_init();
+                exit(builddbm(extra_arg));
+#endif
+        case MODE_DAEMON:
+		if (watch_interval && xargv[0][0] != '/') {
+			radlog(L_ERR,
+			       _("can't create watcher: not started as absolute pathname"));
+			exit(1);
+		}
+#ifdef USE_SNMP
+                snmp_tree_init();
+#endif
+                if (!foreground)
+                        rad_daemon();
+		if (watch_interval)
+			rad_watcher();
+                common_init();
+        }
+
+        rad_main_loop();
 	/*NOTREACHED*/
 }
 
@@ -491,6 +535,61 @@ rad_daemon()
         efree(p);
 }
 
+static int child_died;
+
+RETSIGTYPE
+sig_watcher(sig)
+	int sig;
+{
+	pid_t pid;
+	int status;
+
+	while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
+		child_died = 1;
+	signal(SIGCHLD, sig_watcher);
+}
+
+void
+rad_watcher()
+{
+	int i;
+	char **pargv;
+	pid_t pid;
+
+	/* Fix-up the xargv array */
+	pargv = emalloc((xargc + 3) * sizeof(pargv[0]));
+	for (i = 0; i < xargc; i++)
+		pargv[i] = xargv[i];
+	pargv[i++] = "-w0";
+	pargv[i++] = "-f";
+	pargv[i] = NULL;
+
+	xargv = pargv;
+	xargc = i;
+	
+	pid = fork();
+	/* Child returns immediately */
+	if (pid == 0)
+		return;
+
+	if (pid < 0) {
+		radlog(L_CRIT|L_PERROR, "fork");
+		exit(1);
+	}
+
+	/* Master: */
+ 
+	signal(SIGCHLD, sig_watcher);
+	while (1) {
+		sleep(watch_interval);
+		if (child_died) {
+			rad_restart(1);
+			signal(SIGCHLD, sig_watcher);
+			child_died = 0;
+		}
+	}
+}
+
 void
 common_init()
 {
@@ -524,31 +623,8 @@ rad_thread_init()
 }
 
 void
-rad_main()
+rad_main_loop()
 {
-        switch (radius_mode) {
-        case MODE_CHECKCONF:
-                common_init();
-                exit(0);
-
-        case MODE_TEST:
-                common_init();
-                exit(test_shell());
-                
-#ifdef USE_DBM          
-        case MODE_BUILDDBM:
-                common_init();
-                exit(builddbm(extra_arg));
-#endif
-        case MODE_DAEMON:
-#ifdef USE_SNMP
-                snmp_tree_init();
-#endif
-                if (!foreground)
-                        rad_daemon();
-                common_init();
-        }
-
         radlog(L_INFO, _("Ready to process requests."));
 
         for(;;) {
@@ -763,7 +839,8 @@ rad_flush_queues()
 /* Restart RADIUS process
  */
 int
-rad_restart()
+rad_restart(cont)
+	int cont;
 {
 	int i;
         pid_t pid;
@@ -797,8 +874,11 @@ rad_restart()
         
         if (pid > 0) {
                 /* Parent */
-                sleep(10);
-                exit(0);
+		if (!cont) {
+			sleep(10);
+			exit(0);
+		}
+		return 0;
         }
 
         /* Let the things settle */
@@ -914,7 +994,7 @@ check_reload()
                 reread_config(1);
                 break;
         case CMD_RESTART:
-                rad_restart();
+                rad_restart(0);
                 break;
         case CMD_MEMINFO:
                 meminfo();
@@ -943,7 +1023,7 @@ check_snmp_request()
                                        _("can't restart: radiusd not started as absolute pathname"));
                                 break;
                         }
-                        rad_restart();
+                        rad_restart(0);
                         break;
                         
                 case serv_init:

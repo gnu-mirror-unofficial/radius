@@ -91,43 +91,6 @@ radius_change_uid(pwd)
 	}
 }
 
-struct wait_data {
-	rad_sigid_t id;
-	pid_t pid;
-	int status;
-	pthread_mutex_t mutex;
-	pthread_cond_t cond;
-};
-
-int
-wait_for_prog(int sig, void *data, void *owner)
-{
-	struct wait_data *wd = data;
-	int rc = 1;
-	
-	if (pthread_mutex_trylock(&wd->mutex) == EBUSY)
-		return 1;
-	pthread_cond_signal(&wd->cond);
-	pthread_mutex_unlock(&wd->mutex);
-	return rc;
-}
-
-int
-wait_for_prog_sync(int sig, void *data, void *owner)
-{
-}
-
-void
-signal_cleanup(void *data)
-{
-	struct wait_data *wd = data;
-	pthread_mutex_unlock(&wd->mutex);
-	pthread_mutex_destroy(&wd->mutex);
-	pthread_cond_destroy(&wd->cond);
-	rad_signal_remove(SIGCHLD, wd->id, NULL);
-	wd->id = 0;
-}
-
 /* Execute a program on successful authentication.
    Return 0 if exec_wait == 0.
    Return the exit code of the called program if exec_wait != 0.
@@ -150,7 +113,8 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         char buffer[RAD_BUFFER_SIZE];
         struct passwd pw, *pwd;
         struct cleanup_data cleanup_data;
-	struct wait_data wd;
+	pid_t pid;
+	int status;
 	
         if (cmd[0] != '/') {
                 radlog(L_ERR,
@@ -177,15 +141,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                 }
         }
 
-	if (exec_wait) {
-		pthread_mutex_init(&wd.mutex, NULL);
-		pthread_cond_init(&wd.cond, NULL);
-		pthread_mutex_lock(&wd.mutex);
-		wd.id = rad_signal_install(SIGCHLD, SH_ASYNC, 
-		                           wait_for_prog, &wd);
-	} /* else FIXME*/
-	
-        if ((wd.pid = fork()) == 0) {
+        if ((pid = fork()) == 0) {
                 int argc;
                 char **argv;
                 struct obstack s;
@@ -225,14 +181,8 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         }
 
         /* Parent branch */ 
-        if (wd.pid < 0) {
+        if (pid < 0) {
                 radlog(L_ERR|L_PERROR, "fork");
-		rad_signal_remove(SIGCHLD, wd.id, NULL);
-		if (exec_wait) {
-			pthread_mutex_unlock(&wd.mutex);
-			pthread_mutex_destroy(&wd.mutex);
-			pthread_cond_destroy(&wd.cond);
-		}
                 return -1;
         }
         if (!exec_wait)
@@ -246,12 +196,12 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         vp = NULL;
         line_num = 0;
 
-	pthread_cleanup_push((void (*)(void*))signal_cleanup, &wd);
 	cleanup_data.vp = &vp;
 	cleanup_data.fp = fp;
-	cleanup_data.pid = wd.pid;
+	cleanup_data.pid = pid;
 	pthread_cleanup_push((void (*)(void*))rad_exec_cleanup, &cleanup_data);
-	
+
+  again:
         while (ptr = fgets(buffer, sizeof(buffer), fp)) {
                 line_num++;
                 debug(1, ("got `%s'", buffer));
@@ -264,15 +214,10 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                 }
         }
 
-	while (1) {
-		pthread_cond_wait(&wd.cond, &wd.mutex);
-		if (waitpid(wd.pid, &wd.status, WNOHANG) == wd.pid) 
-			break;
-	}
+	if (waitpid(pid, &status, 0) != pid)
+		goto again;
 
 	pthread_cleanup_pop(0);
-	pthread_cleanup_pop(1);
-	rad_signal_cleanup(SIGCHLD);
 
         fclose(fp);
 
@@ -281,8 +226,8 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 		avl_free(vp);
 	}
 
-        if (WIFEXITED(wd.status)) {
-                int status = WEXITSTATUS(wd.status);
+        if (WIFEXITED(status)) {
+                status = WEXITSTATUS(status);
                 debug(1, ("returned: %d", status));
                 if (status == 2) {
                         radlog(L_ERR,
@@ -291,7 +236,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                 }
                 return status;
         } else {
-		format_exit_status(buffer, sizeof buffer, wd.status);
+		format_exit_status(buffer, sizeof buffer, status);
 
 		radlog(L_ERR,
 		       _("external program `%s' %s"), cmd, buffer);

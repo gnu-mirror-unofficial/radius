@@ -935,6 +935,7 @@ sfn_scheme(m)
 {
 #ifdef USE_SERVER_GUILE
 	VALUE_PAIR *p;
+	VALUE_PAIR *reply;
 	
 	if (!use_guile) {
 		radlog(L_ERR,
@@ -943,7 +944,8 @@ sfn_scheme(m)
 		return;
 	}
 
-	for (p = avl_find(m->user_reply, DA_SCHEME_PROCEDURE);
+	reply = avl_dup(m->user_reply);
+	for (p = avl_find(reply, DA_SCHEME_PROCEDURE);
 	     p;
 	     p = avl_find(p->next, DA_SCHEME_PROCEDURE)) {
 		if (scheme_auth(p->strvalue,
@@ -952,6 +954,8 @@ sfn_scheme(m)
 			break;
 		}
 	}
+	avl_delete(&m->user_reply, DA_SCHEME_PROCEDURE);
+	avl_free(reply);
 #else
 	radlog(L_ERR,
 	       _("Guile authentication not available"));

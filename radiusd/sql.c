@@ -290,6 +290,23 @@ sql_conn_key_alloc()
         pthread_key_create(&sql_conn_key[SQL_ACCT], sql_conn_destroy);
 }
 
+void
+rad_sql_thread_cleanup(arg)
+	void *arg;
+{
+	struct sql_connection *conn;
+	struct obstack *stk = arg;
+	
+	obstack_free(stk, NULL);
+
+	conn = pthread_getspecific(sql_conn_key[SQL_AUTH]);
+	disp_sql_drop(sql_cfg.interface, conn);
+	free_entry(conn);
+	conn = pthread_getspecific(sql_conn_key[SQL_ACCT]);
+	disp_sql_drop(sql_cfg.interface, conn);
+	free_entry(conn);
+}
+
 int 
 rad_sql_init()
 {
@@ -686,6 +703,8 @@ rad_sql_acct(radreq)
 
         conn = attach_sql_connection(SQL_ACCT, radreq);
         obstack_init(&stack);
+	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
+
         switch (status) {
         case DV_ACCT_STATUS_TYPE_START:
                 if (!sql_cfg.acct_start_query)
@@ -766,6 +785,7 @@ rad_sql_acct(radreq)
                 
         }
 
+	pthread_cleanup_pop(0);
         obstack_free(&stack, NULL);
 }
 
@@ -798,8 +818,10 @@ rad_sql_pass(req, authdata)
         avl_delete(&req->request, DA_AUTH_DATA);
         
         conn = attach_sql_connection(SQL_AUTH, req);
+        pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
         mysql_passwd = disp_sql_getpwd(sql_cfg.interface, conn, query);
-        
+        pthread_cleanup_pop(0);
+	
         if (mysql_passwd) 
                 chop(mysql_passwd);
         
@@ -828,6 +850,7 @@ rad_sql_checkgroup(req, groupname)
                 return -1;
 
         obstack_init(&stack);
+	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
         query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
 
         data = disp_sql_exec(sql_cfg.interface, conn, query);
@@ -840,7 +863,8 @@ rad_sql_checkgroup(req, groupname)
                         rc = 0;
         }
         disp_sql_free(sql_cfg.interface, conn, data);
-        
+        pthread_cleanup_pop(0);
+	
         obstack_free(&stack, NULL);
         return rc;
 }
@@ -918,12 +942,13 @@ rad_sql_reply_attr_query(req, reply_pairs)
                 return 0;
         
         conn = attach_sql_connection(SQL_AUTH, req);
-
         obstack_init(&stack);
-        query = radius_xlate(&stack, sql_cfg.reply_attr_query, req, NULL);
+	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
 
+        query = radius_xlate(&stack, sql_cfg.reply_attr_query, req, NULL);
         rc = rad_sql_retrieve_pairs(conn, query, reply_pairs, 0);
-        
+
+        pthread_cleanup_pop(0);
         obstack_free(&stack, NULL);
         return rc == 0;
 }
@@ -942,12 +967,13 @@ rad_sql_check_attr_query(req, return_pairs)
                 return 0;
         
         conn = attach_sql_connection(SQL_AUTH, req);
-
         obstack_init(&stack);
+	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
+	
         query = radius_xlate(&stack, sql_cfg.check_attr_query, req, NULL);
-
         rc = rad_sql_retrieve_pairs(conn, query, return_pairs, 1);
         
+	pthread_cleanup_pop(0);
         obstack_free(&stack, NULL);
         return rc == 0;
 }

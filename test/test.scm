@@ -87,28 +87,7 @@
 	    flag-verbose))
 
 (define (rad-cntl command . cmdlist)
-  (let* ((state (symbol->string command))
-	 (pack (list (cons "User-Name"  admin-login)
-		     (cons "Password"  admin-password)
-		     (cons "State" state))))
-    (let ((ans (rad-send :port-cntl :auth-req
-			 (if (null? cmdlist)
-			     pack
-			     (append pack
-				     (map (lambda (el)
-					    (cons "Class" (dequote el)))
-					  cmdlist)))
-			 flag-verbose)))
-      (cond
-       ((null? ans)
-	(format #t "FAILED\n")
-	#f)
-       (else
-	(if (not (= (car ans) :auth-ack))
-	    (format #t "ERROR\n"))
-	(rad-format-reply-msg (cdr ans))
-	(format #t "\n")
-	#t)))))
+ )
 
 (define (remark rest)
   (rad-cntl 'remark 

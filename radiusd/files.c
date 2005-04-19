@@ -368,7 +368,7 @@ match_user(User_symbol *sym, radiusd_request_t *req,
                         debug(1, ("submatch: %s", p->avp_strvalue));
 
                         found = match_user(grad_sym_lookup(user_tab,
-						      p->avp_strvalue),
+							   p->avp_strvalue),
                                            req, check_pairs, reply_pairs);
                 }                       
 
@@ -699,12 +699,13 @@ hints_eval_compat(radiusd_request_t *req, grad_avp_t *name_pair, grad_matching_r
 int
 hints_setup(radiusd_request_t *req)
 {
-        char            newname[GRAD_STRING_LENGTH];
-        grad_avp_t      *name_pair;
-        grad_avp_t      *orig_name_pair;
-        grad_avp_t      *tmp;
-        grad_matching_rule_t   *rule;
-        int             matched = 0;
+        char newname[GRAD_STRING_LENGTH];
+        grad_avp_t *name_pair;
+        grad_avp_t *orig_name_pair;
+	grad_avp_t *tmp_name_pair;
+        grad_avp_t *tmp;
+        grad_matching_rule_t *rule;
+        int matched = 0;
 	grad_iterator_t *itr;
 	
         /* Add Proxy-Replied pair if necessary */
@@ -725,12 +726,12 @@ hints_setup(radiusd_request_t *req)
         if (hints == NULL)
                 return 0;
 
-        /* 
-         *      Check for valid input, zero length names not permitted 
-         */
+        /* Get User-Name pair. If it is absent, provide a replacement
+	   value. */
         if ((name_pair = grad_avl_find(req->request->avlist,
 				       DA_USER_NAME)) == NULL) {
-                name_pair = grad_avp_create_string(DA_USER_NAME, "");
+		tmp_name_pair = grad_avp_create_string(DA_USER_NAME, "");
+                name_pair = tmp_name_pair;
                 orig_name_pair = NULL;
         } else {
                 orig_name_pair = grad_avp_create_string(DA_ORIG_USER_NAME,
@@ -798,8 +799,9 @@ hints_setup(radiusd_request_t *req)
                 
 		/* Re-read the name pair, since it might have been changed
 		   by exec_program_wait */
-		name_pair = grad_avl_find(req->request->avlist,
-					  DA_USER_NAME);
+		tmp = grad_avl_find(req->request->avlist, DA_USER_NAME);
+		if (tmp)
+			name_pair = tmp;
                 debug(1, ("new name is `%s'", name_pair->avp_strvalue));
 
                 /* fix-up the string length. FIXME: Do we still need it? */
@@ -822,17 +824,18 @@ hints_setup(radiusd_request_t *req)
                 if (orig_name_pair)
                         grad_avl_add_pair(&req->request->avlist,
 					  orig_name_pair);
-		/* A rewrite function might have installed the new
+		/* A rewrite function might have installed a new
 		   User-Name. Take care not to discard it. */
                 else if (!grad_avl_find(req->request->avlist, DA_USER_NAME))
-                        grad_avl_add_pair(&req->request->avlist, name_pair);
+                        grad_avl_add_pair(&req->request->avlist,
+					  tmp_name_pair);
 		else
-			grad_avp_free(name_pair);
+			grad_avp_free(tmp_name_pair);
         } else {
                 if (orig_name_pair)
                         grad_avp_free(orig_name_pair);
                 else
-                        grad_avp_free(name_pair);
+                        grad_avp_free(tmp_name_pair);
         }
 
         return 0;

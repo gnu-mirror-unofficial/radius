@@ -196,8 +196,8 @@ static void
 channel_format_prefix(struct logbuf *bufp,
 		      Channel *chan, const grad_request_t *req)
 {
-	char **hook_name_ptr = &(chan->prefix_hook ? 
-		                   chan->prefix_hook : log_prefix_hook);
+	char **hook_name_ptr = chan->prefix_hook ? 
+		                   &chan->prefix_hook : &log_prefix_hook;
 	char *hook_res = NULL;
 
 	if (*hook_name_ptr) {
@@ -214,8 +214,8 @@ static void
 channel_format_suffix(struct logbuf *bufp,
 		      Channel *chan, const grad_request_t *req)
 {
-	char **hook_name_ptr = &(chan->suffix_hook ? 
-		                   chan->suffix_hook : log_suffix_hook);
+	char **hook_name_ptr = chan->suffix_hook ? 
+		                   &chan->suffix_hook : &log_suffix_hook;
 	char *hook_res = NULL;
 	
 	if (*hook_name_ptr) {

@@ -1,3 +1,12 @@
+2005-04-19  Sergey Poznyakoff  
+
+	* NEWS: Updated
+	* configure.ac: Raised version number to 1.3.1
+	* radiusd/files.c (hints_setup): Fixed coredump on missing
+	User-Name pair.
+	* radiusd/log.c (channel_format_prefix,channel_format_suffix):
+	Minor fix to compensate for the stupidity of gcc 3.3.4
+
 2005-03-09  Sergey Poznyakoff
 
 	* include/radiusd.h (scheme_eval_avl)

@@ -1,8 +1,22 @@
-GNU Radius NEWS -- history of user-visible changes. 2004-11-20
-Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
+GNU Radius NEWS -- history of user-visible changes. 2005-03-10
+Copyright (C) 2002,2003,2004,2005 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
+
+Version 1.3.1:
+
+* Hints are evaluated before verifying validity of the user name.
+
+* New builtin functions in Rewrite language: time, strftime
+
+* Exec-Program-Wait and Scheme-Procedure can occur in hints
+profiles.
+
+* Bugfixes:
+** Properly protect occurrences of `define' in scm4 files
+** Explicit assignments in naslist flags were incorrectly parsed.
+
 ^L
 Version 1.3:
 
@@ -1200,7 +1214,7 @@ be told the ways of handling them without recompiling.
 =========================================================================
 Copyright information:
 
-Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
+Copyright (C) 2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Permission is granted to anyone to make or distribute verbatim copies
    of this document as received, in any medium, provided that the

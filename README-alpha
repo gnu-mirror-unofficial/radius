@@ -18,7 +18,6 @@ a list of latest user-visible changes:
 
 	grep '^\*' ChangeLog
 
-
 Report bugs to <bug-gnu-radius@gnu.org>
 
 * Checking Out the Sources

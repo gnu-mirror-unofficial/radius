@@ -337,7 +337,7 @@ grad_lmpwdhash(const unsigned char *password, unsigned char *lmhash)
 
 /*
  *	Take the NT or LM password, and return the MSCHAP response
- *
+ *  
  *	The win_password MUST be exactly 16 bytes long.
  */
 void

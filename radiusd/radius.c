@@ -533,6 +533,7 @@ radius_respond(REQUEST *req)
 		radius_status_server(radreq, req->fd);
 		break;
 					
+
         default:
                 stat_inc(acct, radreq->request->ipaddr, num_unknowntypes);
                 grad_log_req(L_NOTICE, radreq->request,

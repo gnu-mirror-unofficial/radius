@@ -12,9 +12,10 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Library General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with GNU Radius; if not, write to the Free Software Foundation, 
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
+   You should have received a copy of the GNU General Public
+   License along with GNU Radius; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301 USA.
 
    Revision History:
                    see header of snprintf.c.
@@ -56,7 +57,7 @@ Alain Magloire: alainm@rcsm.ee.mcgill.ca
  *  to resort to mathematical function(it
  *  would require to link with -lm) and not
  *  going down to the bit pattern(not portable)
- *
+ *  
  *  so a number, a real is:
 
       real = integral + fraction

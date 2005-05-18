@@ -5,9 +5,9 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.   Poul-Henning Kamp
  * ----------------------------------------------------------------------------
- *
+ *  
  * $Id$
- *
+ *  
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -43,7 +43,7 @@ LOCK_DECLARE(lock)
 
 /*
  * UNIX password
- *
+ *  
  * Use MD5 for what it is best at...
  */
 

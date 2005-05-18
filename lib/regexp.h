@@ -1,12 +1,12 @@
 /*
  * regexp.h -- old-style regexp compile and step (emulated with POSIX regex)
  * Copyright (C) 1993 Rick Sladkey <jrs@world.std.com>
- *
+ *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Library Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
- *
+ *  
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -17,7 +17,7 @@
  * Think really hard before you intentionally include this file.
  * You should really be using the POSIX regex interface instead.
  * This emulation file is intended solely for compiling old code.
- *
+ *  
  * A program that uses this file must define six macros: INIT,
  * GETC, PEEKC, UNGETC, RETURN, and ERROR.  This interface is
  * so arcane that VMS hackers point at it in ridicule.

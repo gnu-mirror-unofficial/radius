@@ -35,8 +35,8 @@ This manual documents GNU Radius (version @value{VERSION}, @value{UPDATED}).
 @item GNU Press                  @tab Website: www.gnupress.org
 @item a division of the          @tab General: press@@gnu.org
 @item Free Software Foundation   @tab Orders: sales@@gnu.org
-@item 59 Temple Place, Suite 330 @tab Tel: 617-542-5942
-@item Boston, MA 02111-1307 USA  @tab Fax: 617-542-2652
+@item 51 Franklin Street, Fifth Floor @tab Tel: 617-542-5942
+@item Boston, MA 02110-1301 USA  @tab Fax: 617-542-2652
 @end multitable
 @sp 2
 Copyright @copyright{} 1999, 2000, 2001, 2002, 2003 Free Software

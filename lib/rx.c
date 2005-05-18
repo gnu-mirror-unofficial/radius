@@ -12,10 +12,10 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU Library General Public
-License along with this software; see the file COPYING.LIB.  If not,
-write to the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA. */
+You should have received a copy of the GNU Library General
+PublicLicense along with this software; see the file COPYING.LIB.
+If not,write to the Free Software Foundation, 51 Franklin Street,
+Fifth Floor, Boston, MA 02110-1301 USA. */
 
 /* NOTE!!!  AIX is so losing it requires this to be the first thing in the 
  * file. 
@@ -89,7 +89,7 @@ char *alloca ();
 
 /* Should we use malloc or alloca?  If REGEX_MALLOC is not defined, we
  * use `alloca' instead of `malloc' for the backtracking stack.
- *
+ *  
  * Emacs will die miserably if we don't do this.
  */
 
@@ -252,7 +252,7 @@ init_syntax_once ()
 #endif /* not emacs */
 
 /* Compile with `-DRX_DEBUG' and use the following flags.
- *
+ *  
  * Debugging flags:
  *      rx_debug - print information as a regexp is compiled
  *      rx_debug_trace - print information as a regexp is executed
@@ -1530,7 +1530,7 @@ rx_free_nfa_edge (e)
 
 /* This constructs a POSSIBLE_FUTURE, which is a kind epsilon-closure
  * of an NFA.  These are added to an nfa automaticly by eclose_nfa.
- */  
+ */
 
 #ifdef __STDC__
 static struct rx_possible_future * 
@@ -1625,7 +1625,7 @@ rx_free_nfa (rx)
  * edges that are taken whenever a similar epsilon edge would be,
  * but which imply that some side effect occurs when the edge 
  * is taken.
- *
+ *  
  * Side effects are used to model parts of the pattern langauge 
  * that are not regular (in the formal sense).
  */
@@ -1823,14 +1823,14 @@ rx_name_nfa_states (rx)
 
 /* This page: data structures for the static part of the nfa->supernfa
  * translation.
- *
+ *  
  * There are side effect lists -- lists of side effects occuring
  * along an uninterrupted, acyclic path of side-effect epsilon edges.
  * Such paths are collapsed to single edges in the course of computing
  * epsilon closures.  Such single edges are labled with a list of all
  * the side effects entailed in crossing them.  Like lists of side
  * effects are made == by the constructors below.
- *
+ *  
  * There are also nfa state sets.  These are used to hold a list of all
  * states reachable from a starting state for a given type of transition
  * and side effect list.   These are also hash-consed.
@@ -2097,7 +2097,7 @@ nfa_set_enjoin (rx, memo, state, set)
 /* This page: computing epsilon closures.  The closures aren't total.
  * Each node's closures are partitioned according to the side effects entailed
  * along the epsilon edges.  Return true on success.
- */ 
+ */
 
 struct eclose_frame
 {
@@ -2636,9 +2636,9 @@ rx_compactify_nfa (rx, mem, size)
 /* Match engines can use arbitrary values for opcodes.  So, the parse tree 
  * is built using instructions names (enum rx_opcode), but the superstate
  * nfa is populated with mystery opcodes (void *).
- *
+ *  
  * For convenience, here is an id table.  The opcodes are == to their inxs
- *
+ *  
  * The lables in re_search_2 would make good values for instructions.
  */
 
@@ -2787,7 +2787,7 @@ check_cache (cache)
  * to cause an (interpreted) fault when they are taken.
  * The fault handler revives the semi-free state, patches
  * incoming transitions back to normal, and continues.
- *
+ *  
  * The idea is basicly to free in two stages, aborting 
  * between the two if the state turns out to be useful again.
  * When a free is aborted, the rescued superstate is placed
@@ -3968,7 +3968,7 @@ rx_super_edge (rx, super, cset, df)
  * Finally, the third kind of cache miss occurs when the destination
  * superstate of a transition is in a `semi-free state'.  That case is
  * handled by UNFREE_SUPERSTATE.
- *
+ *  
  * The function of HANDLE_CACHE_MISS is to figure out which of these
  * cases applies.
  */
@@ -4136,7 +4136,7 @@ __const__ char *re_error_msg[] =
 
 /* 
  * Macros used while compiling patterns.
- *
+ *  
  * By convention, PEND points just past the end of the uncompiled pattern,
  * P points to the read position in the pattern.  `translate' is the name
  * of the translation table (`TRANSLATE' is the name of a macro that looks
@@ -4446,9 +4446,9 @@ group_in_compile_stack (compile_stack, regnum)
  * starting character is in `P[-2]'.  (`P[-1]' is the character `-'.)
  * Then we set the translation of all bits between the starting and
  * ending characters (inclusive) in the compiled pattern B.
- * 
+ *   
  * Return an error code.
- * 
+ *   
  * We use these short variable names so we can use the same macros as
  * `regex_compile' itself.  
  */
@@ -4503,7 +4503,7 @@ compile_range (rxb, cs, p_ptr, pend, translate, syntax, inv_tr, valid_inv_tr)
 /* This searches a regexp for backreference side effects.
  * It fills in the array OUT with 1 at the index of every register pair
  * referenced by a backreference.
- *
+ *  
  * This is used to help optimize patterns for searching.  The information is
  * useful because, if the caller doesn't want register values, backreferenced
  * registers are the only registers for which we need rx_backtrack.
@@ -4651,7 +4651,7 @@ is_anchored (rexp, se)
 /* This removes register assignments that aren't required by backreferencing.
  * This can speed up explore_future, especially if it eliminates
  * non-determinism in the superstate NFA.
- * 
+ *   
  * NEEDED is an array of characters, presumably filled in by FIND_BACKREFS.
  * The non-zero elements of the array indicate which register assignments
  * can NOT be removed from the expression.

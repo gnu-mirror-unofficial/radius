@@ -155,7 +155,7 @@ struct rx_se_list;
 
 /* 
  * GLOSSARY
- *
+ *  
  * regexp
  * regular expression
  * expression
@@ -163,29 +163,29 @@ struct rx_se_list;
  *       need not be formally regular -- it can contain
  *       constructs that don't correspond to purely regular
  *       expressions.
- *
+ *  
  * buffer
  * string - the string (or strings) being searched or matched.
- *
+ *  
  * pattern buffer - a structure of type `struct re_pattern_buffer'
  *       This in turn contains a `struct rx', which holds the
  *       NFA compiled from a pattern, as well as some of the state
  *       of a matcher using the pattern.
- *
+ *  
  * NFA - nondeterministic finite automata.  Some people
  *       use this term to a member of the class of 
  *       regular automata (those corresponding to a regular
  *       language).  However, in this code, the meaning is
  *       more general.  The automata used by Rx are comperable
  *       in power to what are usually called `push down automata'.
- *
+ *  
  *       Two NFA are built by rx for every pattern.  One is built
  *       by the compiler.  The other is built from the first, on
  *       the fly, by the matcher.  The latter is called the `superstate
  *       NFA' because its states correspond to sets of states from
  *       the first NFA.  (Joe Keane gets credit for the name
  *       `superstate NFA').
- *
+ *  
  * NFA edges
  * epsilon edges
  * side-effect edges - The NFA compiled from a pattern can have three
@@ -196,17 +196,17 @@ struct rx_se_list;
  *       edges imply a transition that can only be taken after the
  *       indicated side effect has been successfully accomplished.
  *       Some examples of side effects are:
- *
+ *  
  *              Storing the current match position to record the
  *              location of a parentesized subexpression.
- *
+ *  
  *              Advancing the matcher over N characters if they
  *              match the N characters previously matched by a 
  *              parentesized subexpression.
- *
+ *  
  *       Both of those kinds of edges occur in the NFA generated
  *       by the pattern:  \(.\)\1
- *
+ *  
  *       Epsilon and side effect edges are similar.  Unfortunately,
  *       some of the code uses the name `epsilon edge' to mean
  *       both epsilon and side effect edges.  For example,  the
@@ -353,12 +353,12 @@ struct rx
 /* SYNTAX TREES */
 
 /* Compilation is in stages.  
- *
+ *  
  * In the first stage, a pattern specified by a string is 
  * translated into a syntax tree.  Later stages will convert
  * the syntax tree into an NFA optimized for conversion to a
  * superstate-NFA.
- *
+ *  
  * This page is about syntax trees.
  */
 
@@ -427,7 +427,7 @@ struct rexp_node
 
 
 /* NFA
- *
+ *  
  * A syntax tree is compiled into an NFA.  This page defines the structure
  * of that NFA.
  */
@@ -578,44 +578,44 @@ struct rx_possible_future
 
 
 /* This begins the description of the superstate NFA.
- *
+ *  
  * The superstate NFA corresponds to the NFA in these ways:
- *
+ *  
  * Every superstate NFA states SUPER correspond to sets of NFA states,
  * nfa_states(SUPER).
- *
+ *  
  * Superstate edges correspond to NFA paths.
- *
+ *  
  * The superstate has no epsilon transitions;
  * every edge has a character label, and a (possibly empty) side
  * effect label.   The side effect label corresponds to a list of
  * side effects that occur in the NFA.  These parts are referred
  * to as:   superedge_character(EDGE) and superedge_sides(EDGE).
- *
+ *  
  * For a superstate edge EDGE starting in some superstate SUPER,
  * the following is true (in pseudo-notation :-):
- *
+ *  
  *       exists DEST in nfa_states s.t. 
  *         exists nfaEDGE in nfa_edges s.t.
  *                 origin (nfaEDGE) == DEST
  *              && origin (nfaEDGE) is a member of nfa_states(SUPER)
  *              && exists PF in possible_futures(dest(nfaEDGE)) s.t.
  *                      sides_of_possible_future (PF) == superedge_sides (EDGE)
- *
+ *  
  * also:
- *
+ *  
  *      let SUPER2 := superedge_destination(EDGE)
  *          nfa_states(SUPER2)
  *           == union of all nfa state sets S s.t.
  *                          exists PF in possible_futures(dest(nfaEDGE)) s.t.
  *                             sides_of_possible_future (PF) == superedge_sides (EDGE)
  *                          && S == dests_of_possible_future (PF) }
- *
+ *  
  * Or in english, every superstate is a set of nfa states.  A given
  * character and a superstate implies many transitions in the NFA --
  * those that begin with an edge labeled with that character from a
  * state in the set corresponding to the superstate.
- * 
+ *   
  * The destinations of those transitions each have a set of possible
  * futures.  A possible future is a list of side effects and a set of
  * destination NFA states.  Two sets of possible futures can be
@@ -625,28 +625,28 @@ struct rx_possible_future
  * In this way, all the possible futures suggested by a superstate
  * and a character can be merged into a set of possible futures where
  * no two elements of the set have the same set of side effects.
- *
+ *  
  * The destination of a possible future, being a set of NFA states, 
  * corresponds to a supernfa state.  So, the merged set of possible
  * futures we just created can serve as a set of edges in the
  * supernfa.
- *
+ *  
  * The representation of the superstate nfa and the nfa is critical.
  * The nfa has to be compact, but has to facilitate the rapid
  * computation of missing superstates.  The superstate nfa has to 
  * be fast to interpret, lazilly constructed, and bounded in space.
- *
+ *  
  * To facilitate interpretation, the superstate data structures are 
  * peppered with `instruction frames'.  There is an instruction set
  * defined below which matchers using the supernfa must be able to
  * interpret.
- *
+ *  
  * We'd like to make it possible but not mandatory to use code
  * addresses to represent instructions (c.f. gcc's computed goto).
  * Therefore, we define an enumerated type of opcodes, and when
  * writing one of these instructions into a data structure, use
  * the opcode as an index into a table of instruction values.
- * 
+ *   
  * Here are the opcodes that occur in the superstate nfa:
  */
  
@@ -655,10 +655,10 @@ struct rx_possible_future
  * by characters.  A normal `move' in a matcher is to fetch the next
  * character and use it as an index into a superstates transition
  * table.
- *
+ *  
  * In the fasted case, only one edge follows from that character.
  * In other cases there is more work to do.
- * 
+ *   
  * The descriptions of the opcodes refer to data structures that are
  * described further below. 
  */
@@ -726,24 +726,24 @@ extern void * rx_id_instruction_table[rx_num_instructions];
 /* The heart of the matcher is a `word-code-interpreter' 
  * (like a byte-code interpreter, except that instructions
  * are a full word wide).
- *
+ *  
  * Instructions are not stored in a vector of code, instead,
  * they are scattered throughout the data structures built
  * by the regexp compiler and the matcher.  One word-code instruction,
  * together with the arguments to that instruction, constitute
  * an instruction frame (struct rx_inx).
- *
+ *  
  * This structure type is padded by hand to a power of 2 because
  * in one of the dominant cases, we dispatch by indexing a table
  * of instruction frames.  If that indexing can be accomplished
  * by just a shift of the index, we're happy.
- *
+ *  
  * Instructions take at most one argument, but there are two
  * slots in an instruction frame that might hold that argument.
  * These are called data and data_2.  The data slot is only
  * used for one instruction (RX_NEXT_CHAR).  For all other 
  * instructions, data should be set to 0.
- *
+ *  
  * RX_NEXT_CHAR is the most important instruction by far.
  * By reserving the data field for its exclusive use, 
  * instruction dispatch is sped up in that case.  There is
@@ -829,7 +829,7 @@ struct rx_superset
  * Every character occurs in at most one rx_super_edge per super-state.
  * But, that structure might have more than one option, indicating a point
  * of non-determinism. 
- *
+ *  
  * In other words, this structure holds a list of superstate edges
  * sharing a common starting state and character label.  The edges
  * are in the field OPTIONS.  All superstate edges sharing the same
@@ -964,16 +964,16 @@ typedef void (*rx_morecore_fn)();
 
 /* You use this to control the allocation of superstate data 
  * during matching.  Most of it should be initialized to 0.
- *
+ *  
  * A MORECORE function is necessary.  It should allocate
  * a new block of memory or return 0.
  * A default that uses malloc is called `rx_morecore'.
- *
+ *  
  * The number of SUPERSTATES_ALLOWED indirectly limits how much memory
  * the system will try to allocate.  The default is 128.  Batch style
  * applications that are very regexp intensive should use as high a number
  * as possible without thrashing.
- * 
+ *   
  * The LOCAL_CSET_SIZE is the number of characters in a character set.
  * It is therefore the number of entries in a superstate transition table.
  * Generally, it should be 256.  If your character set has 16 bits, 
@@ -1024,7 +1024,7 @@ struct rx_cache
 
 /* The lowest-level search function supports arbitrarily fragmented
  * strings and (optionally) suspendable/resumable searches.
- *
+ *  
  * Callers have to provide a few hooks.
  */
 
@@ -1061,11 +1061,11 @@ enum rx_get_burst_return
 /* A call to get burst should make POS valid.  It might be invalid
  * if the STRING field doesn't point to a burst that actually
  * contains POS.
- *
+ *  
  * GET_BURST should take a clue from SEARCH_DIRECTION (1 or -1) as to
  * whether or not to pad to the left.  Padding to the right is always
  * appropriate, but need not go past the point indicated by STOP.
- *
+ *  
  * If a continuation is returned, then the reentering call to
  * a search function will retry the get_burst.
  */
@@ -1093,7 +1093,7 @@ enum rx_back_check_return
  * over rparen - lparen characters and return pass iff
  * the characters starting at POS match those indexed
  * by [LPAREN..RPAREN].
- *
+ *  
  * If a continuation is returned, then the reentering call to
  * a search function will retry the back_check.
  */
@@ -1144,7 +1144,7 @@ enum rx_search_return
 
 
 /* regex.h
- * 
+ *   
  * The remaining declarations replace regex.h.
  */
 
@@ -1432,7 +1432,7 @@ extern reg_syntax_t re_syntax_options;
 
 /* Define combinations of the above bits for the standard possibilities.
    (The [[[ comments delimit what gets put into the Texinfo file, so
-   don't delete them!)  */ 
+   don't delete them!)  */
 /* [[[begin syntaxes]]] */
 #define RE_SYNTAX_EMACS 0
 
@@ -1543,7 +1543,7 @@ extern reg_syntax_t re_syntax_options;
 /* If `regs_allocated' is REGS_UNALLOCATED in the pattern buffer,
  * `re_match_2' returns information about at least this many registers
  * the first time a `regs' structure is passed. 
- *
+ *  
  * Also, this is the greatest number of backreferenced subexpressions
  * allowed in a pattern being matched without caller-supplied registers.
  */
@@ -2266,7 +2266,7 @@ RX_DECL char re_syntax_table[CHAR_SET_SIZE];
  * two special cases to check for: if past the end of string1, look at
  * the first character in string2; and if before the beginning of
  * string2, look at the last character in string1.
- *
+ *  
  * Assumes `string1' exists, so use in conjunction with AT_STRINGS_BEG ().  
  */
 #define LETTER_P(POS,OFF)                                               \

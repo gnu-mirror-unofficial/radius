@@ -21,4 +21,4 @@ AM_CPPFLAGS=-DCOMPILE_DL_FIRST_MODULE=1
 
 mod_radius_la_LDFLAGS = -module -avoid-version -rpath $(phpmoddir) 
 
-EXTRA_DIST = README
+EXTRA_DIST = README 

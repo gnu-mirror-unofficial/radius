@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GNU Radius; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 man_MANS=builddbm.8 radctl.8 radiusd.8\
 	 radping.8 radzap.8\

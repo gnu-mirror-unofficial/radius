@@ -31,7 +31,8 @@ Christian Schrader	c.schrader@gkas.de
 Clement Gerouville      clems@certix.fr
 Cornel Cristea          cornelx@ew.ro
 Dave Restall            dave@restall.net
-Eric Salome'            esalome@ctx.net
+Erik DUH Olson	 	Erik@DUHCentral.com
+Eric Salomé             esalome@ctx.net
 Gerald Coon		gcoon@inch.com
 Jaime Tellez Sanchez    jtellez@telereunion.com.mx
 Jody Owens		jowens@worldinter.net
@@ -48,3 +49,9 @@ Robert Abbate		cogea@ectisp.net
 Sergei Sinkovsky	glorybox@farlep.net
 Stephen Bleazard        stephen@bleazard.com
 Vlad Lungu		vlad@rls.roknet.ro
+
+
+;;;; Local variables:
+;;;; mode: Fundamental
+;;;; buffer-file-coding-system: utf-8
+;;;; End:

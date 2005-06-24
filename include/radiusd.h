@@ -642,6 +642,7 @@ void radiusd_request_free(radiusd_request_t *radreq);
 
 char *radius_xlate(struct obstack *obp, char *str,
                    grad_request_t *req, grad_avp_t *reply_pairs);
+int radius_eval_avp(radiusd_request_t *req, grad_avp_t *p);
 int radius_eval_avl(radiusd_request_t *req, grad_avp_t *p);
 char *util_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq);
 

@@ -26,8 +26,8 @@
 # define __USE_EXTERN_INLINES   1
 #endif
 #define ARGP_EI
-#undef __OPTIMIZE__
-#define __OPTIMIZE__
+#undef __OPTIMIZE__ 
+#define __OPTIMIZE__ 1
 #include "argp.h"
 
 /* Add weak aliases.  */

@@ -518,41 +518,43 @@ pair_set_value(grad_avp_t *p, Datatype type, Datum *datum)
 }
 
 int
+radius_eval_avp(radiusd_request_t *req, grad_avp_t *p)
+{
+	Datatype type;
+	Datum datum;
+		
+	switch (p->eval_type) {
+	case grad_eval_const:
+		break;
+			
+	case grad_eval_interpret:
+		if (rewrite_interpret(p->avp_strvalue,
+				      req->request, &type, &datum)) 
+			return 1;
+		pair_set_value(p, type, &datum);
+		break;
+
+	case grad_eval_compiled:
+		if (rewrite_eval(p->avp_strvalue, req->request, &type, &datum))
+			return 1;
+		pair_set_value(p, type, &datum);
+		break;
+
+	default:
+		grad_insist_fail("bad eval_type");
+		return 1;
+	}
+	p->eval_type = grad_eval_const;
+	return 0;
+}
+
+int
 radius_eval_avl(radiusd_request_t *req, grad_avp_t *p)
 {
-	int errcnt = 0;
-	for (; p; p = p->next) {
-		Datatype type;
-		Datum datum;
-		
-		switch (p->eval_type) {
-		case grad_eval_const:
-			break;
-			
-		case grad_eval_interpret:
-			if (rewrite_interpret(p->avp_strvalue,
-					      req->request, &type, &datum)) {
-                                errcnt++;
-                                continue;
-                        }
-			pair_set_value(p, type, &datum);
-			break;
-
-		case grad_eval_compiled:
- 			if (rewrite_eval(p->avp_strvalue,
-					 req->request, &type, &datum)) {
-                                errcnt++;
-                                continue;
-                        }
-			pair_set_value(p, type, &datum);
-			break;
-
-		default:
-			grad_insist_fail("bad eval_type");
-                }
-        }
-
-	return errcnt++;
+	int status = 0;
+	for (; p; p = p->next)
+		status |= radius_eval_avp(req, p);
+	return status;
 }
 
 radiusd_request_t *

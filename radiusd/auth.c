@@ -1151,7 +1151,7 @@ sfn_exec_wait(AUTH_MACH *m)
 	int rc;
 	grad_avp_t *p;
 	grad_avp_t *reply = NULL;
-	
+
 	rc = exec_program_wait (m->req, m->check_pair, &reply, &p);
 	
 	if (rc != 0) {
@@ -1182,10 +1182,8 @@ sfn_exec_nowait(AUTH_MACH *m)
 	for (p = m->check_pair;
              p;
              p = grad_avl_find(p->next, DA_EXEC_PROGRAM)) {
-		
-		radius_exec_program(m->check_pair->avp_strvalue,
-				    m->req, NULL, 0);
-
+		radius_eval_avp(m->req, p);
+		radius_exec_program(p->avp_strvalue, m->req, NULL, 0);
 	}
 }
 

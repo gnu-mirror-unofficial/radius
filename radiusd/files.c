@@ -632,6 +632,7 @@ exec_program_wait (radiusd_request_t *request, grad_avp_t *rhs,
 	
 	for (p = rhs; p; p = p->next) {
 		if (p->attribute == DA_EXEC_PROGRAM_WAIT) {
+			radius_eval_avp(request, p);
 			switch (p->avp_strvalue[0]) {
 			case '/':
 				/* radius_exec_program() returns -1 on

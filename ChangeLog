@@ -1,3 +1,16 @@
+2005-06-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* THANKS: Added Eric Olson. Switched to UTF-8
+	* NEWS: Updated
+	* lib/argp-fs-xinl.c: Bugfix: define __OPTIMIZE__ to 1
+	* lib/argp-xinl.c: Likewise
+	* include/radiusd.h (radius_eval_avp): New function
+	* radiusd/auth.c (sfn_exec_nowait): Evaluate the pair before
+	executing it. 
+	* radiusd/files.c (exec_program_wait): Likewise.
+	* radiusd/radutil.c (radius_eval_avp): New finction.
+	(radius_eval_avl): Rewritten using radius_eval_avp().
+
 2005-05-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* COPYING, Makefile.am, README-alpha,

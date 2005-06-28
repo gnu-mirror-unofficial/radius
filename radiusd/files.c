@@ -632,18 +632,20 @@ exec_program_wait (radiusd_request_t *request, grad_avp_t *rhs,
 	
 	for (p = rhs; p; p = p->next) {
 		if (p->attribute == DA_EXEC_PROGRAM_WAIT) {
+			int exec_flags = RAD_EXEC_WAIT;
+			if (p->eval_type == grad_eval_const)
+				exec_flags |= RAD_EXEC_XLAT;
 			radius_eval_avp(request, p);
 			switch (p->avp_strvalue[0]) {
 			case '/':
 				/* radius_exec_program() returns -1 on
 				   fork/exec errors, or >0 if the exec'ed
-				   program
-				   had a non-zero exit status.
+				   program had a non-zero exit status.
 				*/
 				rc = radius_exec_program(p->avp_strvalue,
 							 request,
 							 reply,
-							 1);
+							 exec_flags);
 				break;
 				
 			case '|':
@@ -653,6 +655,9 @@ exec_program_wait (radiusd_request_t *request, grad_avp_t *rhs,
 				break;
 
 			default:
+				grad_log_req(L_ERR, request->request,
+					     _("cannot execute `%s'"),
+					     p->avp_strvalue);
 				rc = 1;
 			}
 
@@ -786,7 +791,6 @@ hints_setup(radiusd_request_t *req)
 #ifdef USE_SERVER_GUILE
 		scheme_eval_avl (req, rule->lhs, rule->rhs, &add, NULL);
 #endif
-		
 		/* Evaluate hints */
 		radius_eval_avl(req, add); /*FIXME: return value?*/
 

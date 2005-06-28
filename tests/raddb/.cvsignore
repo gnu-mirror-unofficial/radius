@@ -3,6 +3,7 @@ Makefile.in
 config
 client.conf
 users
+acct.bin
 acct.scm
 checkrad.conf
 dictionary

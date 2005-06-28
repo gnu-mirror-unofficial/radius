@@ -26,6 +26,9 @@
 	* tests/testsuite.at (RA_ALL_KEYWORDS): Add ext-acct.
 	* tests/raddb/Makefile.am (EXTRA_DIST,CLEANFILES): Add acct.bin.in
 
+	* tests/raddb/.cvsignore: Updated
+	* contrib/php/.cvsignore: New file 
+	
 2005-06-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* include/radiusd.h (RAD_EXEC_WAIT,RAD_EXEC_XLAT): New constants

@@ -44,7 +44,7 @@ logging {
 	};
 	category debug {
 		channel debug;
-		level acct=1,radpdu,radsrv,radiusd=2,request=2,scheme;
+		level acct=1,radpdu,radsrv,radiusd=2,request=2,scheme,exec;
 	};
 	category !debug {
 		channel default;

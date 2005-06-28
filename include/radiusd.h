@@ -428,6 +428,8 @@ void radiusd_register_input_fd(char *name, int fd, void *data);
 void radiusd_close_channel(int fd);
 
 /* exec.c */
+#define RAD_EXEC_WAIT 0x01
+#define RAD_EXEC_XLAT 0x02
 int radius_get_user_ids(RADIUS_USER *usr, const char *name);
 int radius_switch_to_user(RADIUS_USER *usr);
 int radius_exec_command(char *cmd);

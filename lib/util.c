@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -160,8 +160,8 @@ grad_mkfilename3(char *dir, char *subdir, char *name)
 {
         int len = strlen(dir) + strlen(subdir) + strlen(name);
         char *p = grad_emalloc(len+3); /* two intermediate slashes and
-                                   * terminating zero
-                                   */
+                                        * terminating zero
+                                        */
         sprintf(p, "%s/%s/%s", dir, subdir, name);
         return p;
 }
@@ -182,63 +182,57 @@ grad_decode_backslash(int c)
 }
 
 #define to_num(c) \
-  (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : -1 ))
+  (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : 255 ))
 
 void
-grad_obstack_grow_backslash_num(struct obstack *stk, char *text,
+grad_obstack_grow_backslash_num(struct obstack *stk, char *text, char **pend,
 				int len, int base)
 {
 	int i;
-	int c = 0;
-
-	for (i = len-1; i >= 0 && text[i] != '\\'; i--)
-		;
-	if (i)
-		obstack_grow(stk, text, i);
-	if (base == 16)
-		i++;
-	for (i++; i < len; i++) 
-		c = c*base + to_num(text[i]);
-	obstack_1grow(stk, c);
+	int val = 0;
+	char *start = text;
+	
+	if (text[0] == '\\') {
+		text++;
+		if (base == 16)
+			text++;
+	}
+	
+	for (i = 0; i < len; i++) {
+		int n = (unsigned char)text[i];
+		if (n > 127 || (n = to_num(n)) >= base)
+			break;
+		val = val*base + n;
+	}
+	
+	if (i == 0) {
+		obstack_grow(stk, start, 1);
+		if (pend)
+			*pend = start + 1;
+	} else {
+		obstack_1grow(stk, val);
+		if (pend)
+			*pend = text + i;
+	}
 }
 
 
 void
 grad_obstack_grow_backslash(struct obstack *stk, char *text, char **endp)
 {
-	int c, i;
-	
-	switch (text[1]) {
-	case '\\':
+	if (text[1] == '\\' || (unsigned char)text[1] > 127) {
 		obstack_1grow(stk, text[1]);
 		text += 2;
-		break;
-		
-	default:
-		c = grad_decode_backslash(text[1]);
+	} else if (isdigit(text[1])) 
+		grad_obstack_grow_backslash_num(stk, text, &text, 3, 8);
+	else if (text[1] == 'x' || text[1] == 'X')
+		grad_obstack_grow_backslash_num(stk, text, &text, 2, 16);
+	else {
+		int c = grad_decode_backslash(text[1]);
 		obstack_1grow(stk, c);
 		text += 2;
-		break;
-		
-	case '0':
-		for (i = 0; i < 3 && isdigit(text[i+1]) && text[i+1] < '8'; i++)
-			;
-		if (i != 3)
-			break;
-		grad_obstack_grow_backslash_num(stk, text, 4, 8);
-		text += 4;
-		break;
-		
-	case 'x':
-	case 'X':
-		for (i = 0; i < 2 && isxdigit(text[i+2]); i++)
-			;
-		if (i != 2)
-			break;
-		grad_obstack_grow_backslash_num(stk, text, 3, 16);
-		text += 3;
-		break;
 	}
+		
 	*endp = text;
 }
 

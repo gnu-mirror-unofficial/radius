@@ -1,6 +1,33 @@
 2005-06-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* NEWS: Updated
 	* configure.ac: Raised version number to 1.3.90
+	* radiusd/acct.c (rad_acct_ext): Evaluate pair before passing it
+	to radius_exec_program.
+	Wait for the external program to terminate.
+	Fixed return value;
+	* radiusd/exec.c: Minor formatting fix
+	* radiusd/files.c: Likewise.
+	* radiusd/radutil.c: Likewise.
+	
+	* radiusd/radiusd.c: Fixed longstanding bug: use of optarg instead
+	of the parameter arg.
+	* radtest/main.c: Likewise
+	* radwho/radwho.c: Likewise
+	
+	* tests/ext-acct.at: New file
+	* tests/raddb/acct.bin.in: New file
+	* tests/raddb/hints.in: New file
+	* tests/raddb/hints: Removed
+	* tests/Makefile.am (TESTSUITE_AT): Add ext-acct.at. Sorted files.
+	* tests/atlocal.in (make_raddb): Set executable bit on created
+	.bin files.
+	* tests/scheme-acct.at: Bugfix: cmp actually had no effect.
+	* tests/testsuite.at (RA_ALL_KEYWORDS): Add ext-acct.
+	* tests/raddb/Makefile.am (EXTRA_DIST,CLEANFILES): Add acct.bin.in
+
+2005-06-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* include/radiusd.h (RAD_EXEC_WAIT,RAD_EXEC_XLAT): New constants
 	* include/radius/radius.h (grad_obstack_grow_backslash_num):
 	Changed proto

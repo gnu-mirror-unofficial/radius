@@ -48,37 +48,38 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 ## ------------ ##
 
 TESTSUITE_AT = \
- testsuite.at \
- begin.at \
- end.at \
- status-server.at \
+ acct.at \
+ acl.at \
  basic-auth.at \
- reply.at \
  begin-kw.at \
+ begin-proxy.at \
+ begin.at \
  default-kw.at \
- match-profile.at \
+ end-proxy.at \
+ end.at \
+ execwait.at \
+ expiration.at \
+ ext-acct.at \
+ filter.at \
  hints.at \
  huntgroups.at \
- scheme-auth.at \
- acl.at \
- expiration.at \
- menu.at \
- acct.at \
- rewrite.at \
- execwait.at \
- filter.at \
- scheme-acct.at \
- tunnel.at \
  log-mode.at \
+ match-profile.at \
+ menu.at \
+ proxy-acct.at \
  proxy-basic-auth.at \
  proxy-ignorecase.at \
- proxy-vsa.at \
  proxy-menu.at \
  proxy-nested.at \
- proxy-acct.at \
  proxy-tunnel.at \
- begin-proxy.at \
- end-proxy.at 
+ proxy-vsa.at \
+ reply.at \
+ rewrite.at \
+ scheme-acct.at \
+ scheme-auth.at \
+ status-server.at \
+ testsuite.at \
+ tunnel.at 
 
 TESTSUITE = $(srcdir)/testsuite
 

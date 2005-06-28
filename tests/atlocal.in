@@ -34,6 +34,9 @@ s^@SNMP@^$SNMP^;"`
     for file in $*
     do
         sed $EXPR $ABS_NAME/${file}.in > $ABS_NAME/$file
+	case $file in
+	*.bin) chmod +x $ABS_NAME/$file
+	esac
     done
     [ -d $ABS_NAME/log ] || mkdir $ABS_NAME/log
     [ -d $ABS_NAME/acct ] || mkdir $ABS_NAME/acct
@@ -87,7 +90,7 @@ begin_server() {
   if [ -r $RADIUSD_CONFDIR/radiusd.pid ]; then
      :
   else
-     make_raddb raddb dictionary config client.conf users acct.scm realms
+     make_raddb raddb dictionary config client.conf hints users acct.bin acct.scm realms
      make_raddb proxy dictionary client.conf config realms
      start_server $LOCAL_CONF
      test "$1" = "proxy" && start_server $PROXY_CONF

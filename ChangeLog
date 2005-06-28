@@ -1,5 +1,6 @@
 2005-06-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* configure.ac: Raised version number to 1.3.90
 	* include/radiusd.h (RAD_EXEC_WAIT,RAD_EXEC_XLAT): New constants
 	* include/radius/radius.h (grad_obstack_grow_backslash_num):
 	Changed proto

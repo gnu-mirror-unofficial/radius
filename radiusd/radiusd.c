@@ -178,7 +178,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 		
         case 'a':
-                radacct_dir = grad_estrdup(optarg);
+                radacct_dir = grad_estrdup(arg);
                 break;
 		
 #ifdef USE_DBM
@@ -192,7 +192,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 		
         case 'l':
-                radlog_dir = grad_estrdup(optarg);
+                radlog_dir = grad_estrdup(arg);
                 break;
 		
         case 'm':
@@ -226,18 +226,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 		
         case 'i':
-                if ((myip = grad_ip_gethostaddr(optarg)) == 0)
+                if ((myip = grad_ip_gethostaddr(arg)) == 0)
                         fprintf(stderr,
                                 _("invalid IP address: %s"),
-                                optarg);
+                                arg);
                 break;
 		
         case 'P':
-                radpid_dir = optarg;
+                radpid_dir = arg;
                 break;
 		
         case 'p':
-                auth_port = atoi(optarg);
+                auth_port = atoi(arg);
 		acct_port = auth_port+1;
                 break;
 		
@@ -250,8 +250,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 		
         case 'x':
-                x_debug_spec = optarg;
-                grad_set_debug_levels(optarg);
+                x_debug_spec = arg;
+                grad_set_debug_levels(arg);
                 break;
 		
         case 'y':

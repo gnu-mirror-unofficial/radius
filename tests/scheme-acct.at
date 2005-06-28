@@ -22,7 +22,15 @@ AT_SETUP([Scheme accounting])
 AT_KEYWORDS([scheme-acct])
 
 RA_PREREQ([USE_SERVER_GUILE],
- [AT_DATA([scheme-out],[User-Name=scheme
+ [RA_CHECK([send acct Accounting-Request User-Name = "scheme" \
+	                NAS-IP-Address = 127.0.0.1 \
+                        NAS-Port-Id = 1 \
+                        Acct-Status-Type = Start \
+			Acct-Session-Id = "0001" 
+	    expect Accounting-Response])
+  AT_CHECK([cat $BUILDDIR/raddb/acct/scheme],
+           [0],
+           [User-Name=scheme
 NAS-IP-Address=2130706433
 NAS-Port-Id=1
 Acct-Status-Type=1
@@ -30,14 +38,7 @@ Acct-Session-Id=0001
 Scheme-Acct-Procedure=acct
 Orig-User-Name=scheme
 
-])
-  RA_CHECK([send acct Accounting-Request User-Name = "scheme" \
-	                NAS-IP-Address = 127.0.0.1 \
-                        NAS-Port-Id = 1 \
-                        Acct-Status-Type = Start \
-			Acct-Session-Id = "0001" 
-	    expect Accounting-Response])
-  cmp $BUILDDIR/raddb/acct/scheme scheme-out])
+])])
 
 AT_CLEANUP
 

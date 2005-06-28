@@ -52,6 +52,8 @@ static char *addstring();
 static char *addquote();
 static int preproc();
 static void read_number(char *text, int len, int base);
+static void grow_backslash_num(struct obstack *stk, char *text,
+			       int len, int base);
 
 static struct obstack stack; /* Obstack for keeping string values */ 
 grad_locus_t grad_parser_source_locus;
@@ -356,13 +358,13 @@ NULL    return NUL;
 \"[^"\\\n]*\\[xX]{X} |
 \"[^"\\\n]*\\[xX]{X}{X} {
 	  BEGIN(in_string);
-	  grad_obstack_grow_backslash_num(&stack, yytext + 1, yyleng - 1, 16);
+	  grow_backslash_num(&stack, yytext + 1, yyleng - 1, 16);
 }
 \"[^"\\\n]*\\{O} |
 \"[^"\\\n]*\\{O}{O} |
 \"[^"\\\n]*\\{O}{O}{O} {
           BEGIN(in_string);
-          grad_obstack_grow_backslash_num(&stack, yytext + 1, yyleng - 1, 8); 
+          grow_backslash_num(&stack, yytext + 1, yyleng - 1, 8); 
 }
 <in_string>[^"\\\n]*\\\n {
           obstack_grow(&stack, yytext, yyleng-2);
@@ -380,12 +382,12 @@ NULL    return NUL;
 }
 <in_string>[^"\\\n]*\\[xX]{X} |
 <in_string>[^"\\\n]*\\[xX]{X}{X} {
-	  grad_obstack_grow_backslash_num(&stack, yytext, yyleng, 16);
+	  grow_backslash_num(&stack, yytext, yyleng, 16);
 }
 <in_string>[^"\\\n]*\\{O} |
 <in_string>[^"\\\n]*\\{O}{O} |
 <in_string>[^"\\\n]*\\{O}{O}{O} {
-          grad_obstack_grow_backslash_num(&stack, yytext, yyleng, 8);
+          grow_backslash_num(&stack, yytext, yyleng, 8);
 }
 <in_string>[^"\\\n]*\" {
           BEGIN(INITIAL);
@@ -551,6 +553,18 @@ preproc()
                 return 0;
         }
         return 1;
+}
+
+void
+grow_backslash_num(struct obstack *stk, char *text, int len, int base)
+{
+	char *p = strchr(text, '\\');
+	int n = p - text;
+	obstack_grow(&stack, text, n);
+	len -= n + 1;
+	if (base == 16)
+		len--;
+	grad_obstack_grow_backslash_num(stk, p, NULL, len, base);
 }
 
 

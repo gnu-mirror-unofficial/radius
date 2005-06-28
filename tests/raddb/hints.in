@@ -1,0 +1,41 @@
+# -*- radius -*-
+# This file is part of GNU Radius test suite.
+# Copyright (C) 2000,2001,2003 Free Software Foundation, Inc.
+#
+# Written by Sergey Poznyakoff
+#
+# GNU Radius is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# GNU Radius is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNU Radius; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
+
+# Hints.exp
+
+hint    NULL    Hint = "0"
+DEFAULT Suffix = ".1"
+        Hint = "1",
+		Strip-User-Name = Yes
+             
+DEFAULT Suffix = ".2"
+        Hint = "2",
+		Strip-User-Name = Yes
+
+# Scheme-acct.exp
+scheme NULL  Scheme-Acct-Procedure = "acct"
+
+ext-acct NULL Acct-Ext-Program = "@BUILDDIR@/raddb/acct.bin %C{User-Name} %C{NAS-IP-Address} %C{NAS-Port-Id} %C{Acct-Status-Type} %C{Acct-Session-Id}"
+
+DEFAULT Prefix = "frw", Strip-User-Name = No
+	Acct-Ext-Program = "|filter_rw"
+
+DEFAULT Prefix = "filter", Strip-User-Name = No
+	Acct-Ext-Program = "|filter"

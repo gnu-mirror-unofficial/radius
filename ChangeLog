@@ -1,3 +1,27 @@
+2005-06-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* include/radiusd.h (RAD_EXEC_WAIT,RAD_EXEC_XLAT): New constants
+	* include/radius/radius.h (grad_obstack_grow_backslash_num):
+	Changed proto
+	* lib/argcv.c (argcv_scan): Fix the behavior in case of unbalanced
+	quotes.
+	Synchronize with the mailutils repo.
+	* lib/users.l: Use modified grad_obstack_grow_backslash_num
+	* lib/util.c (grad_obstack_grow_backslash_num):
+	(grad_obstack_grow_backslash): Rewritten
+	* radiusd/auth.c (sfn_exec_nowait): Do not translate return value
+	from the rewrite call.
+	* radiusd/exec.c (radius_exec_program): Changed semantics of the
+	last argument.
+	* radiusd/files.c (exec_program_wait): Do not translate return value
+	from the rewrite call.
+	* radiusd/radutil.c (pair_set_value): Add type checking.
+	* radiusd/rewrite.y (mtx_bin): Fix a bug in implicit type coercion
+	(bi_qprn): Bugfix: make sure there are always two hex digits.
+	* tests/execwait.at (execwaitr): New test
+	* tests/raddb/config.in (debug): Add exec to the debugging level
+	* tests/raddb/users.in (execwaitr): New profile
+	
 2005-06-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* THANKS: Added Eric Olson. Switched to UTF-8

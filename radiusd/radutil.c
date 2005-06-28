@@ -500,15 +500,42 @@ util_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq)
 static void
 pair_set_value(grad_avp_t *p, Datatype type, Datum *datum)
 {
-	grad_free(p->avp_strvalue);
+	char buf[64];
+	char *endp;
+	
 	switch (type) {
 	case Integer:
-		p->avp_lvalue = datum->ival;
+		switch (p->type) {
+		case GRAD_TYPE_STRING:
+			snprintf(buf, sizeof buf, "%lu", datum->ival);
+			grad_string_replace(&p->avp_strvalue, buf);
+			p->avp_strlength = strlen(p->avp_strvalue);
+			break;
+			
+		case GRAD_TYPE_INTEGER:
+		case GRAD_TYPE_IPADDR:
+		case GRAD_TYPE_DATE:
+			p->avp_lvalue = datum->ival;
+		}
 		break;
 		
 	case String:
-		p->avp_strvalue = datum->sval;
-		p->avp_strlength = strlen(p->avp_strvalue);
+		switch (p->type) {
+		case GRAD_TYPE_STRING:
+			grad_string_replace(&p->avp_strvalue, datum->sval);
+			p->avp_strlength = strlen(p->avp_strvalue);
+			break;
+
+		case GRAD_TYPE_INTEGER:
+		case GRAD_TYPE_IPADDR:
+		case GRAD_TYPE_DATE:
+			p->avp_lvalue = strtoul (datum->sval, &endp, 0);
+			if (*endp)
+				grad_log(L_ERR,
+					 _("cannot convert \"%s\" to integer"),
+					   datum->sval);
+			break;
+		}
 		break;
 		
 	default:

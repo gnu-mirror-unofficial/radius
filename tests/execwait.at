@@ -30,6 +30,15 @@ RA_CHECK([send auth Access-Request \
                User-Name = "execwait" NAS-Port-Id = 1
           expect Access-Reject]) 
 
+RA_CHECK([send auth Access-Request \
+               User-Name = "execwaitr" NAS-Port-Id = 0
+          expect Access-Accept Service-Type = 1 \
+                    Reply-Message = "Welcome, execwaitr"]) 
+
+RA_CHECK([send auth Access-Request \
+               User-Name = "execwaitr" NAS-Port-Id = 1
+          expect Access-Reject]) 
+
 RA_CHECK([send auth Access-Request User-Name = "execwait1"
           expect Access-Accept Service-Type = 2\
   Ascend-Data-Filter = "\001\001\001\000\000\000\000\000\000\000\000\000\000\000\001\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"\

@@ -760,7 +760,8 @@ int
 rad_acct_ext(radiusd_request_t *radreq)
 {
         grad_avp_t *p;
-
+	int rc = 0;
+	
 #ifdef USE_SERVER_GUILE
         for (p = grad_avl_find(radreq->request->avlist, DA_SCHEME_ACCT_PROCEDURE);
 	     p;
@@ -770,15 +771,20 @@ rad_acct_ext(radiusd_request_t *radreq)
         for (p = grad_avl_find(radreq->request->avlist, DA_ACCT_EXT_PROGRAM);
 	     p;
 	     p = grad_avl_find(p->next, DA_ACCT_EXT_PROGRAM)) {
+		int exec_flags = RAD_EXEC_WAIT;
+		if (p->eval_type == grad_eval_const)
+			exec_flags |= RAD_EXEC_XLAT;
+		radius_eval_avp(radreq, p);
     		switch (p->avp_strvalue[0]) {
 		case '/':
-                	radius_exec_program(p->avp_strvalue, radreq, NULL, 0);
+                	rc = radius_exec_program(p->avp_strvalue, radreq, NULL,
+						 exec_flags);
 			break;
 		case '|':
                 	filter_acct(p->avp_strvalue+1, radreq);
                 }
         }
-        return 0;
+        return rc;
 }
 
 /* run accounting modules */

@@ -2589,9 +2589,9 @@ mtx_bin(Bopcode opcode, MTX *arg1, MTX *arg2)
         if (arg1->gen.datatype != arg2->gen.datatype) {
 		rw_coercion_warning(String, Integer, NULL);
                 if (arg1->gen.datatype == String)
-                        coerce(arg1, Integer);
+                        arg1 = coerce(arg1, Integer);
                 else
-                        coerce(arg2, Integer);
+                        arg2 = coerce(arg2, Integer);
         }
 
         switch (arg1->gen.datatype) {
@@ -5427,7 +5427,7 @@ bi_qprn()
 			*p++ = *s;
 		else {
 			char buf[3];
-			snprintf(buf, sizeof buf, "%2X", *s);
+			snprintf(buf, sizeof buf, "%02X", *(unsigned char*)s);
 			*p++ = '%';
 			*p++ = buf[0];
 			*p++ = buf[1];

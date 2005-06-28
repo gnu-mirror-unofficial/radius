@@ -105,7 +105,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
         switch (key) {
         case 'a':
-                assign(optarg);
+                assign(arg);
                 break;
 		
         case 'q':
@@ -113,15 +113,15 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 		
         case 'r':
-                retry = strtol(optarg, NULL, 0);
+                retry = strtol(arg, NULL, 0);
                 break;
 		
         case 's':
-                server = optarg;
+                server = arg;
                 break;
 		
         case 'f':
-                filename = optarg;
+                filename = arg;
 		*(int *)state->input = state->next;
 		state->next = state->argc;
                 break;
@@ -135,11 +135,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
 		break;
 		
         case 't':
-                timeout = strtol(optarg, NULL, 0);
+                timeout = strtol(arg, NULL, 0);
                 break;
 		
         case 'x':
-                grad_set_debug_levels(optarg);
+                grad_set_debug_levels(arg);
                 break;
 		
         case 'v':

@@ -169,13 +169,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 fmtspec = lookup_format("clid");
                 break;
         case 'D': /* Date format */
-                printutmp_date_format = optarg;
+                printutmp_date_format = arg;
                 break;
         case 'e': /* empty field replacement */
-                printutmp_empty_string = optarg;
+                printutmp_empty_string = arg;
                 break;
         case 'f': /* filename */
-                filename = optarg;
+                filename = arg;
                 break;
         case 'F':
                 fingerd++;
@@ -187,7 +187,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 fmtspec = lookup_format("sid");
                 break;
         case 'I': /* Ipaddr format */
-                /*FIXME set_ip_format(optarg);*/
+                /*FIXME set_ip_format(arg);*/
                 break;
         case 'l': /* long output */
                 fmtspec = lookup_format("long");
@@ -196,7 +196,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 resolve_hostnames = 0;
                 break;
         case 'o':
-                fmtspec = lookup_format(optarg);
+                fmtspec = lookup_format(arg);
                 break;
         case 's':
                 secure++;

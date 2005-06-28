@@ -452,7 +452,8 @@ int grad_format_string_visual(char *buf, int runlen, char *str, int len);
 char *grad_op_to_str(enum grad_operator op);
 enum grad_operator grad_str_to_op(char *str);
 int grad_xlat_keyword(grad_keyword_t *kw, const char *str, int def);
-void grad_obstack_grow_backslash_num(struct obstack *stk, char *text,
+void grad_obstack_grow_backslash_num(struct obstack *stk,
+				     char *text, char **pend,
 				     int len, int base);
 void grad_obstack_grow_backslash(struct obstack *stk, char *text,
 				 char **endp);

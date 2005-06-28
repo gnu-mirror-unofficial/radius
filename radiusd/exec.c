@@ -299,9 +299,11 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
                 
                 if (exec_flags & RAD_EXEC_WAIT) {
                         if (close(p[0]))
-                                grad_log(L_ERR|L_PERROR, _("can't close pipe"));
+                                grad_log(L_ERR|L_PERROR,
+					 _("can't close pipe"));
                         if (p[1] != 1 && dup2(p[1], 1) != 1)
-                                grad_log(L_ERR|L_PERROR, _("can't dup stdout"));
+                                grad_log(L_ERR|L_PERROR,
+					 _("can't dup stdout"));
                 } else
 			close(1);
 

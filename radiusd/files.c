@@ -638,10 +638,6 @@ exec_program_wait (radiusd_request_t *request, grad_avp_t *rhs,
 			radius_eval_avp(request, p);
 			switch (p->avp_strvalue[0]) {
 			case '/':
-				/* radius_exec_program() returns -1 on
-				   fork/exec errors, or >0 if the exec'ed
-				   program had a non-zero exit status.
-				*/
 				rc = radius_exec_program(p->avp_strvalue,
 							 request,
 							 reply,

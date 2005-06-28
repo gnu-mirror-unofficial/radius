@@ -539,7 +539,7 @@ pair_set_value(grad_avp_t *p, Datatype type, Datum *datum)
 		break;
 		
 	default:
-		grad_insist_fail("bad Datatype");
+		grad_insist_fail("bad datatype");
 	}
 	p->eval_type = grad_eval_const;
 }

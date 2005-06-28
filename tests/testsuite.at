@@ -44,7 +44,7 @@ m4_define([RA_PREREQ],
            [exit 77],
            [$2])])
 
-m4_define([RA_ALL_KEYWORDS],[status-server basic-auth reply begin-kw default-kw match-profile hints huntgroups scheme-auth acl expiration menu acct rewrite execwait filter scheme-acct tunnel log-mode])
+m4_define([RA_ALL_KEYWORDS],[status-server basic-auth reply begin-kw default-kw match-profile hints huntgroups scheme-auth acl expiration menu acct ext-acct rewrite execwait filter scheme-acct tunnel log-mode])
 
 m4_define([RA_PROXY_KEYWORDS],[proxy-basic-auth proxy-ignorecase proxy-vsa proxy-menu proxy-nested proxy-acct proxy-tunnel])
 

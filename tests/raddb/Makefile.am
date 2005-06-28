@@ -15,6 +15,7 @@ EXTRA_DIST = \
  access.deny\
  ascend.bin\
  auth.bin\
+ acct.bin.in\
  auth.scm\
  acct.scm.in\
  clients\
@@ -22,7 +23,7 @@ EXTRA_DIST = \
  config.in\
  dictionary.in\
  filter\
- hints\
+ hints.in\
  huntgroups\
  menus/menu1\
  menus/menu2\
@@ -42,7 +43,7 @@ nastypes: $(RADDB)/nastypes
 	rm -f $@
 	$(LN_S) $? $@
 
-CLEANFILES=$(ALLTARGETS) config dictionary client.conf users acct.scm realms 
+CLEANFILES=$(ALLTARGETS) config dictionary client.conf users hints acct.bin acct.scm realms 
 
 distclean-local:; -rm -rf radiusd.pid log acct dict
 

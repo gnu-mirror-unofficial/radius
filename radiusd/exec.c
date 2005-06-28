@@ -171,7 +171,7 @@ radius_exec_command(char *cmd)
 	
         if (cmd[0] != '/') {
                 grad_log(L_ERR,
-   _("radius_exec_program(): won't execute, not an absolute pathname: %s"),
+   _("radius_exec_command(): won't execute, not an absolute pathname: %s"),
                          cmd);
                 return -1;
         }
@@ -243,11 +243,12 @@ radius_exec_command(char *cmd)
 }
 
 /* Execute a program on successful authentication.
-   Return 0 if exec_wait == 0.
-   Return the exit code of the called program if exec_wait != 0. */
+   Return the exit code of the called program if exec_flags & RAD_EXEC_WAIT,
+   return 0 otherwise.
+   If exec_flags & RAD_EXEC_XLAT,  */
 int
 radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
-		    int exec_wait)
+		    int exec_flags)
 {
         int p[2];
         int n;
@@ -267,7 +268,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
                 return -1;
         }
 
-        if (exec_wait) {
+        if (exec_flags & RAD_EXEC_WAIT) {
                 if (pipe(p) != 0) {
                         grad_log(L_ERR|L_PERROR, _("couldn't open pipe"));
                         return -1;
@@ -286,14 +287,17 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
                 obstack_init(&s);
                 
                 /* child branch */
-                ptr = radius_xlate(&s, cmd, req->request,
-				   reply ? *reply : NULL);
+		if (exec_flags & RAD_EXEC_XLAT)
+			ptr = radius_xlate(&s, cmd, req->request,
+					   reply ? *reply : NULL);
+		else
+			ptr = cmd;
 
                 debug(1, ("command line: %s", ptr));
 
                 argcv_get(ptr, "", NULL, &argc, &argv);
                 
-                if (exec_wait) {
+                if (exec_flags & RAD_EXEC_WAIT) {
                         if (close(p[0]))
                                 grad_log(L_ERR|L_PERROR, _("can't close pipe"));
                         if (p[1] != 1 && dup2(p[1], 1) != 1)
@@ -325,7 +329,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
                 grad_log(L_ERR|L_PERROR, "fork");
                 return -1;
         }
-        if (!exec_wait)
+        if (!(exec_flags & RAD_EXEC_WAIT))
                 return 0;
 
         if (close(p[1]))

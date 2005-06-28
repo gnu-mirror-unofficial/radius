@@ -89,6 +89,9 @@ execwait1 Auth-Type = Accept
 	  Service-Type = Framed-User,
 		Exec-Program-Wait = "@BUILDDIR@/raddb/ascend.bin"
 		
+execwaitr Auth-Type = Accept
+	Exec-Program-Wait = "=\"@BUILDDIR@/raddb/auth.bin \" + (string)%[NAS-Port-Id] + \" \" + %[User-Name]"
+
 # Match.exp: Check for working Match-Profile attributes		
 REQ0    NAS-Identifier = "en"
 	Framed-IP-Address = 127.10.10.1

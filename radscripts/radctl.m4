@@ -3,7 +3,7 @@ include(SRCDIR/radscripts.m4)dnl
 # NOEDIT
 #
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2003 Free Software Foundation, Inc.
+# Copyright (C) 2000, 2003, 2005 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -28,32 +28,52 @@ PATH=/bin:/usr/bin:/usr/ucb:$PATH; export PATH
 
 usage() {
     cat - <<EOF
-usage: $0 {start|stop|restart|reload|which|dump}
+usage: $0 {start|stop|restart|reload|which|status|dump}
 EOF
     exit ${1:-0}
 }
 
+
+# Wait up to 5 seconds for the status of the pidfile to change. 
+# Usage: pidfile_status 1	Wait until pidfile is available
+#        pidfile_status 0	Wait until pidfile is not available
+# Returns true if the status did change.
+pidfile_status()
+{
+    N=1
+    while TEST($N -lt 6)
+    do
+	test -r $[PIDFILE]
+	TEST($? -ne $1) && return 0
+        sleep 1
+	N=$((N+1))
+    done
+    return 1
+}
+
 start() {
-    $[PROGNAME] ${1} && {
-	sleep 5
-	if TEST(-r $[PIDFILE]) ; then
-	    echo "RADIUS server started"
+    rm -f $[PIDFILE]
+    if $[PROGNAME] ${1}; then
+        if pidfile_status 1; then
+	    echo "RADIUS server started (`cat $[PIDFILE]`)"
 	else
-	    echo "can't start RADIUS server"
+	    echo "Cannot start RADIUS server"
 	fi
-    }
+    fi
 }
 
 stop() {
-    TEST($RUNNING -eq 1) && {
-	echo "sending TERM to RADIUS server ($PID)"
-	kill -TERM $PID && sleep 5
-	TEST(-r $[PIDFILE]) && {
+    if TEST($RUNNING -eq 1); then
+	echo "Sending TERM to RADIUS server ($PID)"
+	kill -TERM $PID || exit 1
+	if pidfile_status 0; then
+	    echo "Stopped RADIUS server ($PID)"
+	else
 	    echo "radiusd ($PID) is still running. Sending KILL"
-	    kill -9 $PID && sleep 5
-	}
-    }
-    rm -f $[PIDFILE]
+	    kill -9 $PID
+	    rm -f $[PIDFILE]
+	fi
+    fi
 }
 
 chan_signal() {
@@ -66,17 +86,17 @@ chan_signal() {
            exit 0;;
     
 	reload) 
-           TEST($RUNNING -eq 0) && {
+           if TEST($RUNNING -eq 0); then
 	       echo "$PROCESS"
 	       exit 1
-	   }
+	   fi
 	   kill -HUP  $PID && echo "Reloading configs";;
 	   
 	start)
-	   TEST($RUNNING -eq 1) && {
+	   if TEST($RUNNING -eq 1); then
 	       echo "$0: start: radiusd (pid $PID) already running"
 	       exit 1
-	   }
+	   fi
 	   rm -f $[PIDFILE]
 	   SHIFT
 	   start $*;;
@@ -84,7 +104,7 @@ chan_signal() {
 	stop)
 	   stop;;
 
-	which)
+	which|status)
 	   echo "$PROCESS";;
 
 	restart)
@@ -93,10 +113,10 @@ chan_signal() {
 	   start $*;;
 
 	dump)
-	   TEST($RUNNING -eq 0) && {
+	   if TEST($RUNNING -eq 0); then
 	       echo "$PROCESS"
 	       exit 1
-	   }
+	   fi
 	   kill -USR2 $PID && echo "Dumping users database";;
 			
 	*) usage >&2;;

@@ -49,14 +49,14 @@ configuration files.
 @c @command{radiusd} reports its memory usage statistics. The information is
 @c logged at the @code{Info} log level.
 
-@item which
-Reports the running version of @command{radiusd}. This command shows
-the line of @command{ps(1)} describing the running copy of
-@command{radiusd} program. The exact look depends on the version of
+@item status
+@itemx which
+This command shows the line of @command{ps(1)} describing the running copy
+of @command{radiusd} program. The exact look depends on the version of
 operating system you are running. Please refer to ``man ps'' for more
 detail on @command{ps} output.
 
-Here is an example of what @command{radctl which} prints on
+Here is an example of what @command{radctl status} prints on
 @code{GNU/Linux}:
 
 @smallexample

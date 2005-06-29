@@ -1,5 +1,9 @@
 2005-06-29  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* lib/argcv.c: Synch with mailutils repo.
+	* radscripts/radctl.m4: Largely improved
+	* doc/texinfo/radctl.texi: Updated
+
 	* include/radiusd.h (RAD_EXEC_WAIT,RAD_EXEC_XLAT): Removed.
 	(radius_eval_avp): Changed prototype.
 	* radiusd/radutil.c (radius_eval_avp): Handle macro substitution

@@ -544,14 +544,33 @@ pair_set_value(grad_avp_t *p, Datatype type, Datum *datum)
 	p->eval_type = grad_eval_const;
 }
 
+/* Evaluate an A/P pair P in the context of RADIUS request REQ. If ALLOW_XLATE
+   is true, constant pairs will be evaluated using traditional method, a.k.a.
+   radius_xlate. In this case REPLY supplies optional reply pairs.
+
+   FIXME: ALLOW_XLATE is actually a kludge (see function radius_eval_avl
+   below), and REPLY could be substituted by req->reply. */ 
 int
-radius_eval_avp(radiusd_request_t *req, grad_avp_t *p)
+radius_eval_avp(radiusd_request_t *req, grad_avp_t *p, grad_avp_t *reply,
+		int allow_xlate)
 {
 	Datatype type;
 	Datum datum;
 		
 	switch (p->eval_type) {
 	case grad_eval_const:
+		if (allow_xlate && strchr(p->avp_strvalue, '%')) {
+			struct obstack s;
+			char *ptr;
+			obstack_init (&s);
+			ptr = radius_xlate(&s, p->avp_strvalue,
+					   req->request, reply);
+			if (strcmp(ptr, p->avp_strvalue)) {
+				grad_string_replace(&p->avp_strvalue, ptr);
+				p->avp_strlength = strlen (p->avp_strvalue);
+			}
+			obstack_free (&s, NULL);
+		}
 		break;
 			
 	case grad_eval_interpret:
@@ -575,12 +594,16 @@ radius_eval_avp(radiusd_request_t *req, grad_avp_t *p)
 	return 0;
 }
 
+/* Evaluate A/V pair list P in the context of RADIUS request REQ.
+   For backward compatibility, no traditional attribute translation is
+   performed, this is actually the reason for existence of the last
+   argument to radius_eval_avp(). This will change in future versions. */
 int
 radius_eval_avl(radiusd_request_t *req, grad_avp_t *p)
 {
 	int status = 0;
 	for (; p; p = p->next)
-		status |= radius_eval_avp(req, p);
+		status |= radius_eval_avp(req, p, NULL, 0);
 	return status;
 }
 

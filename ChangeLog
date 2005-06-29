@@ -1,3 +1,18 @@
+2005-06-29  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* include/radiusd.h (RAD_EXEC_WAIT,RAD_EXEC_XLAT): Removed.
+	(radius_eval_avp): Changed prototype.
+	* radiusd/radutil.c (radius_eval_avp): Handle macro substitution
+	(traditional translation) as well.
+	* radiusd/acct.c (grad_avl_find): Updated to use new
+	radius_eval_avp semantics.
+	* radiusd/auth.c (sfn_exec_nowait): Likewise.
+	* radiusd/files.c (exec_program_wait): Likewise.
+	* radiusd/exec.c (radius_exec_program): Last argument reverted to
+	its previous semantics. Do not attempt to perform macro
+	substitution on the command line: this is supposed to be handled
+	by the caller.
+
 2005-06-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* NEWS: Updated

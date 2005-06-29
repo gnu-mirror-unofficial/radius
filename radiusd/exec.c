@@ -243,12 +243,11 @@ radius_exec_command(char *cmd)
 }
 
 /* Execute a program on successful authentication.
-   Return the exit code of the called program if exec_flags & RAD_EXEC_WAIT,
-   return 0 otherwise.
-   If exec_flags & RAD_EXEC_XLAT,  */
+   Return the exit code of the called program if exec_wait is true,
+   return 0 otherwise.  */
 int
 radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
-		    int exec_flags)
+		    int exec_wait)
 {
         int p[2];
         int n;
@@ -268,7 +267,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
                 return -1;
         }
 
-        if (exec_flags & RAD_EXEC_WAIT) {
+        if (exec_wait) {
                 if (pipe(p) != 0) {
                         grad_log(L_ERR|L_PERROR, _("couldn't open pipe"));
                         return -1;
@@ -282,22 +281,12 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
         if ((pid = fork()) == 0) {
                 int argc;
                 char **argv;
-                struct obstack s;
 
-                obstack_init(&s);
+                debug(1, ("command line: %s", cmd));
+
+                argcv_get(cmd, "", NULL, &argc, &argv);
                 
-                /* child branch */
-		if (exec_flags & RAD_EXEC_XLAT)
-			ptr = radius_xlate(&s, cmd, req->request,
-					   reply ? *reply : NULL);
-		else
-			ptr = cmd;
-
-                debug(1, ("command line: %s", ptr));
-
-                argcv_get(ptr, "", NULL, &argc, &argv);
-                
-                if (exec_flags & RAD_EXEC_WAIT) {
+                if (exec_wait) {
                         if (close(p[0]))
                                 grad_log(L_ERR|L_PERROR,
 					 _("can't close pipe"));
@@ -331,7 +320,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
                 grad_log(L_ERR|L_PERROR, "fork");
                 return -1;
         }
-        if (!(exec_flags & RAD_EXEC_WAIT))
+        if (!exec_wait)
                 return 0;
 
         if (close(p[1]))

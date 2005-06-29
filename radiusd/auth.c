@@ -1182,10 +1182,8 @@ sfn_exec_nowait(AUTH_MACH *m)
 	for (p = m->check_pair;
              p;
              p = grad_avl_find(p->next, DA_EXEC_PROGRAM)) {
-		int exec_flags = (p->eval_type == grad_eval_const) ?
-			           RAD_EXEC_XLAT : 0;
-		radius_eval_avp(m->req, p);
-		radius_exec_program(p->avp_strvalue, m->req, NULL, exec_flags);
+		radius_eval_avp(m->req, p, NULL, 1);
+		radius_exec_program(p->avp_strvalue, m->req, NULL, 0);
 	}
 }
 

@@ -632,16 +632,13 @@ exec_program_wait (radiusd_request_t *request, grad_avp_t *rhs,
 	
 	for (p = rhs; p; p = p->next) {
 		if (p->attribute == DA_EXEC_PROGRAM_WAIT) {
-			int exec_flags = RAD_EXEC_WAIT;
-			if (p->eval_type == grad_eval_const)
-				exec_flags |= RAD_EXEC_XLAT;
-			radius_eval_avp(request, p);
+			radius_eval_avp(request, p, reply ? *reply : NULL, 1);
 			switch (p->avp_strvalue[0]) {
 			case '/':
 				rc = radius_exec_program(p->avp_strvalue,
 							 request,
 							 reply,
-							 exec_flags);
+							 1);
 				break;
 				
 			case '|':

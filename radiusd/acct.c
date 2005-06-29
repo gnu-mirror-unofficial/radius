@@ -771,14 +771,11 @@ rad_acct_ext(radiusd_request_t *radreq)
         for (p = grad_avl_find(radreq->request->avlist, DA_ACCT_EXT_PROGRAM);
 	     p;
 	     p = grad_avl_find(p->next, DA_ACCT_EXT_PROGRAM)) {
-		int exec_flags = RAD_EXEC_WAIT;
-		if (p->eval_type == grad_eval_const)
-			exec_flags |= RAD_EXEC_XLAT;
-		radius_eval_avp(radreq, p);
+		radius_eval_avp(radreq, p, NULL, 1);
     		switch (p->avp_strvalue[0]) {
 		case '/':
                 	rc = radius_exec_program(p->avp_strvalue, radreq, NULL,
-						 exec_flags);
+						 1);
 			break;
 		case '|':
                 	filter_acct(p->avp_strvalue+1, radreq);

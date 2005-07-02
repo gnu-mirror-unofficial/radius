@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -172,15 +172,17 @@ static char *priname[] = { /* priority names */
 static char *
 run_log_hook(const grad_request_t *req, const char *hook_name)
 {
-	char *result;
+	grad_value_t val;
 	char nasbuf[GRAD_MAX_LONGNAME];
 
+	memset(&val, 0, sizeof(val));
+	
 	/* FIXME: Should make sure that the hook does not modify the
 	   request, either by passing rewrite_invoke a copy of the
 	   latter (expensive), or by providing some internal rewrite
 	   mechanism */
 	if (rewrite_invoke(String,
-			   &result,
+			   &val,
 			   hook_name,
 			   req,
 			   "isi",
@@ -189,7 +191,7 @@ run_log_hook(const grad_request_t *req, const char *hook_name)
 						    nasbuf, sizeof nasbuf),
 			   req->id))
 		return NULL;
-	return result;
+	return val.datum.sval.data;
 }
 
 static void
@@ -206,8 +208,10 @@ channel_format_prefix(struct logbuf *bufp,
 			*hook_name_ptr = NULL;
 	}
 
-	if (hook_res)
+	if (hook_res) {
 		logbuf_append(bufp, hook_res);
+		grad_free(hook_res);
+	}
 }
 
 static void
@@ -224,8 +228,10 @@ channel_format_suffix(struct logbuf *bufp,
 			*hook_name_ptr = NULL;
 	}
 
-	if (hook_res)
+	if (hook_res) {
 		logbuf_append(bufp, hook_res);
+		free(hook_res);
+	}
 }
 
 static FILE *

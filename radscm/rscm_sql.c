@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -24,6 +24,7 @@
 #include <libguile.h>
 #include <radius/radius.h>
 #include <rewrite.h>
+#include <radiusd.h>
 #include <radius/radscm.h>
 #define RADIUS_SERVER_GUILE
 #include <radsql.h>
@@ -40,8 +41,7 @@ SCM_DEFINE(radius_sql_query, "radius-sql-query", 2, 0, 0,
         SCM_ASSERT(SCM_IMP(TYPE) && SCM_INUMP(TYPE),
                    TYPE, SCM_ARG1, FUNC_NAME);
 	
-	res = sql_exec_query(SCM_INUM(TYPE), SCM_STRING_CHARS(STRING));
-	return res;
+	return sql_exec_query(SCM_INUM(TYPE), SCM_STRING_CHARS(STRING));
 }
 #undef FUNC_NAME
 

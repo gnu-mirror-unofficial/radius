@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2000,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -477,19 +477,19 @@ util_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq)
 	char *str;
 	
 	if (fmt[0] == '=') {
-		Datatype type;
-		Datum datum;
-
+		grad_value_t val;
+		
 		/*FIXME: Should be compiled!*/
-		if (rewrite_interpret(fmt+1, radreq, &type, &datum)) 
+		if (rewrite_interpret(fmt+1, radreq, &val)) 
 			return NULL;
-		if (type != String) {
+		if (val.type != String) {
 			grad_log(L_ERR, "%s: %s",
 			         fmt+1, _("wrong return type"));
+			/* Nothing to free in val */
 			return NULL;
 		}
-		obstack_grow(sp, datum.sval, strlen(datum.sval)+1);
-		grad_free(datum.sval);
+		obstack_grow(sp, val.datum.sval.data, val.datum.sval.size + 1);
+		grad_value_free(&val);
 		str = obstack_finish(sp);
 	} else {
 		str = radius_xlate(sp, fmt, radreq, NULL);
@@ -498,16 +498,16 @@ util_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq)
 }
 
 static void
-pair_set_value(grad_avp_t *p, Datatype type, Datum *datum)
+pair_set_value(grad_avp_t *p, grad_value_t *val)
 {
 	char buf[64];
 	char *endp;
 	
-	switch (type) {
+	switch (val->type) {
 	case Integer:
 		switch (p->type) {
 		case GRAD_TYPE_STRING:
-			snprintf(buf, sizeof buf, "%lu", datum->ival);
+			snprintf(buf, sizeof buf, "%lu", val->datum.ival);
 			grad_string_replace(&p->avp_strvalue, buf);
 			p->avp_strlength = strlen(p->avp_strvalue);
 			break;
@@ -515,25 +515,26 @@ pair_set_value(grad_avp_t *p, Datatype type, Datum *datum)
 		case GRAD_TYPE_INTEGER:
 		case GRAD_TYPE_IPADDR:
 		case GRAD_TYPE_DATE:
-			p->avp_lvalue = datum->ival;
+			p->avp_lvalue = val->datum.ival;
 		}
 		break;
 		
 	case String:
 		switch (p->type) {
 		case GRAD_TYPE_STRING:
-			grad_string_replace(&p->avp_strvalue, datum->sval);
+			grad_string_replace(&p->avp_strvalue,
+					    val->datum.sval.data);
 			p->avp_strlength = strlen(p->avp_strvalue);
 			break;
 
 		case GRAD_TYPE_INTEGER:
 		case GRAD_TYPE_IPADDR:
 		case GRAD_TYPE_DATE:
-			p->avp_lvalue = strtoul (datum->sval, &endp, 0);
+			p->avp_lvalue = strtoul(val->datum.sval.data, &endp, 0);
 			if (*endp)
 				grad_log(L_ERR,
 					 _("cannot convert \"%s\" to integer"),
-					   datum->sval);
+					 val->datum.sval);
 			break;
 		}
 		break;
@@ -554,9 +555,8 @@ int
 radius_eval_avp(radiusd_request_t *req, grad_avp_t *p, grad_avp_t *reply,
 		int allow_xlate)
 {
-	Datatype type;
-	Datum datum;
-		
+	grad_value_t val;
+	
 	switch (p->eval_type) {
 	case grad_eval_const:
 		if (allow_xlate && strchr(p->avp_strvalue, '%')) {
@@ -574,16 +574,17 @@ radius_eval_avp(radiusd_request_t *req, grad_avp_t *p, grad_avp_t *reply,
 		break;
 			
 	case grad_eval_interpret:
-		if (rewrite_interpret(p->avp_strvalue,
-				      req->request, &type, &datum)) 
+		if (rewrite_interpret(p->avp_strvalue, req->request, &val)) 
 			return 1;
-		pair_set_value(p, type, &datum);
+		pair_set_value(p, &val);
+		grad_value_free(&val);
 		break;
 
 	case grad_eval_compiled:
-		if (rewrite_eval(p->avp_strvalue, req->request, &type, &datum))
+		if (rewrite_eval(p->avp_strvalue, req->request, &val))
 			return 1;
-		pair_set_value(p, type, &datum);
+		pair_set_value(p, &val);
+		grad_value_free(&val);
 		break;
 
 	default:

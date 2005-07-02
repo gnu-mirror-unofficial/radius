@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -27,8 +27,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <ctype.h>
-
 #include <radiusd.h>
+
 #ifdef USE_SERVER_GUILE
 # include <libguile.h>
 #endif

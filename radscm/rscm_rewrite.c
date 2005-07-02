@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -35,18 +35,20 @@ SCM_DEFINE(rad_rewrite_execute_string, "rad-rewrite-execute-string", 1, 0, 0,
 "the Scheme data type.\n")         
 #define FUNC_NAME s_rad_rewrite_execute_string
 {
-        Datatype type;
-        Datum datum;
-
+	grad_value_t val;
+	SCM retval;
+	
         SCM_ASSERT(SCM_NIMP(STRING) && SCM_STRINGP(STRING),
                    STRING, SCM_ARG1, FUNC_NAME);
-        if (rewrite_interpret(SCM_STRING_CHARS(STRING), NULL, &type, &datum)) {
+        if (rewrite_interpret(SCM_STRING_CHARS(STRING), NULL, &val)) {
                 scm_misc_error(FUNC_NAME,
                                "Error parsing expression: ~S",
                                scm_list_1(STRING));
         }
 
-        return radscm_datum_to_scm(type, datum);
+        retval = radscm_datum_to_scm(&val);
+	grad_value_free(&val);
+	return retval;
 }
 #undef FUNC_NAME
 

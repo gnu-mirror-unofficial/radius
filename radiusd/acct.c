@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -586,18 +586,17 @@ make_detail_filename(radiusd_request_t *req, char *template,
 	if (!template) {
 		return make_legacy_detail_filename(req, default_filename);
 	} else if (template[0] == '=') {
-		Datatype type;
-		Datum datum;
-
+		grad_value_t val;
 		/*FIXME: Should be compiled!*/
-		if (rewrite_interpret(template+1, req->request, &type, &datum)) 
+		if (rewrite_interpret(template+1, req->request, &val)) 
 			return NULL;
-		if (type != String) {
+		if (val.type != String) {
 			grad_log(L_ERR, "%s: %s",
 			         template+1, _("wrong return type"));
+			/* Nothing to free in val */
 			return NULL;
 		}
-		return datum.sval;
+		return val.datum.sval.data;
 	} else {
 		struct obstack stk;
 		char *ptr;

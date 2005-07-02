@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003,2004 Free Software Foundation
+   Copyright (C) 2003,2004,2005 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -217,9 +217,8 @@ tsh_rewrite_stack(int argc, char **argv, char *cmd)
 static void
 tsh_run_rewrite(int argc, char **argv, char *cmd)
 {
-	Datatype type;
-	Datum datum;
-
+	grad_value_t val;
+	
 	if (argc < 2) {
 		fprintf(stderr,
 			_("%s: wrong number of arguments\n"), argv[0]);
@@ -231,17 +230,17 @@ tsh_run_rewrite(int argc, char **argv, char *cmd)
 	while (*cmd && !isspace(*cmd))
 		cmd++;
 
-	if (rewrite_interpret(cmd, &test_req, &type, &datum))
+	if (rewrite_interpret(cmd, &test_req, &val))
 		printf("?\n");
 	else {
-		switch (type) {
+		switch (val.type) {
 		case Integer:
-			printf("%d (%u)", datum.ival,
-			       (unsigned) datum.ival);
+			printf("%d (%u)", val.datum.ival,
+			       (unsigned) val.datum.ival);
 			break;
 
 		case String:
-			printf("%s", datum.sval);
+			printf("%s", val.datum.sval.data);
 			break;
 
 		case Undefined:
@@ -251,6 +250,7 @@ tsh_run_rewrite(int argc, char **argv, char *cmd)
 		default:
 			abort();
 		}
+		grad_value_free(&val);
 		printf("\n");
 	}
 }

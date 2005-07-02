@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -120,9 +120,9 @@ free_instance(struct check_instance *cptr)
 int
 compare(struct check_instance *checkp, char *str)
 {
-	grad_uint32_t result;
+	grad_value_t val;
 
-	if (rewrite_invoke(Integer, &result,
+	if (rewrite_invoke(Integer, &val,
 			   checkp->func, NULL,
 			   "ssis",
 			   str,
@@ -130,7 +130,7 @@ compare(struct check_instance *checkp, char *str)
 			   checkp->port,
 			   checkp->sid))
 		return -1;
-	return result;
+	return val.datum.ival;
 }
 
 

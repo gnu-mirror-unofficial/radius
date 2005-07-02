@@ -1,6 +1,6 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -21,8 +21,9 @@
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
 #endif
-#include <stdio.h>
 #include <sys/types.h>
+#include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 #include <errno.h>
 
@@ -35,7 +36,8 @@
 #endif
         
 typedef long RWSTYPE;
-
+#define RW_MIN(a,b) ((a)<(b)) ? (a) : (b)
+ 
 /*
  * Generalized list structure
  */
@@ -185,7 +187,7 @@ typedef struct parm_t PARAMETER;
 struct parm_t {
         PARAMETER   *prev;     /* Previous parameter */
         PARAMETER   *next;     /* Next parameter */
-        Datatype    datatype;  /* type */
+        grad_data_type_t    datatype;  /* type */
         stkoff_t    offset;    /* Offset on stack */
 };
 
@@ -201,9 +203,9 @@ struct variable {
         char      *name;     /* name of the variable */
         int       level;     /* nesting level */
         int       offset;    /* offset on stack */
-        Datatype  datatype;  /* type */
+        grad_data_type_t  datatype;  /* type */
         int       constant;  /* true if assigned a constant value */
-        Datum     datum;     /* constant value itself */
+        grad_datum_t     datum;     /* constant value itself */
 };
 
 /*
@@ -212,7 +214,7 @@ struct variable {
 typedef struct function_def {
         struct function_def *next;
         char       *name;        /* Function name */
-        Datatype   rettype;      /* Return type */
+        grad_data_type_t   rettype;      /* Return type */
         pctr_t     entry;        /* Code entry */
         COMP_REGEX *rx_list;     /* List of compiled regexps */
         int        nparm;        /* Number of parameters */
@@ -231,7 +233,7 @@ typedef struct function_def {
 typedef struct  {
         INSTR    handler;        /* Function itself */
         char     *name;          /* Function name */
-        Datatype rettype;        /* Return type */
+        grad_data_type_t rettype;        /* Return type */
         char     *parms;         /* coded parameter types */
 } builtin_t;
 
@@ -264,7 +266,7 @@ typedef union mtx MTX;
         
 #define COMMON_EXPR_MTX \
         COMMON_MTX\
-        Datatype datatype;\
+        grad_data_type_t datatype;\
         MTX      *uplink;\
         MTX      *arglink;
 
@@ -281,7 +283,7 @@ typedef struct {
  */
 typedef struct {
         COMMON_EXPR_MTX
-        Datum    datum;     /* Constant value */      
+        grad_datum_t    datum;     /* Constant value */      
 } CONST_MTX;
 /*
  * Reference to a previous regexp: corresponds to a \N construct
@@ -531,7 +533,7 @@ static char *curp;                 /* Current pointer */
 static int   yyeof;                /* rised when EOF is encountered */ 
 static struct obstack input_stk;   /* Symbol stack */ 
 
-static Datatype return_type = Undefined;
+static grad_data_type_t return_type = Undefined;
                                    /* Data type of the topmost expression. */
 
 static int regcomp_flags = 0;      /* Flags to be used with regcomps */
@@ -571,10 +573,10 @@ static void frame_free_all();
  * Variables
  */
 static void var_init();
-static VAR * var_alloc(Datatype type, char *name, int grow);
+static VAR * var_alloc(grad_data_type_t type, char *name, int grow);
 static void var_unwind_level();
 static void var_unwind_all();
-static void var_type(Datatype type, VAR *var);
+static void var_type(grad_data_type_t type, VAR *var);
 static void var_free_all();
 static VAR *var_lookup(char *name);
 /*
@@ -591,7 +593,7 @@ static MTX * mtx_stop();
 static MTX * mtx_pop();
 static MTX * mtx_return();
 static MTX * mtx_alloc(Mtxtype type);
-static MTX * mtx_const(Datatype type, void *data);
+static MTX * mtx_const(grad_value_t *val);
 static MTX * mtx_ref(int num);
 static MTX * mtx_var(VAR *var);
 static MTX * mtx_asgn(VAR *var, MTX *arg);
@@ -599,7 +601,7 @@ static MTX * mtx_bin(Bopcode opcode, MTX *arg1, MTX *arg2);
 static MTX * mtx_un(Uopcode opcode, MTX *arg);
 static MTX * mtx_match(int negated, MTX *mtx, COMP_REGEX *);
 static MTX * mtx_cond(MTX *cond, MTX *if_true, MTX *if_false);
-static MTX * mtx_coerce(Datatype type, MTX *arg);
+static MTX * mtx_coerce(grad_data_type_t type, MTX *arg);
 static MTX * mtx_call(FUNCTION *fun, MTX *args);
 static MTX * mtx_builtin(builtin_t *bin, MTX *args);
 static MTX * mtx_attr(grad_dict_attr_t *attr, MTX *index);
@@ -607,7 +609,7 @@ static MTX * mtx_attr_asgn(grad_dict_attr_t *attr, MTX *index, MTX *rval);
 static MTX * mtx_attr_check(grad_dict_attr_t *attr, MTX *index);
 static MTX * mtx_attr_delete(grad_dict_attr_t *attr, MTX *index);
 
-static MTX * coerce(MTX  *arg, Datatype type);
+static MTX * coerce(MTX  *arg, grad_data_type_t type);
 /*
  * Regular expressions
  */
@@ -638,10 +640,10 @@ static void code_check();
  * Auxiliary and debugging functions
  */
 static void debug_dump_code();
-static const char * datatype_str_nom(Datatype type);
-static const char * datatype_str_acc(Datatype type);
-static const char * datatype_str_abl(Datatype type);
-static Datatype attr_datatype(int type);
+static const char * datatype_str_nom(grad_data_type_t type);
+static const char * datatype_str_acc(grad_data_type_t type);
+static const char * datatype_str_abl(grad_data_type_t type);
+static grad_data_type_t attr_datatype(grad_dict_attr_t *);
 
 /*
  * Run-Time
@@ -1090,11 +1092,18 @@ cond    : '(' expr ')'
  */
 expr    : NUMBER
           {
-                  $$ = mtx_const(Integer, &$1);
+		  grad_value_t val;
+		  val.type = Integer;
+		  val.datum.ival = $1;
+                  $$ = mtx_const(&val);
           }
         | STRING
           {
-                  $$ = mtx_const(String, &$1);
+		  grad_value_t val;
+		  val.type = String;
+		  val.datum.sval.size = strlen($1);
+		  val.datum.sval.data = $1;
+                  $$ = mtx_const(&val);
           }
         | REFERENCE
           {
@@ -1878,8 +1887,8 @@ yylex()
                         DEBUG_LEX1("TYPE(String)");
                         yylval.type = String;
                         return TYPE;
-                }
-
+		}
+		
                 if ((c = grad_xlat_keyword(rw_kw, yylval.string, 0)) != 0) {
                         DEBUG_LEX2("KW: %s", yylval.string);
                         return c;
@@ -2239,7 +2248,7 @@ var_init()
 }
 
 VAR *
-var_alloc(Datatype type, char *name, int grow)
+var_alloc(grad_data_type_t type, char *name, int grow)
 {
         VAR *var;
 
@@ -2278,7 +2287,7 @@ var_unwind_all()
 }
 
 void
-var_type(Datatype type, VAR *var)
+var_type(grad_data_type_t type, VAR *var)
 {
         for (; var; var = var->dcllink)
                 var->datatype = type;
@@ -2444,24 +2453,13 @@ mtx_alloc(Mtxtype type)
  * Create a Constant matrix
  */
 MTX *
-mtx_const(Datatype type, void *data)
+mtx_const(grad_value_t *val)
 {
         CONST_MTX *mtx = (CONST_MTX *)mtx_alloc(Constant);
         
         mtx_append(mtx);
-        mtx->datatype = type;
-        switch (type) {
-        case Integer:
-                mtx->datum.ival = *(int*)data;
-                break;
-		
-        case String:
-                mtx->datum.sval = *(char**)data;
-		break;
-		
-	default:
-		grad_insist_fail("unknown data type");
-        }
+        mtx->datatype = val->type;
+	mtx->datum = val->datum;
         return (MTX*)mtx;
 }
 
@@ -2503,11 +2501,17 @@ mtx_asgn(VAR *var, MTX *arg)
 }
 
 
-Datatype
-attr_datatype(int type)
+grad_data_type_t
+attr_datatype(grad_dict_attr_t *attr)
 {
-        switch (type) {
+        switch (attr->type) {
         case GRAD_TYPE_STRING:
+		/* FIXME: It could be a nice move to do
+		   
+		     (attr->prop & GRAD_AP_BINARY_STRING) ? Binstr : String;
+
+	           instead... */  
+		return String;
         case GRAD_TYPE_DATE:
                 return String;
         case GRAD_TYPE_INTEGER:
@@ -2525,7 +2529,7 @@ mtx_attr(grad_dict_attr_t *attr, MTX *index)
         ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr);
         mtx_append(mtx);
         mtx->attrno   = attr->value;
-        mtx->datatype = attr_datatype(attr->type);
+        mtx->datatype = attr_datatype(attr);
 	mtx->index = index;
         return (MTX*)mtx;
 }
@@ -2543,7 +2547,7 @@ mtx_attr_check(grad_dict_attr_t *attr,	MTX *index)
 
 
 void
-rw_coercion_warning(Datatype from, Datatype to, char *pref)
+rw_coercion_warning(grad_data_type_t from, grad_data_type_t to, char *pref)
 {
 	grad_log_loc(L_WARN, &locus,
 		     _("%s implicit coercion %s %s"),
@@ -2559,7 +2563,7 @@ mtx_attr_asgn(grad_dict_attr_t *attr, MTX *index, MTX *rval)
         ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr_asgn);
         mtx_append(mtx);
         mtx->attrno   = attr->value;
-        mtx->datatype = attr_datatype(attr->type);
+        mtx->datatype = attr_datatype(attr);
         if (rval->gen.datatype != mtx->datatype) {
 		rw_coercion_warning(rval->gen.datatype, mtx->datatype, NULL);
                 rval = coerce(rval, mtx->datatype);
@@ -2575,7 +2579,7 @@ mtx_attr_delete(grad_dict_attr_t *attr, MTX *index)
         ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr_delete);
         mtx_append(mtx);
         mtx->attrno   = attr->value;
-        mtx->datatype = attr_datatype(attr->type);
+        mtx->datatype = attr_datatype(attr);
 	mtx->index = index;
         return (MTX*)mtx;
 }
@@ -2679,7 +2683,7 @@ mtx_cond(MTX *cond, MTX *if_true, MTX *if_false)
 }
 
 MTX *
-mtx_coerce(Datatype type, MTX *arg)
+mtx_coerce(grad_data_type_t type, MTX *arg)
 {
         if (type == arg->gen.datatype)
                 return mtx_cur();
@@ -2687,7 +2691,7 @@ mtx_coerce(Datatype type, MTX *arg)
 }       
 
 MTX *
-coerce(MTX *arg, Datatype type)
+coerce(MTX *arg, grad_data_type_t type)
 {
         COERCE_MTX *mtx = (COERCE_MTX*)mtx_alloc(Coercion);
 
@@ -2758,7 +2762,7 @@ mtx_builtin(builtin_t *bin, MTX *args)
         BTIN_MTX     *call;
         int          argn;
         char         *parmp;
-        Datatype     type;
+        grad_data_type_t     type;
         /*
          * Test the number and types of arguments. Insert reasonable
          * typecasts.
@@ -2819,7 +2823,7 @@ mtx_builtin(builtin_t *bin, MTX *args)
  */
 
 const char *
-datatype_str_nom(Datatype type)
+datatype_str_nom(grad_data_type_t type)
 {
         switch (type) {
         case Undefined:
@@ -2834,7 +2838,7 @@ datatype_str_nom(Datatype type)
 }
 
 const char *
-datatype_str_abl(Datatype type)
+datatype_str_abl(grad_data_type_t type)
 {
         switch (type) {
         case Undefined:
@@ -2849,7 +2853,7 @@ datatype_str_abl(Datatype type)
 }
 
 const char *
-datatype_str_acc(Datatype type)
+datatype_str_acc(grad_data_type_t type)
 {
         switch (type) {
         case Undefined:
@@ -2881,7 +2885,7 @@ debug_open_file()
 
 #if defined(MAINTAINER_MODE)
 
-static void debug_print_datum(FILE *fp, Datatype type,  Datum *datum);
+static void debug_print_datum(FILE *fp, grad_data_type_t type,  grad_datum_t *datum);
 static void debug_print_var(FILE *fp, VAR *var);
 static void debug_print_unary(FILE *fp, UN_MTX *mtx);
 static void debug_print_binary(FILE *fp, BIN_MTX *mtx);
@@ -2916,7 +2920,7 @@ static char *u_opstr[] = {
 #define LINK(m) (m ? m->gen.id : 0)
 
 void
-debug_print_datum(FILE *fp, Datatype type, Datum *datum)
+debug_print_datum(FILE *fp, grad_data_type_t type, grad_datum_t *datum)
 {
         fprintf(fp, "%3.3s ", datatype_str_nom(type));
         switch (type) {
@@ -3179,23 +3183,25 @@ pass1()
          * Provide a default return statement if necessary
          */
         if (mtx_last->gen.type != Return) {
-                Datum datum;
+                grad_value_t val;
                 grad_log_loc(L_WARN, &mtx_last->gen.loc,
 			     _("missing return statement"));
 
+		val.type = function->rettype;
                 switch (function->rettype) {
                 case Integer:
-                        datum.ival = 0;
+                        val.datum.ival = 0;
                         break;
 			
                 case String:
-                        datum.sval = "";
+                        val.datum.sval.data = "";
+			val.datum.sval.size = 0;
 			break;
 
 		default:
 			grad_insist_fail("Unknown data type");
                 }
-                mtx_const(function->rettype, &datum);
+                mtx_const(&val);
                 mtx_frame(Leave, function->stack_alloc);
         } else {
                 mtx_last->gen.type = Leave;
@@ -3260,7 +3266,7 @@ pass2_binary(MTX *mtx)
 {
         MTX *arg0 = mtx->bin.arg[0];
         MTX *arg1 = mtx->bin.arg[1];
-        Datum dat;
+        grad_datum_t dat;
         
         switch (mtx->bin.opcode) {
         case Eq:
@@ -3540,17 +3546,17 @@ static int pushn(RWSTYPE n);
 static int cpopn(RWSTYPE *np);
 static RWSTYPE popn();
 static void checkpop(int cnt);
-static int pushref(char *str, int from, int to);
-static char *heap_reserve(int size);
-static void pushs(RWSTYPE *sptr, int len);
+static void pushref(char *str, int from, int to);
+static RWSTYPE *heap_reserve(int size);
+static void pushs(RWSTYPE *sptr, size_t size, int len);
 static void pushstr(const char *str, int len);
 
 static void rw_pushn();
 static void rw_pushs();
 static void rw_pushref();
 static void rw_pushv();
-static void rw_int();
-static void rw_string();
+static void rw_i2s();
+static void rw_s2i();
 static void rw_eq();
 static void rw_ne();
 static void rw_lt();
@@ -3642,10 +3648,11 @@ INSTR bin_string_codetab[] = {
         NULL                         
 };                                   
 
-INSTR coerce_tab[] = {
-        NULL,
-        rw_int,
-        rw_string
+INSTR coerce_tab[Max_datatype][Max_datatype] = {
+/*                Undefined  Integer  String */
+/* Undefined */ {  NULL,      NULL,    NULL   },
+/* Integer */   {  NULL,      NULL,    rw_i2s },  
+/* String */    {  NULL,      rw_s2i,  NULL   },
 };
 
 static void check_codesize(int delta);
@@ -3712,7 +3719,7 @@ codegen()
 				
                         case String:
                                 code(rw_pushs);
-                                data_str(mtx->cnst.datum.sval);
+                                data_str(mtx->cnst.datum.sval.data);
                                 break;
 
 			default:
@@ -3774,7 +3781,7 @@ codegen()
                         break;
                         
                 case Coercion:
-                        code(coerce_tab[mtx->coerce.datatype]);
+                        code(coerce_tab[mtx->coerce.arg->gen.datatype][mtx->coerce.datatype]);
                         break;
                         
                 case Jump:
@@ -4021,9 +4028,9 @@ pushn(RWSTYPE n)
  * Push a string on stack
  */
 void
-pushs(RWSTYPE *sptr, int len)
+pushs(RWSTYPE *sptr, size_t size, int len)
 {
-        if (mach.ht - len <= mach.st) {
+	if (mach.ht - len - 1 <= mach.st) {
                 /* Heap overrun: */
                 /*gc(); */
                 rw_error(_("heap overrun"));
@@ -4031,32 +4038,36 @@ pushs(RWSTYPE *sptr, int len)
 
         while (len)
                 mach.stack[mach.ht--] = sptr[--len];
-
+	mach.stack[mach.ht--] = size;
         pushn((RWSTYPE) (mach.stack + mach.ht + 1));
 }
 
 void
 pushstr(const char *str, int len)
 {
-        char *s;
-        strncpy(s = heap_reserve(len+1), str, len);
+        RWSTYPE *p = heap_reserve(sizeof(RWSTYPE) + len + 1);
+	char *s = (char*)(p + 1);
+        memcpy(s, str, len);
         s[len] = 0;
-        pushn((RWSTYPE)s);
+	p[0] = len;
+        pushn((RWSTYPE)p);
 }
 
-char *
+#define B2RW(s) (s + sizeof(mach.stack[0]) - 1) / sizeof(mach.stack[0])
+
+RWSTYPE *
 heap_reserve(int size)
 {
-        int  len = (size + sizeof(mach.stack[0])) / sizeof(mach.stack[0]);
+	size_t words = B2RW(size);
 
-        if (mach.ht - len <= mach.st) {
+        if (mach.ht - words <= mach.st) {
                 /* Heap overrun: */
                 gc();
-                if (mach.ht - len <= mach.st) 
+                if (mach.ht - words <= mach.st) 
                         rw_error(_("heap overrun"));
         }
-        mach.ht -= len;
-        return (char*)(mach.stack + mach.ht--);
+        mach.ht -= words;
+        return mach.stack + mach.ht--;
 }
 
 
@@ -4083,17 +4094,19 @@ temp_space_copy(char **baseptr, char *text, size_t size)
 	*baseptr += size;
 }
 
-char *
+RWSTYPE *
 temp_space_fix(char *end)
 {
 	size_t len, size;
 	char *base = (char*)(mach.stack + mach.st);
 
+	temp_space_copy(&end, "", 0);
 	size = end - base;
-	len = (size + sizeof(mach.stack[0])) / sizeof(mach.stack[0]);
+	len = B2RW(size);
         mach.ht -= len;
 	memmove(mach.stack + mach.ht, base, size);
-        return (char*)(mach.stack + mach.ht--);
+	mach.stack[--mach.ht] = strlen(base);
+        return mach.stack + mach.ht--;
 }
 
 
@@ -4120,6 +4133,19 @@ popn()
         return mach.stack[--mach.st];
 }
 
+void
+mem2string(grad_string_t *p, RWSTYPE *loc)
+{
+	p->size = loc[0];
+	p->data = (unsigned char*) (loc + 1);
+}
+
+void
+poparr(grad_string_t *p)
+{
+	mem2string(p, (RWSTYPE*) popn());
+}
+
 RWSTYPE
 tos()
 {
@@ -4142,17 +4168,10 @@ checkpop(int cnt)
  *            from    --    start of reference in string
  *            to      --    end of reference in string
  */
-int
+void
 pushref(char *str, int from, int to)
 {
-        int len = to - from + 1;
-        char *s = heap_reserve(len);
-        char *p = s;
-        
-        while (from < to) 
-                *p++ = str[from++];
-        *p = 0;
-        return pushn((RWSTYPE)s);
+	pushstr(str + from, to - from);
 }
 
 /*
@@ -4190,8 +4209,6 @@ getarg(int num)
 /* ****************************************************************************
  * Instructions
  */
-
-static RWSTYPE nil = 0;
 
 static int
 rw_error(const char *msg)
@@ -4283,7 +4300,7 @@ rw_pushs()
         RWSTYPE *sptr = (RWSTYPE*) (rw_code + mach.pc);
 
         mach.pc += len;
-        pushs(sptr, len);
+        pushs(sptr, strlen((char*)sptr), len);
 }
 
 /*
@@ -4334,6 +4351,8 @@ rw_attrcheck()
 void
 attrasgn_internal(int attr, grad_avp_t *pair, RWSTYPE val)
 {
+	grad_string_t str;
+	
 	assert_request_presence();
 	if (!pair) {
                  pair = grad_avp_create(attr);
@@ -4345,8 +4364,12 @@ attrasgn_internal(int attr, grad_avp_t *pair, RWSTYPE val)
 	switch (pair->type) {
 	case GRAD_TYPE_STRING:
 	case GRAD_TYPE_DATE:
-		grad_string_replace(&pair->avp_strvalue, (char*)val);
-		pair->avp_strlength = strlen((char*) val);
+		mem2string(&str, (RWSTYPE*)val);
+		grad_free(pair->avp_strvalue);
+		pair->avp_strvalue = grad_malloc(str.size+1);
+		memcpy(pair->avp_strvalue, str.data, str.size);
+		pair->avp_strvalue[str.size] = 0;
+		pair->avp_strlength = str.size;
 		break;
 		
 	case GRAD_TYPE_INTEGER:
@@ -4388,7 +4411,7 @@ rw_attrs0()
         grad_avp_t *pair;
         
         if ((pair = grad_avl_find(AVPLIST(&mach), attr)) == NULL) 
-                pushs(&nil, 1);
+                pushstr("", 0);
         else if (pair->prop & GRAD_AP_ENCRYPT) {
 		char string[GRAD_STRING_LENGTH+1];
 		int len;
@@ -4420,7 +4443,7 @@ rw_attrs()
 
 	cpopn(&index);
         if ((pair = grad_avl_find_n(AVPLIST(&mach), attr, index)) == NULL) 
-                pushs(&nil, 1);
+                pushstr("", 0);
         else
                 pushstr(pair->avp_strvalue, pair->avp_strlength);
 }
@@ -4491,14 +4514,22 @@ rw_pusha()
 void
 rw_adds()
 {
-        char *s1, *s2, *s;
-
+        grad_string_t s1, s2;
+	RWSTYPE *p;
+	char *s;
+	
         checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        s = heap_reserve(strlen(s1) + strlen(s2) + 1);
-        strcat(strcpy(s, s1), s2);
-        pushn((RWSTYPE)s);
+        poparr(&s2);
+        poparr(&s1);
+        p = heap_reserve(sizeof(RWSTYPE) + s1.size + s2.size + 1);
+	s = (char*)(p + 1);
+	memcpy(s, s1.data, s1.size);
+	s += s1.size;
+	memcpy(s, s2.data, s2.size);
+	s += s2.size;
+	*s = 0;
+	p[0] = s1.size + s2.size;
+        pushn((RWSTYPE)p);
 }
 
 /*
@@ -4643,22 +4674,27 @@ rw_rem()
         pushn(n1%n2);
 }
 
+
+/* Type conversion */
 void
-rw_int()
+rw_i2s()
 {
-        char *s = (char *)popn();
-        pushn(strtol(s, NULL, 0));
+        int n = popn();
+        char buf[64];
+        
+        snprintf(buf, sizeof(buf), "%d", n);
+        pushstr(buf, strlen(buf));
 }
 
 void
-rw_string()
+rw_s2i()
 {
-        int n = popn();
-        RWSTYPE buf[64];
-        
-        snprintf((char*)buf, sizeof(buf), "%d", n);
-        pushs(buf, 64);
+	grad_string_t s;
+	mem2string(&s, (RWSTYPE *)popn());
+        pushn(strtol(s.data, NULL, 0));
 }
+
+
 
 void
 rw_eq()
@@ -4729,67 +4765,77 @@ rw_ge()
 void
 rw_eqs()
 {
-        char *s1, *s2;
+        grad_string_t s1, s2;
 
         checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) == 0);
+	poparr(&s2);
+	poparr(&s1);
+	
+        pushn(s1.size == s2.size && memcmp(s1.data, s2.data, s1.size) == 0);
 }
 
 void
 rw_nes()
 {
-        char *s1, *s2;
+        grad_string_t s1, s2;
 
         checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) != 0);
+	poparr(&s2);
+	poparr(&s1);
+	
+        pushn(!(s1.size == s2.size && memcmp(s1.data, s2.data, s1.size) == 0));
 }
 
 void
 rw_lts()
 {
-        char *s1, *s2;
-
+        grad_string_t s1, s2;
+	size_t size;
+	
         checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) < 0);
+	poparr(&s2);
+	poparr(&s1);
+	size = RW_MIN(s1.size, s2.size);
+	pushn(memcmp(s1.data, s2.data, size < 0) || s1.size < s2.size); 
 }
 
 void
 rw_les()
 {
-        char *s1, *s2;
-
+        grad_string_t s1, s2;
+	size_t size;
+	
         checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) <= 0);
+	poparr(&s2);
+	poparr(&s1);
+	size = RW_MIN(s1.size, s2.size);
+	pushn(memcmp(s1.data, s2.data, size <= 0) || s1.size <= s2.size); 
 }
 
 void
 rw_gts()
 {
-        char *s1, *s2;
-
+        grad_string_t s1, s2;
+	size_t size;
+	
         checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) > 0);
+	poparr(&s2);
+	poparr(&s1);
+	size = RW_MIN(s1.size, s2.size);
+	pushn(memcmp(s1.data, s2.data, size > 0) || s1.size > s2.size); 
 }
 
 void
 rw_ges()
 {
-        char *s1, *s2;
-
+        grad_string_t s1, s2;
+	size_t size;
+	
         checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) >= 0);
+	poparr(&s2);
+	poparr(&s1);
+	size = RW_MIN(s1.size, s2.size);
+	pushn(memcmp(s1.data, s2.data, size >= 0) || s1.size >= s2.size); 
 }
 
 void
@@ -4817,11 +4863,12 @@ void
 rw_match()
 {
         COMP_REGEX *rx = (COMP_REGEX *)rw_code[mach.pc++];
-        char *s = (char*)popn();
+        grad_string_t s;
         int rc;
-        
+
+	poparr(&s);
 	need_pmatch(rx->nmatch);
-        mach.sA = s;
+        mach.sA = s.data;
         
         rc = regexec(&rx->regex, mach.sA, 
                      rx->nmatch + 1, mach.pmatch, 0);
@@ -4907,7 +4954,9 @@ gc()
 static void
 bi_length()
 {
-        pushn(strlen((char*)getarg(1)));
+	grad_string_t s;
+	mem2string(&s, (RWSTYPE*)getarg(1));
+        pushn(s.size);
 }
 
 /*
@@ -4916,13 +4965,14 @@ bi_length()
 static void
 bi_index()
 {
-        char *s, *p;
+        grad_string_t s;
+	char *p;
         int   c;
 
-        s = (char*) getarg(2);
+        mem2string(&s, (RWSTYPE*) getarg(2));
         c = (int) getarg(1);
-        p = strchr(s, c);
-        pushn(p ? p - s : -1);
+        p = memchr(s.data, c, s.size);
+        pushn(p ? p - s.data : -1);
 }
 
 /*
@@ -4931,12 +4981,15 @@ bi_index()
 static void
 bi_rindex()
 {
-        char *s, *p;
-        int   c;
+        grad_string_t s;
+	int i;
+        int c;
 
-        s = (char*) getarg(2);
-        c = (int) getarg(1);
-        pushn((p = strrchr(s, c)) ? p - s : -1 );
+	mem2string(&s, (RWSTYPE*) getarg(2));
+	for (i = s.size - 1; i >= 0; i--)
+		if (s.data[i] == c)
+			break;
+        pushn(i);
 }
 
 /*
@@ -4945,60 +4998,62 @@ bi_rindex()
 static void
 bi_substr()
 {
-        char *src, *dest;
+        grad_string_t src;
+	RWSTYPE *p;
+	char *dest;
         int   start, length;
 
-        src    = (char*) getarg(3);
+        mem2string(&src, (RWSTYPE*)getarg(3));
         start  = getarg(2);
         length = getarg(1);
         if (length < 0)
-                length = strlen(src) - start;
+                length = src.size - start;
         
-        dest = heap_reserve(length+1);
+        p = heap_reserve(sizeof(RWSTYPE) + length + 1);
+	dest = (char *)(p + 1);
         if (length > 0) 
-                strncpy(dest, src + start, length);
+                memcpy(dest, src.data + start, length);
         dest[length] = 0;
-        pushn((RWSTYPE) dest);
+	p[0] = length;
+        pushn((RWSTYPE)p);
 }
 
 static void
 bi_field()
 {
-        char *str = (char*) getarg(2);
+        grad_string_t str;
+	char *p, *endp;
         int fn = getarg(1);
-        char *s = (char*)&nil;
+        char *s = "";
         int len = 1;
-
-        while (*str && fn--) {
+	
+	mem2string(&str, (RWSTYPE*) getarg(2));
+	endp = str.data + str.size;
+	for (p = str.data; p < endp && fn--; ) {
                 /* skip initial whitespace */
-                while (*str && isspace(*str))
-                        str++;
+                while (p < endp && isspace(*p))
+                        p++;
 
-                s = str;
+                s = p;
                 len = 0;
-                while (*str && !isspace(*str)) {
-                        str++;
+                while (p < endp && !isspace(*p)) {
+                        p++;
                         len++;
                 }
         }
 
-	if (!*str && fn) 
-		pushs(&nil, 1);
-	else {
-		str = heap_reserve(len+1);
-		if (len) {
-			memcpy(str, s, len);
-			str[len] = 0;
-		}
-		pushn((RWSTYPE) str);
-	}
+	if (p == endp && fn) 
+		pushstr("", 0);
+	else 
+		pushstr(s, len);
 }
 
 static void
 bi_logit()
 {
-        char *msg = (char*) getarg(1);
-        grad_log(L_INFO, "%s", msg);
+        grad_string_t msg;
+	mem2string(&msg, (RWSTYPE*) getarg(1));
+        grad_log(L_INFO, "%s", msg.data);
         pushn(0);
 }
 
@@ -5037,36 +5092,38 @@ bi_inet_ntoa()
 static void
 bi_inet_aton()
 {
+	grad_string_t s;
+	mem2string(&s, (RWSTYPE*)getarg(1));
 	/* Note: inet_aton is not always present. See lib/iputils.c */
-	pushn(grad_ip_strtoip((char*)getarg(1)));
+	pushn(grad_ip_strtoip(s.data));
 }
 
 static void
 bi_tolower()
 {
-	char *src = (char*)getarg(1);
-	char *dest;
-	int i, len = strlen(src);
-	
-	dest = heap_reserve(len+1);
-	dest[len] = 0;
-	for (i = 0; i < len; i++)
-		dest[i] = tolower(src[i]);
-	pushn((RWSTYPE) dest);
+	grad_string_t src;
+	grad_string_t dest;
+	int i;
+
+	mem2string(&src, (RWSTYPE*) getarg(1));
+	pushstr(src.data, src.size);
+	mem2string(&dest, (RWSTYPE*) tos());
+	for (i = 0; i < dest.size; i++)
+		dest.data[i] = tolower(dest.data[i]);
 }	
 
 static void
 bi_toupper()
 {
-	char *src = (char*)getarg(1);
-	char *dest;
-	int i, len = strlen(src);
-	
-	dest = heap_reserve(len+1);
-	dest[len] = 0;
-	for (i = 0; i < len; i++)
-		dest[i] = toupper(src[i]);
-	pushn((RWSTYPE) dest);
+	grad_string_t src;
+	grad_string_t dest;
+	int i;
+
+	mem2string(&src, (RWSTYPE*) getarg(1));
+	pushstr(src.data, src.size);
+	mem2string(&dest, (RWSTYPE*) tos());
+	for (i = 0; i < dest.size; i++)
+		dest.data[i] = toupper(dest.data[i]);
 }	
 
 static void
@@ -5167,7 +5224,9 @@ bi_gethostbyaddr()
 static void
 bi_gethostbyname()
 {
-	pushn((RWSTYPE) grad_ip_gethostaddr((char *) getarg(1)));
+	grad_string_t s;
+	mem2string(&s, (RWSTYPE*)getarg(1));
+	pushn((RWSTYPE) grad_ip_gethostaddr(s.data));
 }
 
 static void
@@ -5179,12 +5238,17 @@ bi_time()
 static void
 bi_strftime()
 {
+	struct tm *tm;
+	char *base;
 	time_t t = (time_t) getarg(1);
-	char *fmt = (char*) getarg(2);
-	struct tm *tm = localtime(&t);
-	char *base = temp_space_create();
-	size_t n = strftime(base, temp_space_size(), fmt, tm);
-	pushn((RWSTYPE) temp_space_fix(base + n + 1));
+	grad_string_t fmt;
+	size_t n;
+	
+	mem2string(&fmt, (RWSTYPE*) getarg(2));
+	tm = localtime(&t);
+	base = temp_space_create();
+	n = strftime(base, temp_space_size(), fmt.data, tm);
+	pushstr(base, n);
 }
 
 static void
@@ -5339,70 +5403,84 @@ subst_run(grad_list_t *subst, size_t nsub,
 static void
 bi_gsub()
 {
-	char *re_str = (char*) getarg(3);
-	char *repl = (char*) getarg(2);
-	char *arg = (char*) getarg(1);
+	grad_string_t re_str;
+	grad_string_t repl;
+	grad_string_t arg;
+	char *p;
 	char *base;
 	regex_t rx;
 	grad_list_t *subst;
+	int rc;
 	
-        int rc = regcomp(&rx, re_str, regcomp_flags);
+	mem2string(&re_str, (RWSTYPE*) getarg(3));
+	mem2string(&repl, (RWSTYPE*) getarg(2));
+	mem2string(&arg, (RWSTYPE*) getarg(1));
+	p = arg.data;
+	
+        rc = regcomp(&rx, re_str.data, regcomp_flags);
         if (rc) 
 		rw_regerror(_("regexp compile error: "), &rx, rc);
 
 	need_pmatch(rx.re_nsub);
 
-	subst = subst_create(repl);
+	subst = subst_create(repl.data);
 	if (!subst)
 		rw_error(_("gsub: not enough memory"));
 	
 	base = temp_space_create();
-	while (*arg
-	       && regexec(&rx, arg, rx.re_nsub + 1, mach.pmatch, 0) == 0) {
-		temp_space_copy(&base, arg, mach.pmatch[0].rm_so);
-		subst_run(subst, rx.re_nsub + 1, &base, arg);
-		arg += mach.pmatch[0].rm_eo;
+	while (*p
+	       && regexec(&rx, p, rx.re_nsub + 1, mach.pmatch, 0) == 0) {
+		temp_space_copy(&base, p, mach.pmatch[0].rm_so);
+		subst_run(subst, rx.re_nsub + 1, &base, p);
+		p += mach.pmatch[0].rm_eo;
 		if (mach.pmatch[0].rm_eo == 0)
-			arg++;
+			p++;
 	}
-	temp_space_copy(&base, arg, strlen(arg) + 1);
+	temp_space_copy(&base, p, strlen(p) + 1);
 	subst_destroy(subst);
 	regfree(&rx);
 
-	pushn((RWSTYPE) temp_space_fix(base));
+	pushn(temp_space_fix(base));
 }
 
 static void
 bi_sub()
 {
-	char *re_str = (char*) getarg(3);
-	char *repl = (char*) getarg(2);
-	char *arg = (char*) getarg(1);
+	grad_string_t re_str;
+	grad_string_t repl;
+	grad_string_t arg;
+	char *p;
 	char *base;
 	regex_t rx;
 	grad_list_t *subst;
+	int rc;
 	
-        int rc = regcomp(&rx, re_str, regcomp_flags);
+	mem2string(&re_str, (RWSTYPE*) getarg(3));
+	mem2string(&repl, (RWSTYPE*) getarg(2));
+	mem2string(&arg, (RWSTYPE*) getarg(1));
+	
+        rc = regcomp(&rx, re_str.data, regcomp_flags);
         if (rc) 
 		rw_regerror(_("regexp compile error: "), &rx, rc);
 
 	need_pmatch(rx.re_nsub);
 
-	subst = subst_create(repl);
+	subst = subst_create(repl.data);
 	if (!subst)
 		rw_error(_("sub: not enough memory"));
 	
 	base = temp_space_create();
-	if (regexec(&rx, arg, rx.re_nsub + 1, mach.pmatch, 0) == 0) {
-		temp_space_copy(&base, arg, mach.pmatch[0].rm_so);
-		subst_run(subst, rx.re_nsub + 1, &base, arg);
-		arg += mach.pmatch[0].rm_eo;
+	p = arg.data;
+	if (regexec(&rx, p, rx.re_nsub + 1, mach.pmatch, 0) == 0) {
+		temp_space_copy(&base, p, mach.pmatch[0].rm_so);
+		subst_run(subst, rx.re_nsub + 1, &base, p);
+		p += mach.pmatch[0].rm_eo;
 	}
-	temp_space_copy(&base, arg, strlen(arg) + 1);
+	temp_space_copy(&base, p, strlen(p) + 1);
 	subst_destroy(subst);
 	regfree(&rx);
 
-	pushn((RWSTYPE) temp_space_fix(base));
+	pushn(temp_space_fix(base));
 }
 
 #define ISPRINT(c) (((unsigned char)c) < 128 && (isalnum(c) || c == '-'))
@@ -5410,19 +5488,23 @@ bi_sub()
 static void
 bi_qprn()
 {
-	char *s = (char*)getarg(1);
-	char *p;
+	grad_string_t arg;
+	char *p, *s, *end;
 	size_t count;
-
-	for (count = 0, p = s; *p; p++)
+	RWSTYPE *sp;
+	
+	mem2string(&arg, (RWSTYPE*)getarg(1));
+	end = arg.data + arg.size;
+	for (count = 0, p = arg.data; p < end; p++)
 		if (!ISPRINT(*p))
 			count++;
 
 	/* Each encoded character takes 3 bytes. */
-	p = heap_reserve(strlen(s) + 2*count + 1);
+	sp = heap_reserve(sizeof(RWSTYPE) + arg.size + 2*count + 1);
+	sp[0] = arg.size + 2*count;
+	pushn((RWSTYPE) sp);
 	
-	pushn((RWSTYPE) p);
-	for (; *s; s++) {
+	for (p = (char*)(sp + 1), s = arg.data; s < end; s++) {
 		if (ISPRINT(*s))
 			*p++ = *s;
 		else {
@@ -5439,47 +5521,68 @@ bi_qprn()
 static void
 bi_quote_string()
 {
-	char *s = (char*)getarg(1);
 	int quote;
-	size_t len = argcv_quoted_length(s, &quote);
-	char *p = heap_reserve(len + 1);
-
-	pushn((RWSTYPE) p);
-	argcv_quote_copy(p, s);
-	p[len] = 0;
+	grad_string_t arg;
+	RWSTYPE *sp;
+	char *p;
+	size_t size;
+	
+	mem2string(&arg, (RWSTYPE*)getarg(1));
+	size = argcv_quoted_length_n(arg.data, arg.size, &quote);
+	sp = heap_reserve(sizeof(RWSTYPE) + size + 1);
+	sp[0] = size;
+	pushn((RWSTYPE)sp);
+	p = (char*)(sp + 1);
+	argcv_quote_copy_n(p, arg.data, arg.size);
 }
 
 static void
 bi_unquote_string()
 {
-	char *s = (char*)getarg(1);
-	size_t len = strlen(s);
-	char *p = heap_reserve(len + 1);
-
-	pushn((RWSTYPE) p);
-	argcv_unquote_copy(p, s, len);
+	int quote;
+	grad_string_t arg;
+	RWSTYPE *sp;
+	char *p;
+	size_t size;
+	
+	mem2string(&arg, (RWSTYPE*)getarg(1));
+	sp = heap_reserve(sizeof(RWSTYPE) +  arg.size + 1);
+	p = (char*)(sp + 1);
+	argcv_unquote_copy(p, arg.data, arg.size);
+	sp[0] = strlen(p);
+	pushn((RWSTYPE)sp);
 }
 
 static void
 bi_textdomain()
 {
+	grad_string_t s;
+	mem2string(&s, (RWSTYPE*)getarg(1));
 	pushstr(default_gettext_domain, strlen (default_gettext_domain));
-	grad_string_replace(&default_gettext_domain, (const char*)getarg(1));
+	grad_string_replace(&default_gettext_domain, s.data);
 }
 
 static void
 bi_gettext()
 {
-	const char *p = dgettext(default_gettext_domain,
-				 (const char*)getarg(1));
+	grad_string_t s;
+	const char *p;
+	
+	mem2string(&s, (RWSTYPE*)getarg(1));
+	p = dgettext(default_gettext_domain, s.data);
 	pushstr(p, strlen(p));
 }
 
 static void
 bi_dgettext()
 {
-	const char *p = dgettext((const char*)getarg(2),
-				 (const char*)getarg(1));
+	grad_string_t domain;
+	grad_string_t text;
+	const char *p;
+	
+	mem2string(&domain, (RWSTYPE*)getarg(2));
+	mem2string(&text, (RWSTYPE*)getarg(1));
+	p = dgettext(domain.data, text.data);
 	pushstr(p, strlen(p));
 }
 
@@ -5487,20 +5590,36 @@ bi_dgettext()
 static void
 bi_ngettext()
 {
-	const char *p = dngettext(default_gettext_domain,
-				  (const char*) getarg(3),
-				  (const char*) getarg(2),
-				  (unsigned long) getarg(1));
+	grad_string_t s;
+	grad_string_t pl;
+	unsigned long n;
+	const char *p;
+
+	mem2string(&s, (RWSTYPE*)getarg(3));
+	mem2string(&pl, (RWSTYPE*)getarg(2));
+	n = (unsigned long) getarg(1);
+	p = dngettext(default_gettext_domain,
+		      s.data,
+		      pl.data,
+		      n);
 	pushstr(p, strlen(p));
 }
 
 static void
 bi_dngettext()
 {
-	const char *p = dngettext((const char*) getarg(4),
-		                  (const char*) getarg(3),
-				  (const char*) getarg(2),
-				  (unsigned long) getarg(1));
+	grad_string_t domain;
+	grad_string_t s;
+	grad_string_t pl;
+	unsigned long n;
+	const char *p;
+
+	mem2string(&domain, (RWSTYPE*)getarg(4));
+	mem2string(&s, (RWSTYPE*)getarg(3));
+	mem2string(&pl, (RWSTYPE*)getarg(2));
+	n = (unsigned long) getarg(1);
+
+        p = dngettext(domain.data, s.data, pl.data, n);
 	pushstr(p, strlen(p));
 }
 
@@ -5637,7 +5756,7 @@ rw_mach_destroy()
 }
 
 FUNCTION *
-rewrite_check_function(const char *name, Datatype rettype, char *typestr)
+rewrite_check_function(const char *name, grad_data_type_t rettype, char *typestr)
 {
 	int i;
 	PARAMETER *p;
@@ -5725,31 +5844,42 @@ run_init(pctr_t pc, grad_request_t *request)
 	return 0;
 }
 
+static void
+return_value(grad_value_t *val)
+{
+	u_char *p;
+		
+	switch (val->type) {
+	case Integer:   
+		val->datum.ival = mach.rA;
+		break;
+			
+	case String:
+		mem2string(&val->datum.sval, (RWSTYPE*) mach.rA);
+		p = grad_emalloc (val->datum.sval.size + 1);
+		memcpy (p, val->datum.sval.data, val->datum.sval.size);
+		val->datum.sval.data = p;
+		break;
+		
+	default:
+		abort();
+	}
+}
+
 static int
-evaluate(pctr_t pc, grad_request_t *req, Datatype rettype, Datum *datum)
+evaluate(pctr_t pc, grad_request_t *req, grad_value_t *val)
 {
         if (run_init(pc, req))
 		return -1;
-	if (datum) {
-		switch (rettype) {
-		case Integer:   
-			datum->ival = mach.rA;
-			break;
-			
-		case String:
-			datum->sval = grad_estrdup((char*) mach.rA);
-			break;
-			
-		default:
-			abort();
-		}
-	}
+	if (val)
+		return_value(val);
         return 0;
 }
 
 int
-rewrite_invoke(Datatype rettype, void *ret,
-	       const char *name, grad_request_t *request, char *typestr, ...)
+rewrite_invoke(grad_data_type_t rettype, grad_value_t *val,
+	       const char *name,
+	       grad_request_t *request, char *typestr, ...)
 {
         FILE *fp;
         va_list ap;
@@ -5804,17 +5934,8 @@ rewrite_invoke(Datatype rettype, void *ret,
                 grad_avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
                 fclose(fp);
         }
-
-	switch (rettype) {
-	case String:
-		/* FIXME: constant return. It may not be safe if
-		   rw_mach_destroy() actually does something */
-		*(char**)ret = (char *)mach.rA; 
-		break;
-
-	case Integer:
-		*(grad_uint32_t*)ret = mach.rA;
-	}
+	val->type = fun->rettype; 
+	return_value(val);
         rw_mach_destroy();
         return 0;
 }
@@ -5841,8 +5962,7 @@ rewrite_compile(char *expr)
 }
 
 int
-rewrite_interpret(char *expr, grad_request_t *req,
-		  Datatype *type, Datum *datum)
+rewrite_interpret(char *expr, grad_request_t *req, grad_value_t *val)
 {
 	pctr_t save_pc = rw_pc;
 	int rc;
@@ -5852,17 +5972,15 @@ rewrite_interpret(char *expr, grad_request_t *req,
 	if (rc)
 		return rc;
 
-	if (return_type == Undefined) {
-		*type = return_type;
+	val->type = return_type;
+	if (return_type == Undefined) 
 		return -1;
-	}
-	*type = return_type;
 
-	return evaluate(rw_pc, req, return_type, datum);
+	return evaluate(rw_pc, req, val);
 }
 
 int
-rewrite_eval(char *symname, grad_request_t *req, Datatype *type, Datum *datum)
+rewrite_eval(char *symname, grad_request_t *req, grad_value_t *val)
 {
         FUNCTION *fun;
 	
@@ -5879,9 +5997,9 @@ rewrite_eval(char *symname, grad_request_t *req, Datatype *type, Datum *datum)
 		return -1;
 	}
 
-	if (type)
-		*type = fun->rettype;
-	return evaluate(fun->entry, req, fun->rettype, datum);
+	if (val)
+		val->type = fun->rettype;
+	return evaluate(fun->entry, req, val);
 }
 	
 
@@ -6084,6 +6202,12 @@ rewrite_set_stack_size(size_t s)
 	runtime_stack = NULL;
 }
 				       
+void
+grad_value_free(grad_value_t *val)
+{
+	if (val->type == String)
+		grad_free(val->datum.sval.data);
+}
 
 
 /* ****************************************************************************
@@ -6092,14 +6216,15 @@ rewrite_set_stack_size(size_t s)
 #ifdef USE_SERVER_GUILE
 
 SCM
-radscm_datum_to_scm(Datatype type, Datum datum)
+radscm_datum_to_scm(grad_value_t *val)
 {
-        switch (type) {
+        switch (val->type) {
         case Integer:
-                return scm_long2num(datum.ival);
+                return scm_long2num(val->datum.ival);
 
         case String:
-                return scm_makfrom0str(datum.sval);
+		/* FIXME! */
+                return scm_makfrom0str(val->datum.sval.data);
 
 	default:
 		grad_insist_fail("Unknown data type");
@@ -6145,9 +6270,10 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
         PARAMETER *parm;
         int nargs;
         int n, rc;
-        Datum datum;
+        grad_value_t value;
         SCM cell;
         SCM FNAME;
+	SCM retval;
 	
         FNAME = SCM_CAR(ARGS);
         ARGS  = SCM_CDR(ARGS);
@@ -6167,7 +6293,8 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
         nargs = 0;
         parm = fun->parm;
         
-        for (cell = ARGS; cell != SCM_EOL; cell = SCM_CDR(cell), parm = parm->next) {
+        for (cell = ARGS; cell != SCM_EOL;
+	     cell = SCM_CDR(cell), parm = parm->next) {
                 SCM car = SCM_CAR(cell);
 
                 if (++nargs > fun->nparm) {
@@ -6223,18 +6350,12 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
         pushn(0);                         /* Return address */
         run(fun->entry);                  /* call function */
 
-        switch (fun->rettype) {
-        case Integer:   
-                datum.ival = mach.rA;
-                break;
-        case String:
-                datum.sval = (char*) mach.rA;
-                break;
-        default:
-                abort();
-        }
+	value.type = fun->rettype;
+	return_value(&value);
+	retval = radscm_datum_to_scm(&value);
+	grad_value_free(&value);
 	rw_mach_destroy();
-        return radscm_datum_to_scm(fun->rettype, datum);
+        return retval;
 }
 
 

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -607,8 +607,7 @@ avl_eval_rewrite (radiusd_request_t *req, grad_matching_rule_t *rule,
 {
 	for (; p; p = p->next) {
 		if (p->attribute == DA_REWRITE_FUNCTION
-		    && (rewrite_eval(p->avp_strvalue, req->request,
-				     NULL, NULL))) {
+		    && rewrite_eval(p->avp_strvalue, req->request, NULL)) {
 			grad_log_loc(L_ERR, &rule->loc, "%s(): %s",
 				     p->avp_strvalue,
 				     _("not defined"));
@@ -671,9 +670,10 @@ exec_program_wait (radiusd_request_t *request, grad_avp_t *rhs,
 /* Provide a support for backward-compatible attributes Replace-User-Name
    and Rewrite-Function */
 static void
-hints_eval_compat(radiusd_request_t *req, grad_avp_t *name_pair, grad_matching_rule_t *rule)
+hints_eval_compat(radiusd_request_t *req, grad_avp_t *name_pair,
+		  grad_matching_rule_t *rule)
 {
-        grad_avp_t      *tmp;
+        grad_avp_t *tmp;
 	
 	/* Let's see if we need to further modify the username */
 	if ((tmp = grad_avl_find(rule->rhs, DA_REPLACE_USER_NAME))

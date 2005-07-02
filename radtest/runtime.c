@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -1132,7 +1132,7 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 				}
 			} else
 				result->datum.string = p ?
-					                 p->avp_strvalue : "";
+					p->avp_strvalue : "";
 			break;
 			
 		case GRAD_TYPE_DATE:    

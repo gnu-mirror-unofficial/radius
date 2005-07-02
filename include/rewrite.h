@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
 
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -20,33 +20,33 @@
 /*
  * Data types
  */
-typedef enum {
-        Undefined,
-        Integer,
-        String,
-        Max_datatype
-} Datatype;
+typedef enum grad_data_type {
+        Undefined,          /* Undefined type */
+        Integer,            /* 32-bit integer, signed or unsigned */ 
+        String,             /* Nul-terminated ASCII (in future: UTF-8)
+			       string or character array */
+#define Max_datatype String+1    
+} grad_data_type_t;
 
-typedef union {
-        int       ival;
-        char      *sval;
-} Datum;
+typedef struct grad_value {
+	grad_data_type_t type;
+	union grad_datum datum;
+} grad_value_t;
 
 void rewrite_init();
-int rewrite_interpret(char *expr, grad_request_t *req,
-		      Datatype *type, Datum *datum);
-int rewrite_eval(char *func, grad_request_t *req,
-		 Datatype *type, Datum *datum);
-int rewrite_invoke(Datatype rettype, void *ret,
-		   const char *name,
-		   grad_request_t *request, char *typestr, ...);
+int rewrite_interpret(char *expr, grad_request_t *req, grad_value_t *val);
+int rewrite_eval(char *func, grad_request_t *req, grad_value_t *val);
 char *rewrite_compile(char *expr);
 int rewrite_stmt_term(int finish, void *block_data, void *handler_data);
 size_t rewrite_get_stack_size();
 void rewrite_set_stack_size(size_t s);
+int rewrite_invoke(grad_data_type_t rettype, grad_value_t *val,
+		   const char *name,
+		   grad_request_t *request, char *typestr, ...);
+void grad_value_free(grad_value_t *val);
 
 #ifdef RADIUS_SERVER_GUILE
-SCM radscm_datum_to_scm(Datatype type, Datum datum);
+SCM radscm_datum_to_scm(grad_value_t *val);
 int radscm_scm_to_ival(SCM cell, int *val);
 SCM radscm_rewrite_execute(const char *func_name, SCM ARGS);
 #endif

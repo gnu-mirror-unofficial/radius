@@ -17,6 +17,9 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
+#ifndef _gnu_radsql_h
+#define _gnu_radsql_h
+
 #ifdef HAVE_LIBLTDL
 # define DECL_SQL_DISPATCH_TAB(mod) \
   SQL_DISPATCH_TAB RDL_EXPORT(mod,dispatch_tab)
@@ -118,4 +121,5 @@ typedef struct {
 	int (*n_columns)(struct sql_connection *conn, void *data, size_t *np);
 } SQL_DISPATCH_TAB;
 
+#endif
 #endif

@@ -240,6 +240,16 @@ enum grad_avp_eval_type {
 				to evaluate it */
 };
 
+typedef struct grad_string {
+	size_t size;
+	char *data;
+} grad_string_t;
+
+typedef union grad_datum {
+	grad_uint32_t   ival;       /* integer value */
+	grad_string_t   sval;       /* string value */
+} grad_datum_t;
+
 /* An attribute/value pair */
 typedef struct grad_value_pair {
         struct grad_value_pair  *next;      /* Link to next A/V pair in list */
@@ -249,19 +259,11 @@ typedef struct grad_value_pair {
         enum grad_avp_eval_type eval_type;  /* Evaluation flag */
         int                     prop;       /* Properties */ 
         enum grad_operator operator;        /* Comparison operator */
-        union {
-                grad_uint32_t   ival;       /* integer value */
-                struct {
-                        int     s_length;   /* length of s_value w/o
-                                             * trailing 0
-                                             */
-                        char    *s_value;   /* string value */
-                } string;
-        } v;
-        
-#define avp_lvalue v.ival
-#define avp_strvalue v.string.s_value
-#define avp_strlength v.string.s_length
+	grad_datum_t            datum;      /* Actual data */
+
+#define avp_lvalue datum.ival
+#define avp_strvalue datum.sval.data
+#define avp_strlength datum.sval.size
 
 } grad_avp_t;
 

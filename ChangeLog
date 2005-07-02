@@ -1,3 +1,33 @@
+2005-07-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* include/radsql.h: Protect from multiple inclusion
+	* include/rewrite.h (Datatype): Renamed to grad_data_type_t
+	(Datum): Removed
+	(grad_value_t): New data type
+	(rewrite_interpret,rewrite_eval,rewrite_invoke)
+	(radscm_datum_to_scm): Changed declarations.
+	(grad_value_free): New function
+	* include/radius/radius.h (grad_string_t,grad_datum_t): New data types.
+	(grad_avp_t): Rewritten using grad_datum_t
+	* lib/argcv.c (argcv_quoted_length_n): New function.
+	(argcv_quoted_length): Entry point to argcv_quoted_length_n
+	(argcv_quote_copy_n): New function.
+	(argcv_quote_copy): Entry point to argcv_quote_copy_n
+	
+	* radiusd/rewrite.y: Rewritten handling of String data type to
+	allow for binary strings (the ones, containing nul characters).
+	
+	* radiusd/acct.c: Updated to use new rewrite interfaces
+	* radiusd/checkrad.c: Likewise
+	* radiusd/files.c: Likewise
+	* radiusd/log.c: Likewise
+	* radiusd/radutil.c: Likewise
+	* radiusd/sql.c: Likewise
+	* radiusd/tsh.c: Likewise
+	* radscm/rscm_rewrite.c: Likewise
+	* radscm/rscm_sql.c: Likewise
+	* radtest/runtime.c: Likewise
+	
 2005-06-29  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* lib/argcv.c: Synch with mailutils repo.

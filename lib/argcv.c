@@ -155,12 +155,13 @@ xtonum (int *pval, const char *src, int base, int cnt)
 }
 
 size_t
-argcv_quoted_length (const char *str, int *quote)
+argcv_quoted_length_n (const char *str, size_t size, int *quote)
 {
   size_t len = 0;
-
+  const char *end = str + size;
+  
   *quote = 0;
-  for (; *str; str++)
+  for (; str < end; str++)
     {
       if (*str == ' ')
 	{
@@ -182,6 +183,12 @@ argcv_quoted_length (const char *str, int *quote)
   return len;
 }
 
+size_t
+argcv_quoted_length (const char *str, int *quote)
+{
+	return argcv_quoted_length_n (str, strlen (str), quote);
+}
+
 void
 argcv_unquote_copy (char *dst, const char *src, size_t n)
 {
@@ -197,7 +204,7 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 	case '"':
 	  if (!expect_delim)
 	    {
-	      char *p;
+	      const char *p;
 	      
 	      for (p = src+i+1; *p && *p != src[i]; p++)
 		if (*p == '\\')
@@ -271,9 +278,10 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 }
 
 void
-argcv_quote_copy (char *dst, const char *src)
+argcv_quote_copy_n (char *dst, const char *src, size_t size)
 {
-  for (; *src; src++)
+  const char *end = src + size;
+  for (; src < end; src++)
     {
       if (*src == '"' || *src == '\'')
 	{
@@ -297,6 +305,12 @@ argcv_quote_copy (char *dst, const char *src)
 	    }
 	}
     }
+}
+
+void
+argcv_quote_copy (char *dst, const char *src)
+{
+	argcv_quote_copy_n (dst, src, strlen (src));
 }
 
 int

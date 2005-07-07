@@ -46,7 +46,7 @@ pidfile_status()
 	test -r $[PIDFILE]
 	TEST($? -ne $1) && return 0
         sleep 1
-	N=$((N+1))
+	N=ARITH($N + 1)
     done
     return 1
 }

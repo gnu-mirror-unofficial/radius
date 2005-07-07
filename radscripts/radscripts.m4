@@ -24,4 +24,6 @@ define([TEST],[[ [ $1 ] ]])
 define([OPT_HELP],[-h|--h|--he|--hel|--help])
 define([OPT_VERSION],[--v|--ve|--ver|--vers|--versi|--versio|--version])
 define([NOEDIT],[ifdef([__file__],[Generated from __file__],[This script is generated authomatically. Please do not edit.])])
+define([ARITH],[$(($1))])
+dnl For really old shells replace this with: define([ARITH],[`expr '$1'`])
 divert(0)dnl

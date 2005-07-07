@@ -1,3 +1,9 @@
+2005-07-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* radscripts/radctl.m4 (pidfile_status): Fixed arithmetical
+	expression syntax.
+	* radscripts/radscripts.m4 (ARITH): New macro.
+
 2005-07-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* include/radsql.h: Protect from multiple inclusion

@@ -1,3 +1,11 @@
+2005-08-12  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* lib/client.c (grad_client_send0): Fixed invocation of
+	grad_client_recv.
+	* radiusd/log.c (log_set_to_console): Changed declaration
+	* include/radiusd.h: Likewise
+	* radiusd/radiusd.c: New option --quiet
+
 2005-07-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* radscripts/radctl.m4 (pidfile_status): Fixed arithmetical

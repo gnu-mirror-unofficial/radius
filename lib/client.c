@@ -333,8 +333,8 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 
                                 if (result > 0) 
                                         req = grad_client_recv(
-						sin->sin_addr.s_addr,
-                                                sin->sin_port,
+						ntohl(sin->sin_addr.s_addr),
+                                                ntohs(sin->sin_port),
                                                 server->secret,
                                                 authenticator,
                                                 recv_buf,

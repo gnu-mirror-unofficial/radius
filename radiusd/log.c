@@ -615,7 +615,7 @@ register_category(int cat, int pri, grad_list_t *clist)
 
 /* Auxiliary calls */
 void
-log_set_to_console()
+log_set_to_console(int cat, int pri)
 {
         Channel chan;
         
@@ -625,7 +625,7 @@ log_set_to_console()
         chan.options = LO_CAT|LO_PRI|LO_PERSIST;
         register_channel(&chan);
 
-        register_category0(-1, -1, channel_lookup("stdout"));
+        register_category0(cat, pri, channel_lookup("stdout"));
 }
 
 void

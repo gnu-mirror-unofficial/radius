@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -715,7 +715,7 @@ void log_release();
 void register_channel(Channel *chan);
 void register_category(int cat, int pri, grad_list_t *chanlist);
 
-void log_set_to_console();
+void log_set_to_console(int cat, int pri);
 void log_set_default(char *name, int cat, int pri);
 
 void log_open(int cat);

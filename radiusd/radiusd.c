@@ -45,42 +45,52 @@ static char doc[] = N_("GNU radius daemon");
 #define SHOW_DEFAULTS_OPTION 256
 
 static struct argp_option options[] = {
+#define GRP 100	
         {NULL, 0, NULL, 0,
-         N_("radiusd specific switches:"), 0},
+         N_("radiusd specific switches:"), GRP},
+        {"foreground", 'f', NULL, 0,
+         N_("Stay in foreground"), GRP+1},
+        {"mode", 'm', "{t|c|b}", 0,
+         N_("Select operation mode: test, checkconf, builddbm."), GRP+1},
+        {"single-process", 's', NULL, 0,
+         N_("Run in single process mode"), GRP+1},
+        {"pid-file-dir", 'P', N_("DIR"), 0,
+         N_("Store pidfile in DIR"), GRP+1},
+	{"show-defaults", SHOW_DEFAULTS_OPTION, NULL, 0,
+	 N_("Show compilation defaults"), GRP+1},
+	{"quiet", 'q', NULL, 0,
+	 N_("Quiet mode (valid only with --mode)"), GRP+1},
+#undef GRP
+#define GRP 200
+	{NULL, 0, NULL, 0,
+         N_("Daemon configuration options. Please use raddb/config instead."),
+	 GRP},
+	
         {"log-auth-detail", 'A', 0, 0,
-         N_("Do detailed authentication logging"), 0},
+         N_("Do detailed authentication logging"), GRP+1},
         {"acct-directory",  'a', N_("DIR"), 0,
-         N_("Set accounting directory"), 0},
+         N_("Set accounting directory"), GRP+1},
 #ifdef USE_DBM
         {"dbm", 'b', NULL, 0,
-         N_("Enable DBM support"), 0},
+         N_("Enable DBM support"), GRP+1},
 #endif
-        {"foreground", 'f', NULL, 0,
-         N_("Stay in foreground"), 0},
         {"logging-directory", 'l', N_("DIR"), 0, 
-         N_("Set logging directory name"), 0},
-        {"mode", 'm', "{t|c|b}", 0,
-         N_("Select operation mode: test, checkconf, builddbm.")},
+         N_("Set logging directory name"), GRP+1},
         {"do-not-resolve", 'n', NULL, 0,
-         N_("Do not resolve IP addresses"), 0},
+         N_("Do not resolve IP addresses"), GRP+1},
         {"ip-address", 'i', N_("IPADDR"), 0,
-         N_("Listen on IPADDR"), 0},
+         N_("Listen on IPADDR"), GRP+1},
         {"port", 'p', "NUMBER", 0,
-         N_("Set authentication port number"), 0},
-        {"pid-file-dir", 'P', N_("DIR"), 0,
-         N_("Store pidfile in DIR"), 0},
+         N_("Set authentication port number"), GRP+1},
         {"log-stripped-names", 'S', NULL, 0,
-         N_("Strip prefixes/suffixes off user names before logging")},
-        {"single-process", 's', NULL, 0,
-         N_("Run in single process mode"), 0},
+         N_("Strip prefixes/suffixes off user names before logging"), GRP+1},
         {"debug", 'x', N_("DEBUGSPEC"), 0,
-         N_("Set debugging level"), 0},
+         N_("Set debugging level"), GRP+1},
         {"log-auth", 'y', NULL, 0,
-         N_("Log authentications"), 0},
+         N_("Log authentications"), GRP+1},
         {"log-auth-pass", 'z', NULL, 0,
-         N_("Log users' passwords"), 0},
-	{"show-defaults", SHOW_DEFAULTS_OPTION, NULL, 0,
-	 N_("Show compilation defaults"), 0},
+         N_("Log users' passwords"), GRP+1},
+#undef GRP
         {NULL, 0, NULL, 0, NULL, 0}
 };
 
@@ -89,6 +99,8 @@ static struct argp_option options[] = {
 
 int        debug_flag;     /* can be raised from debugger only */
 int        log_mode;       /* logging mode */
+int        console_logging_priority = -1; /* Default priority for console
+					     logging */
 char       *auth_log_hook; /* Authentication logging hook function */
 
 static int foreground; /* Stay in the foreground */
@@ -240,6 +252,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 auth_port = atoi(arg);
 		acct_port = auth_port+1;
                 break;
+
+	case 'q':
+		console_logging_priority = L_ERR;
+		break;
 		
         case 'S':
                 strip_names++;  
@@ -618,7 +634,7 @@ main(int argc, char **argv)
 
         log_set_default("default.log", -1, -1);
         if (radius_mode != MODE_DAEMON)
-                log_set_to_console();
+                log_set_to_console(-1, console_logging_priority);
 
 	radiusd_setup();
 	radiusd_start();

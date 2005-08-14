@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -38,10 +38,10 @@
 #define ALIGN_LEFT 0
 #define ALIGN_RIGHT 1
 
-int printutmp_ip_nodomain; /* do not display domain names */
-int printutmp_use_naslist = 1; /* use naslist when displaying nas names */
-char *printutmp_date_format = "%a %H:%M";
-char *printutmp_empty_string = "";
+int grad_printutmp_ip_nodomain; /* do not display domain names */
+int grad_printutmp_use_naslist = 1; /* use naslist when displaying nas names */
+char *grad_printutmp_date_format = "%a %H:%M";
+char *grad_printutmp_empty_string = "";
 
 static struct obstack stk;
 
@@ -135,21 +135,21 @@ static char *
 key_date_format(format_key_t *key)
 {
 	char *p = format_key_lookup(key, "format");
-	return p ? p : printutmp_date_format;
+	return p ? p : grad_printutmp_date_format;
 }
 
 static char *
 key_empty(format_key_t *key)
 {
 	char *p = format_key_lookup(key, "empty");
-	return p ? p : printutmp_empty_string;
+	return p ? p : grad_printutmp_empty_string;
 }
 
 static int
 key_nodomain(format_key_t *key)
 {
 	char *p = format_key_lookup(key, "nodomain");
-	return p ? 1 : printutmp_ip_nodomain;
+	return p ? 1 : grad_printutmp_ip_nodomain;
 }
 
 static int
@@ -286,7 +286,7 @@ session_id_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 static int
 nas_address_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
-	if (printutmp_use_naslist) {
+	if (grad_printutmp_use_naslist) {
 		grad_nas_t *nas;
 	
 		nas = grad_nas_lookup_ip(ntohl(up->nas_address));

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -169,10 +169,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 fmtspec = lookup_format("clid");
                 break;
         case 'D': /* Date format */
-                printutmp_date_format = arg;
+                grad_printutmp_date_format = arg;
                 break;
         case 'e': /* empty field replacement */
-                printutmp_empty_string = arg;
+                grad_printutmp_empty_string = arg;
                 break;
         case 'f': /* filename */
                 filename = arg;
@@ -193,7 +193,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 fmtspec = lookup_format("long");
                 break;
         case 'n':
-                resolve_hostnames = 0;
+                grad_resolve_hostnames = 0;
                 break;
         case 'o':
                 fmtspec = lookup_format(arg);
@@ -215,7 +215,7 @@ static struct argp argp = {
         parse_opt,
         NULL,
         doc,
-        rad_common_argp_child,
+        grad_common_argp_child,
         NULL, NULL
 };
 
@@ -243,17 +243,17 @@ main(int  argc, char **argv)
 		exit(1);
 
         if (!filename)
-                filename = radutmp_path;
+                filename = grad_utmp_file;
         
         /* Read the dictionary files */
         grad_dict_init();
         /* Read the "naslist" file. */
-        path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
+        path = grad_mkfilename(grad_config_dir, RADIUS_NASLIST);
 	if (grad_nas_read_file(path))
                 exit(1);
         grad_free(path);
         /* Read realms */
-        path = grad_mkfilename(radius_dir, RADIUS_REALMS);
+        path = grad_mkfilename(grad_config_dir, RADIUS_REALMS);
 	grad_read_realms(path, 0, 0, NULL);
         grad_free(path);
         
@@ -363,16 +363,16 @@ radius_who()
         /*
          *      Show the users logged in on the terminal server(s).
          */
-        if ((file = rut_setent(filename, 0)) == NULL)
+        if ((file = grad_ut_setent(filename, 0)) == NULL)
                 return ;
 
-        while (up = rut_getent(file)) {
+        while (up = grad_ut_getent(file)) {
 		if (up->type == P_ACCT_DISABLED) 
 			printf(_("System accounting is disabled\n"));
 		else if (want_rad_record(up)) 
                         grad_utent_print(form, up, 1);
         }
-        rut_endent(file);
+        grad_ut_endent(file);
 }
 
 void

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -48,7 +48,7 @@ SCM_DEFINE(rad_directory, "rad-directory", 1, 0, 0,
 {
         SCM_ASSERT(SCM_NIMP(DIR) && SCM_STRINGP(DIR),
                    DIR, SCM_ARG1, FUNC_NAME);
-        radius_dir = SCM_STRING_CHARS(DIR);
+        grad_config_dir = SCM_STRING_CHARS(DIR);
         if (grad_dict_init())
                 return SCM_BOOL_F;
         return SCM_BOOL_T;
@@ -322,6 +322,6 @@ radscm_init()
         
 #include <radscm.x>
 
-        scm_c_define ("%raddb-path", scm_makfrom0str(radius_dir));
+        scm_c_define ("%raddb-path", scm_makfrom0str(grad_config_dir));
 }
 

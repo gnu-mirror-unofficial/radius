@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -525,7 +525,7 @@ preproc()
                 
                 if (*sp != '/') {
                         /* append standard configuration directory path */
-                        obstack_grow(&stack, radius_dir, strlen(radius_dir));
+                        obstack_grow(&stack, grad_config_dir, strlen(grad_config_dir));
                         obstack_1grow(&stack, '/');
                 }
         

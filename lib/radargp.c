@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -47,7 +47,7 @@ static struct argp_option rad_common_argp_option[] = {
 static error_t rad_common_argp_parser (int key, char *arg,
                                        struct argp_state *state);
 
-struct argp rad_common_argp = {
+struct argp grad_common_argp = {
         rad_common_argp_option,
         rad_common_argp_parser,
         NULL,
@@ -57,8 +57,8 @@ struct argp rad_common_argp = {
         NULL
 };
 
-struct argp_child rad_common_argp_child[] = {
-        { &rad_common_argp, 0, N_("Common options"), 1 },
+struct argp_child grad_common_argp_child[] = {
+        { &grad_common_argp, 0, N_("Common options"), 1 },
 	{ NULL },
 };
 
@@ -86,7 +86,7 @@ rad_common_argp_parser(int key, char *arg, struct argp_state *state)
 {
         switch (key) {
         case 'd':
-                radius_dir = arg;
+                grad_config_dir = arg;
                 break;
 
         case 'L':

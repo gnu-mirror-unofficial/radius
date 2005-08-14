@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -39,7 +39,7 @@ menu_pairs(char *menu_name, char *menu_selection)
         grad_avp_t      *reply_first;
         int line_num;
         
-        menu_path = grad_mkfilename3(radius_dir, "menus", menu_name);
+        menu_path = grad_mkfilename3(grad_config_dir, "menus", menu_name);
         if ((fp = fopen(menu_path, "r")) == NULL) {
                 grad_log(L_NOTICE|L_PERROR, _("can't open menu `%s'"),
 		         menu_name);
@@ -197,7 +197,7 @@ menu_read_text(char *menu_name)
         int     nread;
         int     len;
                 
-        menu_path = grad_mkfilename3(radius_dir, "menus", menu_name);
+        menu_path = grad_mkfilename3(grad_config_dir, "menus", menu_name);
         if ((fp = fopen(menu_path, "r")) == NULL) {
                 grad_log(L_NOTICE|L_PERROR, _("can't open menu `%s'"),
 		         menu_name);

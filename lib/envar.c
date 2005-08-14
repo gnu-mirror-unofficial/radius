@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -74,7 +74,7 @@ grad_envar_assign(char *name, char *value, grad_list_t **plist)
 
 
 static void
-grad_envar_parse_argcv_internal(int argc, char **argv, grad_list_t **plist)
+grad_envar_parse_grad_argcv_internal(int argc, char **argv, grad_list_t **plist)
 {
 	int i;
 	char *p;
@@ -100,13 +100,13 @@ grad_envar_parse_internal(char *str, grad_list_t **plist)
         int argc;
         char **argv;
 
-        if (argcv_get(str, ",", NULL, &argc, &argv)) {
+        if (grad_argcv_get(str, ",", NULL, &argc, &argv)) {
                 if (argv)
-                        argcv_free(argc, argv);
+                        grad_argcv_free(argc, argv);
                 return;
         }
-	grad_envar_parse_argcv_internal(argc, argv, plist);
-	argcv_free(argc, argv);
+	grad_envar_parse_grad_argcv_internal(argc, argv, plist);
+	grad_argcv_free(argc, argv);
 }
 
 grad_envar_t *

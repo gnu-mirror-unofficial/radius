@@ -310,7 +310,7 @@ radiusd_sql_config()
         new_cfg.active[SQL_ACCT] = 0;
         new_cfg.active[SQL_AUTH] = 0;
 
-        sqlfile = grad_mkfilename(radius_dir, "sqlserver");
+        sqlfile = grad_mkfilename(grad_config_dir, "sqlserver");
         /* Open source file */
         if ((sqlfd = fopen(sqlfile, "r")) == (FILE *) NULL) {
                 grad_log(L_ERR, _("could not read sqlserver file %s"), sqlfile);

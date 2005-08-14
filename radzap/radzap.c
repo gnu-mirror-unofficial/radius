@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -75,7 +75,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 confirm_flag = 1;
                 break;
         case 'l':
-                radlog_dir = arg;
+                grad_log_dir = arg;
                 break;
         case 'f':
                 args->radutmp = arg;
@@ -112,7 +112,7 @@ static struct argp argp = {
         parse_opt,
         NULL,
         doc,
-        rad_common_argp_child,
+        grad_common_argp_child,
         NULL, NULL
 };
 
@@ -130,14 +130,14 @@ radzap(grad_netdef_t *netdef, int port, char *user, time_t t)
         if (t == 0) 
                 time(&t);
 
-        if ((file = rut_setent(radutmp_path, 0)) == NULL) {
-                grad_log(L_ERR|L_PERROR, "can't open %s", radutmp_path);
+        if ((file = grad_ut_setent(grad_utmp_file, 0)) == NULL) {
+                grad_log(L_ERR|L_PERROR, "can't open %s", grad_utmp_file);
                 exit(1);
         }       
         /*
          *      Find the entry for this NAS / portno combination.
          */
-        while (up = rut_getent(file)) {
+        while (up = grad_ut_getent(file)) {
                 if ((netdef
 		     && !grad_ip_in_net_p(netdef, htonl(up->nas_address)))
 		    || (port >= 0 && port != up->nas_port)
@@ -150,10 +150,10 @@ radzap(grad_netdef_t *netdef, int port, char *user, time_t t)
 
                 up->type = P_IDLE;
                 up->time = t;
-                rut_putent(file, up);
+                grad_ut_putent(file, up);
                 write_wtmp(up);
         }
-        rut_endent(file);
+        grad_ut_endent(file);
 
         return 0;
 }
@@ -191,7 +191,7 @@ confirm(struct radutmp *utp)
 int
 write_wtmp(struct radutmp *ut)
 {
-        return radwtmp_putent(radwtmp_path, ut);
+        return grad_radwtmp_putent(grad_wtmp_file, ut);
 }
 
 /*
@@ -217,12 +217,12 @@ main(int argc, char **argv)
         if (grad_argp_parse(&argp, &argc, &argv, 0, NULL, &args))
                 return 1;
 	if (args.radutmp)
-		radutmp_path = args.radutmp;
+		grad_utmp_file = args.radutmp;
 
         /*
          *      Read the "naslist" file.
          */
-        path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
+        path = grad_mkfilename(grad_config_dir, RADIUS_NASLIST);
         if (grad_nas_read_file(path) < 0)
                 exit(1);
         grad_free(path);

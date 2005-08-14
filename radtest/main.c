@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -159,7 +159,7 @@ static struct argp argp = {
         parse_opt,
         NULL,
         doc,
-        rad_common_argp_child,
+        grad_common_argp_child,
         NULL,
 	NULL
 };
@@ -241,7 +241,7 @@ main(int argc, char **argv)
                 int i, argc;
                 char **argv;
 
-                if (argcv_get(server, ":", NULL, &argc, &argv)) {
+                if (grad_argcv_get(server, ":", NULL, &argc, &argv)) {
                         grad_log(L_ERR, _("can't parse server definition"));
                         exit(1);
                 }
@@ -306,7 +306,7 @@ main(int argc, char **argv)
                         serv.port[1] = DEF_ACCT_PORT;
 		grad_client_append_server(srv_queue,
 					  grad_client_alloc_server(&serv));
-                argcv_free(argc, argv);
+                grad_argcv_free(argc, argv);
         }
 
         if (grad_list_count(srv_queue->servers) == 0) {

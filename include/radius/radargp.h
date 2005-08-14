@@ -5,8 +5,8 @@
 # include <argp.h>
 #endif
 
-extern struct argp rad_common_argp;
-extern struct argp_child rad_common_argp_child[];
+extern struct argp grad_common_argp;
+extern struct argp_child grad_common_argp_child[];
 error_t grad_argp_parse(const struct argp *argp,
                        int *pargc,
                        char **pargv[],

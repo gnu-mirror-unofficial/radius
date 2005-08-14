@@ -2873,7 +2873,7 @@ debug_open_file()
         FILE *fp;
         char *path;
         
-        path = grad_mkfilename(radlog_dir, "radius.mtx");
+        path = grad_mkfilename(grad_log_dir, "radius.mtx");
         if ((fp = fopen(path, "a")) == NULL) {
                 grad_log(L_ERR|L_PERROR,
                          _("can't open file `%s'"),
@@ -5528,12 +5528,12 @@ bi_quote_string()
 	size_t size;
 	
 	mem2string(&arg, (RWSTYPE*)getarg(1));
-	size = argcv_quoted_length_n(arg.data, arg.size, &quote);
+	size = grad_argcv_quoted_length_n(arg.data, arg.size, &quote);
 	sp = heap_reserve(sizeof(RWSTYPE) + size + 1);
 	sp[0] = size;
 	pushn((RWSTYPE)sp);
 	p = (char*)(sp + 1);
-	argcv_quote_copy_n(p, arg.data, arg.size);
+	grad_argcv_quote_copy_n(p, arg.data, arg.size);
 }
 
 static void
@@ -5548,7 +5548,7 @@ bi_unquote_string()
 	mem2string(&arg, (RWSTYPE*)getarg(1));
 	sp = heap_reserve(sizeof(RWSTYPE) +  arg.size + 1);
 	p = (char*)(sp + 1);
-	argcv_unquote_copy(p, arg.data, arg.size);
+	grad_argcv_unquote_copy(p, arg.data, arg.size);
 	sp[0] = strlen(p);
 	pushn((RWSTYPE)sp);
 }
@@ -6088,7 +6088,7 @@ rewrite_stmt_term(int finish, void *block_data, void *handler_data)
 		yydebug = debug_on(50);
 		grad_list_destroy(&source_list, free_path, NULL);
 		grad_list_destroy(&rewrite_load_path, free_path, NULL);
-		rewrite_add_load_path(radius_dir);
+		rewrite_add_load_path(grad_config_dir);
 		rewrite_add_load_path(RADIUS_DATADIR "/rewrite");
 
 		grad_free(runtime_stack);
@@ -6158,7 +6158,7 @@ rewrite_load_all(void *a ARG_UNUSED, void *b ARG_UNUSED)
 		return;
 	
 	/* For compatibility with previous versions load the
-	   file $radius_dir/rewrite, if no explicit "load" statements
+	   file $grad_config_dir/rewrite, if no explicit "load" statements
 	   were given */
 	if (grad_list_count(source_candidate_list) == 0)
 		rewrite_load_module("rewrite");

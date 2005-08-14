@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -231,14 +231,14 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
                    RADUTMP_FILE, SCM_ARG4, FUNC_NAME);
 
         file_name = SCM_STRING_CHARS(RADUTMP_FILE);
-        radutmp_putent(file_name, &ut, status);
+        grad_utmp_putent(file_name, &ut, status);
 
         /* Add to wtmp if necessary */
         if (!SCM_UNBNDP(RADWTMP_FILE)) {
                 SCM_ASSERT(SCM_NIMP(RADWTMP_FILE) && SCM_STRINGP(RADWTMP_FILE),
                            RADWTMP_FILE, SCM_ARG5, FUNC_NAME); 
                 file_name = SCM_STRING_CHARS(RADWTMP_FILE);
-                radwtmp_putent(file_name, &ut);
+                grad_radwtmp_putent(file_name, &ut);
         }
 
         return scm_list_3(scm_long2num(ut.duration),

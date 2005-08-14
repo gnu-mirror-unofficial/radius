@@ -67,9 +67,9 @@ radzap(grad_uint32_t nasaddr, int port, char *user, time_t t)
         if (t == 0) time(&t);
         netaddr = htonl(nasaddr);
 
-        if (file = rut_setent(radutmp_path, 0)) {
+        if (file = grad_ut_setent(grad_utmp_file, 0)) {
                 /* Find the entry for this NAS / portno combination. */
-                while (up = rut_getent(file)) {
+                while (up = grad_ut_getent(file)) {
                         if (((nasaddr != 0 && netaddr != up->nas_address) ||
                              (port >= 0   && port    != up->nas_port) ||
                              (user != NULL && strcmp(up->login, user) != 0) ||
@@ -78,11 +78,11 @@ radzap(grad_uint32_t nasaddr, int port, char *user, time_t t)
                         /* Zap the entry */
                         up->type = P_IDLE;
                         up->time = t;
-                        rut_putent(file, up);
+                        grad_ut_putent(file, up);
                         /* Add a logout entry to the wtmp file. */
                         write_wtmp(up);
                 }
-                rut_endent(file);
+                grad_ut_endent(file);
         }
 
         return 0;
@@ -101,7 +101,7 @@ store_session_id(char *buffer, int len, char *id, int idlen)
 int
 write_wtmp(struct radutmp *ut)
 {
-        return radwtmp_putent(radwtmp_path, ut);
+        return grad_radwtmp_putent(grad_wtmp_file, ut);
 }
 
 void
@@ -349,8 +349,8 @@ rad_acct_system(radiusd_request_t *radreq, int dowtmp)
         }
         
         /* Update radutmp file. */
-        rc = radutmp_putent(radutmp_path, &ut, status);
-        debug(1, ("radutmp_putent=%d for %s/%s",
+        rc = grad_utmp_putent(grad_utmp_file, &ut, status);
+        debug(1, ("grad_utmp_putent=%d for %s/%s",
                   rc,
                   ut.login,
                   ut.session_id));
@@ -384,15 +384,15 @@ disable_system_acct()
 	struct radutmp *up;
 	int written = 0;
 		
-        if ((file = rut_setent(radutmp_path, 0)) == NULL)
+        if ((file = grad_ut_setent(grad_utmp_file, 0)) == NULL)
                 return;
 
-        while (up = rut_getent(file)) {
+        while (up = grad_ut_getent(file)) {
                 switch (up->type) {
 		case P_LOGIN:
                         up->type = P_IDLE;
                         time(&up->time);
-                        rut_putent(file, up);
+                        grad_ut_putent(file, up);
                         /* Add a logout entry to the wtmp file. */
                         write_wtmp(up);
 			break;
@@ -400,7 +400,7 @@ disable_system_acct()
 		case P_ACCT_ENABLED:
 			time(&up->time);
 			up->type = P_ACCT_DISABLED;
-			rut_putent(file, up);
+			grad_ut_putent(file, up);
 			write_wtmp(up);
 			written = 1;
 			break;
@@ -417,9 +417,9 @@ disable_system_acct()
 		memset(&ut, 0, sizeof ut);
 		time(&ut.time);
 		ut.type = P_ACCT_DISABLED;
-		rut_putent(file, &ut);
+		grad_ut_putent(file, &ut);
 	}
-	rut_endent(file);
+	grad_ut_endent(file);
 	grad_log(L_INFO, _("System accounting is disabled"));
 }
 
@@ -429,19 +429,19 @@ enable_system_acct()
         radut_file_t file;
 	struct radutmp *up, ut;
 		
-        if ((file = rut_setent(radutmp_path, 0)) == NULL)
+        if ((file = grad_ut_setent(grad_utmp_file, 0)) == NULL)
                 return;
 
-        while (up = rut_getent(file)) {
+        while (up = grad_ut_getent(file)) {
                 if (up->type == P_ACCT_DISABLED) {
                         up->type = P_ACCT_ENABLED;
                         time(&up->time);
-                        rut_putent(file, up);
+                        grad_ut_putent(file, up);
                         /* Add an entry to the wtmp file. */
                         write_wtmp(up);
                 }
 	}
-	rut_endent(file);
+	grad_ut_endent(file);
 }
 
 void
@@ -498,23 +498,23 @@ check_acct_dir()
 {
         struct stat st;
 
-	if (stat(radacct_dir, &st) == 0) {
+	if (stat(grad_acct_dir, &st) == 0) {
 		if (S_ISDIR(st.st_mode)) {
-			if (access(radacct_dir, W_OK)) {
+			if (access(grad_acct_dir, W_OK)) {
 				grad_log(L_ERR,
 					 _("%s: directory not writable"),
-					 radacct_dir);
+					 grad_acct_dir);
 				return 1;
 			}
 			return 0;
 		} else {
 			grad_log(L_ERR, _("%s: not a directory"),
-				 radacct_dir);
+				 grad_acct_dir);
 			return 1;
 		}
 	}
 
-	if (mkdir_path(radacct_dir, 0755)) 
+	if (mkdir_path(grad_acct_dir, 0755)) 
                 return 1;
         return 0;
 }
@@ -661,7 +661,7 @@ write_detail(radiusd_request_t *radreq, int authtype, int rtype)
 		return 1;
 
 	/* Change to the accounting directory */
-	if (chdir(radacct_dir)) {
+	if (chdir(grad_acct_dir)) {
 		grad_free(filename);
 		return 1;
 	}
@@ -840,10 +840,10 @@ radutmp_mlc_collect_user(char *name, radiusd_request_t *request,
         radut_file_t file;
 	struct radutmp *up;
 		
-        if ((file = rut_setent(radutmp_path, 0)) == NULL)
+        if ((file = grad_ut_setent(grad_utmp_file, 0)) == NULL)
                 return 1;
 
-        while (up = rut_getent(file)) {
+        while (up = grad_ut_getent(file)) {
                 if (strncmp(name, up->login, RUT_NAMESIZE) == 0 &&
                     up->type == P_LOGIN) {
 			struct radutmp *tmp;
@@ -855,7 +855,7 @@ radutmp_mlc_collect_user(char *name, radiusd_request_t *request,
 			grad_list_append(*sess_list, tmp);
                 }
 	}
-	rut_endent(file);
+	grad_ut_endent(file);
 	return 0;
 }
 
@@ -865,10 +865,10 @@ radutmp_mlc_collect_realm(radiusd_request_t *request, grad_list_t **sess_list)
         radut_file_t file;
 	struct radutmp *up;
 		
-        if ((file = rut_setent(radutmp_path, 0)) == NULL)
+        if ((file = grad_ut_setent(grad_utmp_file, 0)) == NULL)
                 return 1;
 
-        while (up = rut_getent(file)) {
+        while (up = grad_ut_getent(file)) {
                 if (up->type == P_LOGIN
 		    && grad_realm_verify_ip(request->realm, up->realm_address)) {
 			struct radutmp *tmp;
@@ -880,7 +880,7 @@ radutmp_mlc_collect_realm(radiusd_request_t *request, grad_list_t **sess_list)
 			grad_list_append(*sess_list, tmp);
                 }
 	}
-	rut_endent(file);
+	grad_ut_endent(file);
 	return 0;
 }
 
@@ -889,7 +889,7 @@ radutmp_mlc_close(struct radutmp *up)
 {
 	up->type = P_IDLE;
 	up->time = time(NULL);
-	radutmp_putent(radutmp_path, up, DV_ACCT_STATUS_TYPE_STOP);
+	grad_utmp_putent(grad_utmp_file, up, DV_ACCT_STATUS_TYPE_STOP);
 }
 
 int

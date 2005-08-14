@@ -1,3 +1,24 @@
+2005-08-13  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS: Updated
+	* configure.ac: Raised version number to 1.3.91
+
+	* lib/Makefile.am (libgnuradius_la_LDFLAGS): Use version script
+	* lib/gnuradius.vers: New file. Version script for libgnuradius.
+	
+	* client/pam_radius/pam_radius.c,include/radius/argcv.h
+	include/radius/radargp.h,include/radius/radius.h,
+	include/radius/radutmp.h,lib/argcv.c,lib/ascend.c,lib/client.c,
+	lib/dict.c,lib/envar.c,lib/iputil.c,lib/leakdetect.c,lib/printutmp.c,
+	lib/radargp.c,lib/raddb.c,lib/radpaths.c,lib/radutmp.c,lib/realms.c,
+	lib/users.l,radiusd/acct.c,radiusd/builddbm.c,radiusd/exec.c,
+	radiusd/files.c,radiusd/log.c,radiusd/menu.c,radiusd/radiusd.c,
+	radiusd/rewrite.y,radiusd/scheme.c,radiusd/sql.c,radiusd/stat.c,
+	radiusd/tsh.c,radiusd/version.c,radlast/radlast.c,radscm/radscm.c,
+	radscm/rscm_utmp.c,radtest/completion.c,radtest/input.l,radtest/main.c,
+	radtest/runtime.c,raduse/raduse.c,radwho/radwho.c,
+	radzap/radzap.c: Namespace normalization
+
 2005-08-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* lib/client.c (grad_client_send0): Fixed invocation of

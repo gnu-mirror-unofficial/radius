@@ -1,5 +1,5 @@
 /* argcv.c - simple functions for parsing input based on whitespace
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,17 @@
 #include <ctype.h>
 #include <errno.h>
 #include <argcv.h>
+
+#define argcv_get             grad_argcv_get
+#define argcv_string          grad_argcv_string
+#define argcv_free            grad_argcv_free
+#define argcv_unquote_char    grad_argcv_unquote_char
+#define argcv_quote_char      grad_argcv_quote_char 
+#define argcv_quoted_length   grad_argcv_quoted_length
+#define argcv_quoted_length_n grad_argcv_quoted_length_n
+#define argcv_unquote_copy    grad_argcv_unquote_copy
+#define argcv_quote_copy      grad_argcv_quote_copy    
+#define argcv_quote_copy_n    grad_argcv_quote_copy_n 
 
 /*
  * takes a string and splits it into several strings, breaking at ' '
@@ -91,7 +102,7 @@ argcv_scan (int len, const char *command, const char *delim, const char* cmnt,
          to the newline and restart the token search. */
       if (*save <= len)
 	{
-	  if (cmnt && strchr (cmnt, command[*start]) != NULL)
+	  if (strchr (cmnt, command[*start]) != NULL)
 	    {
 	      i = *save;
 	      while (i < len && command[i] != '\n')
@@ -159,7 +170,7 @@ argcv_quoted_length_n (const char *str, size_t size, int *quote)
 {
   size_t len = 0;
   const char *end = str + size;
-  
+
   *quote = 0;
   for (; str < end; str++)
     {
@@ -168,7 +179,7 @@ argcv_quoted_length_n (const char *str, size_t size, int *quote)
 	  len++;
 	  *quote = 1;
 	}
-      else if (*str == '"' || *str == '\'')
+      else if (*str == '"')
 	{
 	  len += 2;
 	  *quote = 1;
@@ -204,7 +215,7 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 	case '"':
 	  if (!expect_delim)
 	    {
-	      const char *p;
+	      char *p;
 	      
 	      for (p = src+i+1; *p && *p != src[i]; p++)
 		if (*p == '\\')
@@ -283,7 +294,7 @@ argcv_quote_copy_n (char *dst, const char *src, size_t size)
   const char *end = src + size;
   for (; src < end; src++)
     {
-      if (*src == '"' || *src == '\'')
+      if (*src == '"')
 	{
 	  *dst++ = '\\';
 	  *dst++ = *src;
@@ -314,10 +325,9 @@ argcv_quote_copy (char *dst, const char *src)
 }
 
 int
-argcv_get (const char *command, const char *delim, const char *cmnt,
-	   int *argc, char ***argv)
+argcv_get_n (const char *command, int len, const char *delim, const char *cmnt,
+	     int *argc, char ***argv)
 {
-  int len = strlen (command);
   int i = 0;
   int start, end, save;
 
@@ -327,6 +337,11 @@ argcv_get (const char *command, const char *delim, const char *cmnt,
   *argc = 0;
   save = 0;
 
+  if (!delim)
+    delim = "";
+  if (!cmnt)
+    cmnt = "";
+  
   while (argcv_scan (len, command, delim, cmnt, &start, &end, &save) <= len)
       (*argc)++;
 
@@ -339,6 +354,8 @@ argcv_get (const char *command, const char *delim, const char *cmnt,
   for (i = 0; i < *argc; i++)
     {
       int n;
+      int unquote;
+      
       argcv_scan (len, command, delim, cmnt, &start, &end, &save);
 
       if ((command[start] == '"' || command[end] == '\'')
@@ -346,17 +363,32 @@ argcv_get (const char *command, const char *delim, const char *cmnt,
 	{
 	  start++;
 	  end--;
+	  unquote = 0;
 	}
+      else
+	unquote = 1;
+      
       n = end - start + 1;
       (*argv)[i] = calloc (n+1,  sizeof (char));
       if ((*argv)[i] == NULL)
 	return ENOMEM;
-      argcv_unquote_copy ((*argv)[i], &command[start], n);
+      if (unquote)
+	argcv_unquote_copy ((*argv)[i], &command[start], n);
+      else
+	memcpy ((*argv)[i], &command[start], n);
       (*argv)[i][n] = 0;
     }
   (*argv)[i] = NULL;
   return 0;
 }
+
+int
+argcv_get (const char *command, const char *delim, const char *cmnt,
+	   int *argc, char ***argv)
+{
+  return argcv_get_n (command, strlen (command), delim, cmnt, argc, argv);
+}
+
 
 /*
  * frees all elements of an argv array

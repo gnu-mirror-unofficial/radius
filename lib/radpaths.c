@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -23,50 +23,50 @@
 #endif
 #include <common.h>
 
-char    *radius_dir;
-char    *radlog_dir;
-char    *radacct_dir;
-char    *radutmp_path;
-char    *radwtmp_path;
-char    *radstat_path;
-char    *radmsgid_path;
-char    *radpid_dir;
-char    *bug_report_address = "bug-gnu-radius@gnu.org";
+char    *grad_config_dir;
+char    *grad_log_dir;
+char    *grad_acct_dir;
+char    *grad_utmp_file;
+char    *grad_wtmp_file;
+char    *grad_stat_file;
+char    *grad_msgid_file;
+char    *grad_pid_dir;
+char    *grad_bug_report_address = "bug-gnu-radius@gnu.org";
 
 void
 grad_path_init()
 {
-        if (!radius_dir)
-                radius_dir = grad_estrdup(RADIUS_DIR);
-        if (!radlog_dir)
-                radlog_dir = grad_estrdup(RADLOG_DIR);
-        if (!radacct_dir)
-                radacct_dir = grad_estrdup(RADACCT_DIR);
-        if (!radpid_dir)
-                radpid_dir = grad_estrdup(RADPID_DIR);
+        if (!grad_config_dir)
+                grad_config_dir = grad_estrdup(RADIUS_DIR);
+        if (!grad_log_dir)
+                grad_log_dir = grad_estrdup(RADLOG_DIR);
+        if (!grad_acct_dir)
+                grad_acct_dir = grad_estrdup(RADACCT_DIR);
+        if (!grad_pid_dir)
+                grad_pid_dir = grad_estrdup(RADPID_DIR);
 
-        grad_free(radutmp_path);
-        radutmp_path = grad_mkfilename(radlog_dir, RADUTMP);
+        grad_free(grad_utmp_file);
+        grad_utmp_file = grad_mkfilename(grad_log_dir, RADUTMP);
 
-        grad_free(radwtmp_path);
-        radwtmp_path = grad_mkfilename(radlog_dir, RADWTMP);
+        grad_free(grad_wtmp_file);
+        grad_wtmp_file = grad_mkfilename(grad_log_dir, RADWTMP);
 
-        grad_free(radstat_path);
-        radstat_path = grad_mkfilename(radlog_dir, RADSTAT);
+        grad_free(grad_stat_file);
+        grad_stat_file = grad_mkfilename(grad_log_dir, RADSTAT);
 
-	grad_free(radmsgid_path);
-	radmsgid_path = grad_mkfilename(radlog_dir, RADMSGID);
+	grad_free(grad_msgid_file);
+	grad_msgid_file = grad_mkfilename(grad_log_dir, RADMSGID);
 }
 
 void
 grad_path_free()
 {
-	grad_destroy((void**)&radius_dir);
-	grad_destroy((void**)&radlog_dir);
-	grad_destroy((void**)&radacct_dir);
-	grad_destroy((void**)&radutmp_path);
-	grad_destroy((void**)&radwtmp_path);
-	grad_destroy((void**)&radstat_path);
-	grad_destroy((void**)&radmsgid_path);
-	grad_destroy((void**)&radpid_dir);
+	grad_destroy((void**)&grad_config_dir);
+	grad_destroy((void**)&grad_log_dir);
+	grad_destroy((void**)&grad_acct_dir);
+	grad_destroy((void**)&grad_utmp_file);
+	grad_destroy((void**)&grad_wtmp_file);
+	grad_destroy((void**)&grad_stat_file);
+	grad_destroy((void**)&grad_msgid_file);
+	grad_destroy((void**)&grad_pid_dir);
 }

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -194,8 +194,8 @@ scheme_redirect_output()
 		if (scheme_outfile[0] == '/')
 			filename = grad_estrdup(scheme_outfile);
 		else
-			filename = grad_mkfilename(radlog_dir ?
-						   radlog_dir : RADLOG_DIR,
+			filename = grad_mkfilename(grad_log_dir ?
+						   grad_log_dir : RADLOG_DIR,
 						   scheme_outfile);
 		fd = open(filename, O_RDWR|O_CREAT|O_APPEND, 0600);
 		if (fd == -1) {

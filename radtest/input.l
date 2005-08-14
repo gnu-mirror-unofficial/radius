@@ -1,7 +1,7 @@
 %x STRING HEREDOC
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -240,7 +240,7 @@ set{WS}.*\n {
 	char **argv;
 	char *p;
 	
-	argcv_get(yytext, "", NULL, &argc, &argv);
+	grad_argcv_get(yytext, "", NULL, &argc, &argv);
 	for (i = 0; i < argc; i++) 
 		add_str(argv[i], strlen(argv[i])+1);
 
@@ -251,7 +251,7 @@ set{WS}.*\n {
 	obstack_ptr_grow(&string_stk, p);
 	yylval.set.argc = argc;
 	yylval.set.argv = obstack_finish(&string_stk);
-	argcv_free(argc, argv);
+	grad_argcv_free(argc, argv);
 	if (yytext[yyleng-2] == '\\')
 		yyless(yyleng-2);
 	else

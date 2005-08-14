@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -71,7 +71,7 @@ grad_read_raddb_file(char *filename, int vital, char *delim,
 		}
 		if (lineptr[0] == 0)
 			continue;
-                if (argcv_get(lineptr, delim, NULL, &argc, &argv) == 0) {
+                if (grad_argcv_get(lineptr, delim, NULL, &argc, &argv) == 0) {
                         int n;
                         for (n = 0; n < argc && argv[n][0] != '#'; n++)
                                 ;
@@ -79,7 +79,7 @@ grad_read_raddb_file(char *filename, int vital, char *delim,
                                 fun(closure, n, argv, &loc);
                 }
                 if (argv)
-                        argcv_free(argc, argv);
+                        grad_argcv_free(argc, argv);
         }
 
         if (lineptr)

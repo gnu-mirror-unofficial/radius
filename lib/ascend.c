@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -631,8 +631,8 @@ _ascend_parse_filter(const char *input, ASCEND_FILTER *flt, char **errp)
 	int rc;
 
 	*errp = NULL;
-	if (argcv_get(input, "/", NULL, &pb.tokc, &pb.tokv)) {
-		argcv_free(pb.tokc, pb.tokv);
+	if (grad_argcv_get(input, "/", NULL, &pb.tokc, &pb.tokv)) {
+		grad_argcv_free(pb.tokc, pb.tokv);
 		asprintf(errp, _("Failed to tokenize"));
 		return 1;
 	}
@@ -641,7 +641,7 @@ _ascend_parse_filter(const char *input, ASCEND_FILTER *flt, char **errp)
 	pb.flt = flt;
 	pb.errmsg = errp;
 	rc = _ascend_parse(&pb);
-	argcv_free(pb.tokc, pb.tokv);
+	grad_argcv_free(pb.tokc, pb.tokv);
 	if (rc && !*errp) 
 		asprintf(errp, _("Malformed attribute value"));
 	return rc;

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ _parse_server_list(grad_server_queue_t *qp, char *str, struct _parse_data *pd)
 	int i, argc;
 	char **argv;
 
-	if (argcv_get(str, ",:", NULL, &argc, &argv)) 
+	if (grad_argcv_get(str, ",:", NULL, &argc, &argv)) 
 		return 1;
 
 	for (i = 0; i < argc; i++) {
@@ -80,11 +80,11 @@ _parse_server_list(grad_server_queue_t *qp, char *str, struct _parse_data *pd)
 			grad_log_loc(L_ERR, pd->loc,
 				     _("expected , but found %s"),
 				     argv[i]);
-			argcv_free(argc, argv);
+			grad_argcv_free(argc, argv);
 			return 1;
 		}
 	}
-	argcv_free(argc, argv);
+	grad_argcv_free(argc, argv);
 	return 0;
 }
 

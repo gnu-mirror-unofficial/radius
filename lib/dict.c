@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -827,7 +827,7 @@ parse_dict(char *name)
 	if (name[0] == '/')
 		path = grad_estrdup(name);
 	else
-		path = grad_mkfilename(radius_dir, name);
+		path = grad_mkfilename(grad_config_dir, name);
 	debug(1,("parsing %s", path));
         rc = grad_read_raddb_file(path, 1, NULL, parse_dict_entry, &pd);
 	if (pd.vendor) {

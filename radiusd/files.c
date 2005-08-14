@@ -1149,7 +1149,7 @@ read_deny_file()
         int denycnt;
         char *name;
         
-        name = grad_mkfilename(radius_dir, RADIUS_DENY);
+        name = grad_mkfilename(grad_config_dir, RADIUS_DENY);
         if (deny_tab)
                 grad_symtab_clear(deny_tab);
         else
@@ -1696,7 +1696,7 @@ reload_data(enum reload_what what, int *do_radck)
 
         case reload_users:
                 grad_symtab_clear(user_tab);
-                path = grad_mkfilename(radius_dir, RADIUS_USERS);
+                path = grad_mkfilename(grad_config_dir, RADIUS_USERS);
         
 #if USE_DBM
                 if (use_dbm && radius_mode != MODE_BUILDDBM) {
@@ -1739,14 +1739,14 @@ reload_data(enum reload_what what, int *do_radck)
                 
         case reload_huntgroups:
                 grad_list_destroy(&huntgroups, matching_rule_free, NULL);
-                path = grad_mkfilename(radius_dir, RADIUS_HUNTGROUPS);
+                path = grad_mkfilename(grad_config_dir, RADIUS_HUNTGROUPS);
                 huntgroups = file_read(GRAD_CF_HUNTGROUPS, path);
                 grad_free(path);
                 break;
                 
         case reload_hints:
                 grad_list_destroy(&hints, matching_rule_free, NULL);
-                path = grad_mkfilename(radius_dir, RADIUS_HINTS);
+                path = grad_mkfilename(grad_config_dir, RADIUS_HINTS);
                 hints = file_read(GRAD_CF_HINTS, path);
                 grad_free(path);
                 if (!use_dbm) 
@@ -1754,7 +1754,7 @@ reload_data(enum reload_what what, int *do_radck)
                 break;
                 
         case reload_clients:
-                path = grad_mkfilename(radius_dir, RADIUS_CLIENTS);
+                path = grad_mkfilename(grad_config_dir, RADIUS_CLIENTS);
                 if (read_clients_file(path) < 0)
                         rc = 1;
                 grad_free(path);
@@ -1762,19 +1762,19 @@ reload_data(enum reload_what what, int *do_radck)
 
         case reload_naslist:
                 /*FIXME*/
-		path = grad_mkfilename(radius_dir, RADIUS_NASTYPES);
+		path = grad_mkfilename(grad_config_dir, RADIUS_NASTYPES);
                 read_nastypes_file(path);
                 grad_free(path);
                 /*EMXIF*/
 
-                path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
+                path = grad_mkfilename(grad_config_dir, RADIUS_NASLIST);
                 if (read_naslist_file(path) < 0)
                         rc = 1;
                 grad_free(path);
                 break;
 
         case reload_realms:
-                path = grad_mkfilename(radius_dir, RADIUS_REALMS);
+                path = grad_mkfilename(grad_config_dir, RADIUS_REALMS);
                 if (grad_read_realms(path, auth_port, acct_port,
 				     realm_set_secret) < 0)
                         rc = 1;
@@ -1870,7 +1870,7 @@ void
 dump_users_db()
 {
         FILE *fp;
-        char *name = grad_mkfilename(radlog_dir, RADIUS_DUMPDB_NAME);
+        char *name = grad_mkfilename(grad_log_dir, RADIUS_DUMPDB_NAME);
         
         fp = fopen(name, "w");
         if (!fp) {

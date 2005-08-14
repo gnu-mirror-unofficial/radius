@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -60,30 +60,30 @@ shmem_alloc(size_t size)
 	int init = 0;
 
 	if (tempfd == -1) {
-		tempfd = open(radstat_path, O_RDWR);
+		tempfd = open(grad_stat_file, O_RDWR);
 		if (tempfd == -1) {
 			if (errno == ENOENT) 
-				tempfd = open(radstat_path,
+				tempfd = open(grad_stat_file,
 					      O_RDWR|O_CREAT|O_TRUNC,
 					      statfile_perms);
 			
 			if (tempfd == -1) {
 				grad_log(L_ERR|L_PERROR, 
 					 _("can't open file `%s'"),
-				         radstat_path);
+				         grad_stat_file);
 				return -1;
 			}
 		}
 		if (fstat(tempfd, &sb)) {
 			grad_log(L_ERR|L_PERROR, _("can't stat `%s'"),
-			         radstat_path);
+			         grad_stat_file);
 			close(tempfd);
 			return -1;
 		}
 		if ((sb.st_mode & statfile_perms) != statfile_perms) {
 			grad_log(L_ERR,
 			         _("SNMP system disabled: file `%s' has incorrect permissions"),
-			       radstat_path);
+			       grad_stat_file);
 			close(tempfd);
 			return -1;
 		}
@@ -515,11 +515,11 @@ stat_cfg_file(int argc, cfg_value_t *argv,
 		return 0;
 	}
 
-	grad_free(radstat_path);
+	grad_free(grad_stat_file);
 	if (argv[1].v.string[0] != '/')
-		radstat_path = grad_estrdup(argv[1].v.string);
+		grad_stat_file = grad_estrdup(argv[1].v.string);
 	else
-		radstat_path = grad_mkfilename(radlog_dir, argv[1].v.string); 
+		grad_stat_file = grad_mkfilename(grad_log_dir, argv[1].v.string); 
 	
 	return 0;
 }

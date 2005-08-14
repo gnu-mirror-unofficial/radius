@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2001,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -128,7 +128,7 @@ builddbm(char *name)
 
         if (!name)
                 name = "users";
-        db_file = grad_mkfilename(radius_dir, name);
+        db_file = grad_mkfilename(grad_config_dir, name);
 
         /*
          *      Initialize a new, empty database.
@@ -351,7 +351,7 @@ user_find_db(char *name, radiusd_request_t *req,
         DBM_FILE        dbmfile;
         int             fallthru;
         
-        path = grad_mkfilename(radius_dir, RADIUS_USERS);
+        path = grad_mkfilename(grad_config_dir, RADIUS_USERS);
         if (grad_dbm_open(path, &dbmfile)) {
                 grad_log(L_ERR, _("cannot open dbm file %s"), path);
                 grad_free(path);

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -185,7 +185,7 @@ radius_exec_command(char *cmd)
                 int argc;
                 char **argv;
 
-                argcv_get(cmd, "", NULL, &argc, &argv);
+                grad_argcv_get(cmd, "", NULL, &argc, &argv);
 
 		/* Leave open only stderr */
                 for (n = grad_max_fd(); n > 2; n--)
@@ -284,7 +284,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
 
                 debug(1, ("command line: %s", cmd));
 
-                argcv_get(cmd, "", NULL, &argc, &argv);
+                grad_argcv_get(cmd, "", NULL, &argc, &argv);
                 
                 if (exec_wait) {
                         if (close(p[0]))
@@ -780,7 +780,7 @@ free_symbol_entry(Filter *filter)
 {
 	grad_free(filter->descr[R_AUTH].input_fmt);
 	grad_free(filter->descr[R_ACCT].input_fmt);
-	argcv_free(filter->argc, filter->argv);
+	grad_argcv_free(filter->argc, filter->argv);
 	grad_free(filter->errfile);
 	if (filter->pid > 0)
 		filter_close(filter);
@@ -873,9 +873,9 @@ exec_path_handler(int argc, cfg_value_t *argv,
 		return 0;
 	}
 	
-	if (argcv_get(argv[1].v.string, "", NULL,
+	if (grad_argcv_get(argv[1].v.string, "", NULL,
 		      &filter_symbol.argc, &filter_symbol.argv)) {
-		argcv_free(filter_symbol.argc, filter_symbol.argv);
+		grad_argcv_free(filter_symbol.argc, filter_symbol.argv);
 		filter_symbol.argc = 0;
 	}
 	return 0;
@@ -900,7 +900,7 @@ error_log_handler(int argc, cfg_value_t *argv,
 	else if (argv[1].v.string[0] == '/')
 		filter_symbol.errfile = argv[1].v.string;
 	else {
-		char *p = grad_mkfilename(radlog_dir, argv[1].v.string);
+		char *p = grad_mkfilename(grad_log_dir, argv[1].v.string);
 		filter_symbol.errfile = cfg_malloc(strlen(p)+1, NULL);
 		strcpy(filter_symbol.errfile, p);
 		grad_free(p);

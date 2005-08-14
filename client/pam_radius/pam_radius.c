@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -264,7 +264,7 @@ _pam_parse(pam_handle_t *pamh, int argc, const char **argv)
                 else if (!strncmp(*argv,"confdir=",8)) 
                         MAKE_STR(pamh, *argv+8, radius_confdir);
 		else if (!strncmp(*argv,"utmpdir=",8))
-			MAKE_STR(pamh, *argv+8, radlog_dir);
+			MAKE_STR(pamh, *argv+8, grad_log_dir);
                 else if (!strncmp(*argv,"service_type=",13)) 
                         MAKE_STR(pamh, *argv+13, service_type);
                 else {
@@ -348,7 +348,7 @@ _pam_init_radius_client(pam_handle_t *pamh)
         
         DEBUG(100,("enter _pam_init_radius_client"));
 
-        radius_dir = radius_confdir;
+        grad_config_dir = radius_confdir;
         grad_path_init();
         if (grad_dict_init()) {
                 _pam_log(LOG_CRIT, "grad_dict_init failed");
@@ -546,12 +546,12 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 	switch (ut->type) {
 	case P_LOGIN:
 		type = DV_ACCT_STATUS_TYPE_START;
-		radutmp_putent(radutmp_path, ut, type);
+		grad_utmp_putent(grad_utmp_file, ut, type);
 		break;
 
 	case P_IDLE:
 		type = DV_ACCT_STATUS_TYPE_STOP;
-		radutmp_putent(radutmp_path, ut, type);
+		grad_utmp_putent(grad_utmp_file, ut, type);
 		grad_avl_add_pair(&pairs,
 				  grad_avp_create_integer(DA_ACCT_SESSION_TIME,
 							  ut->duration));

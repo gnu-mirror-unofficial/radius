@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -279,7 +279,7 @@ radtest_command_completion(char *text, int start, int end)
 		memcpy(buf, rl_line_buffer, start);
 		buf[start-1] = 0;
 		
-		rc = argcv_get(buf, "=", "#", &argc, &argv);
+		rc = grad_argcv_get(buf, "=", "#", &argc, &argv);
 
 		grad_free(buf);
 		

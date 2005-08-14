@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -37,7 +37,7 @@
 
 #include <common.h>
 
-int resolve_hostnames = 1;
+int grad_resolve_hostnames = 1;
 
 /*
  * Check for valid IP address in standard dot notation.
@@ -78,7 +78,7 @@ grad_ip_gethostname(grad_uint32_t ipaddr, char *namebuf, size_t size)
         
         n_ipaddr = htonl(ipaddr);
         hp = (struct hostent *) NULL;
-        if (resolve_hostnames) 
+        if (grad_resolve_hostnames) 
                 hp = grad_gethostbyaddr_r((char *)&n_ipaddr,
 					  sizeof (struct in_addr), AF_INET,
 					  &hent, buffer, sizeof buffer,

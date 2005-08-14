@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -183,7 +183,7 @@ version(FILE *stream, struct argp_state *state)
         fprintf(stream, _(" logging directory:       %s\n"), RADLOG_DIR);
         fprintf(stream, _(" accounting directory:    %s\n"), RADACCT_DIR);
         fprintf(stream, _(" pidfile directory:       %s\n"), RADPID_DIR);
-        fprintf(stream, _("\nReport bugs to <%s>\n"), bug_report_address);
+        fprintf(stream, _("\nReport bugs to <%s>\n"), grad_bug_report_address);
         exit(0);
 }
 

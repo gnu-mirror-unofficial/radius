@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -57,10 +57,10 @@ dump(time_t t)
 	FILE *fp;
 	char *fname;
 	
-	if (!radlog_dir)
+	if (!grad_log_dir)
 		return;
 	asprintf(&fname, "%s/radmem.%lu",
-		 radlog_dir, (unsigned long) getpid());
+		 grad_log_dir, (unsigned long) getpid());
 	fp = fopen(fname, "w");
 	if (!fp) 
 		grad_log(L_ERR|L_PERROR, "cannot open file %s", fname);

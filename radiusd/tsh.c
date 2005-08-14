@@ -474,11 +474,11 @@ tsh_run_command(char *cmd)
 		cmd++;
 	if (!cmd || cmd[0] == '#')
 		return;
-	if (argcv_get(cmd, "=", NULL, &argc, &argv) == 0) {
+	if (grad_argcv_get(cmd, "=", NULL, &argc, &argv) == 0) {
 		grad_add_history(cmd);
 		tsh_run_function(argc, argv, cmd);
 	}
-	argcv_free(argc, argv);
+	grad_argcv_free(argc, argv);
 }
 
 int

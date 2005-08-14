@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -59,7 +59,7 @@ grad_client_message_id(grad_server_t *server)
 	int fd;
 	unsigned id;
 	
-	fd = open(radmsgid_path, O_RDWR|O_CREAT, PERM);
+	fd = open(grad_msgid_file, O_RDWR|O_CREAT, PERM);
 	if (fd != -1) {
 		struct stat st;
 		
@@ -473,7 +473,7 @@ grad_client_create_queue(int read_cfg, grad_uint32_t source_ip, size_t bufsize)
         client->servers = 0;
 
         if (read_cfg) {
-                filename = grad_mkfilename(radius_dir, "client.conf");
+                filename = grad_mkfilename(grad_config_dir, "client.conf");
                 grad_read_raddb_file(filename, 1, NULL,
                                      parse_client_config, client);
                 grad_free(filename);

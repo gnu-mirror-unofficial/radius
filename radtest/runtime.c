@@ -1172,7 +1172,7 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		result->datum.number = node->v.gopt.last != EOF;
 
 		if (node->v.gopt.last == EOF) 
-			argcv_free(node->v.gopt.argc, node->v.gopt.argv);
+			grad_argcv_free(node->v.gopt.argc, node->v.gopt.argv);
 
 		node->v.gopt.var->type = rtv_string;
 		grad_free(node->v.gopt.var->datum.string);

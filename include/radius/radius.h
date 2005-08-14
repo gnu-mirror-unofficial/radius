@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -309,15 +309,15 @@ struct grad_matching_rule {
 
 /* External variables */
 
-extern char *radius_dir;
-extern char *radlog_dir;
-extern char *radacct_dir;
-extern char *radutmp_path;
-extern char *radwtmp_path;
-extern char *radstat_path;
-extern char *radmsgid_path;
-extern char *radpid_dir;
-extern char *bug_report_address;
+extern char *grad_config_dir;
+extern char *grad_log_dir;
+extern char *grad_acct_dir;
+extern char *grad_utmp_file;
+extern char *grad_wtmp_file;
+extern char *grad_stat_file;
+extern char *grad_msgid_file;
+extern char *grad_pid_dir;
+extern char *grad_bug_report_address;
 
 /* Parser */
 extern grad_locus_t grad_parser_source_locus;
@@ -394,7 +394,7 @@ int grad_avp_cmp(grad_avp_t *a, grad_avp_t *b);
 int grad_avl_cmp(grad_avp_t *a, grad_avp_t *b, int prop);
 int grad_avp_null_string_p(grad_avp_t *pair);
 	
-extern int resolve_hostnames;
+extern int grad_resolve_hostnames;
 
 char *grad_ip_gethostname (grad_uint32_t, char *buf, size_t size);
 grad_uint32_t grad_ip_gethostaddr (const char *);

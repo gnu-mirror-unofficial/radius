@@ -425,7 +425,7 @@ sqllog(int status, char *msg, ...)
         char *filename;
 
         filename = status ? "sql-lost" : "sql.log";
-        path = grad_mkfilename(radacct_dir, filename);
+        path = grad_mkfilename(grad_acct_dir, filename);
         if ((fp = fopen(path, "a")) == NULL) {
                 grad_log(L_ERR|L_PERROR,  
                          _("could not append to file %s"), path);
@@ -540,8 +540,8 @@ register_channel(Channel *chan)
 
         if (chan->mode == LM_FILE) {
                 if (strcmp(chan->id.file, "stdout")) {
-                        filename = grad_mkfilename(radlog_dir ?
-						   radlog_dir : RADLOG_DIR,
+                        filename = grad_mkfilename(grad_log_dir ?
+						   grad_log_dir : RADLOG_DIR,
 						   chan->id.file);
                         
                         /* check the accessibility of the file */

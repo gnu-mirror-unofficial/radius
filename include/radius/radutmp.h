@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
 
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -81,18 +81,18 @@ PORT_STAT * findportbyindex(int ind);
 
 typedef struct _radut_file *radut_file_t;
 
-radut_file_t rut_setent(char *name, int append);
-void rut_endent(radut_file_t file);
-struct radutmp *rut_getent(radut_file_t file);
-int rut_putent(radut_file_t file, struct radutmp *ent);
-void rut_rewind(radut_file_t file);
+radut_file_t grad_ut_setent(char *name, int append);
+void grad_ut_endent(radut_file_t file);
+struct radutmp *grad_ut_getent(radut_file_t file);
+int grad_ut_putent(radut_file_t file, struct radutmp *ent);
+void grad_ut_rewind(radut_file_t file);
 
 #define PUTENT_SUCCESS 0
 #define PUTENT_NOENT   1
 #define PUTENT_UPDATE  2
 
-int radutmp_putent(char *filename, struct radutmp *ut, int status);
-int radwtmp_putent(char *filename, struct radutmp *ut);
+int grad_utmp_putent(char *filename, struct radutmp *ut, int status);
+int grad_radwtmp_putent(char *filename, struct radutmp *ut);
 
 typedef struct format_data format_data_t;
 
@@ -101,9 +101,9 @@ format_data_t *grad_radutent_compile_form(char *fmt);
 void grad_utent_print_header(format_data_t *form);
 format_data_t *grad_utent_compile_form(char *fmt);
 
-extern int printutmp_ip_nodomain; /* do not display domain names */
-extern int printutmp_use_naslist; /* use naslist when displaying nas names */
-extern char *printutmp_date_format;
-extern char *printutmp_empty_string;
+extern int grad_printutmp_ip_nodomain; /* do not display domain names */
+extern int grad_printutmp_use_naslist; /* use naslist when displaying nas names */
+extern char *grad_printutmp_date_format;
+extern char *grad_printutmp_empty_string;
 
 #endif /* !_gnu_radius_radutmp_h */

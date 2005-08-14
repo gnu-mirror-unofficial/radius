@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -221,7 +221,7 @@ static struct argp argp = {
         parse_opt,
         NULL,
         doc,
-        rad_common_argp_child,
+        grad_common_argp_child,
         NULL, NULL
 };
 
@@ -263,7 +263,7 @@ int
 read_naslist()
 {
         int rc;
-        char *path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
+        char *path = grad_mkfilename(grad_config_dir, RADIUS_NASLIST);
         rc = grad_nas_read_file(path);
         grad_free(path);
         return rc;

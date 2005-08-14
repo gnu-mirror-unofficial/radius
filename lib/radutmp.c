@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -38,7 +38,7 @@ struct _radut_file {
 };
 
 radut_file_t
-rut_setent(char *name, int append)
+grad_ut_setent(char *name, int append)
 {
         int fd;
         int ro = 0;
@@ -50,7 +50,7 @@ rut_setent(char *name, int append)
         }
         if (fd == -1) {
                 grad_log(L_ERR|L_PERROR, 
-                         _("rut_setent(): cannot open `%s'"), name);
+                         _("grad_ut_setent(): cannot open `%s'"), name);
                 return NULL;
         }
         fp = grad_emalloc(sizeof(*fp));
@@ -63,14 +63,14 @@ rut_setent(char *name, int append)
 }
 
 void
-rut_rewind(radut_file_t file)
+grad_ut_rewind(radut_file_t file)
 {
         lseek(file->fd, 0, SEEK_SET);
         file->eof = 0;
 }
 
 void
-rut_endent(radut_file_t file)
+grad_ut_endent(radut_file_t file)
 {
         if (!file)
                 return;
@@ -79,7 +79,7 @@ rut_endent(radut_file_t file)
 }
 
 struct radutmp *
-rut_getent(radut_file_t file)
+grad_ut_getent(radut_file_t file)
 {
         int rc;
         
@@ -93,11 +93,11 @@ rut_getent(radut_file_t file)
 }
 
 int
-rut_putent(radut_file_t file, struct radutmp *ent)
+grad_ut_putent(radut_file_t file, struct radutmp *ent)
 {
         if (file->readonly) {
                 grad_log(L_ERR,
-			 "rut_putent(%s): file opened readonly",
+			 "grad_ut_putent(%s): file opened readonly",
 			 file->name);
                 return -1;
         }
@@ -108,14 +108,14 @@ rut_putent(radut_file_t file, struct radutmp *ent)
 		size = lseek(file->fd, 0, SEEK_END);
 		if (size < 0) {
 			grad_log(L_ERR|L_PERROR, 
-				 "rut_putent(%s): lseek",
+				 "grad_ut_putent(%s): lseek",
 				 file->name);
 			grad_unlock_file(file->fd, sizeof(*ent), 0, SEEK_END);
 			return -1;
 		}
 		if (size % sizeof (*ent)) {
 			grad_log(L_CRIT,
-				 "rut_putent(%s): File size is not a multiple of radutmp entry size",
+				 "grad_ut_putent(%s): File size is not a multiple of radutmp entry size",
 				 file->name);
 			grad_unlock_file(file->fd, sizeof(*ent), 0, SEEK_END);
 			return -1;
@@ -125,7 +125,7 @@ rut_putent(radut_file_t file, struct radutmp *ent)
 		if (!file->eof &&
 		    lseek(file->fd, -(off_t)sizeof(file->ut), SEEK_CUR) < 0) {
 			grad_log(L_ERR|L_PERROR, 
-				 "rut_putent(%s): lseek",
+				 "grad_ut_putent(%s): lseek",
 				 file->name);
 			lseek(file->fd, (off_t)0, SEEK_SET);
 			return -1;
@@ -136,7 +136,7 @@ rut_putent(radut_file_t file, struct radutmp *ent)
 	
         if (write(file->fd, ent, sizeof(*ent)) != sizeof(*ent)) {
                 grad_log(L_ERR|L_PERROR, 
-                         "rut_putent(%s): write",
+                         "grad_ut_putent(%s): write",
 			 file->name);
 		grad_lock_file(file->fd, sizeof(*ent), 0, SEEK_CUR);
 		return -1;
@@ -152,18 +152,18 @@ rut_putent(radut_file_t file, struct radutmp *ent)
 }
         
 int
-radutmp_putent(char *filename, struct radutmp *ut, int status)
+grad_utmp_putent(char *filename, struct radutmp *ut, int status)
 {
         radut_file_t file;
         struct radutmp *ent;
         char ipbuf[GRAD_IPV4_STRING_LENGTH];
         int rc = PUTENT_SUCCESS;
 
-        if ((file = rut_setent(filename, 0)) == NULL)
+        if ((file = grad_ut_setent(filename, 0)) == NULL)
                 return PUTENT_NOENT;
 
         /* find matching entry */
-        while ((ent = rut_getent(file)) != NULL &&
+        while ((ent = grad_ut_getent(file)) != NULL &&
                (ent->nas_address != ut->nas_address ||
                 ent->nas_port    != ut->nas_port))
                 /* nothing */;
@@ -236,23 +236,23 @@ radutmp_putent(char *filename, struct radutmp *ut, int status)
                 }
                 break;
         }
-        rut_putent(file, ut);
-        rut_endent(file);
+        grad_ut_putent(file, ut);
+        grad_ut_endent(file);
         return rc;
 }
         
 int
-radwtmp_putent(char *filename, struct radutmp *ut)
+grad_radwtmp_putent(char *filename, struct radutmp *ut)
 {
         radut_file_t file;
                 
-        file = rut_setent(filename, 1);
+        file = grad_ut_setent(filename, 1);
         if (file == NULL) {
-                grad_log(L_ERR|L_PERROR, _("can't open %s"), radwtmp_path);
+                grad_log(L_ERR|L_PERROR, _("can't open %s"), grad_wtmp_file);
                 return 1;
         }
-        rut_putent(file, ut);
-        rut_endent(file);
+        grad_ut_putent(file, ut);
+        grad_ut_endent(file);
         return 0;
 }
 

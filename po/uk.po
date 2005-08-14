@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.3\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2005-05-18 15:12+0300\n"
+"POT-Creation-Date: 2005-08-12 14:59+0300\n"
 "PO-Revision-Date: 2005-01-14 16:41+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
@@ -52,7 +52,7 @@ msgstr "помилка отримання даних з %s:%d"
 msgid "unknown keyword"
 msgstr "невідоме ключове слово"
 
-#: lib/client.c:411 radiusd/files.c:939 radiusd/files.c:1134
+#: lib/client.c:411 radiusd/files.c:937 radiusd/files.c:1132
 msgid "wrong number of fields"
 msgstr "невірна кількість полів"
 
@@ -77,7 +77,7 @@ msgstr "Неправильне значення кількості повтор�
 msgid "compiled without debugging support"
 msgstr "скомпільовано без підтримки налагодження"
 
-#: lib/dict.c:122 lib/nas.c:54 radiusd/files.c:1042
+#: lib/dict.c:122 lib/nas.c:54 radiusd/files.c:1040
 msgid "too few fields"
 msgstr "занадто мало полів"
 
@@ -228,15 +228,15 @@ msgstr "%s: опція `-W %s' не може мати аргументу\n"
 msgid "low core: aborting"
 msgstr "Немає більше пам'яті: виконання перервано"
 
-#: lib/raddb.c:50 lib/raddb.c:54 radiusd/rewrite.y:1283 radiusd/rewrite.y:2875
+#: lib/raddb.c:50 lib/raddb.c:54 radiusd/rewrite.y:1292 radiusd/rewrite.y:2879
 #: radiusd/scheme.c:203 radiusd/stat.c:72
 #, c-format
 msgid "can't open file `%s'"
 msgstr "не вдається відкрити файл '%s'"
 
 #: lib/radutmp.c:53
-#, c-format
-msgid "rut_setent(): cannot open `%s'"
+#, fuzzy, c-format
+msgid "grad_ut_setent(): cannot open `%s'"
 msgstr "rut_setent(): не вдається відкрити '%s'"
 
 #: lib/radutmp.c:191
@@ -261,31 +261,31 @@ msgstr ""
 msgid "logout: login entry for NAS %s port %d not found"
 msgstr "вихід: не знайдено запису входу для NASу %s, порту %d"
 
-#: lib/radutmp.c:251 radiusd/acct.c:675
+#: lib/radutmp.c:251 radiusd/acct.c:674
 #, c-format
 msgid "can't open %s"
 msgstr "не вдається відкрити %s"
 
-#: lib/users.l:133
+#: lib/users.l:135
 msgid "not enough memory"
 msgstr "недостатньо пам'яті"
 
-#: lib/users.l:230 radiusd/config.y:856 radiusd/stat.c:78
+#: lib/users.l:232 radiusd/config.y:856 radiusd/stat.c:78
 #, c-format
 msgid "can't stat `%s'"
 msgstr "помилка при stat(%s)"
 
-#: lib/users.l:243
+#: lib/users.l:245
 #, c-format
 msgid "`%s' already included here"
 msgstr "%s вже включений тут"
 
-#: lib/users.l:246
+#: lib/users.l:248
 #, c-format
 msgid "`%s' already included at top level"
 msgstr "'%s' вже включений на вищому рівні"
 
-#: lib/users.l:253 radiusd/builddbm.c:141
+#: lib/users.l:255 radiusd/builddbm.c:141
 #, c-format
 msgid "can't open `%s'"
 msgstr "не вдається відкрити '%s'"
@@ -295,7 +295,7 @@ msgstr "не вдається відкрити '%s'"
 msgid "discarding user `%s'"
 msgstr "відкидання користувача %s"
 
-#: lib/users.y:210 radiusd/rewrite.y:1856 gram.y:660 gram.y:840
+#: lib/users.y:210 radiusd/rewrite.y:1865 gram.y:660 gram.y:840
 #: radtest/gram.y:660 radtest/gram.y:840
 #, c-format
 msgid "unknown attribute `%s'"
@@ -333,7 +333,7 @@ msgstr "Увімкнуто налагодження файлу raddb/users"
 msgid "disabled userfile parser debugging"
 msgstr "Вимкнуто налагодження файлу raddb/users"
 
-#: lib/util.c:251
+#: lib/util.c:245
 #, c-format
 msgid "string too long: %s"
 msgstr "рядок надто довгий: %s"
@@ -438,8 +438,8 @@ msgstr "невірна кількість аргументів для форми
 msgid "form `%s' not closed"
 msgstr "форму '%s' не закрито"
 
-#: lib/radargp.c:41 radiusd/radiusd.c:52 radiusd/radiusd.c:60
-#: radiusd/radiusd.c:70
+#: lib/radargp.c:41 radiusd/radiusd.c:57 radiusd/radiusd.c:71
+#: radiusd/radiusd.c:77
 msgid "DIR"
 msgstr "КАТАЛОГ"
 
@@ -546,7 +546,7 @@ msgstr "%s не є каталогом"
 msgid "Detailed accounting is disabled"
 msgstr "Деталізований облік вимкнено"
 
-#: radiusd/acct.c:597 radiusd/radutil.c:488
+#: radiusd/acct.c:595 radiusd/radutil.c:487
 msgid "wrong return type"
 msgstr "невірний тип повернення"
 
@@ -655,7 +655,7 @@ msgstr "За межами дозволеного інтервалу часу (%s
 msgid "external check failed: "
 msgstr "Зовнішня перевірка не вдалася: "
 
-#: radiusd/auth.c:1247
+#: radiusd/auth.c:1245
 msgid "Login OK"
 msgstr "Успішний вхід"
 
@@ -842,9 +842,9 @@ msgstr "seteuid(0) вдалася, хоча не повинна була"
 msgid "cannot drop non-root setuid privileges"
 msgstr "неможливо позбавитися прав setuid"
 
-#: radiusd/exec.c:174 radiusd/exec.c:265
-#, c-format
-msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
+#: radiusd/exec.c:174
+#, fuzzy, c-format
+msgid "radius_exec_command(): won't execute, not an absolute pathname: %s"
 msgstr ""
 "radius_exec_program(): неможливо виконати '%s': назва файлу повинна бути "
 "абсолютною"
@@ -853,11 +853,11 @@ msgstr ""
 msgid "can't reset SIGCHLD"
 msgstr "неможливо встановити обробку SIGCHLD"
 
-#: radiusd/exec.c:221 radiusd/exec.c:356
+#: radiusd/exec.c:221 radiusd/exec.c:351
 msgid "can't restore SIGCHLD"
 msgstr "неможливо відновити обробку SIGCHLD"
 
-#: radiusd/exec.c:228 radiusd/exec.c:363
+#: radiusd/exec.c:228 radiusd/exec.c:358
 #, c-format
 msgid ""
 "can't run external program `%s' (reason reported via syslog channel user.err)"
@@ -865,64 +865,71 @@ msgstr ""
 "не можна виконати зовнішню програму '%s' (про причину повідомлено через "
 "канал syslog user.err)"
 
-#: radiusd/exec.c:239 radiusd/exec.c:372
+#: radiusd/exec.c:239 radiusd/exec.c:367
 #, c-format
 msgid "external program `%s' %s"
 msgstr "Зовнішня програма '%s' %s"
+
+#: radiusd/exec.c:265
+#, c-format
+msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
+msgstr ""
+"radius_exec_program(): неможливо виконати '%s': назва файлу повинна бути "
+"абсолютною"
 
 #: radiusd/exec.c:272
 msgid "couldn't open pipe"
 msgstr "Неможливо відкрити канал"
 
-#: radiusd/exec.c:298 radiusd/exec.c:332
+#: radiusd/exec.c:292 radiusd/exec.c:327
 msgid "can't close pipe"
 msgstr "не вдається закрити канал"
 
-#: radiusd/exec.c:300
+#: radiusd/exec.c:295
 msgid "can't dup stdout"
 msgstr "не можна здублювати stdout"
 
-#: radiusd/exec.c:344 radiusd/exec.c:710
+#: radiusd/exec.c:339 radiusd/exec.c:705
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<вихід з %s>:%d: %s"
 
-#: radiusd/exec.c:505
+#: radiusd/exec.c:500
 #, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
 msgstr "фільтр %s (pid %d) %s (вхід: %u, вихід: %u)"
 
-#: radiusd/exec.c:559
+#: radiusd/exec.c:554
 #, c-format
 msgid "filter %s is not declared"
 msgstr "фільтр %s не заявлений"
 
-#: radiusd/exec.c:576
+#: radiusd/exec.c:571
 #, c-format
 msgid "cannot run filter %s"
 msgstr "не можна запустити фільтр %s"
 
-#: radiusd/exec.c:594
+#: radiusd/exec.c:589
 #, c-format
 msgid "filter %s"
 msgstr "фільтр %s"
 
-#: radiusd/exec.c:697 radiusd/exec.c:752
+#: radiusd/exec.c:692 radiusd/exec.c:747
 #, c-format
 msgid "reading from filter %s"
 msgstr "читання з фільтру %s"
 
-#: radiusd/exec.c:719
+#: radiusd/exec.c:714
 #, c-format
 msgid "filter %s (auth): bad output: %s"
 msgstr "фільтр %s (ідентифікація): хибний вихід: %s"
 
-#: radiusd/exec.c:763 radiusd/exec.c:769
+#: radiusd/exec.c:758 radiusd/exec.c:764
 #, c-format
 msgid "filter %s (acct): bad output: %s"
 msgstr "фільтр %s (облік): хибний вихід: %s"
 
-#: radiusd/exec.c:840
+#: radiusd/exec.c:835
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: фільтр вже заявлений у %s:%d"
@@ -962,20 +969,25 @@ msgstr "grad_create_pair не вдалася для %s"
 
 # FIXME: foo() не заявлена
 #        (бо "функція")
-#: radiusd/files.c:614
+#: radiusd/files.c:613
 msgid "not defined"
 msgstr "не заявлена"
 
-#: radiusd/files.c:1055
+#: radiusd/files.c:651
+#, fuzzy, c-format
+msgid "cannot execute `%s'"
+msgstr "не вдається відкрити файл меню '%s'"
+
+#: radiusd/files.c:1053
 msgid "unknown method"
 msgstr "невідомий метод"
 
-#: radiusd/files.c:1139
+#: radiusd/files.c:1137
 #, c-format
 msgid "user `%s' already found in %s"
 msgstr "користувача '%s' вже знайдено в %s"
 
-#: radiusd/files.c:1165
+#: radiusd/files.c:1163
 #, c-format
 msgid "%d user disabled"
 msgid_plural "%d users disabled"
@@ -983,40 +995,40 @@ msgstr[0] "вимкнено %d користувача"
 msgstr[1] "вимкнено %d користувачів"
 msgstr[2] "вимкнено %d користувачів"
 
-#: radiusd/files.c:1707
+#: radiusd/files.c:1705
 msgid "using only dbm: USERS NOT LOADED"
 msgstr "використання тільки DBM: ФАЙЛ USERS НЕ ЗАВАНТАЖЕНО"
 
-#: radiusd/files.c:1715
+#: radiusd/files.c:1713
 msgid "DBM files found but no -b flag given - NOT using DBM"
 msgstr ""
 "Знайдено файли DBM, але не подано опції -b: ВИМКНЕНО користування з DBM"
 
-#: radiusd/files.c:1719
+#: radiusd/files.c:1717
 #, c-format
 msgid "can't load %s: exited"
 msgstr "не вдається завантажити %s: завершення."
 
-#: radiusd/files.c:1722
+#: radiusd/files.c:1720
 #, c-format
 msgid "%s reloaded."
 msgstr "%s завантажено."
 
-#: radiusd/files.c:1793
+#: radiusd/files.c:1791
 msgid "SQL Error: SQL client could not be initialized"
 msgstr "Помилка SQL: не вдалося ініціалізувати клієнта SQL"
 
-#: radiusd/files.c:1809
+#: radiusd/files.c:1807
 #, c-format
 msgid "INTERNAL ERROR: unknown reload code: %d"
 msgstr "ВНУТРІШНЯ ПОМИЛКА: Хибний код завершення: %d"
 
-#: radiusd/files.c:1880
+#: radiusd/files.c:1878
 #, c-format
 msgid "can't create parser output file `%s'"
 msgstr "не вдається створити файл виводу аналізатора '%s'"
 
-#: radiusd/files.c:1894
+#: radiusd/files.c:1892
 #, c-format
 msgid "dumped users database to %s"
 msgstr "скидання бази користувачів до файлу %s"
@@ -1099,17 +1111,17 @@ msgstr "інформація"
 msgid "debug"
 msgstr "налагодження"
 
-#: radiusd/log.c:425
+#: radiusd/log.c:431
 #, c-format
 msgid "could not append to file %s"
 msgstr "Не можна додати до файлу '%s'."
 
-#: radiusd/log.c:505
+#: radiusd/log.c:511
 #, c-format
 msgid "%s: cannot change owner to %d:%d"
 msgstr "%s: не можу змінити власника на %d:%d"
 
-#: radiusd/log.c:545
+#: radiusd/log.c:551
 #, c-format
 msgid "can't access log file `%s'"
 msgstr "немає доступу до файлу журналу %s"
@@ -1117,43 +1129,43 @@ msgstr "немає доступу до файлу журналу %s"
 #. TRANSLATORS: the subject will always be printed before this msgid.
 #. for example: "child 222 exited with status 0"
 #.
-#: radiusd/log.c:650
+#: radiusd/log.c:656
 #, c-format
 msgid "exited with status %d"
 msgstr "завершився зі статусом %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:655
+#: radiusd/log.c:661
 #, c-format
 msgid "terminated on signal %d"
 msgstr "отримав сигнал %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:659
+#: radiusd/log.c:665
 #, c-format
 msgid "terminated"
 msgstr "завершився"
 
-#: radiusd/log.c:774
+#: radiusd/log.c:780
 #, c-format
 msgid "%s:%d: no channel mode for `%s'"
 msgstr "%s:%d: немає режиму для каналу '%s'"
 
-#: radiusd/log.c:937
+#: radiusd/log.c:943
 msgid "no levels applicable for this category"
 msgstr "немає рівнів, придатних до цієї категорії"
 
-#: radiusd/log.c:963
+#: radiusd/log.c:969
 #, c-format
 msgid "%s:%d: channel `%s' not defined"
 msgstr "%s:%d: канал '%s' не визначено"
 
-#: radiusd/log.c:1007 radiusd/snmpserv.c:345
+#: radiusd/log.c:1013 radiusd/snmpserv.c:345
 #, c-format
 msgid "%s:%d: list item %d has wrong datatype"
 msgstr "%s:%d: елемент списку %d має невірний тип даних"
 
-#: radiusd/log.c:1023
+#: radiusd/log.c:1029
 #, c-format
 msgid "%s:%d: no such module name: %s"
 msgstr "%s:%d: немає такої назви модуля: %s"
@@ -1315,110 +1327,118 @@ msgstr "використані правила: %s"
 msgid "GNU radius daemon"
 msgstr "демон GNU radius"
 
-#: radiusd/radiusd.c:49
+#: radiusd/radiusd.c:50
 msgid "radiusd specific switches:"
 msgstr "опції особливі для radiusd:"
 
-#: radiusd/radiusd.c:51
-msgid "Do detailed authentication logging"
-msgstr "Увімкнути деталізоване протоколювання ідентифікацій"
-
-#: radiusd/radiusd.c:53
-msgid "Set accounting directory"
-msgstr "Встановити обліковий каталог"
-
-#: radiusd/radiusd.c:56
-msgid "Enable DBM support"
-msgstr "Увімкнути підтримку DBM"
-
-#: radiusd/radiusd.c:59
+#: radiusd/radiusd.c:52
 msgid "Stay in foreground"
 msgstr "Лишатися на передньому плані"
 
-#: radiusd/radiusd.c:61
-msgid "Set logging directory name"
-msgstr "Встановити каталог журналів"
-
-#: radiusd/radiusd.c:63
+#: radiusd/radiusd.c:54
 msgid "Select operation mode: test, checkconf, builddbm."
 msgstr "Вибір режиму роботи: test, checkconf, builddbm."
 
-#: radiusd/radiusd.c:65
-msgid "Do not resolve IP addresses"
-msgstr "Не визначати назви хостів"
-
-#: radiusd/radiusd.c:66 radlast/radlast.c:126
-msgid "IPADDR"
-msgstr "IP-АДРЕСА"
-
-#: radiusd/radiusd.c:67
-msgid "Listen on IPADDR"
-msgstr "Слухати на IP адресі"
-
-#: radiusd/radiusd.c:69
-msgid "Set authentication port number"
-msgstr "Встановити номер порту ідентифікації"
-
-#: radiusd/radiusd.c:71
-msgid "Store pidfile in DIR"
-msgstr "Записати файл PID до КАТАЛОГу"
-
-#: radiusd/radiusd.c:73
-msgid "Strip prefixes/suffixes off user names before logging"
-msgstr "Усувати префікси/суфікси з назв користувачів перед записом до журналу"
-
-#: radiusd/radiusd.c:75
+#: radiusd/radiusd.c:56
 msgid "Run in single process mode"
 msgstr "Запуститися у режимі поодинокого процесу"
 
-#: radiusd/radiusd.c:76
-msgid "DEBUGSPEC"
-msgstr "СПЕЦ-НАЛАГОДЖЕННЯ"
+#: radiusd/radiusd.c:58
+msgid "Store pidfile in DIR"
+msgstr "Записати файл PID до КАТАЛОГу"
 
-#: radiusd/radiusd.c:77 radiusd/tsh.c:89
-msgid "Set debugging level"
-msgstr "Встановити рівень налагодження"
-
-#: radiusd/radiusd.c:79
-msgid "Log authentications"
-msgstr "Вести журнал ідентифікацій"
-
-#: radiusd/radiusd.c:81
-msgid "Log users' passwords"
-msgstr "Виводити до журналу паролі користувачів"
-
-#: radiusd/radiusd.c:83
+#: radiusd/radiusd.c:60
 msgid "Show compilation defaults"
 msgstr "Вивести типові параметри компіляції"
 
-#: radiusd/radiusd.c:209
+#: radiusd/radiusd.c:62
+msgid "Quiet mode (valid only with --mode)"
+msgstr ""
+
+#: radiusd/radiusd.c:66
+msgid "Daemon configuration options. Please use raddb/config instead."
+msgstr ""
+
+#: radiusd/radiusd.c:70
+msgid "Do detailed authentication logging"
+msgstr "Увімкнути деталізоване протоколювання ідентифікацій"
+
+#: radiusd/radiusd.c:72
+msgid "Set accounting directory"
+msgstr "Встановити обліковий каталог"
+
+#: radiusd/radiusd.c:75
+msgid "Enable DBM support"
+msgstr "Увімкнути підтримку DBM"
+
+#: radiusd/radiusd.c:78
+msgid "Set logging directory name"
+msgstr "Встановити каталог журналів"
+
+#: radiusd/radiusd.c:80
+msgid "Do not resolve IP addresses"
+msgstr "Не визначати назви хостів"
+
+#: radiusd/radiusd.c:81 radlast/radlast.c:126
+msgid "IPADDR"
+msgstr "IP-АДРЕСА"
+
+#: radiusd/radiusd.c:82
+msgid "Listen on IPADDR"
+msgstr "Слухати на IP адресі"
+
+#: radiusd/radiusd.c:84
+msgid "Set authentication port number"
+msgstr "Встановити номер порту ідентифікації"
+
+#: radiusd/radiusd.c:86
+msgid "Strip prefixes/suffixes off user names before logging"
+msgstr "Усувати префікси/суфікси з назв користувачів перед записом до журналу"
+
+#: radiusd/radiusd.c:87
+msgid "DEBUGSPEC"
+msgstr "СПЕЦ-НАЛАГОДЖЕННЯ"
+
+#: radiusd/radiusd.c:88 radiusd/tsh.c:89
+msgid "Set debugging level"
+msgstr "Встановити рівень налагодження"
+
+#: radiusd/radiusd.c:90
+msgid "Log authentications"
+msgstr "Вести журнал ідентифікацій"
+
+#: radiusd/radiusd.c:92
+msgid "Log users' passwords"
+msgstr "Виводити до журналу паролі користувачів"
+
+#: radiusd/radiusd.c:221
 msgid "radiusd compiled without DBM support"
 msgstr "radiusd скомпільовано без підтримки DBM"
 
-#: radiusd/radiusd.c:219
+#: radiusd/radiusd.c:231
 #, c-format
 msgid "unknown mode: %s"
 msgstr "невідомий режим: %s"
 
-#: radiusd/radiusd.c:231
+#: radiusd/radiusd.c:243
 #, c-format
 msgid "invalid IP address: %s"
 msgstr "невірна IP адреса: %s"
 
-#: radiusd/radiusd.c:291
+#: radiusd/radiusd.c:307
 msgid "Sorry, your account is currently closed\n"
 msgstr "Вибачте, ваш рахунок наразі заблоковано\n"
 
-#: radiusd/radiusd.c:293
+#: radiusd/radiusd.c:309
 msgid "Password has expired\n"
 msgstr "Пароль вже не дійсний\n"
 
 # FIXME: ngettext!!!
-#: radiusd/radiusd.c:295
+#: radiusd/radiusd.c:311
 msgid "Password will expire in %R{Password-Expire-Days} Days\n"
 msgstr "Пароль стратить дійсність за %R{Password-Expire-Days} днів\n"
 
-#: radiusd/radiusd.c:297
+#: radiusd/radiusd.c:313
 msgid ""
 "\n"
 "Access denied\n"
@@ -1426,7 +1446,7 @@ msgstr ""
 "\n"
 "Доступ заборонено\n"
 
-#: radiusd/radiusd.c:299
+#: radiusd/radiusd.c:315
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
@@ -1434,7 +1454,7 @@ msgstr ""
 "\n"
 "перевищено обмеження на кількість входів для області - доступ заборонено\n"
 
-#: radiusd/radiusd.c:301
+#: radiusd/radiusd.c:317
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
@@ -1442,7 +1462,7 @@ msgstr ""
 "\n"
 "Ви маєте %R{Simultaneous-Use} відкритих сесій - доступ заборонено\n"
 
-#: radiusd/radiusd.c:303
+#: radiusd/radiusd.c:319
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
@@ -1450,15 +1470,15 @@ msgstr ""
 "\n"
 "Ви вже увійшли до системи - доступ заборонено\n"
 
-#: radiusd/radiusd.c:305
+#: radiusd/radiusd.c:321
 msgid "You are calling outside your allowed timespan\n"
 msgstr "Спроба входу поза дозволеним інтервалом часу\n"
 
-#: radiusd/radiusd.c:343
+#: radiusd/radiusd.c:359
 msgid "Terminating the subprocesses"
 msgstr "Закінчення процесів-нащадків"
 
-#: radiusd/radiusd.c:355
+#: radiusd/radiusd.c:371
 #, c-format
 msgid "%d process left!"
 msgid_plural "%d processes left!"
@@ -1466,83 +1486,83 @@ msgstr[0] "залишився %d процес"
 msgstr[1] "залишилося %d процеси"
 msgstr[2] "залишилося %d процесів"
 
-#: radiusd/radiusd.c:381
+#: radiusd/radiusd.c:397
 msgid "Radiusd is not listening on any port."
 msgstr "Radiusd не слухає жодного порту."
 
-#: radiusd/radiusd.c:385
+#: radiusd/radiusd.c:401
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
 msgstr "Radiusd не слухає жодного порту. Виконання все одно продовжується..."
 
-#: radiusd/radiusd.c:441
+#: radiusd/radiusd.c:457
 msgid "Starting"
 msgstr "Запускаємось"
 
-#: radiusd/radiusd.c:463
+#: radiusd/radiusd.c:479
 msgid "Ready"
 msgstr "Готовий"
 
-#: radiusd/radiusd.c:556
+#: radiusd/radiusd.c:572
 msgid "can't find out my own IP address"
 msgstr "не вдається визначити власну IP адресу"
 
-#: radiusd/radiusd.c:663
+#: radiusd/radiusd.c:679
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD ПРИЗУПИНЕНО"
 
-#: radiusd/radiusd.c:693
+#: radiusd/radiusd.c:709
 msgid "Reloading configuration now"
 msgstr "Завантаження головного конфігураційного файлу"
 
-#: radiusd/radiusd.c:705
+#: radiusd/radiusd.c:721
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "скидання бази користувачів до файлу '%s'"
 
-#: radiusd/radiusd.c:762
+#: radiusd/radiusd.c:778
 msgid "restart initiated"
 msgstr "розпочато перезапуск"
 
-#: radiusd/radiusd.c:765
+#: radiusd/radiusd.c:781
 msgid "can't restart: not started as absolute pathname"
 msgstr "не можна перезапуститись: назва програми не є абсолютною назвою"
 
-#: radiusd/radiusd.c:777
+#: radiusd/radiusd.c:793
 msgid "radiusd_restart: cannot fork"
 msgstr "radiusd_restart: fork() не вдалася"
 
-#: radiusd/radiusd.c:792
+#: radiusd/radiusd.c:808
 msgid "restarting radius"
 msgstr "перезапуск radiusd"
 
-#: radiusd/radiusd.c:794
+#: radiusd/radiusd.c:810
 msgid "RADIUS NOT RESTARTED: exec failed"
 msgstr "RADIUSD НЕ ПЕРЕЗАПУЩЕНО: exec() не вдалася"
 
-#: radiusd/radiusd.c:831
+#: radiusd/radiusd.c:847
 msgid "Normal shutdown."
 msgstr "Нормальне завершення роботи"
 
 # FIXME
-#: radiusd/radiusd.c:847
+#: radiusd/radiusd.c:863
 msgid "Ready to process requests."
 msgstr "Готовий до обслуговування запитань"
 
-#: radiusd/radiusd.c:936
+#: radiusd/radiusd.c:952
 msgid "Loading configuration files."
 msgstr "Завантаження конфігураційних файлів"
 
-#: radiusd/radiusd.c:946
+#: radiusd/radiusd.c:962
 msgid "Errors reading config file - EXITING"
 msgstr "Помилка при читанні файлу config - ЗАВЕРШЕННЯ РОБОТИ"
 
 # FIXME: до?
-#: radiusd/radiusd.c:1118
+#: radiusd/radiusd.c:1134
 #, c-format
 msgid "socket %s:%d is already assigned for %s"
 msgstr "гніздо %s:%d вже призначено для %s"
 
-#: radiusd/radiusd.c:1295
+#: radiusd/radiusd.c:1311
 msgid "Ignoring exec-program-user"
 msgstr "exec-program-user іґнорується"
 
@@ -1550,6 +1570,11 @@ msgstr "exec-program-user іґнорується"
 #, c-format
 msgid "INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"
 msgstr "ВНУТРІШНЯ ПОМИЛКА (%s:%d): атрибуту %d має невірний тип (%d)"
+
+#: radiusd/radutil.c:536
+#, fuzzy, c-format
+msgid "cannot convert \"%s\" to integer"
+msgstr "не вдається перетворити %s %s"
 
 #: radiusd/request.c:222
 #, c-format
@@ -1596,234 +1621,234 @@ msgstr "занадто багато запитань цього типу"
 msgid "Maximum number of children active"
 msgstr "Осягнуто максимальну кількість активних процесів-нащадків"
 
-#: radiusd/rewrite.y:838 gram.y:396 radtest/gram.y:396
+#: radiusd/rewrite.y:840 gram.y:396 radtest/gram.y:396
 #, c-format
 msgid "redefinition of function `%s'"
 msgstr "перевизначення функції '%s'"
 
-#: radiusd/rewrite.y:840 radiusd/rewrite.y:5593
+#: radiusd/rewrite.y:842 radiusd/rewrite.y:5712
 msgid "previously defined here"
 msgstr "місце попереднього визначення"
 
-#: radiusd/rewrite.y:1026
+#: radiusd/rewrite.y:1028
 msgid "nothing to break from"
 msgstr "нема чого переривати"
 
-#: radiusd/rewrite.y:1040
+#: radiusd/rewrite.y:1042
 msgid "nothing to continue"
 msgstr "нема чого продовжувати"
 
-#: radiusd/rewrite.y:1109
+#: radiusd/rewrite.y:1118
 #, c-format
 msgid "undefined variable: %s"
 msgstr "невизначена змінна: %s"
 
-#: radiusd/rewrite.y:1600
+#: radiusd/rewrite.y:1609
 #, c-format
 msgid "unexpected EOF in comment started at line %lu"
 msgstr "Неочікуваний кінець файлу у коментарі що розпочався у стрічці %lu"
 
 # FIXME: прагма=прагматичний коментар?
-#: radiusd/rewrite.y:1661
+#: radiusd/rewrite.y:1670
 msgid "Malformed pragma"
 msgstr "Невірно сформована прагма"
 
-#: radiusd/rewrite.y:1675
+#: radiusd/rewrite.y:1684
 #, c-format
 msgid "Unknown regexp flag: %s"
 msgstr "Невідома ознака регулярного виразу: %s"
 
-#: radiusd/rewrite.y:1812
+#: radiusd/rewrite.y:1821
 msgid "unterminated character constant"
 msgstr "%s:%d: незавершена символьна константа"
 
 # FIXME: Хмм...
-#: radiusd/rewrite.y:2549
+#: radiusd/rewrite.y:2553
 #, c-format
 msgid "%s implicit coercion %s %s"
 msgstr "%s неявне перетворення %s %s"
 
-#: radiusd/rewrite.y:2614
+#: radiusd/rewrite.y:2618
 msgid "operation not applicable to strings"
 msgstr "Операція не є придатною до символьних рядків"
 
-#: radiusd/rewrite.y:2718 radiusd/rewrite.y:2784
+#: radiusd/rewrite.y:2722 radiusd/rewrite.y:2788
 #, c-format
 msgid "(argument %d)"
 msgstr "(аргумент %d)"
 
 # FIXME
 # 	
-#: radiusd/rewrite.y:2733 radiusd/rewrite.y:2795
+#: radiusd/rewrite.y:2737 radiusd/rewrite.y:2799
 #, c-format
 msgid "too many arguments in call to %s"
 msgstr "занадто багато аргументів у виклику %s"
 
 # FIXME
-#: radiusd/rewrite.y:2738 radiusd/rewrite.y:2800
+#: radiusd/rewrite.y:2742 radiusd/rewrite.y:2804
 #, c-format
 msgid "too few arguments in call to %s"
 msgstr "занадто мало аргументів у виклику %s"
 
-#: radiusd/rewrite.y:2826 radiusd/tsh.c:248
+#: radiusd/rewrite.y:2830 radiusd/tsh.c:247
 #, c-format
 msgid "Undefined"
 msgstr "Невизначений тип"
 
-#: radiusd/rewrite.y:2828 radtest/runtime.c:757
+#: radiusd/rewrite.y:2832 radtest/runtime.c:757
 msgid "integer"
 msgstr "ціле число"
 
-#: radiusd/rewrite.y:2830 radtest/runtime.c:759
+#: radiusd/rewrite.y:2834 radtest/runtime.c:759
 msgid "string"
 msgstr "символьний рядок"
 
-#: radiusd/rewrite.y:2832
+#: radiusd/rewrite.y:2836
 msgid "UNKNOWN"
 msgstr "НЕВІДОМИЙ"
 
-#: radiusd/rewrite.y:2841
+#: radiusd/rewrite.y:2845
 msgid "from Undefined"
 msgstr "з невизначеного типу"
 
-#: radiusd/rewrite.y:2843
+#: radiusd/rewrite.y:2847
 msgid "from integer"
 msgstr "з цілого числа"
 
-#: radiusd/rewrite.y:2845
+#: radiusd/rewrite.y:2849
 msgid "from string"
 msgstr "з символьного рядка"
 
-#: radiusd/rewrite.y:2847
+#: radiusd/rewrite.y:2851
 msgid "from UNKNOWN"
 msgstr "з НЕВІДОМОГО ТИПУ"
 
-#: radiusd/rewrite.y:2856
+#: radiusd/rewrite.y:2860
 msgid "to Undefined"
 msgstr "до невизначеного типу"
 
-#: radiusd/rewrite.y:2858 radtest/runtime.c:770
+#: radiusd/rewrite.y:2862 radtest/runtime.c:770
 msgid "to integer"
 msgstr "до цілого числа"
 
-#: radiusd/rewrite.y:2860 radtest/runtime.c:772
+#: radiusd/rewrite.y:2864 radtest/runtime.c:772
 msgid "to string"
 msgstr "до символьного рядка"
 
-#: radiusd/rewrite.y:2862
+#: radiusd/rewrite.y:2866
 msgid "to UNKNOWN"
 msgstr "до НЕВІДОМОГО ТИПУ"
 
 # FIXME
-#: radiusd/rewrite.y:3184
+#: radiusd/rewrite.y:3188
 msgid "missing return statement"
 msgstr "вираз return відсутній"
 
-#: radiusd/rewrite.y:3333 radiusd/rewrite.y:3343
+#: radiusd/rewrite.y:3339 radiusd/rewrite.y:3349
 msgid "divide by zero"
 msgstr "ділення на нуль"
 
-#: radiusd/rewrite.y:3966
+#: radiusd/rewrite.y:3973
 #, c-format
 msgid "regexp error: %s"
 msgstr "помилка регулярного виразу: %s"
 
-#: radiusd/rewrite.y:4014
+#: radiusd/rewrite.y:4021
 msgid "out of pushdown space"
 msgstr "переповнення стеку"
 
-#: radiusd/rewrite.y:4029 radiusd/rewrite.y:4056
+#: radiusd/rewrite.y:4036 radiusd/rewrite.y:4067
 msgid "heap overrun"
 msgstr "переповнення купи"
 
-#: radiusd/rewrite.y:4081
+#: radiusd/rewrite.y:4092
 msgid "out of heap space"
 msgstr "не вистачає пам'яті у купі"
 
-#: radiusd/rewrite.y:4107 radiusd/rewrite.y:4136
+#: radiusd/rewrite.y:4120 radiusd/rewrite.y:4162
 msgid "out of popup"
 msgstr "стек порожній"
 
-#: radiusd/rewrite.y:4201 radiusd/rewrite.y:4211
+#: radiusd/rewrite.y:4218 radiusd/rewrite.y:4228
 msgid "rewrite runtime error"
 msgstr "помилка виконання rewrite"
 
-#: radiusd/rewrite.y:4308
+#: radiusd/rewrite.y:4325
 msgid "no request supplied"
 msgstr "потрібне запитання"
 
 # А/З = атрибут/значення
-#: radiusd/rewrite.y:4341
+#: radiusd/rewrite.y:4360
 msgid "can't create A/V pair"
 msgstr "не вдається створити пару А/З"
 
-#: radiusd/rewrite.y:4626 radiusd/rewrite.y:4642
+#: radiusd/rewrite.y:4657 radiusd/rewrite.y:4673
 msgid "division by zero!"
 msgstr "ділення на нуль!"
 
-#: radiusd/rewrite.y:4833
+#: radiusd/rewrite.y:4880
 #, c-format
 msgid "rewrite regex failure: %s. Input: %s"
 msgstr "rewrite: помилка регулярного виразу: %s. Вхідні дані: %s"
 
-#: radiusd/rewrite.y:4884
+#: radiusd/rewrite.y:4931
 msgid "pc out of range"
 msgstr "вказівник pc за межами діапазону"
 
-#: radiusd/rewrite.y:5322
+#: radiusd/rewrite.y:5386
 msgid "Invalid backreference"
 msgstr "Неправильне зворотне посилання"
 
-#: radiusd/rewrite.y:5351 radiusd/rewrite.y:5387
+#: radiusd/rewrite.y:5422 radiusd/rewrite.y:5464
 msgid "regexp compile error: "
 msgstr "помилка компіляції регулярного виразу: "
 
-#: radiusd/rewrite.y:5357
+#: radiusd/rewrite.y:5428
 msgid "gsub: not enough memory"
 msgstr "gsub: недостатньо пам'яті"
 
-#: radiusd/rewrite.y:5393
+#: radiusd/rewrite.y:5470
 msgid "sub: not enough memory"
 msgstr "sub: недостатньо пам'яті"
 
-#: radiusd/rewrite.y:5591
+#: radiusd/rewrite.y:5710
 #, c-format
 msgid "redefinition of function %s"
 msgstr "Перевизначення функції %s"
 
-#: radiusd/rewrite.y:5647
+#: radiusd/rewrite.y:5766
 #, c-format
 msgid "function %s not defined"
 msgstr "функцію %s не визначено"
 
-#: radiusd/rewrite.y:5651
+#: radiusd/rewrite.y:5770
 #, c-format
 msgid "function %s returns wrong data type"
 msgstr "функція %s повертає невірний тип даних"
 
-#: radiusd/rewrite.y:5659
+#: radiusd/rewrite.y:5778
 #, c-format
 msgid "function %s takes too many arguments"
 msgstr "функція %s бере забагато аргументів"
 
-#: radiusd/rewrite.y:5666
+#: radiusd/rewrite.y:5785
 #, c-format
 msgid "function %s: argument %d must be integer"
 msgstr "функція %s: аргумент %d має бути цілим числом"
 
-#: radiusd/rewrite.y:5675
+#: radiusd/rewrite.y:5794
 #, c-format
 msgid "function %s: argument %d must be string"
 msgstr "функція %s: аргумент %d має бути символьним рядком"
 
-#: radiusd/rewrite.y:5688
+#: radiusd/rewrite.y:5807
 #, c-format
 msgid "function %s takes too few arguments"
 msgstr "функція %s бере недостатньо аргументів"
 
 # FIXME [1]?
 # 	
-#: radiusd/rewrite.y:5875
+#: radiusd/rewrite.y:5993
 #, c-format
 msgid "function %s() requires %d parameter"
 msgid_plural "function %s() requires %d parameters"
@@ -1831,24 +1856,24 @@ msgstr[0] "функція %s потребує %d аргументу"
 msgstr[1] "функція %s потребує %d аргументів"
 msgstr[2] "функція %s потребує %d аргументів"
 
-#: radiusd/rewrite.y:6032
+#: radiusd/rewrite.y:6150
 #, c-format
 msgid "file not found: %s"
 msgstr "Файл не знайдено: %s"
 
-#: radiusd/rewrite.y:6161
+#: radiusd/rewrite.y:6287
 msgid "function ~S not defined"
 msgstr "функція ~S не визначена"
 
-#: radiusd/rewrite.y:6176
+#: radiusd/rewrite.y:6303
 msgid "too many arguments for ~S"
 msgstr "занадто багато аргументів для ~S"
 
-#: radiusd/rewrite.y:6203
+#: radiusd/rewrite.y:6330
 msgid "type mismatch in argument ~S(~S) in call to ~S"
 msgstr "невірний тип аргументу ~S(~S) у виклику функції ~S"
 
-#: radiusd/rewrite.y:6213
+#: radiusd/rewrite.y:6340
 msgid "too few arguments for ~S"
 msgstr "занадто мало аргументів для ~S"
 
@@ -2278,7 +2303,7 @@ msgstr "Вивести запитання"
 msgid "Quit the shell"
 msgstr "Вихід з оболонки"
 
-#: radiusd/tsh.c:162 radiusd/tsh.c:201 radiusd/tsh.c:225 radiusd/tsh.c:263
+#: radiusd/tsh.c:162 radiusd/tsh.c:201 radiusd/tsh.c:224 radiusd/tsh.c:263
 #: radiusd/tsh.c:283 radiusd/tsh.c:328
 #, c-format
 msgid "%s: wrong number of arguments\n"

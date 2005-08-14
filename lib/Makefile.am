@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
 #      
 # Written by Sergey Poznyakoff
 #
@@ -63,6 +63,7 @@ util.c
 localedir = $(datadir)/locale
 
 libgnuradius_la_LIBADD = @LTLIBOBJS@
+libgnuradius_la_LDFLAGS = --version-info 0:0:0 -Wl,--version-script=$(srcdir)/gnuradius.vers
 
 AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\" @PATHFLAGS@
 
@@ -75,7 +76,7 @@ EXTRA_DIST=users.y users.l strncasecmp.c strerror.c \
 	   vasprintf.c snprintf.c strcspn.c strtok_r.c localtime_r.c \
            argp-ba.c argp-eexst.c argp-fmtstream.c argp-fs-xinl.c \
            argp-help.c argp-parse.c argp-pv.c argp-pvh.c argp-xinl.c pin.c \
-           strchrnul.c strndup.c strnlen.c
+           strchrnul.c strndup.c strnlen.c gnuradius.vers
 
 noinst_HEADERS=users_gram.h rx.h regexp.h getopt.h snprintf.h \
                argp-fmtstream.h argp-namefrob.h argp.h

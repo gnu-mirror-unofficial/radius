@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <string.h>
 #include <common.h>
+#include <radargp.h>
 
 #define SP(p) ((p)?(p):"")
 

@@ -45,8 +45,7 @@ strerror(int err)
 #else
 
 char *
-strerror(err)
-        int err;
+strerror(int err)
 {
         static char buf[80];
 

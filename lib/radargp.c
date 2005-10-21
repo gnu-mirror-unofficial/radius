@@ -35,7 +35,7 @@
 #include <argp.h>
 #include <common.h>
 
-const char *argp_program_bug_address = "<bug-gnu-radius@gnu.org>";
+const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 
 static struct argp_option rad_common_argp_option[] = {
         {"directory", 'd', N_("DIR"), 0,

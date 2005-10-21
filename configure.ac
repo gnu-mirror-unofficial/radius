@@ -34,6 +34,14 @@ AC_SUBST(RADIUS_PID)
 AC_SUBST(RADIUS_INCLUDE_PATH)
 RADIUS_INCLUDE_PATH='-I$(top_builddir) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)/include/radius -I$(top_srcdir)/include/radius'
 
+dnl Library versioning
+VI_CURRENT=1
+VI_REVISION=0
+VI_AGE=0
+AC_SUBST(VI_CURRENT)
+AC_SUBST(VI_REVISION)
+AC_SUBST(VI_AGE)
+
 ## * Checks for programs.
 AC_PROG_CC
 AM_PROG_CC_STDC
@@ -165,11 +173,11 @@ CPPLAGS="$CPPLAGS $INCLUDEPATH"
 
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(argp.h fcntl.h malloc.h strings.h\
+AC_CHECK_HEADERS(fcntl.h malloc.h strings.h\
  sys/file.h sys/time.h sys/types.h unistd.h\
  ctype.h sys/socket.h socket.h netinet/in.h arpa/inet.h\
  netdb.h stdarg.h varargs.h termcap.h termios.h termio.h sgtty.h\
- crypt.h sys/uio.h sys/select.h sys/resources.h getopt.h libintl.h)
+ crypt.h sys/uio.h sys/select.h sys/resources.h libintl.h)
 
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
@@ -322,67 +330,27 @@ getline, crypt, crypt_set_format], , ,
 # Restore CPPFLAGS
 CPPFLAGS=$save_CPPFLAGS
 
-AC_ARG_WITH(included-argp,
-	AC_HELP_STRING([--with-included-argp],
-	[use included argp library.]),
-	[USE_INCLUDED_ARGP=$withval],
-	[USE_INCLUDED_ARGP=no])
+# Always use included argp stuff.
+# Earlier, configure preferred to use the one from glibc, if provided,
+# while offering --with-included-argp configuration option. This proved
+# to be unreliable, since there are too many broken argp implementations
+# around
 
-AC_CHECK_FUNCS(argp_parse, :, USE_INCLUDED_ARGP=yes)
-if test "$ac_cv_header_argp_h" = "no"; then
-	USE_INCLUDED_ARGP=yes
-fi
-
-AC_MSG_CHECKING(whether extern program_invocation_name is declared)
-AC_TRY_COMPILE([#include <argp.h>
-#include <errno.h>],
-[ program_invocation_name = "test"; ],
-[AC_DEFINE(PROGRAM_INVOCATION_NAME_DECLARED,1,
-           [Define if program_invocation_name is declared in argp.h])
- AC_MSG_RESULT(yes)],
-[AC_MSG_RESULT(no)])
-
-AH_BOTTOM([
-#ifndef PROGRAM_INVOCATION_NAME_DECLARED
-extern char *program_invocation_short_name;
-extern char *program_invocation_name;
-#endif])
-
-AC_MSG_CHECKING(whether program_invocation_name is present)
-AC_TRY_COMPILE([#include <argp.h>
-#include <errno.h>],
-[
-#ifndef PROGRAM_INVOCATION_NAME_DECLARED
-	extern char *program_invocation_name;
-#endif
-	program_invocation_name = "test";
-],
-[AC_DEFINE(HAVE_PROGRAM_INVOCATION_NAME,1,
-           [Define if the variable program_invocation_name exists])
- AC_MSG_RESULT(yes)],
-[AC_MSG_RESULT(no)
- USE_INCLUDED_ARGP=yes])
-
-
-if test $USE_INCLUDED_ARGP = yes; then
-        AC_DEFINE(WITH_INCLUDED_ARGP, 1,
-                  [Define if we're using included argp])
-
-        AC_CONFIG_LINKS([include/radius/getopt.h:lib/getopt.h
-                         include/radius/argp.h:lib/argp.h])
-        GNU_INCLUDES="$GNU_INCLUDES argp.h getopt.h"
-
-	AC_LIBOBJ([argp-ba])
-        AC_LIBOBJ([argp-eexst])
-        AC_LIBOBJ([argp-fmtstream])
-        AC_LIBOBJ([argp-fs-xinl])
-        AC_LIBOBJ([argp-help])
-        AC_LIBOBJ([argp-parse])
-        AC_LIBOBJ([argp-pv])
-        AC_LIBOBJ([argp-pvh])
-        AC_LIBOBJ([argp-xinl])
-        AC_LIBOBJ([pin])
-fi
+AC_CONFIG_LINKS([include/radius/getopt.h:lib/getopt.h
+                 include/radius/argp.h:lib/argp.h])
+GNU_INCLUDES="$GNU_INCLUDES argp.h getopt.h"
+AC_LIBOBJ(getopt)
+AC_LIBOBJ(getopt1)
+AC_LIBOBJ([argp-ba])
+AC_LIBOBJ([argp-eexst])
+AC_LIBOBJ([argp-fmtstream])
+AC_LIBOBJ([argp-fs-xinl])
+AC_LIBOBJ([argp-help])
+AC_LIBOBJ([argp-parse])
+AC_LIBOBJ([argp-pv])
+AC_LIBOBJ([argp-pvh])
+AC_LIBOBJ([argp-xinl])
+AC_LIBOBJ([pin])
 
 AC_REPLACE_FUNCS(getline strerror strncasecmp strcspn snprintf vasprintf\
  strtok_r localtime_r strchrnul strndup strnlen)
@@ -438,7 +406,6 @@ AH_BOTTOM([
 
 RA_CHECK_STRUCT_FIELD(hostent, h_addr_list,
                        [#include <netdb.h>])
-RA_REPLACE_GNU_GETOPT
 RA_REPLACE_REGEX
 
 

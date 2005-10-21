@@ -746,7 +746,7 @@ SCM sql_exec_query(int type, char *query);
 # define radiusd_sql_shutdown()
 # define radiusd_sql_clear_cache()
 # define radiusd_sql_acct(req)
-# define radiusd_sql_checkgroup(req, groupname) 0
+# define radiusd_sql_checkgroup(req, groupname) 1
 # define radiusd_sql_check_attr_query(req, check_pairs) 0
 # define radiusd_sql_reply_attr_query(req, reply_pairs)
 # define radiusd_sql_auth_result_query(req, fail)

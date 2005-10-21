@@ -19,6 +19,7 @@
 
 noinst_LIBRARIES = libradextra.a
 libradextra_a_SOURCES = readline.c 
+libradextra_a_LIBADD = @LIBOBJS@
 
 lib_LTLIBRARIES=libgnuradius.la
 libgnuradius_la_SOURCES= \
@@ -63,7 +64,7 @@ util.c
 localedir = $(datadir)/locale
 
 libgnuradius_la_LIBADD = @LTLIBOBJS@
-libgnuradius_la_LDFLAGS = --version-info 0:0:0 -Wl,--version-script=$(srcdir)/gnuradius.vers
+libgnuradius_la_LDFLAGS = --version-info @VI_CURRENT@:@VI_REVISION@:@VI_AGE@ -Wl,--version-script=$(srcdir)/gnuradius.vers
 
 AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\" @PATHFLAGS@
 

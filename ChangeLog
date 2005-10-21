@@ -1,3 +1,20 @@
+2005-10-21  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* THANKS: Add Jose Alves
+	* configure.ac: Define library version variables
+	(--with-included-argp): Remove option
+	Always use included copy of argp/getopt
+	* include/radiusd.h (radiusd_sql_checkgroup): Bugfix. Thanks
+	Jose Alves for helping to track the bug.
+	* lib/Makefile.am: Use library versioning
+	* radscm/Makefile.am: Likewise
+
+	* lib/gnuradius.vers: Export argp_ (Temporarly!)
+	* lib/logger.c: Include radargp
+	* lib/pin.c: Inconditionally declare both globals.
+	* lib/radargp.c (argp_program_bug_address): Use PACKAGE_BUGREPORT
+	* lib/strerror.c (strerror): Rewritten in ANSI C
+	
 2005-08-13  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Updated

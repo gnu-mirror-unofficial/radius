@@ -49,7 +49,7 @@ obstack_grow_escaped(struct obstack *obp, char *str, int len)
 				snprintf(buf, sizeof(buf), "%03o",
 					 *(u_char*)str);
 				obstack_1grow(obp, '\\');
-				obstack_grow(obp, str, 3);
+				obstack_grow(obp, buf, 3);
 			}
                 }
         }

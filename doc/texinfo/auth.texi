@@ -343,7 +343,7 @@ query to close an existing open record.
 There are two queries for retrieving the information:
 @code{mlc_user_query} returns the list of sessions opened by the user,
 @code{mlc_realm_query} returns the list of sessions opened for the
-given realm. Each of them should return a list of 5-element
+given realm. Each of them should return a list of 4-element
 tuples@footnote{This interface is likely to change in future versions}:
 
 @smallexample

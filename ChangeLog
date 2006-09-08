@@ -43,7 +43,8 @@
 	* scripts/mksnmp-h.awk: Mark generated file as read-only for Emacs
 	and ViM
 	* scripts/sqlmod.sh: Likewise
-	
+	* m4/ld.m4: New file	
+
 	* bootstrap: New file
 	* lib/Makefile.tmpl: New file
 	* lib/Makefile.am: Remove

@@ -465,7 +465,7 @@ void radiusd_logger(int level,
 		    const char *func_name,
 		    int en,
 		    const char *fmt, va_list ap);
-void sqllog(int status, char *msg, ...);
+void sqllog(int status, char *query);
 int logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
 			 void *handler_data);
 int logging_stmt_end(void *block_data, void *handler_data);

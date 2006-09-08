@@ -1,3 +1,17 @@
+2006-09-08  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/texinfo/auth.texi: Fix description of mlc_realm_query,
+	mlc_user_query.
+	* include/radiusd.h (sqllog): Takes literal string as its second
+	argument.
+	* radiusd/log.c (channel_format_prefix)
+	(channel_format_suffix): Replace by a single function
+	log_format_hook. All uses updated
+	(sqllog): Takes literal string as its second argument.
+	Fixes IDEF1590.
+	* radiusd/rewrite.y (return_value): Add terminating null character.
+	* NEWS: Update
+	
 2005-11-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* radiusd/radutil.c (obstack_grow_escaped): Bugfix 

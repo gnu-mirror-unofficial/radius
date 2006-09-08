@@ -5858,6 +5858,7 @@ return_value(grad_value_t *val)
 		mem2string(&val->datum.sval, (RWSTYPE*) mach.rA);
 		p = grad_emalloc (val->datum.sval.size + 1);
 		memcpy (p, val->datum.sval.data, val->datum.sval.size);
+		p[val->datum.sval.size] = 0;
 		val->datum.sval.data = p;
 		break;
 		

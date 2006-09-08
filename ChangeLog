@@ -1,5 +1,63 @@
 2006-09-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	Take all replacement sources from Gnulib
+	
+	* lib/argp-ba.c: Remove
+	* lib/argp-eexst.c: Remove
+	* lib/argp-fmtstream.c: Remove
+	* lib/argp-fmtstream.h: Remove
+	* lib/argp-fs-xinl.c: Remove
+	* lib/argp-help.c: Remove
+	* lib/argp-namefrob.h: Remove
+	* lib/argp-parse.c: Remove
+	* lib/argp-pv.c: Remove
+	* lib/argp-pvh.c: Remove
+	* lib/argp-xinl.c: Remove
+	* lib/argp.h: Remove
+	* lib/getline.c: Remove
+	* lib/getopt.c: Remove
+	* lib/getopt.h: Remove
+	* lib/getopt1.c: Remove
+	* lib/obstack.c: Remove
+	* lib/obstack.h: Remove
+	* lib/pin.c: Remove
+	* lib/rx.c: Remove
+	* lib/rx.h: Remove
+	* lib/snprintf.c: Remove
+	* lib/snprintf.h: Remove
+	* lib/strchrnul.c: Remove
+	* lib/strcspn.c: Remove
+	* lib/strerror.c: Remove
+	* lib/strncasecmp.c: Remove
+	* lib/strndup.c: Remove
+	* lib/strnlen.c: Remove
+	* lib/strtok_r.c: Remove
+	* lib/vasprintf.c: Remove
+	* m4/getopt.m4: Remove
+	* m4/rx.m4: Remove
+	* intl: Remove
+	* scripts/pofilter.c: Remove
+
+	* radiusd/sql.c (getline): Rename to get_conf_line
+	* scripts/Makefile.am: Remove pofilter.c
+	* scripts/mksnmp-h.awk: Mark generated file as read-only for Emacs
+	and ViM
+	* scripts/sqlmod.sh: Likewise
+	
+	* bootstrap: New file
+	* lib/Makefile.tmpl: New file
+	* lib/Makefile.am: Remove
+	* Makefile.am (SUBDIRS): Remove intl
+	* NEWS: Update
+	* README-alpha: Update
+	* configure.ac: Use gnulib
+	Add check for ld --version-script
+	* lib/gnuradius.vers (global): Add rpl_* 
+	* contrib/php/.cvsignore: Update
+	* lib/.cvsignore: Update
+	* m4/.cvsignore: Update
+	* scripts/.cvsignore: Update
+	
 	* doc/texinfo/auth.texi: Fix description of mlc_realm_query,
 	mlc_user_query.
 	* include/radiusd.h (sqllog): Takes literal string as its second

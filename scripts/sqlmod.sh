@@ -1,6 +1,6 @@
 #! /bin/sh
 # This file is part of GNU Radius.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -13,7 +13,9 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 cat - <<EOT
-/* This file is generated automatically. Please do not edit */
+/* -*- buffer-read-only: t -*- vi: set ro: 
+   THIS FILE IS GENERATED AUTOMATICALLY.  PLEASE DO NOT EDIT.
+*/ 
 EOT
 
 for module

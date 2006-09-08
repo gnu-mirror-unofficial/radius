@@ -20,6 +20,7 @@ Exec-Program-Wait pairs.
 ** Properly protect occurrences of `define' in scm4 files
 ** Explicit assignments in naslist flags were incorrectly parsed.
 ** Rewrite functions correctly handle strings, containing nul characters.
+** Fix format string vulnerability in sqllog (IDEF1590)
  
 ^L
 Version 1.3:

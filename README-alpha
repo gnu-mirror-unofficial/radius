@@ -2,23 +2,36 @@ This is the GNU Radius package.
 
 * Introduction
 
-This is a *pre-release* version, and not ready for production use yet. If you
-are taking source from CVS, you will need to have libtool, automake, and
-autoconf installed to help contribute. The script autogen.sh is provided to
-help autoconfigure mailutils from the cvs src.  After you run
-autogen.sh, there should be a file 'INSTALL' with (generic)
-installation instructions. Refer to file 'README' for radius-specific
-installation instructions. 
+This is a *pre-release* version, and not ready for production use yet.
+Please send comments and problem reports to <bug-gnu-radius@gnu.org>.
+ 
+If you have taken the sources from CVS you will need the following
+packages (or later) to build GNU radius.  We don't make any extra effort
+to accommodate older versions of these packages, so please make sure
+that you have the latest stable version.
+
+- Automake <http://www.gnu.org/software/automake/>
+- Autoconf <http://www.gnu.org/software/autoconf/>
+- Gettext <http://www.gnu.org/software/gettext/>
+- Gnulib <http://www.gnu.org/software/gnulib/>
+- Libtool <http://www.gnu.org/software/libtool/>
+- M4 <http://www.gnu.org/software/m4/>
+- Texinfo <http://www.gnu.org/software/texinfo>
+
+You will also need bison (or yacc) and flex. The grammar sources
+were written so that any version of yacc or bison should be able to
+handle them, however using recent bison is anyway recommended.  The lex
+sources could theoretically be compiled with AT&T lex.  However, it's been
+quite some time since I testes it, so using flex is higly recommended.
+I use flex 2.5.4.
 
 Please, note that the accompanying documentation may be inaccurate or
-incomplete. Take a look at ChangeLog to see the latest changes. ChangeLog
+incomplete.  Take a look at ChangeLog to see the latest changes. ChangeLog
 entries marked with an asterisk in column zero document user-visible changes
-which are not otherwise documented. Thus, the following command will print
+which are not otherwise documented.  Thus, the following command will print
 a list of latest user-visible changes:
 
 	grep '^\*' ChangeLog
-
-Report bugs to <bug-gnu-radius@gnu.org>
 
 * Checking Out the Sources
 
@@ -27,20 +40,24 @@ the CVS repository:
 
 To checkout the source tree from CVS issue the following command:
 
-CVS_RSH=ssh \
- cvs -d :ext:anoncvs@savannah.gnu.org:/cvsroot/radius checkout radius
-
-Make sure SSHv2 is used.
+ cvs -d :pserver:anoncvs@cvs.savannah.gnu.org:/cvsroot/radius checkout radius
 
 This will give you read-only access.  If you think you need write access,
 contact <gray@mirddin.farlep.net>
 
 * Building
 
-In order to build this you will need to call the auto* tools with
-the right arguments, see or run autogen.sh. After this, make sure
-you run the first configure with --enable-maintainer-mode option.
-This is needed for make to correctly rebuild the dependencies.
+After checking out the sources, you will need to _bootstrap_ them.  To do
+so, first make sure you have the recent version of gnulib checked out.
+Then, make sure gnulib-tool can be found using your PATH variable and
+run './bootstrap', e.g.:
+
+  $ PATH=~/gnulib:$PATH ./bootstrap
+
+After bootstrap finishes, run make.
+
+Notice, that you only have to do it once.  Packaged alpha versions do not
+need bootstrapping. 
 
 * Debugging
 

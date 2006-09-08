@@ -1,0 +1,55 @@
+#! /bin/sh
+
+MODULES="obstack
+ regex
+ vasprintf
+ argp
+ getline
+ strerror
+ strcase"
+
+gnulib-tool --help >/dev/null 2>&1 || {
+  echo "$0: gnulib-tool not found">&2
+  exit 1
+}
+
+if [ -r lib/Makefile.tmpl ]; then
+  echo "$0: Bootstrapping GNU Radius"
+  gnulib-tool --lib=libgnuradius\
+              --makefile-name=Makefile.gnulib\
+              --import $MODULES
+
+  (cd lib
+   ed <<-EOT
+	H
+	a
+	## -*- buffer-read-only: t -*- vi: set ro:
+	## THIS FILE IS GENERATED AUTOMATICALLY.  PLEASE DO NOT EDIT.
+	.
+	r Makefile.tmpl
+	/## BEGIN GNULIB SECTION ##/,/## END GNULIB SECTION ##/d
+	a
+	## BEGIN GNULIB SECTION ##
+	.
+	r Makefile.gnulib
+	a
+	## END GNULIB SECTION ##
+	.
+	/^noinst_LTLIBRARIES += libgnuradius.la/d
+	/^libgnuradius_la_SOURCES =$/d
+	w Makefile.am
+	q
+	EOT
+   )
+else
+  echo "$0: run me from the topmost Radius source tree directory">&2
+  exit 1
+fi
+
+echo "$0: Building configuration files"
+autoreconf --verbose --install --force || exit 1
+
+echo "$0: Configuring"
+./configure --enable-maintainer-mode $* || exit 1
+
+echo "$0: Done. You may run make now"

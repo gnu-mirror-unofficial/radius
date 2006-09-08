@@ -41,7 +41,7 @@ static void detach_sql_connection(int type);
 static void sql_conn_destroy(struct sql_connection **conn);
 static void sql_cache_destroy(struct sql_connection *conn);
 
-static char *getline();
+static char *get_conf_line();
 static int get_boolean(char *str, int *retval);
 static char * sql_digest(SQL_cfg *cfg);
 static int sql_digest_comp(char *d1, char *d2);
@@ -144,7 +144,7 @@ chop(char *str)
 }
 
 char *
-getline()
+get_conf_line()
 {
         char buf[256];
         char *ptr;
@@ -320,7 +320,7 @@ radiusd_sql_config()
         line_no = 0;
         cur_line = NULL;
         obstack_init(&parse_stack);
-        while (getline()) {
+        while (get_conf_line()) {
                 if (stmt_type == -1) {
                         grad_log(L_ERR,
                                  "%s:%d: %s",

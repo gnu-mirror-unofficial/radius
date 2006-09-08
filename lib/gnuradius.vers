@@ -22,6 +22,7 @@ GNURADIUS_0.0 {
                 __grad_insist_failure;
                 _grad_debug_format_string; _grad_debug_print;
 	        argp_*;
+                rpl_*;
 	local: *;
 };
 

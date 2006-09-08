@@ -348,6 +348,7 @@ _pam_init_radius_client(pam_handle_t *pamh)
         
         DEBUG(100,("enter _pam_init_radius_client"));
 
+	grad_set_logger(vlog);
         grad_config_dir = radius_confdir;
         grad_path_init();
         if (grad_dict_init()) {

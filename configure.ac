@@ -31,19 +31,17 @@ AC_SUBST(BUILD_TARGET)
 AC_SUBST(INCLUDEPATH)
 AC_SUBST(RADIUS_PID)
 
-AC_SUBST(RADIUS_INCLUDE_PATH)
-RADIUS_INCLUDE_PATH='-I$(top_builddir) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)/include/radius -I$(top_srcdir)/include/radius'
+AC_SUBST(RADIUS_INCLUDE_PATH,
+         ['-I$(top_builddir) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)/include/radius -I$(top_srcdir)/include/radius'])
 
 dnl Library versioning
-VI_CURRENT=1
-VI_REVISION=0
-VI_AGE=0
-AC_SUBST(VI_CURRENT)
-AC_SUBST(VI_REVISION)
-AC_SUBST(VI_AGE)
+AC_SUBST(VI_CURRENT, 1)
+AC_SUBST(VI_REVISION, 0)
+AC_SUBST(VI_AGE, 0)
 
 ## * Checks for programs.
 AC_PROG_CC
+gl_EARLY
 AM_PROG_CC_STDC
 AC_PROG_YACC
 AM_PROG_LEX
@@ -55,13 +53,11 @@ AC_ARG_VAR(PS,[Full path to ps binary])
 AC_PROG_LN_S
 AM_PROG_LIBTOOL
 
-M4='`cd $(top_srcdir); pwd`/scripts/missing --run m4'
-AC_SUBST(M4)
+AC_SUBST(M4,['`cd $(top_srcdir); pwd`/scripts/missing --run m4'])
+RA_MAINTAINER_MODE
+RA_LD_VERSIONING
 
-AC_SUBST(build_POFILTER)
-RA_MAINTAINER_MODE([build_POFILTER=pofilter])
-
-### Make sure Guile is installed.
+### Check if Guile is installed.
 AC_ARG_WITH(guile,
 	AC_HELP_STRING([--without-guile],
 	[do not compile Guile support]),
@@ -225,15 +221,6 @@ AH_BOTTOM([
 # define PWD_SHADOW OSFC2
 #endif])
 
-## * Check for national language support
-AM_GNU_GETTEXT(no-libtool, need-ngettext)
-AM_GNU_GETTEXT_VERSION(0.12.1)
-if test ".$BUILD_INCLUDED_LIBINTL" = ".yes" ; then
-	AC_DEFINE(WITH_INCLUDED_LIBINTL,1,
-                  [Define if the included libintl is used])
-	INCLUDEPATH="$INCLUDEPATH -I\$(top_srcdir)/intl"
-fi
-
 # Initialize the test suite.
 AC_CONFIG_TESTDIR(tests)
 AC_CONFIG_FILES([tests/Makefile
@@ -291,6 +278,13 @@ RA_CHECK_INADDR_LOOPBACK
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_FUNC_MMAP
+
+gl_INIT
+
+## * Check for national language support
+AM_GNU_GETTEXT([external], [need-ngettext])
+AM_GNU_GETTEXT_VERSION(0.12.1)
+
 AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  mkdir mktime select socket strdup strtol lockf \
  setlocale bzero \
@@ -299,13 +293,7 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
 
 AC_SUBST(GNU_INCLUDES)
 
-AC_CHECK_HEADER([obstack.h],
-                [AC_FUNC_OBSTACK],
-	        [AC_CONFIG_LINKS(include/radius/obstack.h:lib/obstack.h)
-                 GNU_INCLUDES="$GNU_INCLUDES obstack.h"
-                 AC_LIBOBJ(obstack)])
-
-
+# FIXME: Do we need to check for the functions before `crypt'?
 AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf,
 getline, crypt, crypt_set_format], , ,
                [
@@ -336,24 +324,8 @@ CPPFLAGS=$save_CPPFLAGS
 # to be unreliable, since there are too many broken argp implementations
 # around
 
-AC_CONFIG_LINKS([include/radius/getopt.h:lib/getopt.h
-                 include/radius/argp.h:lib/argp.h])
-GNU_INCLUDES="$GNU_INCLUDES argp.h getopt.h"
-AC_LIBOBJ(getopt)
-AC_LIBOBJ(getopt1)
-AC_LIBOBJ([argp-ba])
-AC_LIBOBJ([argp-eexst])
-AC_LIBOBJ([argp-fmtstream])
-AC_LIBOBJ([argp-fs-xinl])
-AC_LIBOBJ([argp-help])
-AC_LIBOBJ([argp-parse])
-AC_LIBOBJ([argp-pv])
-AC_LIBOBJ([argp-pvh])
-AC_LIBOBJ([argp-xinl])
-AC_LIBOBJ([pin])
-
-AC_REPLACE_FUNCS(getline strerror strncasecmp strcspn snprintf vasprintf\
- strtok_r localtime_r strchrnul strndup strnlen)
+AC_CONFIG_LINKS([include/radius/argp.h:lib/argp.h])
+GNU_INCLUDES="$GNU_INCLUDES argp.h"
 
 AC_ARG_WITH([readline],
             AC_HELP_STRING([--without-readline],
@@ -406,19 +378,6 @@ AH_BOTTOM([
 
 RA_CHECK_STRUCT_FIELD(hostent, h_addr_list,
                        [#include <netdb.h>])
-RA_REPLACE_REGEX
-
-
-AC_MSG_CHECKING(for sys_errlist and sys_nerr)
-AC_TRY_RUN(
-extern char *sys_errlist[[]];
-extern int sys_nerr;
-main() { char *s = sys_errlist[[0]]; return 0; },
-	AC_DEFINE(HAVE_SYS_ERRLIST,1,
-                  [Define if your system has sys_errlist global variable])
-	AC_MSG_RESULT(Ok),
-	AC_MSG_RESULT(No),
-	AC_MSG_RESULT(don't know))
 
 ## ********************************************************************
 ## *                     User-configurable options                    *
@@ -529,7 +488,7 @@ AC_ARG_WITH(php,
 			;;
              /*)	PHP_PREFIX=$withval
 			;;
-	     *)		AC_MSG_ERROR([Invalid prefix in --enable-php])
+	     *)		AC_MSG_ERROR([Invalid prefix in --with-php])
 	     esac],
              [PHP_PREFIX=])
 
@@ -555,6 +514,27 @@ if test "$PHP_PREFIX" != ""; then
   AC_SUBST(BUILD_MOD_RADIUS_LA)
   BUILD_MOD_RADIUS_LA=mod_radius.la
 fi
+
+AC_SUBST(APACHEMODDIR)
+AC_SUBST(APACHE_INCLUDES)
+AC_SUBST(BUILD_MOD_AUTH_RADIUS_LA)
+AC_ARG_WITH(apache,
+            AC_HELP_STRING([--with-apache],
+                           [Enable Apache modules]),
+            [case $withval in
+             no)  ;;	
+	     yes) AC_ARG_VAR([APXS],[Name of apxs program])
+                  AC_CHECK_PROG(APXS, [apxs], [apxs], [no])
+                  if test $APXS = no; then
+                    AC_MSG_ERROR([apxs not found])
+                  fi
+                  APACHEMODDIR=`$APXS -q LIBEXECDIR`
+	          APACHE_INCLUDES=`$APXS -q INCLUDEDIR`
+	          BUILD_MOD_AUTH_RADIUS_LA='mod_auth_radius.la'
+	          ;;
+	     *)	  AC_MSG_ERROR([Invalid option argument in --with-apache])
+	     esac])
+
 
 ## **************
 ## auth port no
@@ -957,7 +937,6 @@ LIBGNURADIUS='${top_builddir}/lib/libgnuradius.la'
 RADIUS_INCLUDE_PATH="$RADIUS_INCLUDE_PATH $INCLUDEPATH"
 
 AC_CONFIG_FILES(Makefile 
-          intl/Makefile 
           po/Makefile.in
           raddb/client.conf
           raddb/config

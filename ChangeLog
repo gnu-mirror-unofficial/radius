@@ -11,6 +11,8 @@
 	Fixes IDEF1590.
 	* radiusd/rewrite.y (return_value): Add terminating null character.
 	* NEWS: Update
+	* client/pam_radius/pam_radius.c (_pam_init_radius_client): Set
+	logger function.
 	
 2005-11-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 

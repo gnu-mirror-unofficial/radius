@@ -26,7 +26,4 @@ EXTRA_DIST=\
  update-dict.awk\
  ylwrap
 
-EXTRA_PROGRAMS = pofilter
-
-noinst_PROGRAMS = mktypes @build_POFILTER@
-pofilter_SOURCES = pofilter.c
+noinst_PROGRAMS = mktypes

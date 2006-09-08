@@ -176,7 +176,7 @@ run_log_hook(const grad_request_t *req, const char *hook_name)
 	char nasbuf[GRAD_MAX_LONGNAME];
 
 	memset(&val, 0, sizeof(val));
-	
+
 	/* FIXME: Should make sure that the hook does not modify the
 	   request, either by passing rewrite_invoke a copy of the
 	   latter (expensive), or by providing some internal rewrite
@@ -195,11 +195,9 @@ run_log_hook(const grad_request_t *req, const char *hook_name)
 }
 
 static void
-channel_format_prefix(struct logbuf *bufp,
-		      Channel *chan, const grad_request_t *req)
+log_format_hook(struct logbuf *bufp, char **hook_name_ptr,
+		const grad_request_t *req)
 {
-	char **hook_name_ptr = chan->prefix_hook ? 
-		                   &chan->prefix_hook : &log_prefix_hook;
 	char *hook_res = NULL;
 
 	if (*hook_name_ptr) {
@@ -211,26 +209,6 @@ channel_format_prefix(struct logbuf *bufp,
 	if (hook_res) {
 		logbuf_append(bufp, hook_res);
 		grad_free(hook_res);
-	}
-}
-
-static void
-channel_format_suffix(struct logbuf *bufp,
-		      Channel *chan, const grad_request_t *req)
-{
-	char **hook_name_ptr = chan->suffix_hook ? 
-		                   &chan->suffix_hook : &log_suffix_hook;
-	char *hook_res = NULL;
-	
-	if (*hook_name_ptr) {
-		hook_res = run_log_hook(req, *hook_name_ptr);
-		if (!hook_res) 
-			*hook_name_ptr = NULL;
-	}
-
-	if (hook_res) {
-		logbuf_append(bufp, hook_res);
-		free(hook_res);
 	}
 }
 
@@ -279,8 +257,14 @@ log_to_channel(void *item, void *pdata)
 		logbuf_append(&pri_prefix, _(priname[data->pri]));
 
   	if (data->req) {
-		channel_format_prefix(&req_prefix, chan, data->req);
-		channel_format_suffix(&req_suffix, chan, data->req);
+		log_format_hook(&req_prefix,
+				chan->prefix_hook ?
+ 				   &chan->prefix_hook : &log_prefix_hook,
+				data->req);
+ 		log_format_hook(&req_suffix,
+				chan->suffix_hook ?
+				   &chan->suffix_hook : &log_suffix_hook,
+				data->req);
 	}
 	
         switch (chan->mode) {
@@ -415,11 +399,9 @@ radiusd_logger(int level,
 /* Interface */
 
 #ifdef USE_SQL
-/*PRINTFLIKE2*/
 void
-sqllog(int status, char *msg, ...)
+sqllog(int status, char *query)
 {
-        va_list ap;
         FILE *fp;
         char *path;
         char *filename;
@@ -433,10 +415,7 @@ sqllog(int status, char *msg, ...)
                 return;
         }
         grad_free(path);
-	va_start(ap, msg);
-        vfprintf(fp, msg, ap);
-        fprintf(fp, ";\n");
-        va_end(ap);
+        fprintf(fp, "%s;\n", query);
         fclose(fp);
 }
 #endif

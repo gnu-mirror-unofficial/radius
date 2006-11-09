@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU radius 1.2.96\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2005-08-12 14:59+0300\n"
+"POT-Creation-Date: 2006-09-08 15:25+0300\n"
 "PO-Revision-Date: 2004-11-09 08:00-0500\n"
 "Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -23,9 +23,7 @@ msgstr "make_pair(): attribut %d non repéré dans le dictionnaire"
 #: lib/client.c:127
 #, c-format
 msgid "Actual request length does not match reported length (%d, %d)"
-msgstr ""
-"Longueur de la requête actuelle ne concorde pas avec la longueur rapportée (%"
-"d, %d)"
+msgstr "Longueur de la requête actuelle ne concorde pas avec la longueur rapportée (%d, %d)"
 
 #: lib/client.c:141
 msgid "Received invalid reply digest from server"
@@ -164,57 +162,57 @@ msgid_plural "%s: %d errors"
 msgstr[0] "%s: %d erreur"
 msgstr[1] "%s: %d erreurs"
 
-#: lib/getopt.c:687
+#: lib/getopt.c:531 lib/getopt.c:547
 #, c-format
 msgid "%s: option `%s' is ambiguous\n"
 msgstr "%s: option « %s » est ambiguë\n"
 
-#: lib/getopt.c:712
+#: lib/getopt.c:580 lib/getopt.c:584
 #, c-format
 msgid "%s: option `--%s' doesn't allow an argument\n"
 msgstr "%s: l'option « --%s » ne permet pas d'argument\n"
 
-#: lib/getopt.c:717
+#: lib/getopt.c:593 lib/getopt.c:598
 #, c-format
 msgid "%s: option `%c%s' doesn't allow an argument\n"
 msgstr "%s: l'option « %c%s » ne permet pas d'argument\n"
 
-#: lib/getopt.c:735 lib/getopt.c:908
+#: lib/getopt.c:641 lib/getopt.c:660 lib/getopt.c:976 lib/getopt.c:995
 #, c-format
 msgid "%s: option `%s' requires an argument\n"
 msgstr "%s: l'option « %s » requiert un argument\n"
 
-#: lib/getopt.c:764
+#: lib/getopt.c:698 lib/getopt.c:701
 #, c-format
 msgid "%s: unrecognized option `--%s'\n"
 msgstr "%s: option non reconnue « --%s »\n"
 
-#: lib/getopt.c:768
+#: lib/getopt.c:709 lib/getopt.c:712
 #, c-format
 msgid "%s: unrecognized option `%c%s'\n"
 msgstr "%s: option non reconnue « %c%s »\n"
 
-#: lib/getopt.c:794
+#: lib/getopt.c:764 lib/getopt.c:767
 #, c-format
 msgid "%s: illegal option -- %c\n"
 msgstr "%s: option illégale -- %c\n"
 
-#: lib/getopt.c:797
+#: lib/getopt.c:773 lib/getopt.c:776
 #, c-format
 msgid "%s: invalid option -- %c\n"
 msgstr "%s: option invalide -- %c\n"
 
-#: lib/getopt.c:827 lib/getopt.c:957
+#: lib/getopt.c:828 lib/getopt.c:844 lib/getopt.c:1048 lib/getopt.c:1066
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: l'option requiert un argument -- %c\n"
 
-#: lib/getopt.c:874
+#: lib/getopt.c:897 lib/getopt.c:913
 #, c-format
 msgid "%s: option `-W %s' is ambiguous\n"
 msgstr "%s: l'option « -W %s » est ambiguë\n"
 
-#: lib/getopt.c:892
+#: lib/getopt.c:937 lib/getopt.c:955
 #, c-format
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: l'option « -W %s » ne permet pas un argument\n"
@@ -247,9 +245,7 @@ msgstr "login: l'entrée pour le NAS %s port %d est dans le mauvais ordre"
 #: lib/radutmp.c:209
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr ""
-"logout: l'entrée pour le NAS %s port %d a un mauvais ID (attendait %s a reçu "
-"%s)"
+msgstr "logout: l'entrée pour le NAS %s port %d a un mauvais ID (attendait %s a reçu %s)"
 
 #: lib/radutmp.c:233
 #, c-format
@@ -333,81 +329,105 @@ msgstr "interdire la mise au point lors de l'analyse du fichier d'usagers"
 msgid "string too long: %s"
 msgstr "chaîne trop longue: %s"
 
-#: lib/argp-help.c:217
+#: lib/argp-help.c:148
+#, c-format
+msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+msgstr ""
+
+#: lib/argp-help.c:221
 #, c-format
 msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
 msgstr "%.*s: paramètre ARGP_HELP_FMT requiert une valeur"
 
-#: lib/argp-help.c:226
+#: lib/argp-help.c:227
+#, fuzzy, c-format
+msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
+msgstr "%.*s: paramètre ARGP_HELP_FMT requiert une valeur"
+
+#: lib/argp-help.c:236
 #, c-format
 msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
 msgstr "%.*s: paramètre ARGP_HELP_FMT inconnu"
 
-#: lib/argp-help.c:238
+#: lib/argp-help.c:248
 #, c-format
 msgid "Garbage in ARGP_HELP_FMT: %s"
 msgstr "Rebus dans ARGP_HELP_FMT: %s"
 
-#: lib/argp-help.c:1200
-msgid ""
-"Mandatory or optional arguments to long options are also mandatory or "
-"optional for any corresponding short options."
-msgstr ""
-"Les arguments obligatoires ou optionels des options de formes longues lesont "
-"aussi obligatoires ou optionnels pour les options de formes courtes."
+#: lib/argp-help.c:1229
+msgid "Mandatory or optional arguments to long options are also mandatory or optional for any corresponding short options."
+msgstr "Les arguments obligatoires ou optionels des options de formes longues lesont aussi obligatoires ou optionnels pour les options de formes courtes."
 
-#: lib/argp-help.c:1580
+#: lib/argp-help.c:1616
 msgid "Usage:"
 msgstr "Usage:"
 
-#: lib/argp-help.c:1584
+#: lib/argp-help.c:1620
 msgid "  or: "
 msgstr "  ou: "
 
-#: lib/argp-help.c:1596
+#: lib/argp-help.c:1632
 msgid " [OPTION...]"
 msgstr " [OPTION...]"
 
-#: lib/argp-help.c:1623
+#: lib/argp-help.c:1659
 #, c-format
 msgid "Try `%s --help' or `%s --usage' for more information.\n"
 msgstr "Essayez « %s --help» ou « %s --usager» pour plus d'informations.\n"
 
-#: lib/argp-help.c:1651
+#: lib/argp-help.c:1687
 #, c-format
 msgid "Report bugs to %s.\n"
 msgstr "Rapportez toutes anomalies à %s.\n"
 
-#: lib/argp-parse.c:101
-msgid "Give this help list"
+#: lib/argp-help.c:1906
+msgid "Unknown system error"
+msgstr ""
+
+#: lib/argp-parse.c:82
+#, fuzzy
+msgid "give this help list"
 msgstr "Donne cette aide-mémoire"
 
-#: lib/argp-parse.c:102
-msgid "Give a short usage message"
+#: lib/argp-parse.c:83
+#, fuzzy
+msgid "give a short usage message"
 msgstr "Donne un court message sur l'usage"
 
-#: lib/argp-parse.c:103
-msgid "Set the program name"
+#: lib/argp-parse.c:84
+#, fuzzy
+msgid "NAME"
+msgstr "NOM NAS"
+
+#: lib/argp-parse.c:84
+#, fuzzy
+msgid "set the program name"
 msgstr "Initialise le nom du programme"
 
-#: lib/argp-parse.c:105
-msgid "Hang for SECS seconds (default 3600)"
+#: lib/argp-parse.c:85
+msgid "SECS"
+msgstr ""
+
+#: lib/argp-parse.c:86
+#, fuzzy
+msgid "hang for SECS seconds (default 3600)"
 msgstr "Suspension de N secondes (par défaut 3600)"
 
-#: lib/argp-parse.c:162
-msgid "Print program version"
+#: lib/argp-parse.c:143
+#, fuzzy
+msgid "print program version"
 msgstr "Afficher la version du programme"
 
-#: lib/argp-parse.c:178
+#: lib/argp-parse.c:159
 msgid "(PROGRAM ERROR) No version known!?"
 msgstr "(ERREUR PROGRAMME) Pas de version connue!?"
 
-#: lib/argp-parse.c:659
+#: lib/argp-parse.c:612
 #, c-format
 msgid "%s: Too many arguments\n"
 msgstr "%s: trop d'arguments\n"
 
-#: lib/argp-parse.c:800
+#: lib/argp-parse.c:755
 msgid "(PROGRAM ERROR) Option should have been recognized!?"
 msgstr "(ERREUR PROGRAMME) L'option aurait dû être reconnue!?"
 
@@ -468,8 +488,7 @@ msgid ""
 msgstr ""
 "Ce programme est un logiciel libre; vous pouvez le redistribuer ou le\n"
 "modifier selon les termes de la License Publique Générale de GNU, publiée\n"
-"par la Free Software Foundation (soit la version 2 ou soit ou soit selon "
-"votre\n"
+"par la Free Software Foundation (soit la version 2 ou soit ou soit selon votre\n"
 "choix, toute version ultérieure).\n"
 "\n"
 "Ce programme est distribué dans l'espoir qu'il soit utile,\n"
@@ -544,8 +563,7 @@ msgstr "type retourné incorrect"
 #: radiusd/auth.c:199
 #, c-format
 msgid "Invalid password aging information for user '%s'"
-msgstr ""
-"Information du vieillissement du mot de passe invalide pour l'usager '%s'"
+msgstr "Information du vieillissement du mot de passe invalide pour l'usager '%s'"
 
 #: radiusd/auth.c:234
 msgid "account locked"
@@ -592,8 +610,7 @@ msgstr "Valeur Auth-Failure-Trigger invalide: %s"
 
 #: radiusd/auth.c:937
 msgid "The value of Auth-Failure-Trigger attribute must begin with '/' or '('."
-msgstr ""
-"La valeur de l'attribut Auth-Failure-Trigger doit débuter par '/' ou '('."
+msgstr "La valeur de l'attribut Auth-Failure-Trigger doit débuter par '/' ou '('."
 
 #: radiusd/auth.c:975
 msgid "Rejected"
@@ -706,8 +723,7 @@ msgstr "hôte inconnu: %s"
 #: radiusd/checkrad.c:483
 #, c-format
 msgid "timed out in waiting for finger response from NAS %s"
-msgstr ""
-"délai expiré lors de l'attente de la réponse de finger depuis le NAS %s"
+msgstr "délai expiré lors de l'attente de la réponse de finger depuis le NAS %s"
 
 #: radiusd/checkrad.c:572
 msgid "path variable not set"
@@ -835,8 +851,7 @@ msgstr "ne laisser tomber les privilèges non-root"
 #: radiusd/exec.c:174
 #, fuzzy, c-format
 msgid "radius_exec_command(): won't execute, not an absolute pathname: %s"
-msgstr ""
-"radius_exec_program(): ne peut exécuter, n'est pas un chemin absolu: %s"
+msgstr "radius_exec_program(): ne peut exécuter, n'est pas un chemin absolu: %s"
 
 #: radiusd/exec.c:180 radiusd/exec.c:276
 msgid "can't reset SIGCHLD"
@@ -848,11 +863,8 @@ msgstr "ne peut restaurer SIGCHLD"
 
 #: radiusd/exec.c:228 radiusd/exec.c:358
 #, c-format
-msgid ""
-"can't run external program `%s' (reason reported via syslog channel user.err)"
-msgstr ""
-"ne peut exécuter le programme externe « %s » (raison fournie via le canal de "
-"syslog user.err)"
+msgid "can't run external program `%s' (reason reported via syslog channel user.err)"
+msgstr "ne peut exécuter le programme externe « %s » (raison fournie via le canal de syslog user.err)"
 
 #: radiusd/exec.c:239 radiusd/exec.c:367
 #, c-format
@@ -862,8 +874,7 @@ msgstr "programme externe « %s » %s"
 #: radiusd/exec.c:265
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
-msgstr ""
-"radius_exec_program(): ne peut exécuter, n'est pas un chemin absolu: %s"
+msgstr "radius_exec_program(): ne peut exécuter, n'est pas un chemin absolu: %s"
 
 #: radiusd/exec.c:272
 msgid "couldn't open pipe"
@@ -984,8 +995,7 @@ msgstr "utilise seulement dbm: USAGERS NON CHARGÉS"
 
 #: radiusd/files.c:1713
 msgid "DBM files found but no -b flag given - NOT using DBM"
-msgstr ""
-"Fichiers DBM repéré mais aucune option -b fournie - n'utilisera pas DBM"
+msgstr "Fichiers DBM repéré mais aucune option -b fournie - n'utilisera pas DBM"
 
 #: radiusd/files.c:1717
 #, c-format
@@ -1090,17 +1100,17 @@ msgstr "info"
 msgid "debug"
 msgstr "débug"
 
-#: radiusd/log.c:431
+#: radiusd/log.c:413
 #, c-format
 msgid "could not append to file %s"
 msgstr "ne peut ajouter au fichier %s"
 
-#: radiusd/log.c:511
+#: radiusd/log.c:490
 #, c-format
 msgid "%s: cannot change owner to %d:%d"
 msgstr "%s: ne peut modifier le propriétaire à %d:%d"
 
-#: radiusd/log.c:551
+#: radiusd/log.c:530
 #, c-format
 msgid "can't access log file `%s'"
 msgstr "ne peut accéder au fichier journal « %s »"
@@ -1108,43 +1118,43 @@ msgstr "ne peut accéder au fichier journal « %s »"
 #. TRANSLATORS: the subject will always be printed before this msgid.
 #. for example: "child 222 exited with status 0"
 #.
-#: radiusd/log.c:656
+#: radiusd/log.c:635
 #, c-format
 msgid "exited with status %d"
 msgstr "fin d'exécution avec le statut %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:661
+#: radiusd/log.c:640
 #, c-format
 msgid "terminated on signal %d"
 msgstr "fin d'exécution sur réception du signal %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:665
+#: radiusd/log.c:644
 #, c-format
 msgid "terminated"
 msgstr "fin d'exécution"
 
-#: radiusd/log.c:780
+#: radiusd/log.c:759
 #, c-format
 msgid "%s:%d: no channel mode for `%s'"
 msgstr "%s:%d: pas de mode canal pour « %s »"
 
-#: radiusd/log.c:943
+#: radiusd/log.c:922
 msgid "no levels applicable for this category"
 msgstr "aucun niveau applicable à cette catégorie"
 
-#: radiusd/log.c:969
+#: radiusd/log.c:948
 #, c-format
 msgid "%s:%d: channel `%s' not defined"
 msgstr "%s:%d: canal « %s » non défini"
 
-#: radiusd/log.c:1013 radiusd/snmpserv.c:345
+#: radiusd/log.c:992 radiusd/snmpserv.c:345
 #, c-format
 msgid "%s:%d: list item %d has wrong datatype"
 msgstr "%s:%d: item %d de la liste à un mauvais type de données"
 
-#: radiusd/log.c:1029
+#: radiusd/log.c:1008
 #, c-format
 msgid "%s:%d: no such module name: %s"
 msgstr "%s:%d: pas de module ayant le nom: %s"
@@ -1224,9 +1234,7 @@ msgstr "Math-Profile fait référence à une entrée par DÉFAUT"
 
 #: radiusd/radck.c:285
 msgid "Simultaneous-Use is used, but multiple login checking is not enabled"
-msgstr ""
-"Le mode utilisation simultané est activé mais la vérification de multiples "
-"logins n'est pas autorisée."
+msgstr "Le mode utilisation simultané est activé mais la vérification de multiples logins n'est pas autorisée."
 
 #: radiusd/radck.c:325 radiusd/radck.c:356
 msgid "No User-Password attribute in LHS"
@@ -1234,9 +1242,7 @@ msgstr "Pas d'attribut User-Password dans LHS"
 
 #: radiusd/radck.c:333
 msgid "Auth-Type = System can only be used when running with root privileges"
-msgstr ""
-"Auth-Type = System peut seulement être utilisé lorsqu'exécuté avec les "
-"privilèges root"
+msgstr "Auth-Type = System peut seulement être utilisé lorsqu'exécuté avec les privilèges root"
 
 #: radiusd/radck.c:343 radiusd/radck.c:380
 msgid "User-Password attribute ignored for this Auth-Type"
@@ -1466,8 +1472,7 @@ msgstr "Radiusd n'écoute plus sur aucun port."
 
 #: radiusd/radiusd.c:401
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
-msgstr ""
-"Radiusd ne fait plus d'écoute sur aucun port. Tentative de poursuite..."
+msgstr "Radiusd ne fait plus d'écoute sur aucun port. Tentative de poursuite..."
 
 #: radiusd/radiusd.c:457
 msgid "Starting"
@@ -1528,8 +1533,7 @@ msgstr "Chargement des fichiers de configuration."
 
 #: radiusd/radiusd.c:962
 msgid "Errors reading config file - EXITING"
-msgstr ""
-"Erreurs lors de la lecture du fichier de configuration -- fin d'exécution"
+msgstr "Erreurs lors de la lecture du fichier de configuration -- fin d'exécution"
 
 #: radiusd/radiusd.c:1134
 #, c-format
@@ -1563,9 +1567,7 @@ msgstr "Avortement du processus %s qui ne répond pas enfant %lu"
 #: radiusd/request.c:246
 #, c-format
 msgid "Cannot terminate child %lu. Attempting to kill inexisting process?"
-msgstr ""
-"Ne peut mettre fin au processus enfant %lu. Tentative d'arrêt d'un processus "
-"inexistant?"
+msgstr "Ne peut mettre fin au processus enfant %lu. Tentative d'arrêt d'un processus inexistant?"
 
 #: radiusd/request.c:256
 #, c-format
@@ -1814,31 +1816,31 @@ msgstr "fonction %s: argument %d doit être une chaîne"
 msgid "function %s takes too few arguments"
 msgstr "fonction %s prend trop peu d'arguments"
 
-#: radiusd/rewrite.y:5993
+#: radiusd/rewrite.y:5994
 #, c-format
 msgid "function %s() requires %d parameter"
 msgid_plural "function %s() requires %d parameters"
 msgstr[0] "fonction %s() requiert %d paramètre"
 msgstr[1] "fonction %s() requiert %d paramètres"
 
-#: radiusd/rewrite.y:6150
+#: radiusd/rewrite.y:6151
 #, c-format
 msgid "file not found: %s"
 msgstr "fichier non repéré: %s"
 
-#: radiusd/rewrite.y:6287
+#: radiusd/rewrite.y:6288
 msgid "function ~S not defined"
 msgstr "fonction ~S n'est pas définie"
 
-#: radiusd/rewrite.y:6303
+#: radiusd/rewrite.y:6304
 msgid "too many arguments for ~S"
 msgstr "trop d'arguments pour ~S"
 
-#: radiusd/rewrite.y:6330
+#: radiusd/rewrite.y:6331
 msgid "type mismatch in argument ~S(~S) in call to ~S"
 msgstr "type ne concorde par dans l'argument ~S(~S) dna l'appel à ~S"
 
-#: radiusd/rewrite.y:6340
+#: radiusd/rewrite.y:6341
 msgid "too few arguments for ~S"
 msgstr "trop peu d'arguments pour ~S"
 
@@ -1850,20 +1852,17 @@ msgstr "%s n'est pas un objet de procédure"
 #: radiusd/scheme.c:235
 #, c-format
 msgid "Procedure `%s' failed: see error output for details"
-msgstr ""
-"Échec de la procédure « %s »: voir la sortie d'erreurs pour les détails"
+msgstr "Échec de la procédure « %s »: voir la sortie d'erreurs pour les détails"
 
 #: radiusd/scheme.c:359 radiusd/scheme.c:403
 #, c-format
 msgid "Unexpected return value from Guile authentication function `%s'"
-msgstr ""
-"Valeur inattendue au retour de la fonction d'authentification Guile « %s »"
+msgstr "Valeur inattendue au retour de la fonction d'authentification Guile « %s »"
 
 #: radiusd/scheme.c:425
 #, c-format
 msgid "Unexpected return value from Guile accounting function `%s'"
-msgstr ""
-"Valeur inattendue au retour de la fonction de comptabilité Guile « %s »"
+msgstr "Valeur inattendue au retour de la fonction de comptabilité Guile « %s »"
 
 #: radiusd/scheme.c:519
 #, c-format
@@ -2008,9 +2007,7 @@ msgstr[1] "%s a mis à jour %d enregistrements"
 
 #: radiusd/sql.c:915
 msgid "SQL Auth specified in users file, but not in sqlserver file"
-msgstr ""
-"Auth SQL spécifié dans le fichier des usagers mais pas dans le fichier "
-"sqlserver"
+msgstr "Auth SQL spécifié dans le fichier des usagers mais pas dans le fichier sqlserver"
 
 #: radiusd/sql.c:1014
 #, c-format
@@ -2046,12 +2043,8 @@ msgid "stat_init failed"
 msgstr "échec de stat_init"
 
 #: radiusd/stat.c:227
-msgid ""
-"reached SNMP storage limit for the number of monitored ports: increase max-"
-"port-count"
-msgstr ""
-"capacité limite de stockage SNMP atteinte pour le nombre de port monitorés:"
-"augmenter le paramètre max-port-count"
+msgid "reached SNMP storage limit for the number of monitored ports: increase max-port-count"
+msgstr "capacité limite de stockage SNMP atteinte pour le nombre de port monitorés:augmenter le paramètre max-port-count"
 
 #: radiusd/stat.c:287
 #, c-format
@@ -2072,12 +2065,8 @@ msgid "negative port session time"
 msgstr "temps de session du port est négatif"
 
 #: radiusd/stat.c:468
-msgid ""
-"reached SNMP storage limit for the number of monitored NASes: increase max-"
-"nas-count"
-msgstr ""
-"capacité limite de stockage SNMP atteinte pour le nombre de NAS monitorés:"
-"augmenter le paramètre max-nas-count"
+msgid "reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"
+msgstr "capacité limite de stockage SNMP atteinte pour le nombre de NAS monitorés:augmenter le paramètre max-nas-count"
 
 #: radiusd/version.c:140
 msgid "GNU RADIUS server version "
@@ -2175,14 +2164,12 @@ msgstr "erreur d'écriture des données"
 
 #: radiusd/rpp.c:615
 msgid "Child exiting on timeout."
-msgstr ""
-"Fin d'exécution du processus enfant après expiration du délai d'oisiveté"
+msgstr "Fin d'exécution du processus enfant après expiration du délai d'oisiveté"
 
 #: radiusd/rpp.c:665
 #, c-format
 msgid "Child received malformed header (len = %d, error = %s)"
-msgstr ""
-"Le processus enfant a reçu une en-tête mal composée (len = %d, erreur = %s)"
+msgstr "Le processus enfant a reçu une en-tête mal composée (len = %d, erreur = %s)"
 
 #: radiusd/rpp.c:677
 msgid "Child received malformed data"
@@ -2474,9 +2461,7 @@ msgstr "sélectionner le niveau de mise au point"
 
 #: radtest/main.c:50
 msgid "Read input from FILE. Stops further processing of the command line."
-msgstr ""
-"Lire l'entrée à partir du FICHIER. Stopper tout traitement ultérieur de la "
-"ligne de commande."
+msgstr "Lire l'entrée à partir du FICHIER. Stopper tout traitement ultérieur de la ligne de commande."
 
 #: radtest/main.c:54
 msgid "set number of retries"
@@ -2677,9 +2662,7 @@ msgstr "n'est pas une paire de listes"
 
 #: radtest/runtime.c:1254
 msgid "invalid data type in send statement (expected A/V list)"
-msgstr ""
-"type de donnée invalide dans une déclaration de transmission (attendu dans "
-"une liste A/V)"
+msgstr "type de donnée invalide dans une déclaration de transmission (attendu dans une liste A/V)"
 
 #: radtest/runtime.c:1270
 #, c-format
@@ -2900,13 +2883,8 @@ msgstr[1] "la requête a retourné %d tuples: %s"
 #~ msgid "send arbitrary radius packets"
 #~ msgstr "transmettre des paquets radiaus arbitraires"
 
-#~ msgid ""
-#~ "Read input from FILE. When this option is used, all unknown options in "
-#~ "the form --VAR=VALUE are treated as variable assignments"
-#~ msgstr ""
-#~ "Lire à partir du FICHIER. Lorsque cette option est utilisée, toutes les "
-#~ "options inconnuesde la forme --VAR=VALEUR sont traitées comme des "
-#~ "affectations de variables"
+#~ msgid "Read input from FILE. When this option is used, all unknown options in the form --VAR=VALUE are treated as variable assignments"
+#~ msgstr "Lire à partir du FICHIER. Lorsque cette option est utilisée, toutes les options inconnuesde la forme --VAR=VALEUR sont traitées comme des affectations de variables"
 
 #~ msgid "wrong datatype: expected vector"
 #~ msgstr "mauvais type de données: attendait vecteur"

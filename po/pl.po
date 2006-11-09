@@ -1,24 +1,20 @@
-# Polish messages for GNU Radius -*- mode: po; buffer-file-coding-system: iso-8859-2; default-input-method: latin-2-prefix -*-
-# Copyright (C) 2004 Free Software Foundation, Inc.
-# Sergey Poznyakoff <gray@gnu.org>, 2003,2004.
+# Polish messages for GNU Radius 
+# Copyright (C) 2006 Free Software Foundation, Inc.
+# Sergey Poznyakoff <gray@gnu.org>, 2003,2004,2006.
 # Krzysztof Kopera <Krzysztof_Kopera/HeadQ@netia.pl>, 2002.
 # 	  
-# Local Variables:
-# Local IspellDict: polish
-# End:
 msgid ""
 msgstr ""
-"Project-Id-Version: radius 1.2.96\n"
+"Project-Id-Version: radius 1.3.91\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2005-08-12 14:59+0300\n"
-"PO-Revision-Date: 2004-11-16 11:59+0200\n"
+"POT-Creation-Date: 2006-09-08 15:25+0300\n"
+"PO-Revision-Date: 2006-10-12 13:46+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 #: lib/avl.c:92
 #, c-format
@@ -28,8 +24,7 @@ msgstr "make_pair(): atrybutu %d nie odnaleziono w s³owniku"
 #: lib/client.c:127
 #, c-format
 msgid "Actual request length does not match reported length (%d, %d)"
-msgstr ""
-"Rzeczywista d³ugo¶æ ¿±dania ró¿ni siê od d³ugo¶ci zameldowanej (%d, %d)"
+msgstr "Rzeczywista d³ugo¶æ ¿±dania ró¿ni siê od d³ugo¶ci zameldowanej (%d, %d)"
 
 #: lib/client.c:141
 msgid "Received invalid reply digest from server"
@@ -169,57 +164,57 @@ msgstr[0] "%s: %d b³±d"
 msgstr[1] "%s: %d b³êdy"
 msgstr[2] "%s: %d b³êdów"
 
-#: lib/getopt.c:687
+#: lib/getopt.c:531 lib/getopt.c:547
 #, c-format
 msgid "%s: option `%s' is ambiguous\n"
 msgstr "%s: opcja `%s' jest niejednoznaczna\n"
 
-#: lib/getopt.c:712
+#: lib/getopt.c:580 lib/getopt.c:584
 #, c-format
 msgid "%s: option `--%s' doesn't allow an argument\n"
 msgstr "%s: opcja `--%s' nie mo¿e mieæ argumentów\n"
 
-#: lib/getopt.c:717
+#: lib/getopt.c:593 lib/getopt.c:598
 #, c-format
 msgid "%s: option `%c%s' doesn't allow an argument\n"
 msgstr "%s: opcja `%c%s' nie mo¿e mieæ argumentów\n"
 
-#: lib/getopt.c:735 lib/getopt.c:908
+#: lib/getopt.c:641 lib/getopt.c:660 lib/getopt.c:976 lib/getopt.c:995
 #, c-format
 msgid "%s: option `%s' requires an argument\n"
 msgstr "%s: opcja `%s' musi mieæ argument\n"
 
-#: lib/getopt.c:764
+#: lib/getopt.c:698 lib/getopt.c:701
 #, c-format
 msgid "%s: unrecognized option `--%s'\n"
 msgstr "%s: nieznana opcja `--%s'\n"
 
-#: lib/getopt.c:768
+#: lib/getopt.c:709 lib/getopt.c:712
 #, c-format
 msgid "%s: unrecognized option `%c%s'\n"
 msgstr "%s: nieznana opcja `%c%s'\n"
 
-#: lib/getopt.c:794
+#: lib/getopt.c:764 lib/getopt.c:767
 #, c-format
 msgid "%s: illegal option -- %c\n"
 msgstr "%s: niew³a¶ciwa opcja -- %c\n"
 
-#: lib/getopt.c:797
+#: lib/getopt.c:773 lib/getopt.c:776
 #, c-format
 msgid "%s: invalid option -- %c\n"
 msgstr "%s: b³êdna opcja -- %c\n"
 
-#: lib/getopt.c:827 lib/getopt.c:957
+#: lib/getopt.c:828 lib/getopt.c:844 lib/getopt.c:1048 lib/getopt.c:1066
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: opcja musi mieæ argument -- %c\n"
 
-#: lib/getopt.c:874
+#: lib/getopt.c:897 lib/getopt.c:913
 #, c-format
 msgid "%s: option `-W %s' is ambiguous\n"
 msgstr "%s: opcja `-W %s' jest niejednoznaczna\n"
 
-#: lib/getopt.c:892
+#: lib/getopt.c:937 lib/getopt.c:955
 #, c-format
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: opcja `-W %s' nie mo¿e mieæ argumentów\n"
@@ -235,9 +230,9 @@ msgid "can't open file `%s'"
 msgstr "nie mogê otworzyæ `%s'"
 
 #: lib/radutmp.c:53
-#, fuzzy, c-format
+#, c-format
 msgid "grad_ut_setent(): cannot open `%s'"
-msgstr "rut_setent(): nie mogê otworzyæ `%s'"
+msgstr "grad_rut_setent(): nie mogê otworzyæ `%s'"
 
 #: lib/radutmp.c:191
 #, c-format
@@ -252,9 +247,7 @@ msgstr "login: pozycja dla NAS-u %s, port %d wystêpuje w porz±dku b³êdnym"
 #: lib/radutmp.c:209
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr ""
-"logout: pozycja dla NAS-u %s, port %d ma b³êdny ID (spodziewano %s, "
-"odnaleziono %s)"
+msgstr "logout: pozycja dla NAS-u %s, port %d ma b³êdny ID (spodziewano %s, odnaleziono %s)"
 
 #: lib/radutmp.c:233
 #, c-format
@@ -338,81 +331,99 @@ msgstr "wy³±czanie odpluskwiania analizatora pliku \"users\""
 msgid "string too long: %s"
 msgstr "³añcuch za d³ugi: %s"
 
-#: lib/argp-help.c:217
+#: lib/argp-help.c:148
+#, c-format
+msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+msgstr "ARGP_HELP_FMT: warto¶æ %s jest mniejsza ni¿ albo równa %s"
+
+#: lib/argp-help.c:221
 #, c-format
 msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
 msgstr "%.*s: parametr ARGP_HELP_FMT wymaga podania warto¶ci"
 
-#: lib/argp-help.c:226
+#: lib/argp-help.c:227
+#, c-format
+msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
+msgstr "%.*s: parametr ARGP_HELP_FMT powinien byæ dodatni"
+
+#: lib/argp-help.c:236
 #, c-format
 msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
 msgstr "%.*s: Nieznany parametr ARGP_HELP_FMT"
 
-#: lib/argp-help.c:238
+#: lib/argp-help.c:248
 #, c-format
 msgid "Garbage in ARGP_HELP_FMT: %s"
 msgstr "B³êdne dane w ARGP_HELP_FMT: %s"
 
-#: lib/argp-help.c:1200
-msgid ""
-"Mandatory or optional arguments to long options are also mandatory or "
-"optional for any corresponding short options."
-msgstr ""
-"Argumenty obowi±zkowe lub opcjonalne dla d³ugich opcji s± równie¿ "
-"obowi±zkowe lub opcjonalne dla odpowiednich krótkich opcji."
+#: lib/argp-help.c:1229
+msgid "Mandatory or optional arguments to long options are also mandatory or optional for any corresponding short options."
+msgstr "Argumenty obowi±zkowe lub opcjonalne dla d³ugich opcji s± równie¿ obowi±zkowe lub opcjonalne dla odpowiednich krótkich opcji."
 
-#: lib/argp-help.c:1580
+#: lib/argp-help.c:1616
 msgid "Usage:"
 msgstr "Sk³adnia:"
 
-#: lib/argp-help.c:1584
+#: lib/argp-help.c:1620
 msgid "  or: "
 msgstr "  lub: "
 
-#: lib/argp-help.c:1596
+#: lib/argp-help.c:1632
 msgid " [OPTION...]"
 msgstr " [OPCJA...]"
 
-#: lib/argp-help.c:1623
+#: lib/argp-help.c:1659
 #, c-format
 msgid "Try `%s --help' or `%s --usage' for more information.\n"
 msgstr "Napisz `%s --help' lub `%s --usage' by uzyskaæ wiêcej informacji.\n"
 
-#: lib/argp-help.c:1651
+#: lib/argp-help.c:1687
 #, c-format
 msgid "Report bugs to %s.\n"
 msgstr "Prosimy zg³aszaæ b³êdy na adres %s.\n"
 
-#: lib/argp-parse.c:101
-msgid "Give this help list"
-msgstr "Wy¶wietla ten tekst pomocy"
+#: lib/argp-help.c:1906
+msgid "Unknown system error"
+msgstr "Nieznany b³±d systemowy"
 
-#: lib/argp-parse.c:102
-msgid "Give a short usage message"
-msgstr "Wy¶wietla krótkie informacje o sk³adni polecenia"
+#: lib/argp-parse.c:82
+msgid "give this help list"
+msgstr "wy¶wietla ten tekst pomocy"
 
-#: lib/argp-parse.c:103
-msgid "Set the program name"
-msgstr "Okre¶la nazwê programu"
+#: lib/argp-parse.c:83
+msgid "give a short usage message"
+msgstr "wy¶wietla krótkie informacje o sk³adni polecenia"
 
-#: lib/argp-parse.c:105
-msgid "Hang for SECS seconds (default 3600)"
-msgstr "Czekaj przez SEK sekund (domy¶lnie 3600)"
+#: lib/argp-parse.c:84
+msgid "NAME"
+msgstr "NAZWA"
 
-#: lib/argp-parse.c:162
-msgid "Print program version"
-msgstr "Wy¶wietla wersjê programu"
+#: lib/argp-parse.c:84
+msgid "set the program name"
+msgstr "ustawia nazwê programu"
 
-#: lib/argp-parse.c:178
+#: lib/argp-parse.c:85
+msgid "SECS"
+msgstr "SEK"
+
+#: lib/argp-parse.c:86
+msgid "hang for SECS seconds (default 3600)"
+msgstr "czekaj przez SEK sekund (domy¶lnie 3600)"
+
+#: lib/argp-parse.c:143
+msgid "print program version"
+msgstr "wy¶wietla wersjê programu"
+
+#: lib/argp-parse.c:159
 msgid "(PROGRAM ERROR) No version known!?"
 msgstr "(B£¡D PROGRAMU) Nieznana wersja!?"
 
-#: lib/argp-parse.c:659
+#: lib/argp-parse.c:612
 #, c-format
 msgid "%s: Too many arguments\n"
 msgstr "%s: za du¿o argumentów\n"
 
-#: lib/argp-parse.c:800
+#: lib/argp-parse.c:755
 msgid "(PROGRAM ERROR) Option should have been recognized!?"
 msgstr "(B£¡D PROGRAMU) Opcja powinna zostaæ rozpoznana!?"
 
@@ -454,7 +465,6 @@ msgid "Common options"
 msgstr "Opcje powszechne"
 
 #: lib/radargp.c:67
-#, fuzzy
 msgid ""
 "   This program is free software; you can redistribute it and/or modify\n"
 "   it under the terms of the GNU General Public License as published by\n"
@@ -486,7 +496,7 @@ msgstr ""
 "   Z pewno¶ci± wraz z niniejszym programem otrzyma³e¶ te¿ egzemplarz\n"
 "   Powszechnej Licencji Publicznej GNU (GNU General Public License);\n"
 "   je¶li nie - napisz do Free Software Foundation, Inc.,\n"
-"   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.\n"
+"   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n"
 
 #: radiusd/acct.c:198
 msgid "no Acct-Status-Type attribute"
@@ -598,8 +608,7 @@ msgstr "Niew³a¶ciwa warto¶æ atrybutu Auth-Failure-Trigger: %s"
 
 #: radiusd/auth.c:937
 msgid "The value of Auth-Failure-Trigger attribute must begin with '/' or '('."
-msgstr ""
-"Warto¶æ atrybutu Auth-Failure-Trigger powinna zaczynaæ siê od '/' lub '('."
+msgstr "Warto¶æ atrybutu Auth-Failure-Trigger powinna zaczynaæ siê od '/' lub '('."
 
 #: radiusd/auth.c:975
 msgid "Rejected"
@@ -840,11 +849,9 @@ msgid "cannot drop non-root setuid privileges"
 msgstr "nie mo¿na porzuciæ uprawnieñ setuid u¿ytkownika"
 
 #: radiusd/exec.c:174
-#, fuzzy, c-format
+#, c-format
 msgid "radius_exec_command(): won't execute, not an absolute pathname: %s"
-msgstr ""
-"radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie jest pe³n± "
-"nazw± ¶cie¿ki: %s"
+msgstr "radius_exec_command(): nie mo¿na uruchomiæ, nazwa programu nie jest pe³n± nazw± ¶cie¿ki: %s"
 
 #: radiusd/exec.c:180 radiusd/exec.c:276
 msgid "can't reset SIGCHLD"
@@ -856,11 +863,8 @@ msgstr "nie mo¿na odtworzyæ obs³ugi SIGCHLD"
 
 #: radiusd/exec.c:228 radiusd/exec.c:358
 #, c-format
-msgid ""
-"can't run external program `%s' (reason reported via syslog channel user.err)"
-msgstr ""
-"nie mo¿na wykonaæ programu zewnêtrznego `%s' (powód raportowany przez kana³ "
-"syslog user.err)"
+msgid "can't run external program `%s' (reason reported via syslog channel user.err)"
+msgstr "nie mo¿na wykonaæ programu zewnêtrznego `%s' (powód raportowany przez kana³ syslog user.err)"
 
 #: radiusd/exec.c:239 radiusd/exec.c:367
 #, c-format
@@ -870,9 +874,7 @@ msgstr "program zewnêtrzny `%s' %s"
 #: radiusd/exec.c:265
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
-msgstr ""
-"radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie jest pe³n± "
-"nazw± ¶cie¿ki: %s"
+msgstr "radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie jest pe³n± nazw± ¶cie¿ki: %s"
 
 #: radiusd/exec.c:272
 msgid "couldn't open pipe"
@@ -967,9 +969,9 @@ msgid "not defined"
 msgstr "nie zdefiniowany"
 
 #: radiusd/files.c:651
-#, fuzzy, c-format
+#, c-format
 msgid "cannot execute `%s'"
-msgstr "nie mogê otworzyæ menu `%s'"
+msgstr "nie mo¿na uruchomiæ `%s'"
 
 #: radiusd/files.c:1053
 msgid "unknown method"
@@ -994,8 +996,7 @@ msgstr "u¿ycie jedynie dbm: U¯YTKOWNICY NIEZA£ADOWANI"
 
 #: radiusd/files.c:1713
 msgid "DBM files found but no -b flag given - NOT using DBM"
-msgstr ""
-"znaleziono pliki DBM lecz nie podano znacznika -b,  DBM NIE jest u¿ywane"
+msgstr "znaleziono pliki DBM lecz nie podano znacznika -b,  DBM NIE jest u¿ywane"
 
 #: radiusd/files.c:1717
 #, c-format
@@ -1100,17 +1101,17 @@ msgstr "info"
 msgid "debug"
 msgstr "debug"
 
-#: radiusd/log.c:431
+#: radiusd/log.c:413
 #, c-format
 msgid "could not append to file %s"
 msgstr "do³±czanie do pliku %s niemo¿liwe"
 
-#: radiusd/log.c:511
+#: radiusd/log.c:490
 #, c-format
 msgid "%s: cannot change owner to %d:%d"
 msgstr "nie mo¿na zmieniæ w³a¶ciciela kana³u `%s' na %d:%d"
 
-#: radiusd/log.c:551
+#: radiusd/log.c:530
 #, c-format
 msgid "can't access log file `%s'"
 msgstr "nie ma dostêpu do pliku `%s'"
@@ -1118,43 +1119,43 @@ msgstr "nie ma dostêpu do pliku `%s'"
 #. TRANSLATORS: the subject will always be printed before this msgid.
 #. for example: "child 222 exited with status 0"
 #.
-#: radiusd/log.c:656
+#: radiusd/log.c:635
 #, c-format
 msgid "exited with status %d"
 msgstr "wyj¶cie ze stanem %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:661
+#: radiusd/log.c:640
 #, c-format
 msgid "terminated on signal %d"
 msgstr "zakoñczony na sygna³ %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:665
+#: radiusd/log.c:644
 #, c-format
 msgid "terminated"
 msgstr "zakoñczony"
 
-#: radiusd/log.c:780
+#: radiusd/log.c:759
 #, c-format
 msgid "%s:%d: no channel mode for `%s'"
 msgstr "%s:%d: brak trybu dla kana³u `%s'"
 
-#: radiusd/log.c:943
+#: radiusd/log.c:922
 msgid "no levels applicable for this category"
 msgstr "brak poziomów dla tej kategorii"
 
-#: radiusd/log.c:969
+#: radiusd/log.c:948
 #, c-format
 msgid "%s:%d: channel `%s' not defined"
 msgstr "%s:%d: kana³ `%s' nie jest zdefiniowany"
 
-#: radiusd/log.c:1013 radiusd/snmpserv.c:345
+#: radiusd/log.c:992 radiusd/snmpserv.c:345
 #, c-format
 msgid "%s:%d: list item %d has wrong datatype"
 msgstr "%s:%d: b³êdny typ danych dla elementu %d listy"
 
-#: radiusd/log.c:1029
+#: radiusd/log.c:1008
 #, c-format
 msgid "%s:%d: no such module name: %s"
 msgstr "%s:%d: nieznana nazwa modu³u: %s"
@@ -1234,9 +1235,7 @@ msgstr "Match-Profile odnosi siê do profilu DEFAULT"
 
 #: radiusd/radck.c:285
 msgid "Simultaneous-Use is used, but multiple login checking is not enabled"
-msgstr ""
-"U¿ywa siê atrybutu Simultaneous-Use, ale sprawdzanie logowañ wielokrotnych "
-"nie jest w³±czone"
+msgstr "U¿ywa siê atrybutu Simultaneous-Use, ale sprawdzanie logowañ wielokrotnych nie jest w³±czone"
 
 #: radiusd/radck.c:325 radiusd/radck.c:356
 msgid "No User-Password attribute in LHS"
@@ -1244,9 +1243,7 @@ msgstr "W LHS brakuje atrybutu User-Password"
 
 #: radiusd/radck.c:333
 msgid "Auth-Type = System can only be used when running with root privileges"
-msgstr ""
-"Auth-Type = System mo¿na u¿ywaæ tylko podczas wykonania z uprawnieniami root-"
-"a"
+msgstr "Auth-Type = System mo¿na u¿ywaæ tylko podczas wykonania z uprawnieniami root-a"
 
 #: radiusd/radck.c:343 radiusd/radck.c:380
 msgid "User-Password attribute ignored for this Auth-Type"
@@ -1339,11 +1336,11 @@ msgstr "Wy¶wietla warto¶ci domy¶lne kompilacji"
 
 #: radiusd/radiusd.c:62
 msgid "Quiet mode (valid only with --mode)"
-msgstr ""
+msgstr "Tryb cichy (poprawny tylko razem z --mode)"
 
 #: radiusd/radiusd.c:66
 msgid "Daemon configuration options. Please use raddb/config instead."
-msgstr ""
+msgstr "Opcje konfiguracji demona. Prosimy o korzystanie z raddb/config zamiast nich."
 
 #: radiusd/radiusd.c:70
 msgid "Do detailed authentication logging"
@@ -1510,8 +1507,7 @@ msgstr "Rozpoczêto ponowne uruchomienie"
 
 #: radiusd/radiusd.c:781
 msgid "can't restart: not started as absolute pathname"
-msgstr ""
-"nie mo¿na ponownie uruchomiæ: nazwa programu nie jest pe³n± nazw± ¶cie¿ki"
+msgstr "nie mo¿na ponownie uruchomiæ: nazwa programu nie jest pe³n± nazw± ¶cie¿ki"
 
 #: radiusd/radiusd.c:793
 msgid "radiusd_restart: cannot fork"
@@ -1556,9 +1552,9 @@ msgid "INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"
 msgstr "B£¡D WEWNÊTRZNY (%s:%d): atrybut %d ma b³êdny typ (%d)"
 
 #: radiusd/radutil.c:536
-#, fuzzy, c-format
+#, c-format
 msgid "cannot convert \"%s\" to integer"
-msgstr "nie mo¿na przekonwertowaæ %s %s"
+msgstr "nie mo¿na skonwertowaæ %s na liczbê ca³±"
 
 #: radiusd/request.c:222
 #, c-format
@@ -1573,9 +1569,7 @@ msgstr "Unicestwienie nieodpowiadaj±cego %s procesu %lu"
 #: radiusd/request.c:246
 #, c-format
 msgid "Cannot terminate child %lu. Attempting to kill inexisting process?"
-msgstr ""
-"Nie mo¿na zakoñczyæ procesu %lu. Próba unicestwienia nie istniej±cego "
-"procesu?"
+msgstr "Nie mo¿na zakoñczyæ procesu %lu. Próba unicestwienia nie istniej±cego procesu?"
 
 #: radiusd/request.c:256
 #, c-format
@@ -1824,7 +1818,7 @@ msgstr "funkcja %s: parametru %d ma byæ ³añcuchem"
 msgid "function %s takes too few arguments"
 msgstr "funkcja %s przyjmuje za ma³o argumentów"
 
-#: radiusd/rewrite.y:5993
+#: radiusd/rewrite.y:5994
 #, c-format
 msgid "function %s() requires %d parameter"
 msgid_plural "function %s() requires %d parameters"
@@ -1832,24 +1826,24 @@ msgstr[0] "funkcja %s() wymaga %d parametru"
 msgstr[1] "funkcja %s() wymaga %d parametry"
 msgstr[2] "funkcja %s() wymaga %d parametrów"
 
-#: radiusd/rewrite.y:6150
+#: radiusd/rewrite.y:6151
 #, c-format
 msgid "file not found: %s"
 msgstr "nie znaleziono pliku %s"
 
-#: radiusd/rewrite.y:6287
+#: radiusd/rewrite.y:6288
 msgid "function ~S not defined"
 msgstr "funkcja ~S niezdefiniowana"
 
-#: radiusd/rewrite.y:6303
+#: radiusd/rewrite.y:6304
 msgid "too many arguments for ~S"
 msgstr "za du¿o argumentów dla ~S"
 
-#: radiusd/rewrite.y:6330
+#: radiusd/rewrite.y:6331
 msgid "type mismatch in argument ~S(~S) in call to ~S"
 msgstr "niepoprawny typ argumentu ~S(~S) w wywo³aniu ~S"
 
-#: radiusd/rewrite.y:6340
+#: radiusd/rewrite.y:6341
 msgid "too few arguments for ~S"
 msgstr "za ma³o argumentów dla ~S"
 
@@ -1861,8 +1855,7 @@ msgstr "%s nie jest obiektem-procedur±"
 #: radiusd/scheme.c:235
 #, c-format
 msgid "Procedure `%s' failed: see error output for details"
-msgstr ""
-"Procedura `%s' nie powiod³a siê: szczegó³y patrz w pliku wyj¶cia b³êdów"
+msgstr "Procedura `%s' nie powiod³a siê: szczegó³y patrz w pliku wyj¶cia b³êdów"
 
 #: radiusd/scheme.c:359 radiusd/scheme.c:403
 #, c-format
@@ -2027,8 +2020,7 @@ msgstr "SQL: b³êdny operator: %s"
 
 #: radiusd/sql.c:1085
 msgid "SQL authentication is not enabled in raddb/sqlserver"
-msgstr ""
-"Uwierzytelnienie przez SQL nie zosta³o w³±czone w pliku raddb/sqlserver"
+msgstr "Uwierzytelnienie przez SQL nie zosta³o w³±czone w pliku raddb/sqlserver"
 
 #: radiusd/sql.c:1315
 msgid "Radiusd is compiled without SQL support"
@@ -2056,11 +2048,8 @@ msgid "stat_init failed"
 msgstr "stat_init nie powiod³a siê"
 
 #: radiusd/stat.c:227
-msgid ""
-"reached SNMP storage limit for the number of monitored ports: increase max-"
-"port-count"
-msgstr ""
-"osi±gniêto ograniczenie liczby nadzorowanych portów: zwiêksz max-port-count"
+msgid "reached SNMP storage limit for the number of monitored ports: increase max-port-count"
+msgstr "osi±gniêto ograniczenie liczby nadzorowanych portów: zwiêksz max-port-count"
 
 #: radiusd/stat.c:287
 #, c-format
@@ -2081,11 +2070,8 @@ msgid "negative port session time"
 msgstr "ujemna d³ugo¶æ sesji"
 
 #: radiusd/stat.c:468
-msgid ""
-"reached SNMP storage limit for the number of monitored NASes: increase max-"
-"nas-count"
-msgstr ""
-"osi±gniêto ograniczenie liczby nadzorowanych NAS-ów: zwiêksz max-nas-count"
+msgid "reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"
+msgstr "osi±gniêto ograniczenie liczby nadzorowanych NAS-ów: zwiêksz max-nas-count"
 
 #: radiusd/version.c:140
 msgid "GNU RADIUS server version "
@@ -2183,9 +2169,7 @@ msgstr "b³±d zapisu danych"
 
 #: radiusd/rpp.c:615
 msgid "Child exiting on timeout."
-msgstr ""
-"Podproces zakoñczono: przekroczony czas oczekiwania na wej¶cie z procesu "
-"g³ównego"
+msgstr "Podproces zakoñczono: przekroczony czas oczekiwania na wej¶cie z procesu g³ównego"
 
 #: radiusd/rpp.c:665
 #, c-format
@@ -2906,12 +2890,8 @@ msgstr[2] "zapytanie zwróci³o %d wierszy: %s"
 #~ msgid "send arbitrary radius packets"
 #~ msgstr "wysy³a dowolne pakiety radiusa"
 
-#~ msgid ""
-#~ "Read input from FILE. When this option is used, all unknown options in "
-#~ "the form --VAR=VALUE are treated as variable assignments"
-#~ msgstr ""
-#~ "Odczyt wej¶cia z PLIKU. Po wyst±pieniu tej opcji wszystkie nieznane opcje "
-#~ "w formie --ZMIENNA=WARTO¦Æ s± traktowane jako podstawienia"
+#~ msgid "Read input from FILE. When this option is used, all unknown options in the form --VAR=VALUE are treated as variable assignments"
+#~ msgstr "Odczyt wej¶cia z PLIKU. Po wyst±pieniu tej opcji wszystkie nieznane opcje w formie --ZMIENNA=WARTO¦Æ s± traktowane jako podstawienia"
 
 #~ msgid "wrong datatype: expected vector"
 #~ msgstr "b³êdny typ danych: spodziewano wektor"

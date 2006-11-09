@@ -20,15 +20,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.2.96\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2005-08-12 14:59+0300\n"
+"POT-Creation-Date: 2006-09-08 15:25+0300\n"
 "PO-Revision-Date: 2004-11-16 12:05+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=KOI8-R\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 #: lib/avl.c:92
 #, c-format
@@ -178,57 +177,57 @@ msgstr[0] "%s: %d ошибка"
 msgstr[1] "%s: %d ошибки"
 msgstr[2] "%s: %d ошибок"
 
-#: lib/getopt.c:687
+#: lib/getopt.c:531 lib/getopt.c:547
 #, c-format
 msgid "%s: option `%s' is ambiguous\n"
 msgstr "%s: опция `%s' неоднозначна\n"
 
-#: lib/getopt.c:712
+#: lib/getopt.c:580 lib/getopt.c:584
 #, c-format
 msgid "%s: option `--%s' doesn't allow an argument\n"
 msgstr "%s: опция `--%s' не принимает аргументов\n"
 
-#: lib/getopt.c:717
+#: lib/getopt.c:593 lib/getopt.c:598
 #, c-format
 msgid "%s: option `%c%s' doesn't allow an argument\n"
 msgstr "%s: опция `%c%s' не принимает аргументов\n"
 
-#: lib/getopt.c:735 lib/getopt.c:908
+#: lib/getopt.c:641 lib/getopt.c:660 lib/getopt.c:976 lib/getopt.c:995
 #, c-format
 msgid "%s: option `%s' requires an argument\n"
 msgstr "%s: опция `%s' требует аргумента\n"
 
-#: lib/getopt.c:764
+#: lib/getopt.c:698 lib/getopt.c:701
 #, c-format
 msgid "%s: unrecognized option `--%s'\n"
 msgstr "%s: неопознанная опция `--%s'\n"
 
-#: lib/getopt.c:768
+#: lib/getopt.c:709 lib/getopt.c:712
 #, c-format
 msgid "%s: unrecognized option `%c%s'\n"
 msgstr "%s: неопознанная опция `%c%s'\n"
 
-#: lib/getopt.c:794
+#: lib/getopt.c:764 lib/getopt.c:767
 #, c-format
 msgid "%s: illegal option -- %c\n"
 msgstr "%s: недействительная опция -- %c\n"
 
-#: lib/getopt.c:797
+#: lib/getopt.c:773 lib/getopt.c:776
 #, c-format
 msgid "%s: invalid option -- %c\n"
 msgstr "%s: неправильная опция -- %c\n"
 
-#: lib/getopt.c:827 lib/getopt.c:957
+#: lib/getopt.c:828 lib/getopt.c:844 lib/getopt.c:1048 lib/getopt.c:1066
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: опция требует аргумента -- %c\n"
 
-#: lib/getopt.c:874
+#: lib/getopt.c:897 lib/getopt.c:913
 #, c-format
 msgid "%s: option `-W %s' is ambiguous\n"
 msgstr "%s: опция `-W %s' неоднозначна\n"
 
-#: lib/getopt.c:892
+#: lib/getopt.c:937 lib/getopt.c:955
 #, c-format
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: опция `-W %s' не берет аргументов\n"
@@ -261,8 +260,7 @@ msgstr "заход: записи для NAS %s, порт %d в неправильном порядке"
 #: lib/radutmp.c:209
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr ""
-"выход: неверный ID у записи для NAS %s, порт %d (ожидался %s, обнаружен %s)"
+msgstr "выход: неверный ID у записи для NAS %s, порт %d (ожидался %s, обнаружен %s)"
 
 #: lib/radutmp.c:233
 #, c-format
@@ -346,83 +344,107 @@ msgstr "отладка разбора файла `users' выключена"
 msgid "string too long: %s"
 msgstr "слишком длинная строка: %s"
 
+#: lib/argp-help.c:148
+#, c-format
+msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+msgstr ""
+
 # FUZZY
-#: lib/argp-help.c:217
+#: lib/argp-help.c:221
 #, c-format
 msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
 msgstr "%.*s: параметр ARGP_HELP_FMT требует значения"
 
-#: lib/argp-help.c:226
+# FUZZY
+#: lib/argp-help.c:227
+#, fuzzy, c-format
+msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
+msgstr "%.*s: параметр ARGP_HELP_FMT требует значения"
+
+#: lib/argp-help.c:236
 #, c-format
 msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
 msgstr "%.*s: Неизвестный параметр ARGP_HELP_FMT"
 
-#: lib/argp-help.c:238
+#: lib/argp-help.c:248
 #, c-format
 msgid "Garbage in ARGP_HELP_FMT: %s"
 msgstr "Мусор в ARGP_HELP_FMT: %s"
 
-#: lib/argp-help.c:1200
-msgid ""
-"Mandatory or optional arguments to long options are also mandatory or "
-"optional for any corresponding short options."
-msgstr ""
-"Обязательные или необязательные аргументы к длинным опциям остаются таковыми "
-"и к соответствующим коротким опциям."
+#: lib/argp-help.c:1229
+msgid "Mandatory or optional arguments to long options are also mandatory or optional for any corresponding short options."
+msgstr "Обязательные или необязательные аргументы к длинным опциям остаются таковыми и к соответствующим коротким опциям."
 
-#: lib/argp-help.c:1580
+#: lib/argp-help.c:1616
 msgid "Usage:"
 msgstr "Использование:"
 
-#: lib/argp-help.c:1584
+#: lib/argp-help.c:1620
 msgid "  or: "
 msgstr "  или: "
 
-#: lib/argp-help.c:1596
+#: lib/argp-help.c:1632
 msgid " [OPTION...]"
 msgstr " [ОПЦИЯ...]"
 
-#: lib/argp-help.c:1623
+#: lib/argp-help.c:1659
 #, c-format
 msgid "Try `%s --help' or `%s --usage' for more information.\n"
-msgstr ""
-"Попробуй `%s --help' или `%s --usage' для получения подробной информации.\n"
+msgstr "Попробуй `%s --help' или `%s --usage' для получения подробной информации.\n"
 
-#: lib/argp-help.c:1651
+#: lib/argp-help.c:1687
 #, c-format
 msgid "Report bugs to %s.\n"
 msgstr "Об ошибках сообщай по адресу %s.\n"
 
-#: lib/argp-parse.c:101
-msgid "Give this help list"
+#: lib/argp-help.c:1906
+msgid "Unknown system error"
+msgstr ""
+
+#: lib/argp-parse.c:82
+#, fuzzy
+msgid "give this help list"
 msgstr "Выдать эту подсказку"
 
-#: lib/argp-parse.c:102
-msgid "Give a short usage message"
+#: lib/argp-parse.c:83
+#, fuzzy
+msgid "give a short usage message"
 msgstr "Выдать краткую подсказку по использованию"
 
-#: lib/argp-parse.c:103
-msgid "Set the program name"
+#: lib/argp-parse.c:84
+#, fuzzy
+msgid "NAME"
+msgstr "NASNAME"
+
+#: lib/argp-parse.c:84
+#, fuzzy
+msgid "set the program name"
 msgstr "Задать номер порта для авторизации"
 
-#: lib/argp-parse.c:105
-msgid "Hang for SECS seconds (default 3600)"
+#: lib/argp-parse.c:85
+msgid "SECS"
+msgstr ""
+
+#: lib/argp-parse.c:86
+#, fuzzy
+msgid "hang for SECS seconds (default 3600)"
 msgstr "Зависнуть на СЕК секунд (по умолчанию 3600)"
 
-#: lib/argp-parse.c:162
-msgid "Print program version"
+#: lib/argp-parse.c:143
+#, fuzzy
+msgid "print program version"
 msgstr "Напечатать номер версии программы"
 
-#: lib/argp-parse.c:178
+#: lib/argp-parse.c:159
 msgid "(PROGRAM ERROR) No version known!?"
 msgstr "(ОШИБКА ПРОГРАММЫ) Версия неизвестна!?"
 
-#: lib/argp-parse.c:659
+#: lib/argp-parse.c:612
 #, c-format
 msgid "%s: Too many arguments\n"
 msgstr "%s: слишком много аргументов\n"
 
-#: lib/argp-parse.c:800
+#: lib/argp-parse.c:755
 msgid "(PROGRAM ERROR) Option should have been recognized!?"
 msgstr "(ОШИБКА ПРОГРАММЫ) Опцию следовало распознать!?"
 
@@ -607,8 +629,7 @@ msgstr "Недействительное значение атрибута Auth-Failure-Trigger: %s"
 
 #: radiusd/auth.c:937
 msgid "The value of Auth-Failure-Trigger attribute must begin with '/' or '('."
-msgstr ""
-"Значение атрибута Auth-Failure-Trigger должно начинаться с '/' или '('."
+msgstr "Значение атрибута Auth-Failure-Trigger должно начинаться с '/' или '('."
 
 #: radiusd/auth.c:975
 msgid "Rejected"
@@ -849,9 +870,7 @@ msgstr "невозможно отказаться от привилегии setuid пользователя"
 #: radiusd/exec.c:174
 #, fuzzy, c-format
 msgid "radius_exec_command(): won't execute, not an absolute pathname: %s"
-msgstr ""
-"radius_exec_program(): невозможно выполнить, имя программы не начинается "
-"абсолютным путем: %s"
+msgstr "radius_exec_program(): невозможно выполнить, имя программы не начинается абсолютным путем: %s"
 
 #: radiusd/exec.c:180 radiusd/exec.c:276
 msgid "can't reset SIGCHLD"
@@ -863,11 +882,8 @@ msgstr "невозможно восстановить обработчик SIGCHLD"
 
 #: radiusd/exec.c:228 radiusd/exec.c:358
 #, c-format
-msgid ""
-"can't run external program `%s' (reason reported via syslog channel user.err)"
-msgstr ""
-"невозможно выполнить программу `%s' (причина сообщается через syslog, канал "
-"user.err)"
+msgid "can't run external program `%s' (reason reported via syslog channel user.err)"
+msgstr "невозможно выполнить программу `%s' (причина сообщается через syslog, канал user.err)"
 
 #: radiusd/exec.c:239 radiusd/exec.c:367
 #, c-format
@@ -877,9 +893,7 @@ msgstr "внешняя программа `%s' %s"
 #: radiusd/exec.c:265
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
-msgstr ""
-"radius_exec_program(): невозможно выполнить, имя программы не начинается "
-"абсолютным путем: %s"
+msgstr "radius_exec_program(): невозможно выполнить, имя программы не начинается абсолютным путем: %s"
 
 #: radiusd/exec.c:272
 msgid "couldn't open pipe"
@@ -1002,8 +1016,7 @@ msgstr "используется только DBM: БАЗА ПОЛЬЗОВАТЕЛЕЙ НЕ ЗАГРУЖЕНА"
 
 #: radiusd/files.c:1713
 msgid "DBM files found but no -b flag given - NOT using DBM"
-msgstr ""
-"обнаружены файлы DBM, однако флаг -b не был задан - DBM не используется"
+msgstr "обнаружены файлы DBM, однако флаг -b не был задан - DBM не используется"
 
 #: radiusd/files.c:1717
 #, c-format
@@ -1109,17 +1122,17 @@ msgstr "сообщение"
 msgid "debug"
 msgstr "отладка"
 
-#: radiusd/log.c:431
+#: radiusd/log.c:413
 #, c-format
 msgid "could not append to file %s"
 msgstr "добавление к файлу %s невозможно"
 
-#: radiusd/log.c:511
+#: radiusd/log.c:490
 #, c-format
 msgid "%s: cannot change owner to %d:%d"
 msgstr "невозможно сменить владельца канала %s на %d:%d"
 
-#: radiusd/log.c:551
+#: radiusd/log.c:530
 #, c-format
 msgid "can't access log file `%s'"
 msgstr "нет доступа к файлу журнала `%s'"
@@ -1127,43 +1140,43 @@ msgstr "нет доступа к файлу журнала `%s'"
 #. TRANSLATORS: the subject will always be printed before this msgid.
 #. for example: "child 222 exited with status 0"
 #.
-#: radiusd/log.c:656
+#: radiusd/log.c:635
 #, c-format
 msgid "exited with status %d"
 msgstr "вышел со статусом %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:661
+#: radiusd/log.c:640
 #, c-format
 msgid "terminated on signal %d"
 msgstr "завершился по сигналу %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:665
+#: radiusd/log.c:644
 #, c-format
 msgid "terminated"
 msgstr "завершился"
 
-#: radiusd/log.c:780
+#: radiusd/log.c:759
 #, c-format
 msgid "%s:%d: no channel mode for `%s'"
 msgstr "%s:%d: не указан режим для канала `%s'"
 
-#: radiusd/log.c:943
+#: radiusd/log.c:922
 msgid "no levels applicable for this category"
 msgstr "нет уровней, применимых к этой категории"
 
-#: radiusd/log.c:969
+#: radiusd/log.c:948
 #, c-format
 msgid "%s:%d: channel `%s' not defined"
 msgstr "%s:%d: канал `%s' не определен"
 
-#: radiusd/log.c:1013 radiusd/snmpserv.c:345
+#: radiusd/log.c:992 radiusd/snmpserv.c:345
 #, c-format
 msgid "%s:%d: list item %d has wrong datatype"
 msgstr "%s:%d: неверный тип для элемента списка %d"
 
-#: radiusd/log.c:1029
+#: radiusd/log.c:1008
 #, c-format
 msgid "%s:%d: no such module name: %s"
 msgstr "%s:%d: нет такого модуля: %s"
@@ -1243,9 +1256,7 @@ msgstr "Match-Profile ссылается на профиль DEFAULT"
 
 #: radiusd/radck.c:285
 msgid "Simultaneous-Use is used, but multiple login checking is not enabled"
-msgstr ""
-"Использован атрибут Simultaneous-Use, однако проверка многократного доступа "
-"отключена"
+msgstr "Использован атрибут Simultaneous-Use, однако проверка многократного доступа отключена"
 
 #: radiusd/radck.c:325 radiusd/radck.c:356
 msgid "No User-Password attribute in LHS"
@@ -1253,9 +1264,7 @@ msgstr "Атрибут User-Password отсутствует в LHS"
 
 #: radiusd/radck.c:333
 msgid "Auth-Type = System can only be used when running with root privileges"
-msgstr ""
-"Auth-Type = System можно использовать только при выполнении с привилегиями "
-"root"
+msgstr "Auth-Type = System можно использовать только при выполнении с привилегиями root"
 
 #: radiusd/radck.c:343 radiusd/radck.c:380
 msgid "User-Password attribute ignored for this Auth-Type"
@@ -1389,8 +1398,7 @@ msgstr "Задать номер порта для авторизации"
 
 #: radiusd/radiusd.c:86
 msgid "Strip prefixes/suffixes off user names before logging"
-msgstr ""
-"Удалять префиксы и суффиксы из имени пользователя перед записью в журнал"
+msgstr "Удалять префиксы и суффиксы из имени пользователя перед записью в журнал"
 
 #: radiusd/radiusd.c:87
 msgid "DEBUGSPEC"
@@ -1583,9 +1591,7 @@ msgstr "Уничтожение не отвечающего процесса %s %lu"
 #: radiusd/request.c:246
 #, c-format
 msgid "Cannot terminate child %lu. Attempting to kill inexisting process?"
-msgstr ""
-"Невозможно завершить процесс %lu. Попытка уничтожения несуществующего "
-"процесса?"
+msgstr "Невозможно завершить процесс %lu. Попытка уничтожения несуществующего процесса?"
 
 #: radiusd/request.c:256
 #, c-format
@@ -1834,7 +1840,7 @@ msgstr "функция %s: параметр %d должен быть строковым"
 msgid "function %s takes too few arguments"
 msgstr "функция %s принимает недостаточно аргументов"
 
-#: radiusd/rewrite.y:5993
+#: radiusd/rewrite.y:5994
 #, c-format
 msgid "function %s() requires %d parameter"
 msgid_plural "function %s() requires %d parameters"
@@ -1842,24 +1848,24 @@ msgstr[0] "функция %s() принимает %d параметр"
 msgstr[1] "функция %s() принимает %d параметра"
 msgstr[2] "функция %s() принимает %d параметров"
 
-#: radiusd/rewrite.y:6150
+#: radiusd/rewrite.y:6151
 #, c-format
 msgid "file not found: %s"
 msgstr "файл не найден: %s"
 
-#: radiusd/rewrite.y:6287
+#: radiusd/rewrite.y:6288
 msgid "function ~S not defined"
 msgstr "функция ~S не определена"
 
-#: radiusd/rewrite.y:6303
+#: radiusd/rewrite.y:6304
 msgid "too many arguments for ~S"
 msgstr "слишком много аргументов для ~S"
 
-#: radiusd/rewrite.y:6330
+#: radiusd/rewrite.y:6331
 msgid "type mismatch in argument ~S(~S) in call to ~S"
 msgstr "ошибочный тип аргумента ~S(~S) в вызове ~S"
 
-#: radiusd/rewrite.y:6340
+#: radiusd/rewrite.y:6341
 msgid "too few arguments for ~S"
 msgstr "недостаточно аргументов для ~S"
 
@@ -2064,12 +2070,8 @@ msgid "stat_init failed"
 msgstr "stat_init не сработал"
 
 #: radiusd/stat.c:227
-msgid ""
-"reached SNMP storage limit for the number of monitored ports: increase max-"
-"port-count"
-msgstr ""
-"достигнуто предельное значение числа отслеживаемых по SNMP портов: увеличь "
-"max-port-count"
+msgid "reached SNMP storage limit for the number of monitored ports: increase max-port-count"
+msgstr "достигнуто предельное значение числа отслеживаемых по SNMP портов: увеличь max-port-count"
 
 #: radiusd/stat.c:287
 #, c-format
@@ -2090,12 +2092,8 @@ msgid "negative port session time"
 msgstr "отрицательное время сессии на порту"
 
 #: radiusd/stat.c:468
-msgid ""
-"reached SNMP storage limit for the number of monitored NASes: increase max-"
-"nas-count"
-msgstr ""
-"достигнуто предельное значение числа отслеживаемых по SNMP NAS-ов: увеличь "
-"max-nas-count"
+msgid "reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"
+msgstr "достигнуто предельное значение числа отслеживаемых по SNMP NAS-ов: увеличь max-nas-count"
 
 #: radiusd/version.c:140
 msgid "GNU RADIUS server version "
@@ -2339,8 +2337,7 @@ msgstr "показывать сессии с заданным IPADDR"
 
 #: radlast/radlast.c:129
 msgid "mark records with missed stops with bump (!)"
-msgstr ""
-"отмечать восклицательным знаком сессии для которых не было стоповых записей"
+msgstr "отмечать восклицательным знаком сессии для которых не было стоповых записей"
 
 #: radlast/radlast.c:130 radzap/radzap.c:59
 msgid "NASNAME"
@@ -2491,8 +2488,7 @@ msgstr "Задать уровень отладки"
 
 #: radtest/main.c:50
 msgid "Read input from FILE. Stops further processing of the command line."
-msgstr ""
-"Читать данные из ФАЙЛа. Отключает дальнейшую обработку командной строки."
+msgstr "Читать данные из ФАЙЛа. Отключает дальнейшую обработку командной строки."
 
 #: radtest/main.c:54
 msgid "set number of retries"
@@ -2795,9 +2791,7 @@ msgstr "задать формат вывода данных"
 
 #: radwho/radwho.c:157
 msgid "secure mode: requires that the username be specified"
-msgstr ""
-"режим повышенной безопасности: выдавать информацию только для конкретного "
-"имени пользователя"
+msgstr "режим повышенной безопасности: выдавать информацию только для конкретного имени пользователя"
 
 #: radwho/radwho.c:286
 #, c-format
@@ -2843,8 +2837,7 @@ msgstr "не запрашивать подтверждения перед удалением"
 
 #: radzap/radzap.c:100
 msgid "at least one port, nas or user must be specified"
-msgstr ""
-"по меньшей мере имя пользователя, NAS или номер порта должны быть заданы. "
+msgstr "по меньшей мере имя пользователя, NAS или номер порта должны быть заданы. "
 
 #: radzap/radzap.c:174
 #, c-format
@@ -2918,13 +2911,8 @@ msgstr[2] "запрос вернул %d комплектов значений"
 #~ msgid "send arbitrary radius packets"
 #~ msgstr "отсылает произвольные запросы radius-a"
 
-#~ msgid ""
-#~ "Read input from FILE. When this option is used, all unknown options in "
-#~ "the form --VAR=VALUE are treated as variable assignments"
-#~ msgstr ""
-#~ "Считывать команды из ФАЙЛа. Все нераспознанные опции вида --"
-#~ "ПЕРЕМЕННАЯ=ЗНАЧЕНИЕ, встречающиеся после этой опции, понимаются как "
-#~ "присвоение значения указанной переменной."
+#~ msgid "Read input from FILE. When this option is used, all unknown options in the form --VAR=VALUE are treated as variable assignments"
+#~ msgstr "Считывать команды из ФАЙЛа. Все нераспознанные опции вида --ПЕРЕМЕННАЯ=ЗНАЧЕНИЕ, встречающиеся после этой опции, понимаются как присвоение значения указанной переменной."
 
 #~ msgid "wrong datatype: expected vector"
 #~ msgstr "неверный тип данных: ожидался вектор"

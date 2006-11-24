@@ -8,6 +8,9 @@ Intel x86
     i386-pc-solaris2.7
     i386-unknown-gnu0.2
 
+AMD    
+    x86_64-unknown-linux-gnu
+    
 Alpha
     alpha-unknown-freebsd4.4
 

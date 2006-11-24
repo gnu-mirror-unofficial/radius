@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -640,18 +641,18 @@ sql_cache_destroy(struct sql_connection *conn)
 static void
 sql_cache_insert(struct sql_connection *conn, SQL_RESULT *res)
 {
-	debug(20,
+	GRAD_DEBUG(20,
 	      ("cache: %d,(%d,%d)",
 	       sql_cache_level(conn),conn->head,conn->tail));
 	if (sql_cache_level(conn) >= SQL_CACHE_SIZE-1) {
 		sql_result_destroy(conn->cache[conn->head]);
 		conn->head = (conn->head + 1) % SQL_CACHE_SIZE;
-	        debug(20,("head: %d,%d", conn->head,conn->tail));
+	        GRAD_DEBUG(20,("head: %d,%d", conn->head,conn->tail));
 	}
-	debug(20,("inserting at pos %d", conn->tail));
+	GRAD_DEBUG(20,("inserting at pos %d", conn->tail));
 	conn->cache[conn->tail] = res;
 	conn->tail = (conn->tail + 1) % SQL_CACHE_SIZE;
-	debug(20,("tail: %d,%d", conn->head,conn->tail));
+	GRAD_DEBUG(20,("tail: %d,%d", conn->head,conn->tail));
 }
 
 static SQL_RESULT *
@@ -661,7 +662,7 @@ sql_cache_retrieve(struct sql_connection *conn, char *query)
 	SQL_RESULT *res;
 	size_t i;
 	
-	debug(20,("query: %s",query));
+	GRAD_DEBUG(20,("query: %s",query));
 	res = grad_emalloc(sizeof(*res));
 	res->query = grad_estrdup(query);
 	res->nfields = res->ntuples = 0;
@@ -706,15 +707,15 @@ sql_cache_lookup(struct sql_connection *conn, char *query)
 {
 	size_t i;
 
-	debug(20,("looking up %s", query));
+	GRAD_DEBUG(20,("looking up %s", query));
 	for (i = conn->head; i != conn->tail;
 	     i = (i + 1) % SQL_CACHE_SIZE) {
 		if (strcmp(conn->cache[i]->query, query) == 0) {
-			debug(20,("found at %d", i));
+			GRAD_DEBUG(20,("found at %d", i));
 			return conn->cache[i];
 		}
 	}
-	debug(20,("NOT FOUND"));
+	GRAD_DEBUG(20,("NOT FOUND"));
 	return NULL;
 }
 
@@ -730,7 +731,7 @@ attach_sql_connection(int type)
         time(&now);
         conn = sql_conn[type];
         if (!conn) {
-                debug(1, ("allocating new %d sql connection", type));
+                GRAD_DEBUG(1, ("allocating new %d sql connection", type));
 
                 conn = grad_emalloc(sizeof(struct sql_connection));
 		conn->cfg = &sql_cfg;
@@ -744,12 +745,12 @@ attach_sql_connection(int type)
         }
 
         if (!conn->connected || now - conn->last_used > sql_cfg.idle_timeout) {
-                debug(1, ("connection %d timed out: reconnect", type));
+                GRAD_DEBUG(1, ("connection %d timed out: reconnect", type));
                 disp_sql_reconnect(sql_cfg.interface, type, conn);
         }
 	conn->destroy_on_close = !sql_cfg.keepopen;
         conn->last_used = now;
-        debug(1, ("attaching %p [%d]", conn, type));
+        GRAD_DEBUG(1, ("attaching %p [%d]", conn, type));
         return conn;
 }
 
@@ -761,9 +762,9 @@ detach_sql_connection(int type)
         conn = sql_conn[type];
         if (!conn)
                 return;
-        debug(1, ("detaching %p [%d]", conn, type));
+        GRAD_DEBUG(1, ("detaching %p [%d]", conn, type));
         if (conn->destroy_on_close) {
-                debug(1, ("destructing sql connection %p",
+                GRAD_DEBUG(1, ("destructing sql connection %p",
                           conn));
 		sql_conn_destroy(&sql_conn[type]);
         }

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2003,2004,2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -133,7 +133,7 @@ channel_close(INPUT *input, CHANNEL *chan)
 static int
 channel_handle(CHANNEL *chan)
 {
-	debug(1, ("handling method %s", chan->method->name));
+	GRAD_DEBUG(1, ("handling method %s", chan->method->name));
 	return chan->method->handler(chan->fd, chan->data);
 }
 
@@ -221,7 +221,7 @@ input_select(INPUT *input, struct timeval *tv)
 	int status;
 	fd_set readfds;
 
-	debug(100,("enter"));
+	GRAD_DEBUG(100,("enter"));
 	if (!input->citr)
 		input->citr = grad_iterator_create(input->channels);
 
@@ -248,14 +248,14 @@ input_select(INPUT *input, struct timeval *tv)
 		if (errno == EINTR) 
 			return 0;
 	} else if (status > 0) {
-		debug(1, ("select returned %d", status));
+		GRAD_DEBUG(1, ("select returned %d", status));
 		
 		for (p = grad_iterator_first(input->citr); p;
 		     p = grad_iterator_next(input->citr)) 
 			if (FD_ISSET(p->fd, &readfds)) 
 				channel_handle(p);
 	} 
-	debug(100,("exit"));
+	GRAD_DEBUG(100,("exit"));
 	return status;
 }
 
@@ -268,7 +268,7 @@ input_select_channel(INPUT *input, char *name, struct timeval *tv)
 	int fd_max = -1;
 	METHOD *m = grad_list_locate(input->methods, name, _method_comp);
 
-	debug(100,("enter"));
+	GRAD_DEBUG(100,("enter"));
 	
 	if (!m)
 		return -1;
@@ -294,14 +294,14 @@ input_select_channel(INPUT *input, char *name, struct timeval *tv)
 		if (errno == EINTR) 
 			return 0;
 	} else if (status > 0) {
-		debug(1, ("select returned %d", status));
+		GRAD_DEBUG(1, ("select returned %d", status));
 		
 		for (p = grad_iterator_first(input->citr); p;
 		     p = grad_iterator_next(input->citr)) 
 			if (FD_ISSET(p->fd, &readfds)) 
 				channel_handle(p);
 	} 
-	debug(100,("exit"));
+	GRAD_DEBUG(100,("exit"));
 	return status;
 }
 

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2002,2003,2004,2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -99,12 +99,12 @@ proxy_cmp(radiusd_request_t *qr, radiusd_request_t *r)
 	grad_server_t *server;
 	
 	if (!qr->realm) {
-		debug(100,("no proxy realm"));
+		GRAD_DEBUG(100,("no proxy realm"));
 		return 1;
 	}
 	server = grad_list_item(qr->realm->queue->servers, qr->server_no);
 	if (!server) {
-		debug(100,("no proxy server"));
+		GRAD_DEBUG(100,("no proxy server"));
 		return 1;
 	}
 	
@@ -120,7 +120,7 @@ proxy_cmp(radiusd_request_t *qr, radiusd_request_t *r)
 
 		state = (PROXY_STATE *)proxy_state_pair->avp_strvalue;
 	
-		debug(1,
+		GRAD_DEBUG(1,
 		      ("state: ipaddr %08x, id %u, proxy_id %u, remote_ip %08x",
 		       state->client_ip,
 		       state->id,
@@ -130,7 +130,7 @@ proxy_cmp(radiusd_request_t *qr, radiusd_request_t *r)
                 if (state->ref_ip == ref_ip
 		    && state->proxy_id == r->request->id
 		    && state->remote_ip == r->request->ipaddr) {
-			debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x, proxy_id %d %d, server_addr %#8x %#8x", 
+			GRAD_DEBUG(10, ("(old=data) id %d %d, ipaddr %#8x %#8x, proxy_id %d %d, server_addr %#8x %#8x", 
 				   qr->request->id, state->id,
 				   qr->request->ipaddr, state->client_ip,
 				   qr->server_id, state->proxy_id,
@@ -140,7 +140,7 @@ proxy_cmp(radiusd_request_t *qr, radiusd_request_t *r)
 			    && state->id  == qr->request->id
 			    && state->proxy_id == qr->server_id
 			    && state->remote_ip == server->addr) {
-				debug(1,("EQUAL!!!"));
+				GRAD_DEBUG(1,("EQUAL!!!"));
 				return 0;
 			}
 		} 
@@ -167,7 +167,7 @@ proxy_send_pdu(int fd, grad_server_t *server, radiusd_request_t *radreq,
 			     server->port[GRAD_PORT_AUTH] 
 			     : server->port[GRAD_PORT_ACCT]);
 
-	debug(1, ("Proxying id %d to %lx",
+	GRAD_DEBUG(1, ("Proxying id %d to %lx",
 		  radreq->request->id, (u_long)server->addr));
 
 	return sendto(fd, pdu, size, 0, (struct sockaddr *)&sin, sizeof(sin));
@@ -246,7 +246,7 @@ proxy_send_request(int fd, radiusd_request_t *radreq)
 		upd->server_no = radreq->server_no;
 		strcpy(upd->realmname, radreq->realm->realm);
 
-		debug(100,
+		GRAD_DEBUG(100,
 		      ("Update id=%d, proxy_id=%d, realm=%s, server_no=%d",
 		       upd->id,upd->proxy_id,upd->realmname,
 		       upd->server_no));

@@ -1,6 +1,7 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -1296,7 +1297,7 @@ parse_rewrite(char *path)
                 return -2;
         }
 
-	debug(1,("Loading file %s", locus.file));
+	GRAD_DEBUG(1,("Loading file %s", locus.file));
         rw_code_lock();
         yyeof = 0;
         locus.line = 1;
@@ -1342,7 +1343,7 @@ parse_rewrite_string(char *str)
         
         frame_push();
         
-        if (debug_on(50))
+        if (GRAD_DEBUG_LEVEL(50))
                 yydebug++;
 
 	infile = 0;
@@ -1351,7 +1352,7 @@ parse_rewrite_string(char *str)
         yyparse();
 
 #if defined(MAINTAINER_MODE)
-        if (debug_on(100))
+        if (GRAD_DEBUG_LEVEL(100))
                 debug_dump_code();
 #endif
         
@@ -1752,8 +1753,8 @@ sharp_comment()
 
 
 #if defined(MAINTAINER_MODE)
-# define DEBUG_LEX1(s) if (debug_on(60)) printf("yylex: " s "\n")
-# define DEBUG_LEX2(s,v) if (debug_on(60)) printf("yylex: " s "\n", v)
+# define DEBUG_LEX1(s) if (GRAD_DEBUG_LEVEL(60)) printf("yylex: " s "\n")
+# define DEBUG_LEX2(s,v) if (GRAD_DEBUG_LEVEL(60)) printf("yylex: " s "\n", v)
 #else
 # define DEBUG_LEX1(s)
 # define DEBUG_LEX2(s,v)
@@ -3155,8 +3156,8 @@ debug_print_function()
 #endif /* MAINTAINER_MODE */
         
 #if defined(MAINTAINER_MODE)
-# define DEBUG_MTX(c) if (debug_on(30)) debug_print_mtxlist(c);
-# define DEBUG_FUN()  if (debug_on(25)) debug_print_function();
+# define DEBUG_MTX(c) if (GRAD_DEBUG_LEVEL(30)) debug_print_mtxlist(c);
+# define DEBUG_FUN()  if (GRAD_DEBUG_LEVEL(25)) debug_print_function();
 #else
 # define DEBUG_MTX(c) 
 # define DEBUG_FUN()
@@ -3879,7 +3880,7 @@ codegen()
         }
         
 #if defined(MAINTAINER_MODE)    
-        if (debug_on(25)) {
+        if (GRAD_DEBUG_LEVEL(25)) {
                 FILE *fp = debug_open_file();
                 fprintf(fp, "entry: %d, size %d\n",
                         function->entry, rw_pc - function->entry);
@@ -4017,7 +4018,7 @@ pushn(RWSTYPE n)
 {
         if (mach.st >= mach.ht) {
                 /*FIXME: gc();*/
-                debug(1, ("st=%d, ht=%d", mach.st, mach.ht));
+                GRAD_DEBUG(1, ("st=%d, ht=%d", mach.st, mach.ht));
                 rw_error(_("out of pushdown space"));
         }
         mach.stack[mach.st++] = n;
@@ -4872,7 +4873,7 @@ rw_match()
         
         rc = regexec(&rx->regex, mach.sA, 
                      rx->nmatch + 1, mach.pmatch, 0);
-        if (rc && debug_on(1)) {
+        if (rc && GRAD_DEBUG_LEVEL(1)) {
                 char errbuf[512];
                 regerror(rc, &rx->regex,
                          errbuf, sizeof(errbuf));
@@ -5824,7 +5825,7 @@ run_init(pctr_t pc, grad_request_t *request)
 	}
         
         mach.req = request;
-        if (debug_on(2)) {
+        if (GRAD_DEBUG_LEVEL(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
                 grad_avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
@@ -5834,7 +5835,7 @@ run_init(pctr_t pc, grad_request_t *request)
         /* Imitate a function call */
         pushn(0);                  /* Return address */
         run(pc);                   /* call function */
-        if (debug_on(2)) {
+        if (GRAD_DEBUG_LEVEL(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
                 grad_avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
@@ -5899,7 +5900,7 @@ rewrite_invoke(grad_data_type_t rettype, grad_value_t *val,
         }
         
         mach.req = request;
-        if (debug_on(2)) {
+        if (GRAD_DEBUG_LEVEL(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
                 grad_avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
@@ -5929,7 +5930,7 @@ rewrite_invoke(grad_data_type_t rettype, grad_value_t *val,
         /* Imitate a function call */
         pushn(0);                  /* Return address */
         run(fun->entry);           /* call function */
-        if (debug_on(2)) {
+        if (GRAD_DEBUG_LEVEL(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
                 grad_avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
@@ -6086,7 +6087,7 @@ rewrite_stmt_term(int finish, void *block_data, void *handler_data)
 	if (!finish) {
 		grad_symtab_clear(rewrite_tab);
 		
-		yydebug = debug_on(50);
+		yydebug = GRAD_DEBUG_LEVEL(50);
 		grad_list_destroy(&source_list, free_path, NULL);
 		grad_list_destroy(&rewrite_load_path, free_path, NULL);
 		rewrite_add_load_path(grad_config_dir);
@@ -6166,7 +6167,7 @@ rewrite_load_all(void *a ARG_UNUSED, void *b ARG_UNUSED)
 	
 	grad_list_iterate(source_candidate_list, _load_module, NULL);
 #if defined(MAINTAINER_MODE)
-        if (debug_on(100))
+        if (GRAD_DEBUG_LEVEL(100))
                 debug_dump_code();
 #endif
 }

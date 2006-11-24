@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -198,7 +198,7 @@ _request_iterator(void *item, void *clos)
 	if (req->status == RS_COMPLETED) {
 		if (req->timestamp + request_class[req->type].cleanup_delay
 		             <= rp->curtime) {
-			debug(1, ("deleting completed %s request",
+			GRAD_DEBUG(1, ("deleting completed %s request",
 				  request_class[req->type].name));
 			grad_list_remove(request_list, req, NULL);
 			request_free(req);
@@ -210,7 +210,7 @@ _request_iterator(void *item, void *clos)
 			   
 	} else if (req->status == RS_PROXY) {
 		if (!spawn_flag || rpp_ready(req->child_id)) {
-			debug(1, ("%s proxy reply. Process %lu", 
+			GRAD_DEBUG(1, ("%s proxy reply. Process %lu", 
 				  request_class[req->type].name,
 				  (u_long) req->child_id));
 			request_call_handler(rp->handler, req);
@@ -329,20 +329,20 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 		req->orig = rc.orig;
 		req->child_id = rc.orig->child_id;
 		if (!radiusd_master()) {
-			debug(1, ("%s proxy reply. Process %lu", 
+			GRAD_DEBUG(1, ("%s proxy reply. Process %lu", 
 				  request_class[req->type].name,
 				  (u_long) req->child_id));
 			request_call_handler(handler, req);
 		} else {
 			if (!spawn_flag || rpp_ready(req->child_id)) {
-				debug(1, ("%s proxy reply. Process %lu", 
+				GRAD_DEBUG(1, ("%s proxy reply. Process %lu", 
 					  request_class[req->type].name,
 					  (u_long) req->child_id));
 				request_call_handler(handler, req);
 			} else {
 				req->status = RS_PROXY;
 				/* Add request to the queue */
-				debug(1, ("Proxy %s request %lu added to the list. %d requests held.", 
+				GRAD_DEBUG(1, ("Proxy %s request %lu added to the list. %d requests held.", 
 					  request_class[req->type].name,
 					  (u_long) req->child_id,
 					  rc.request_count+1));
@@ -378,7 +378,7 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 	}
 
 	if (rc.lru) {
-		debug(1, ("replacing request dated %s",
+		GRAD_DEBUG(1, ("replacing request dated %s",
 			  ctime(&rc.lru->timestamp)));
 		grad_list_remove(request_list, rc.lru, NULL);
 		request_free(rc.lru);
@@ -386,7 +386,7 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 	}
 	
 	/* Add request to the queue */
-        debug(1, ("%s request %lu added to the list. %d requests held.", 
+        GRAD_DEBUG(1, ("%s request %lu added to the list. %d requests held.", 
                   request_class[req->type].name,
                   (u_long) req->child_id,
                   rc.request_count+1));
@@ -403,7 +403,7 @@ request_update(pid_t pid, int status, void *ptr)
 	REQUEST *p;
 	grad_iterator_t *itr;
 	
-	debug(100,("enter, pid=%lu, ptr = %p", (unsigned long)pid, ptr));
+	GRAD_DEBUG(100,("enter, pid=%lu, ptr = %p", (unsigned long)pid, ptr));
 	itr = grad_iterator_create(request_list);
 	if (!itr)
 		return;
@@ -415,7 +415,7 @@ request_update(pid_t pid, int status, void *ptr)
 		}
 	}
 	grad_iterator_destroy(&itr);
-	debug(100,("exit"));
+	GRAD_DEBUG(100,("exit"));
 }
 			
 

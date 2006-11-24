@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,
+   2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -99,7 +100,7 @@ rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
         if (!conn || !conn->data)
                 return -1;
 
-        debug(1, ("query: %s", query));
+        GRAD_DEBUG(1, ("query: %s", query));
         
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
@@ -113,7 +114,7 @@ rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
         
         stat = PQresultStatus(res);
 
-        debug(1, ("status: %s", PQresStatus(stat)));
+        GRAD_DEBUG(1, ("status: %s", PQresStatus(stat)));
 
 	switch (stat) {
 	case PGRES_COMMAND_OK:
@@ -169,7 +170,7 @@ rad_postgres_getpwd(struct sql_connection *conn, char *query)
         if (!conn || !conn->data)
                 return NULL;
 
-        debug(1, ("query: %s", query));
+        GRAD_DEBUG(1, ("query: %s", query));
         
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
@@ -183,7 +184,7 @@ rad_postgres_getpwd(struct sql_connection *conn, char *query)
         
         stat = PQresultStatus(res);
 
-        debug(1,
+        GRAD_DEBUG(1,
               ("status: %s",
               PQresStatus(stat)));
 
@@ -247,7 +248,7 @@ rad_postgres_exec(struct sql_connection *conn, char *query)
         if (!conn || !conn->data)
                 return NULL;
 
-        debug(1, ("query: %s", query));
+        GRAD_DEBUG(1, ("query: %s", query));
         
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
@@ -261,7 +262,7 @@ rad_postgres_exec(struct sql_connection *conn, char *query)
         
         stat = PQresultStatus(res);
 
-        debug(1,
+        GRAD_DEBUG(1,
               ("status: %s",
               PQresStatus(stat)));
 

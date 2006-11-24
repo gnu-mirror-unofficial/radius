@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003,2004,2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -115,17 +115,17 @@ pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg)
 
         conv.appdata_ptr = &data;
 
-        debug(1,("username [%s], pamauth [%s]",  name, pamauth));
+        GRAD_DEBUG(1,("username [%s], pamauth [%s]",  name, pamauth));
 
         /* fake loop needed so we don't have to use gotos */
         for (;;) {
                 rc = pam_start(pamauth, name, &conv, &pamh);
-                debug(1, ("pam_start: %d", rc));
+                GRAD_DEBUG(1, ("pam_start: %d", rc));
                 if (rc != PAM_SUCCESS)
                         break;
 
                 rc = pam_authenticate(pamh, 0);
-                debug(1, ("pam_authenticate: %d", rc));
+                GRAD_DEBUG(1, ("pam_authenticate: %d", rc));
 
                 if (rc != PAM_SUCCESS) 
                         break;
@@ -133,7 +133,7 @@ pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg)
                 rc = pam_acct_mgmt(pamh, 0);
                 break;
         }
-        debug(1, ("pam_acct_mgmt: %d", rc));
+        GRAD_DEBUG(1, ("pam_acct_mgmt: %d", rc));
         pam_end(pamh, 0);
 
         *reply_msg = data.reply_msg;

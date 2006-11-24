@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -321,20 +322,20 @@ user_find_sym(char *name, radiusd_request_t *req,
         User_symbol *sym;
         USER_LOOKUP lu;
         
-        debug(1,("looking for %s", name));
+        GRAD_DEBUG(1,("looking for %s", name));
         for (sym = user_lookup(name, &lu); sym; sym = user_next(&lu)) {
                 if (match_user(sym, req, check_pairs, reply_pairs)) {
 			if (lu.state != LU_begin)
 				found = 1;
                         if (!fallthrough(sym->reply))
                                 break;
-                        debug(1, ("fall through"));
+                        GRAD_DEBUG(1, ("fall through"));
                         lu.sym = NULL; /* force jump to next state */
                 }
         }
 	if (found)
 		radiusd_sql_reply_attr_query(req, reply_pairs);
-        debug(1, ("returning %d", found));
+        GRAD_DEBUG(1, ("returning %d", found));
         return found;
 }
 
@@ -365,7 +366,7 @@ match_user(User_symbol *sym, radiusd_request_t *req,
                 for (p = grad_avl_find(sym->check, DA_MATCH_PROFILE);
                      p; 
                      p = grad_avl_find(p->next, DA_MATCH_PROFILE)) {
-                        debug(1, ("submatch: %s", p->avp_strvalue));
+                        GRAD_DEBUG(1, ("submatch: %s", p->avp_strvalue));
 
                         found = match_user(grad_sym_lookup(user_tab,
 							   p->avp_strvalue),
@@ -387,13 +388,13 @@ match_user(User_symbol *sym, radiusd_request_t *req,
                 for (p = grad_avl_find(sym->reply, DA_MATCH_PROFILE);
                      p;
                      p = grad_avl_find(p->next, DA_MATCH_PROFILE)) {
-                        debug(1, ("next: %s", p->avp_strvalue));
+                        GRAD_DEBUG(1, ("next: %s", p->avp_strvalue));
                         match_user(grad_sym_lookup(user_tab, p->avp_strvalue),
                                    req, check_pairs, reply_pairs);
                 }
                 if (!fallthrough(sym->reply))
                         break;
-                debug(1, ("fall through near %s:%lu",
+                GRAD_DEBUG(1, ("fall through near %s:%lu",
 			  sym->loc.file, (unsigned long) sym->loc.line));
         } while (sym = grad_sym_next((grad_symbol_t*)sym));
 
@@ -737,7 +738,7 @@ hints_setup(radiusd_request_t *req)
 						      name_pair->avp_strvalue);
         }
 
-        debug(1, ("called for `%s'", name_pair->avp_strvalue));
+        GRAD_DEBUG(1, ("called for `%s'", name_pair->avp_strvalue));
         
         /* if Framed-Protocol is present but Service-Type is missing, add
            Service-Type = Framed-User. */
@@ -760,7 +761,7 @@ hints_setup(radiusd_request_t *req)
                 matched++;
                 radius_req_register_locus(req, &rule->loc);
 		
-                debug(1, ("matched %s at %s:%lu", rule->name, rule->loc.file,
+                GRAD_DEBUG(1, ("matched %s at %s:%lu", rule->name, rule->loc.file,
 			  (unsigned long) rule->loc.line));
         
                 add = grad_avl_dup(rule->rhs);
@@ -800,7 +801,7 @@ hints_setup(radiusd_request_t *req)
 		tmp = grad_avl_find(req->request->avlist, DA_USER_NAME);
 		if (tmp)
 			name_pair = tmp;
-                debug(1, ("new name is `%s'", name_pair->avp_strvalue));
+                GRAD_DEBUG(1, ("new name is `%s'", name_pair->avp_strvalue));
 
                 /* fix-up the string length. FIXME: Do we still need it? */
                 name_pair->avp_strlength = strlen(name_pair->avp_strvalue);
@@ -859,7 +860,7 @@ huntgroup_match(radiusd_request_t *req, char *huntgroup)
                 if (strcmp(rule->name, huntgroup) != 0)
                         continue;
                 if (paircmp(req, rule->lhs, NULL) == 0) {
-                        debug(1, ("matched %s at %s:%lu",
+                        GRAD_DEBUG(1, ("matched %s at %s:%lu",
 				  rule->name, rule->loc.file,
 				  (unsigned long) rule->loc.line));
                         break;
@@ -894,7 +895,7 @@ huntgroup_access(radiusd_request_t *radreq, grad_locus_t *loc)
                  */
                 if (paircmp(radreq, rule->lhs, NULL) != 0)
                         continue;
-                debug(1, ("matched huntgroup at %s:%lu", rule->loc.file,
+                GRAD_DEBUG(1, ("matched huntgroup at %s:%lu", rule->loc.file,
 			  (unsigned long) rule->loc.line));
                 r = paircmp(radreq, rule->rhs, NULL) == 0;
                 break;
@@ -907,7 +908,7 @@ huntgroup_access(radiusd_request_t *radreq, grad_locus_t *loc)
 		radius_req_register_locus(radreq, &rule->loc);
 		rule_eval_rewrite (radreq, rule);
 	}
-        debug(1, ("returning %d", r));
+        GRAD_DEBUG(1, ("returning %d", r));
         return r;
 }
 
@@ -989,7 +990,7 @@ client_lookup_ip(grad_uint32_t ipaddr)
 			char ipbuf[GRAD_IPV4_STRING_LENGTH];
 			char maskbuf[GRAD_IPV4_STRING_LENGTH];
 
-			debug(10,
+			GRAD_DEBUG(10,
 			      ("Found secret for %s/%s (%s): %s",
 			       grad_ip_iptostr(cl->netdef.ipaddr, ipbuf),
 			       grad_ip_iptostr(cl->netdef.netmask, maskbuf),
@@ -1276,7 +1277,7 @@ presufcmp(grad_avp_t *check, char *name, char *rest)
         int len, namelen;
         int ret = -1;
 
-        debug(1, ("comparing %s and %s, check->attr is %d",
+        GRAD_DEBUG(1, ("comparing %s and %s, check->attr is %d",
                  name, check->avp_strvalue, check->attribute));
 
         len = strlen(check->avp_strvalue);
@@ -1297,7 +1298,7 @@ presufcmp(grad_avp_t *check, char *name, char *rest)
                         }
                         break;
         }
-        debug(1, ("returning %d", ret));
+        GRAD_DEBUG(1, ("returning %d", ret));
         return ret;
 }
 
@@ -1366,7 +1367,7 @@ paircmp(radiusd_request_t *request, grad_avp_t *check, char *pusername)
                         continue;
                 }
 
-                if (debug_on(20)) {
+                if (GRAD_DEBUG_LEVEL(20)) {
                         grad_log(L_DEBUG, 
                                  "check_item: %s", 
                                  grad_format_pair(check_item, 1, &save));
@@ -1378,7 +1379,7 @@ paircmp(radiusd_request_t *request, grad_avp_t *check, char *pusername)
                  */
                 for (auth_item = request->request->avlist; auth_item; 
                                 auth_item = auth_item->next) {
-                        debug(30, ("trying %d", auth_item->attribute));
+                        GRAD_DEBUG(30, ("trying %d", auth_item->attribute));
 
                         switch (check_item->attribute) {
                         case DA_PREFIX:
@@ -1413,7 +1414,7 @@ paircmp(radiusd_request_t *request, grad_avp_t *check, char *pusername)
                         continue;
                 }
 
-                if (debug_on(20)) {
+                if (GRAD_DEBUG_LEVEL(20)) {
                         grad_log(L_DEBUG,
                                  "auth_item: %s",
                                  grad_format_pair(auth_item, 1, &save));
@@ -1476,7 +1477,7 @@ paircmp(radiusd_request_t *request, grad_avp_t *check, char *pusername)
                         break;
                 }
 
-                debug(20, ("compare: %d", compare));
+                GRAD_DEBUG(20, ("compare: %d", compare));
 
                 result = comp_op(check_item->operator, compare);
 
@@ -1484,7 +1485,7 @@ paircmp(radiusd_request_t *request, grad_avp_t *check, char *pusername)
                         check_item = check_item->next;
         }
 
-        debug(20, ("returning %d", result));
+        GRAD_DEBUG(20, ("returning %d", result));
         return result;
 }
 

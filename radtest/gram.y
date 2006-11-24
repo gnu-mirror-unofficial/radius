@@ -1,6 +1,6 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -975,7 +975,7 @@ void
 set_yydebug()
 {
         extern int yydebug;
-        if (debug_on(1)) {
+        if (GRAD_DEBUG_LEVEL(1)) {
                 yydebug = 1;
         }
 }

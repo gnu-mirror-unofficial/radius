@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,
+   2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -54,7 +55,7 @@ do_mysql_query(struct sql_connection *conn, char *query)
         int    i;
         MYSQL *mysql;
         
-        debug(1, ("called with %s", query));
+        GRAD_DEBUG(1, ("called with %s", query));
                 
         for (i = 0; i < 10; i++) {      /* Try it 10 Times */
                 if (!conn->connected) {
@@ -64,7 +65,7 @@ do_mysql_query(struct sql_connection *conn, char *query)
                 }
                 mysql = (MYSQL*)conn->data;
                 ret = mysql_query(mysql, query);
-                debug(1, ("MYSQL query returned %d", ret));
+                GRAD_DEBUG(1, ("MYSQL query returned %d", ret));
                 if (!ret) 
                         return ret;
                 
@@ -75,7 +76,7 @@ do_mysql_query(struct sql_connection *conn, char *query)
 			return ret;
 		}
         }
-        debug(1,("FAILURE"));
+        GRAD_DEBUG(1,("FAILURE"));
         grad_log(L_ERR, "[MYSQL] %s", _("gave up on connect"));
         return ret;
 }
@@ -114,7 +115,7 @@ rad_mysql_reconnect(int type, struct sql_connection *conn)
 		return -1;
 	}
 
-	debug(1, ("connected to %s", conn->cfg->server));
+	GRAD_DEBUG(1, ("connected to %s", conn->cfg->server));
 	conn->connected++;
         return 0;
 }
@@ -153,7 +154,7 @@ rad_mysql_getpwd(struct sql_connection *conn, char *query)
         if (!conn)
                 return NULL;
 
-        debug(1, ("query: %s", query));
+        GRAD_DEBUG(1, ("query: %s", query));
 
         if (do_mysql_query(conn, query))
                 return NULL;
@@ -213,7 +214,7 @@ rad_mysql_exec(struct sql_connection *conn, char *query)
         if (!conn)
                 return NULL;
         
-        debug(1, ("query: %s", query));
+        GRAD_DEBUG(1, ("query: %s", query));
         
         if (do_mysql_query(conn, query))
                 return NULL;
@@ -222,7 +223,7 @@ rad_mysql_exec(struct sql_connection *conn, char *query)
                 return NULL;
 
         nrows = mysql_num_rows(result);
-        debug(1, ("got %d rows", nrows));
+        GRAD_DEBUG(1, ("got %d rows", nrows));
         if (nrows == 0) {
                 mysql_free_result(result);
                 return NULL;

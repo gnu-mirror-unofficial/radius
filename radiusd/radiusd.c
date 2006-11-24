@@ -613,7 +613,7 @@ main(int argc, char **argv)
            It means developer is taking control in his hands, so
            we won't modify any variables that could prevent him
            from doing so. */
-        if (debug_flag == 0) {
+	if (debug_flag == 0) {
                 foreground = 0;
                 spawn_flag = 1;
         }

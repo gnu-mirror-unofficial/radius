@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -136,7 +137,7 @@ grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret, char *authe
         memcpy(buffer + length, secret, secretlen);
         grad_md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
         
-	debug(1, ("received %s", grad_request_code_to_name(auth->code)));
+	GRAD_DEBUG(1, ("received %s", grad_request_code_to_name(auth->code)));
         if (memcmp(reply_digest, calc_digest, GRAD_AUTHENTICATOR_LENGTH) != 0) {
                 grad_log(L_WARN, _("Received invalid reply digest from server"));
         }
@@ -244,7 +245,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                 return NULL;
         }
 
-	debug(1,
+	GRAD_DEBUG(1,
 	      ("sending %s", grad_request_code_to_name(code)));
 	recv_buf = grad_emalloc(config->buffer_size);
         itr = grad_iterator_create(config->servers);
@@ -261,7 +262,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                 if (server->port[port_type] <= 0)
                         continue;
                 
-                if (debug_on(10)) {
+                if (GRAD_DEBUG_LEVEL(10)) {
                         grad_log(L_DEBUG, "server %s:%d",
                                  grad_ip_iptostr(server->addr, ipbuf),
                                  server->port[port_type]);
@@ -317,7 +318,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                         if (select(sockfd+1, &readfds, NULL, NULL, &tm) < 0) {
                                 if (errno == EINTR) {
                                         i--;
-					debug(20,
+					GRAD_DEBUG(20,
 					      ("select interrupted. retrying."));
                                         continue;
                                 }
@@ -347,13 +348,13 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                                 
                                 break;
                         }
-			debug(10,("no response. retrying."));
+			GRAD_DEBUG(10,("no response. retrying."));
                 }
 		
 		grad_free(pdu);
 		
                 if (!req)
-                        debug(10,("no reply from %s:%d",
+                        GRAD_DEBUG(10,("no reply from %s:%d",
 				  grad_ip_iptostr(server->addr, ipbuf),
 				  server->port[port_type]));
 		

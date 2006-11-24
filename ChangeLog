@@ -1,3 +1,20 @@
+2006-11-24  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* configure.ac: Raise version number to 1.4
+	* NEWS: Update
+	* doc/MACHINES: Update
+	* lib/gnuradius.vers: Add more prefixes (temporarly)
+	* include/radius/radius.h, lib/client.c, lib/dict.c,
+	lib/leakdetect.c, lib/radpdu.c, lib/radsrv.c, radiusd/acct.c,
+	radiusd/auth.c, radiusd/builddbm.c, radiusd/checkrad.c,
+	radiusd/dynload.c, radiusd/exec.c, radiusd/files.c,
+	radiusd/input.c, radiusd/mlc.c, radiusd/pam.c, 	radiusd/proxy.c,
+	radiusd/radius.c, radiusd/radiusd.c, radiusd/request.c,
+	radiusd/rewrite.y, radiusd/rpp.c, radiusd/snmpserv.c,
+	radiusd/sql.c, radiusd/stat.c, radtest/gram.y, sql/mysql.c,
+	sql/odbc.c, sql/postgres.c (debug): Rename to GRAD_DEBUG
+	(debug_on): Rename to GRAD_DEBUG_LEVEL  
+
 2006-09-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Take all replacement sources from Gnulib

@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -230,7 +231,7 @@ stat_find_port(grad_nas_t *nas, int port_no)
 	port->ip = nas->netdef.ipaddr;
 	port->port_no = port_no;
 	
-	debug(1, ("next offset %d", port - port_stat));
+	GRAD_DEBUG(1, ("next offset %d", port - port_stat));
 
 	return port;
 }
@@ -354,7 +355,7 @@ stat_update(struct radutmp *ut, int status)
 		break;
 	}
 
-	debug(1,
+	GRAD_DEBUG(1,
 		("NAS %#x port %d: act %d, cnt %d, start %d, inuse %d/%d idle %d/%d",
 		 port->ip, port->port_no, port->active,
 		 port->count, port->start,

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.3.91\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2006-09-08 15:25+0300\n"
+"POT-Creation-Date: 2006-11-24 13:01+0200\n"
 "PO-Revision-Date: 2006-10-31 10:37+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -21,50 +21,51 @@ msgstr ""
 msgid "make_pair(): attribute %d not found in dictionary"
 msgstr "make_pair(): l'atribut %d no s'ha trobat en el diccionari"
 
-#: lib/client.c:127
+#: lib/client.c:128
 #, c-format
 msgid "Actual request length does not match reported length (%d, %d)"
-msgstr "La mida real de la petició no coincideix amb la mida declarada (%d, %d)"
+msgstr ""
+"La mida real de la petició no coincideix amb la mida declarada (%d, %d)"
 
-#: lib/client.c:141
+#: lib/client.c:142
 msgid "Received invalid reply digest from server"
 msgstr "S'ha rebut un resum de resposta invàlid del servidor"
 
-#: lib/client.c:219
+#: lib/client.c:220
 msgid "invalid port type"
 msgstr "el tipus del port no és vàlid"
 
-#: lib/client.c:324
+#: lib/client.c:325
 msgid "select() interrupted"
 msgstr "select() ha estat interrompuda"
 
-#: lib/client.c:344
+#: lib/client.c:345
 #, c-format
 msgid "error receiving data from %s:%d"
 msgstr "s'ha produït un error en rebre dades des de %s:%d"
 
-#: lib/client.c:402 lib/dict.c:811 radiusd/config.y:211
+#: lib/client.c:403 lib/dict.c:812 radiusd/config.y:211
 msgid "unknown keyword"
 msgstr "la paraula clau és desconeguda"
 
-#: lib/client.c:411 radiusd/files.c:937 radiusd/files.c:1132
+#: lib/client.c:412 radiusd/files.c:938 radiusd/files.c:1133
 msgid "wrong number of fields"
 msgstr "el nombre de camps és erroni"
 
-#: lib/client.c:420
+#: lib/client.c:421
 msgid "bad IP address or host name"
 msgstr "l'adreça IP o nom de l'ordinador és errònia"
 
-#: lib/client.c:428 lib/client.c:435 radtest/main.c:276 radtest/main.c:286
+#: lib/client.c:429 lib/client.c:436 radtest/main.c:276 radtest/main.c:286
 #, c-format
 msgid "bad port number %s"
 msgstr "el número de port %s és erroni"
 
-#: lib/client.c:447
+#: lib/client.c:448
 msgid "bad timeout value"
 msgstr "el valor del temps d'espera és erroni"
 
-#: lib/client.c:453
+#: lib/client.c:454
 msgid "bad retry value"
 msgstr "el valor dels reintents és erroni"
 
@@ -72,91 +73,91 @@ msgstr "el valor dels reintents és erroni"
 msgid "compiled without debugging support"
 msgstr "compilat sense suport de depuració"
 
-#: lib/dict.c:122 lib/nas.c:54 radiusd/files.c:1040
+#: lib/dict.c:123 lib/nas.c:54 radiusd/files.c:1041
 msgid "too few fields"
 msgstr "falten camps"
 
-#: lib/dict.c:125
+#: lib/dict.c:126
 msgid "too many fields"
 msgstr "hi ha massa camps"
 
-#: lib/dict.c:256
+#: lib/dict.c:257
 msgid "missing ]"
 msgstr "manca ]"
 
-#: lib/dict.c:272 lib/dict.c:285
+#: lib/dict.c:273 lib/dict.c:286
 #, c-format
 msgid "invalid syntax flag %c"
 msgstr "el senyalador de sintaxi %c és invàlid"
 
-#: lib/dict.c:363
+#: lib/dict.c:364
 #, c-format
 msgid "invalid flag %c"
 msgstr "el senyalador %c és invàlid"
 
-#: lib/dict.c:419 lib/dict.c:608 lib/dict.c:652
+#: lib/dict.c:420 lib/dict.c:609 lib/dict.c:653
 #, c-format
 msgid "value not a number (near %s)"
 msgstr "el valor no és un número (prop de %s)"
 
-#: lib/dict.c:430
+#: lib/dict.c:431
 msgid "no parser registered for this attribute"
 msgstr "no s'ha registrat cap analitzador per a aquest atribut"
 
-#: lib/dict.c:439
+#: lib/dict.c:440
 msgid "invalid type"
 msgstr "el tipus no és vàlid"
 
-#: lib/dict.c:446 lib/dict.c:695
+#: lib/dict.c:447 lib/dict.c:696
 msgid "unknown vendor"
 msgstr "el venedor és desconegut"
 
-#: lib/dict.c:474
+#: lib/dict.c:475
 #, c-format
 msgid "Redefining attribute %s"
 msgstr "S'està redefinint l'atribut %s"
 
-#: lib/dict.c:481
+#: lib/dict.c:482
 #, c-format
 msgid "Redefining alias %s"
 msgstr "S'està redefinint l'àlias %s"
 
-#: lib/dict.c:511 lib/dict.c:547 lib/dict.c:617
+#: lib/dict.c:512 lib/dict.c:548 lib/dict.c:618
 #, c-format
 msgid "Attribute %s is not defined"
 msgstr "L'atribut %s no està definit"
 
-#: lib/dict.c:519
+#: lib/dict.c:520
 #, c-format
 msgid "Symbol %s already declared"
 msgstr "El símbol %s ja ha estat declarat"
 
-#: lib/dict.c:577
+#: lib/dict.c:578
 msgid "PROPERTY syntax error"
 msgstr "Error de sintaxi a PROPERTY"
 
-#: lib/dict.c:671
+#: lib/dict.c:672
 msgid "blocks cannot be nested"
 msgstr "els blocs no poden ser imbricats"
 
-#: lib/dict.c:673
+#: lib/dict.c:674
 msgid "block opened here"
 msgstr "s'ha obert el bloc aquí"
 
-#: lib/dict.c:685
+#: lib/dict.c:686
 #, c-format
 msgid "block syntax: expected `VENDOR' but found `%s'"
 msgstr "bloc de sintaxi: s'esperava «VENDOR», però s'ha trobat «%s»"
 
-#: lib/dict.c:708
+#: lib/dict.c:709
 msgid "unexpected END"
 msgstr "s'ha trobat un END inesperat"
 
-#: lib/dict.c:834
+#: lib/dict.c:835
 msgid "BEGIN without END"
 msgstr "BEGIN sense END"
 
-#: lib/dict.c:840
+#: lib/dict.c:841
 #, c-format
 msgid "%s: %d error"
 msgid_plural "%s: %d errors"
@@ -218,12 +219,12 @@ msgstr "%s: l'opció «-W %s» és ambigua\n"
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: l'opció «-W %s» no accepta cap argument\n"
 
-#: lib/leakdetect.c:237 lib/leakdetect.c:248
+#: lib/leakdetect.c:238 lib/leakdetect.c:249
 msgid "low core: aborting"
 msgstr "memòria exhaurida: s'està avortant"
 
-#: lib/raddb.c:50 lib/raddb.c:54 radiusd/rewrite.y:1292 radiusd/rewrite.y:2879
-#: radiusd/scheme.c:203 radiusd/stat.c:72
+#: lib/raddb.c:50 lib/raddb.c:54 radiusd/rewrite.y:1293 radiusd/rewrite.y:2880
+#: radiusd/scheme.c:203 radiusd/stat.c:73
 #, c-format
 msgid "can't open file `%s'"
 msgstr "no es pot obrir el fitxer «%s»"
@@ -246,14 +247,16 @@ msgstr "login: l'entrada pel NAS %s port %d apareix en ordre incorrecte"
 #: lib/radutmp.c:209
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr "logout: l'entrada pel NAS %s port %d té un ID incorrecte (cal «%s», però s'ha trobat «%s»)"
+msgstr ""
+"logout: l'entrada pel NAS %s port %d té un ID incorrecte (cal «%s», però "
+"s'ha trobat «%s»)"
 
 #: lib/radutmp.c:233
 #, c-format
 msgid "logout: login entry for NAS %s port %d not found"
 msgstr "logout: no s'ha trobat l'entrada login pel NAS %s port %d"
 
-#: lib/radutmp.c:251 radiusd/acct.c:674
+#: lib/radutmp.c:251 radiusd/acct.c:675
 #, c-format
 msgid "can't open %s"
 msgstr "no es pot obrir %s"
@@ -262,7 +265,7 @@ msgstr "no es pot obrir %s"
 msgid "not enough memory"
 msgstr "no hi ha prou memòria"
 
-#: lib/users.l:232 radiusd/config.y:856 radiusd/stat.c:78
+#: lib/users.l:232 radiusd/config.y:856 radiusd/stat.c:79
 #, c-format
 msgid "can't stat `%s'"
 msgstr "no es pot fer stat de «%s»"
@@ -282,12 +285,12 @@ msgstr "«%s» ja ha estat inclòs en el nivell superior"
 msgid "can't open `%s'"
 msgstr "no es pot obrir «%s»"
 
-#: lib/users.y:100 radiusd/files.c:183
+#: lib/users.y:100 radiusd/files.c:184
 #, c-format
 msgid "discarding user `%s'"
 msgstr "s'està descartant l'usuari «%s»"
 
-#: lib/users.y:210 radiusd/rewrite.y:1865 gram.y:660 gram.y:840
+#: lib/users.y:210 radiusd/rewrite.y:1866 gram.y:660 gram.y:840
 #: radtest/gram.y:660 radtest/gram.y:840
 #, c-format
 msgid "unknown attribute `%s'"
@@ -356,8 +359,12 @@ msgid "Garbage in ARGP_HELP_FMT: %s"
 msgstr "Fem en ARGP_HELP_FMT: %s"
 
 #: lib/argp-help.c:1229
-msgid "Mandatory or optional arguments to long options are also mandatory or optional for any corresponding short options."
-msgstr "Els arguments obligatoris o opcionals per les opcions llargues també ho són per les opcions curtes corresponents."
+msgid ""
+"Mandatory or optional arguments to long options are also mandatory or "
+"optional for any corresponding short options."
+msgstr ""
+"Els arguments obligatoris o opcionals per les opcions llargues també ho són "
+"per les opcions curtes corresponents."
 
 #: lib/argp-help.c:1616
 msgid "Usage:"
@@ -500,175 +507,177 @@ msgstr ""
 "   MA 02110-1301 USA.\n"
 "\n"
 
-#: radiusd/acct.c:198
+#: radiusd/acct.c:199
 msgid "no Acct-Status-Type attribute"
 msgstr "cap atribut «Acct-Status-Type»"
 
-#: radiusd/acct.c:299
+#: radiusd/acct.c:300
 #, c-format
 msgid "NAS %s started (Accounting-On packet seen)"
 msgstr "NAS %s s'ha iniciat (s'ha rebut el paquet «Accounting-On»)"
 
-#: radiusd/acct.c:307
+#: radiusd/acct.c:308
 #, c-format
 msgid "NAS %s shut down (Accounting-Off packet seen)"
 msgstr "NAS %s s'ha aturat (s'ha rebut el paquet «Accounting-Off»)"
 
-#: radiusd/acct.c:319
+#: radiusd/acct.c:320
 #, c-format
 msgid "unknown packet type (%d)"
 msgstr "tipus del paquet no és conegut (%d)"
 
 # «NO s'està escrivint?» jm
-#: radiusd/acct.c:375
+#: radiusd/acct.c:376
 msgid "NOT writing wtmp record"
 msgstr "NO s'escriu el registre wtmp"
 
 # FIXME
-#: radiusd/acct.c:423
+#: radiusd/acct.c:424
 msgid "System accounting is disabled"
 msgstr "La comptabilitat del sistema ha estat inhabilitada"
 
-#: radiusd/acct.c:466
+#: radiusd/acct.c:467
 #, c-format
 msgid "Cannot stat path component: %s"
 msgstr "No es pot fer «stat» al component del camí: %s"
 
-#: radiusd/acct.c:483
+#: radiusd/acct.c:484
 #, c-format
 msgid "Cannot create directory %s"
 msgstr "No és pot crear el directori %s"
 
-#: radiusd/acct.c:489
+#: radiusd/acct.c:490
 #, c-format
 msgid "Path component is not a directory: %s"
 msgstr "El component del camí no és un directori: %s"
 
-#: radiusd/acct.c:505
+#: radiusd/acct.c:506
 #, c-format
 msgid "%s: directory not writable"
 msgstr "%s: no es pot escriure al directori"
 
-#: radiusd/acct.c:511
+#: radiusd/acct.c:512
 #, c-format
 msgid "%s: not a directory"
 msgstr "%s: no és un directori"
 
 # FIXME
-#: radiusd/acct.c:531
+#: radiusd/acct.c:532
 msgid "Detailed accounting is disabled"
 msgstr "La comptabilitat detallada ha estat inhabilitada"
 
-#: radiusd/acct.c:595 radiusd/radutil.c:487
+#: radiusd/acct.c:596 radiusd/radutil.c:487
 msgid "wrong return type"
 msgstr "el tipus de retorn és erroni"
 
-#: radiusd/auth.c:199
+#: radiusd/auth.c:200
 #, c-format
 msgid "Invalid password aging information for user '%s'"
-msgstr "La informació de l'edat de la contrasenya és invàlida per a l'usuari «%s»"
+msgstr ""
+"La informació de l'edat de la contrasenya és invàlida per a l'usuari «%s»"
 
-#: radiusd/auth.c:234
+#: radiusd/auth.c:235
 msgid "account locked"
 msgstr "el compte ha estat blocat"
 
-#: radiusd/auth.c:285
+#: radiusd/auth.c:286
 msgid "No username"
 msgstr "Cap nom d'usuari"
 
-#: radiusd/auth.c:287
+#: radiusd/auth.c:288
 msgid "Malformed username"
 msgstr "El nom d'usuari és malformat"
 
-#: radiusd/auth.c:318
+#: radiusd/auth.c:319
 #, c-format
 msgid "Access denied by huntgroup %s:%d"
 msgstr "S'ha denegat l'accés per característiques del grup %s:%d"
 
-#: radiusd/auth.c:590
+#: radiusd/auth.c:591
 #, c-format
 msgid "unknown Password-Location value: %ld"
 msgstr "valor desconegut pel atribut «Password-Location»: %ld"
 
-#: radiusd/auth.c:626
+#: radiusd/auth.c:627
 msgid "PAM authentication not available"
 msgstr "l'autenticació PAM no és disponible"
 
-#: radiusd/auth.c:880 radiusd/auth.c:990
+#: radiusd/auth.c:881 radiusd/auth.c:991
 msgid "No such user"
 msgstr "No existeix tal usuari"
 
 # Login -> masculí
-#: radiusd/auth.c:898
+#: radiusd/auth.c:899
 msgid "Login rejected"
 msgstr "Login rebutjat"
 
-#: radiusd/auth.c:900
+#: radiusd/auth.c:901
 msgid "denied by Scheme procedure "
 msgstr "denegat per procediment Scheme "
 
-#: radiusd/auth.c:934
+#: radiusd/auth.c:935
 #, c-format
 msgid "Invalid Auth-Failure-Trigger value: %s"
 msgstr "El valor d'Auth-Failure-Trigger és invàlid: %s"
 
-#: radiusd/auth.c:937
+#: radiusd/auth.c:938
 msgid "The value of Auth-Failure-Trigger attribute must begin with '/' or '('."
-msgstr "El valor de l'atribut Auth-Failure-Trigger ha de començar amb «/» o «(»."
+msgstr ""
+"El valor de l'atribut Auth-Failure-Trigger ha de començar amb «/» o «(»."
 
-#: radiusd/auth.c:975
+#: radiusd/auth.c:976
 msgid "Rejected"
 msgstr "Rebutjat"
 
-#: radiusd/auth.c:983
+#: radiusd/auth.c:984
 msgid "Ignored"
 msgstr "Descartat"
 
-#: radiusd/auth.c:999 radiusd/auth.c:1012 radiusd/auth.c:1023
-#: radiusd/auth.c:1161
+#: radiusd/auth.c:1000 radiusd/auth.c:1013 radiusd/auth.c:1024
+#: radiusd/auth.c:1162
 msgid "Login incorrect"
 msgstr "Login incorrecte"
 
-#: radiusd/auth.c:1014
+#: radiusd/auth.c:1015
 msgid "Account expired"
 msgstr "El compte ha caducat"
 
-#: radiusd/auth.c:1025
+#: radiusd/auth.c:1026
 msgid "Password expired"
 msgstr "La contrasenya ha caducat"
 
-#: radiusd/auth.c:1040
+#: radiusd/auth.c:1041
 msgid "Account disabled"
 msgstr "El compte està desactivat"
 
-#: radiusd/auth.c:1054
+#: radiusd/auth.c:1055
 msgid "Login failed"
 msgstr "L'entrada ha fallat"
 
 # realm necessita una traducció... jm
-#: radiusd/auth.c:1055
+#: radiusd/auth.c:1056
 msgid "realm quota exceeded for "
 msgstr "la quota de reialme s'ha excedit per "
 
-#: radiusd/auth.c:1080
+#: radiusd/auth.c:1081
 #, c-format
 msgid "Multiple logins: [%s] max. %ld%s"
 msgstr "Entrades múltiples: [%s] max, %ld%s"
 
-#: radiusd/auth.c:1083
+#: radiusd/auth.c:1084
 msgid " [MPP attempt]"
 msgstr " [temptativa d'MPP]"
 
-#: radiusd/auth.c:1116
+#: radiusd/auth.c:1117
 #, c-format
 msgid "Outside allowed timespan (%s)"
 msgstr "Fora del temps permès (%s)"
 
-#: radiusd/auth.c:1163
+#: radiusd/auth.c:1164
 msgid "external check failed: "
 msgstr "la prova externa ha fallat: "
 
-#: radiusd/auth.c:1245
+#: radiusd/auth.c:1246
 msgid "Login OK"
 msgstr "Login admès"
 
@@ -686,55 +695,55 @@ msgstr "no es pot desar l'entrada per a %s"
 msgid "cannot open dbm file %s"
 msgstr "no és pot obrir el fitxer DBM %s"
 
-#: radiusd/checkrad.c:91
+#: radiusd/checkrad.c:92
 #, c-format
 msgid "unknown NAS type: %s (nas %s)"
 msgstr "el tipus del NAS és desconegut: %s (nas %s)"
 
-#: radiusd/checkrad.c:246
+#: radiusd/checkrad.c:247
 #, c-format
 msgid "timed out in waiting SNMP response from NAS %s"
 msgstr "s'ha excedit el temps d'espera per la resposta SNMP del NAS %s"
 
-#: radiusd/checkrad.c:296
+#: radiusd/checkrad.c:297
 msgid "no snmp_oid"
 msgstr "cap snmp_oid"
 
-#: radiusd/checkrad.c:305
+#: radiusd/checkrad.c:306
 #, c-format
 msgid "invalid OID: %s"
 msgstr "OID invàlid: %s"
 
-#: radiusd/checkrad.c:322
+#: radiusd/checkrad.c:323
 #, c-format
 msgid "can't create snmp session: %s"
 msgstr "no és pot crear sessió SNMP: %s"
 
-#: radiusd/checkrad.c:330
+#: radiusd/checkrad.c:331
 #, c-format
 msgid "can't open snmp session: %s"
 msgstr "no es pot obrir la sessió SNMP: %s"
 
-#: radiusd/checkrad.c:338 radiusd/checkrad.c:347 radiusd/snmpserv.c:2682
+#: radiusd/checkrad.c:339 radiusd/checkrad.c:348 radiusd/snmpserv.c:2682
 #, c-format
 msgid "can't create SNMP PDU: %s"
 msgstr "no és pot crear SNMP PDU: %s"
 
-#: radiusd/checkrad.c:419
+#: radiusd/checkrad.c:420
 #, c-format
 msgid "unknown host: %s"
 msgstr "l'ordinador és desconegut: %s"
 
-#: radiusd/checkrad.c:483
+#: radiusd/checkrad.c:484
 #, c-format
 msgid "timed out in waiting for finger response from NAS %s"
 msgstr "ha excedit el temps d'espera per la resposta «finger» del NAS %s"
 
-#: radiusd/checkrad.c:572
+#: radiusd/checkrad.c:573
 msgid "path variable not set"
 msgstr "no s'ha establert la variable path"
 
-#: radiusd/checkrad.c:598
+#: radiusd/checkrad.c:599
 msgid "expr variable not set"
 msgstr "no s'ha establert la variable expr"
 
@@ -751,14 +760,15 @@ msgstr "la mida de la màscara de xarxa no és vàlida: %d"
 #: radiusd/config.y:426
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
-msgstr "%s:%d: final de fitxer inesperat en el comentari iniciat en la línia %d"
+msgstr ""
+"%s:%d: final de fitxer inesperat en el comentari iniciat en la línia %d"
 
 #: radiusd/config.y:644
 #, c-format
 msgid "%s:%d: no such service: %s"
 msgstr "%s:%d: no existeix tal servei: %s"
 
-#: radiusd/config.y:670 radiusd/sql.c:345
+#: radiusd/config.y:670 radiusd/sql.c:346
 #, c-format
 msgid "%s:%d: unknown host: %s"
 msgstr "%s:%d: màquina desconeguda: %s"
@@ -869,8 +879,11 @@ msgstr "no és pot restablir SIGCHLD"
 
 #: radiusd/exec.c:228 radiusd/exec.c:358
 #, c-format
-msgid "can't run external program `%s' (reason reported via syslog channel user.err)"
-msgstr "no és pot executar el programa «%s» (motiu comunicat via syslog, canal user.err)"
+msgid ""
+"can't run external program `%s' (reason reported via syslog channel user.err)"
+msgstr ""
+"no és pot executar el programa «%s» (motiu comunicat via syslog, canal user."
+"err)"
 
 #: radiusd/exec.c:239 radiusd/exec.c:367
 #, c-format
@@ -939,21 +952,21 @@ msgstr "filtre %s (comptabilitat): eixida invàlida: %s"
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: filtre ja és declarat en %s:%d"
 
-#: radiusd/files.c:222
+#: radiusd/files.c:223
 #, c-format
 msgid "discarding entry `%s'"
 msgstr "s'està descartant l'entrada «%s»"
 
-#: radiusd/files.c:419
+#: radiusd/files.c:420
 msgid "zero length username not permitted"
 msgstr "nom d'usuari buit no està permès"
 
-#: radiusd/files.c:554
+#: radiusd/files.c:555
 #, c-format
 msgid "unknown attribute `%s/%s'"
 msgstr "atribut desconegut «%s/%s»"
 
-#: radiusd/files.c:566 radiusd/files.c:592
+#: radiusd/files.c:567 radiusd/files.c:593
 #, c-format
 msgid "expected %s, but found %s"
 msgstr "s'esperava %s, però s'ha trobat %s"
@@ -961,36 +974,36 @@ msgstr "s'esperava %s, però s'ha trobat %s"
 #. TRANSLATORS: This is used in place of the first %s in the message
 #. "expected %s, but found %s", i.e. it acts as a direct object to
 #. the verb 'expect'. Please bear this in mind when translating
-#: radiusd/files.c:570
+#: radiusd/files.c:571
 msgid "opcode"
 msgstr "un codi d'operació"
 
-#: radiusd/files.c:581
+#: radiusd/files.c:582
 #, c-format
 msgid "grad_create_pair failed on %s"
 msgstr "grad_create_pair() ha fallat en %s"
 
 # referint-se a una funció -> femení.
-#: radiusd/files.c:613
+#: radiusd/files.c:614
 msgid "not defined"
 msgstr "no està definida"
 
-#: radiusd/files.c:651
+#: radiusd/files.c:652
 #, c-format
 msgid "cannot execute `%s'"
 msgstr "no es pot executar «%s»"
 
-#: radiusd/files.c:1053
+#: radiusd/files.c:1054
 msgid "unknown method"
 msgstr "el mètode és desconegut"
 
-#: radiusd/files.c:1137
+#: radiusd/files.c:1138
 #, c-format
 msgid "user `%s' already found in %s"
 msgstr "el nom d'usuari «%s» ja ha estat trobat en «%s»"
 
 # «compte» és millor que «usuari». gray
-#: radiusd/files.c:1163
+#: radiusd/files.c:1164
 #, c-format
 msgid "%d user disabled"
 msgid_plural "%d users disabled"
@@ -998,39 +1011,41 @@ msgstr[0] "%d compte desactivat"
 msgstr[1] "%d comptes desactivats"
 
 # Aquí, "users" és el nom de fitxer
-#: radiusd/files.c:1705
+#: radiusd/files.c:1706
 msgid "using only dbm: USERS NOT LOADED"
 msgstr "usant només DBM: EL FITXER «USERS» NO S'HA CARREGAT"
 
-#: radiusd/files.c:1713
+#: radiusd/files.c:1714
 msgid "DBM files found but no -b flag given - NOT using DBM"
-msgstr "S'han trobat els fitxers DBM, però la opció -b no ha estat especificada -- DBM NO es fa servir"
+msgstr ""
+"S'han trobat els fitxers DBM, però la opció -b no ha estat especificada -- "
+"DBM NO es fa servir"
 
-#: radiusd/files.c:1717
+#: radiusd/files.c:1718
 #, c-format
 msgid "can't load %s: exited"
 msgstr "no és pot carregar «%s»: s'està eixint"
 
-#: radiusd/files.c:1720
+#: radiusd/files.c:1721
 #, c-format
 msgid "%s reloaded."
 msgstr "%s recarregat."
 
-#: radiusd/files.c:1791
+#: radiusd/files.c:1792
 msgid "SQL Error: SQL client could not be initialized"
 msgstr "Error SQL: no és pot inicialitzar client SQL"
 
-#: radiusd/files.c:1807
+#: radiusd/files.c:1808
 #, c-format
 msgid "INTERNAL ERROR: unknown reload code: %d"
 msgstr "ERROR INTERN: codi de recarrega desconegut: %d"
 
-#: radiusd/files.c:1878
+#: radiusd/files.c:1879
 #, c-format
 msgid "can't create parser output file `%s'"
 msgstr "no és pot crear el fitxer de la eixida del analitzador «%s»"
 
-#: radiusd/files.c:1892
+#: radiusd/files.c:1893
 #, c-format
 msgid "dumped users database to %s"
 msgstr "s'ha bolcat la base de dades dels usuaris al fitxer «%s»"
@@ -1245,7 +1260,9 @@ msgstr "Match-Profile es refereix a la entrada DEFAULT"
 
 #: radiusd/radck.c:285
 msgid "Simultaneous-Use is used, but multiple login checking is not enabled"
-msgstr "S'utilitza Simultaneous-Use, però la comprovació d'entrades múltiples no està habilitada"
+msgstr ""
+"S'utilitza Simultaneous-Use, però la comprovació d'entrades múltiples no "
+"està habilitada"
 
 #: radiusd/radck.c:325 radiusd/radck.c:356
 msgid "No User-Password attribute in LHS"
@@ -1253,7 +1270,9 @@ msgstr "Manca l'atribut «User-Password» a la part de l'esquerra"
 
 #: radiusd/radck.c:333
 msgid "Auth-Type = System can only be used when running with root privileges"
-msgstr "Només es pot utilitzar «Auth-Type = System» quan s'executa amb privilegis de root"
+msgstr ""
+"Només es pot utilitzar «Auth-Type = System» quan s'executa amb privilegis de "
+"root"
 
 # No és cap traducció literal, però en qualsevol cas, vaig a canviar el
 # missatge original a:
@@ -1267,7 +1286,8 @@ msgstr "L'atribut «User-Password» no té cap sentit usat amb aquest «Auth-Typ
 # El matiex que amunt
 #: radiusd/radck.c:348
 msgid "Password-Location attribute ignored for this Auth-Type"
-msgstr "L'atribut «Password-Location» no té cap sentit usat amb aquest «Auth-Type»"
+msgstr ""
+"L'atribut «Password-Location» no té cap sentit usat amb aquest «Auth-Type»"
 
 #: radiusd/radck.c:364
 msgid "Authentication type not supported"
@@ -1490,7 +1510,8 @@ msgstr "Radiusd no està escoltant en cap port."
 
 #: radiusd/radiusd.c:401
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
-msgstr "Radiusd no està escoltant en cap port. Tot i això, es provarà a continuar..."
+msgstr ""
+"Radiusd no està escoltant en cap port. Tot i això, es provarà a continuar..."
 
 #: radiusd/radiusd.c:457
 msgid "Starting"
@@ -1551,7 +1572,8 @@ msgstr "S'estan carregant els fitxers de configuració."
 
 #: radiusd/radiusd.c:962
 msgid "Errors reading config file - EXITING"
-msgstr "S'han produït errors en llegir el fitxer de configuració - S'ESTÀ EIXINT"
+msgstr ""
+"S'han produït errors en llegir el fitxer de configuració - S'ESTÀ EIXINT"
 
 #: radiusd/radiusd.c:1134
 #, c-format
@@ -1586,7 +1608,9 @@ msgstr "S'està terminant el fill %s penjat %lu"
 #: radiusd/request.c:246
 #, c-format
 msgid "Cannot terminate child %lu. Attempting to kill inexisting process?"
-msgstr "No s'ha pogut terminar el fill %lu. S'està intentant matar un procés inexistent?"
+msgstr ""
+"No s'ha pogut terminar el fill %lu. S'està intentant matar un procés "
+"inexistent?"
 
 # %s denota el tipus del procès
 #: radiusd/request.c:256
@@ -1618,257 +1642,257 @@ msgstr "massa peticions d'aquest tipus"
 msgid "Maximum number of children active"
 msgstr "S'ha assolit el nombre màxim de subprocessos"
 
-#: radiusd/rewrite.y:840 gram.y:396 radtest/gram.y:396
+#: radiusd/rewrite.y:841 gram.y:396 radtest/gram.y:396
 #, c-format
 msgid "redefinition of function `%s'"
 msgstr "funció «%s» redefinida"
 
-#: radiusd/rewrite.y:842 radiusd/rewrite.y:5712
+#: radiusd/rewrite.y:843 radiusd/rewrite.y:5713
 msgid "previously defined here"
 msgstr "definida prèviament aquí"
 
-#: radiusd/rewrite.y:1028
+#: radiusd/rewrite.y:1029
 msgid "nothing to break from"
 msgstr "El «break» és irrellevant o mal ubicat"
 
-#: radiusd/rewrite.y:1042
+#: radiusd/rewrite.y:1043
 msgid "nothing to continue"
 msgstr "El «continue» és irrellevant o mal ubicat"
 
-#: radiusd/rewrite.y:1118
+#: radiusd/rewrite.y:1119
 #, c-format
 msgid "undefined variable: %s"
 msgstr "la variable no és definida: %s"
 
-#: radiusd/rewrite.y:1609
+#: radiusd/rewrite.y:1610
 #, c-format
 msgid "unexpected EOF in comment started at line %lu"
 msgstr "final de fitxer en el comentari iniciat en la línia %lu"
 
-#: radiusd/rewrite.y:1670
+#: radiusd/rewrite.y:1671
 msgid "Malformed pragma"
 msgstr "«Pragma» malformada"
 
-#: radiusd/rewrite.y:1684
+#: radiusd/rewrite.y:1685
 #, c-format
 msgid "Unknown regexp flag: %s"
 msgstr "Opció de regexp desconeguda: %s"
 
-#: radiusd/rewrite.y:1821
+#: radiusd/rewrite.y:1822
 msgid "unterminated character constant"
 msgstr "el literal caràcter no és terminat"
 
 # primer %s -- tipus d'origen en ablatiu (amb `de' en català)
 # segon  %s -- tipus de destinació en acusatiu (amb `a' en català)
 # aleshores no seria «%s conversió implícita de %s a %s»? jm
-#: radiusd/rewrite.y:2553
+#: radiusd/rewrite.y:2554
 #, c-format
 msgid "%s implicit coercion %s %s"
 msgstr "%s coerció implícita de %s %s"
 
-#: radiusd/rewrite.y:2618
+#: radiusd/rewrite.y:2619
 msgid "operation not applicable to strings"
 msgstr "l'operació no és aplicable a cadenes"
 
-#: radiusd/rewrite.y:2722 radiusd/rewrite.y:2788
+#: radiusd/rewrite.y:2723 radiusd/rewrite.y:2789
 #, c-format
 msgid "(argument %d)"
 msgstr "(argument %d)"
 
-#: radiusd/rewrite.y:2737 radiusd/rewrite.y:2799
+#: radiusd/rewrite.y:2738 radiusd/rewrite.y:2800
 #, c-format
 msgid "too many arguments in call to %s"
 msgstr "massa arguments en la crida a %s"
 
-#: radiusd/rewrite.y:2742 radiusd/rewrite.y:2804
+#: radiusd/rewrite.y:2743 radiusd/rewrite.y:2805
 #, c-format
 msgid "too few arguments in call to %s"
 msgstr "arguments insuficients en la crida a «%s»"
 
-#: radiusd/rewrite.y:2830 radiusd/tsh.c:247
+#: radiusd/rewrite.y:2831 radiusd/tsh.c:247
 #, c-format
 msgid "Undefined"
 msgstr "Indefinit"
 
-#: radiusd/rewrite.y:2832 radtest/runtime.c:757
+#: radiusd/rewrite.y:2833 radtest/runtime.c:757
 msgid "integer"
 msgstr "enter"
 
-#: radiusd/rewrite.y:2834 radtest/runtime.c:759
+#: radiusd/rewrite.y:2835 radtest/runtime.c:759
 msgid "string"
 msgstr "cadena"
 
-#: radiusd/rewrite.y:2836
+#: radiusd/rewrite.y:2837
 msgid "UNKNOWN"
 msgstr "DESCONEGUT"
 
-#: radiusd/rewrite.y:2845
+#: radiusd/rewrite.y:2846
 msgid "from Undefined"
 msgstr "de indefinit"
 
-#: radiusd/rewrite.y:2847
+#: radiusd/rewrite.y:2848
 msgid "from integer"
 msgstr "d'enter"
 
-#: radiusd/rewrite.y:2849
+#: radiusd/rewrite.y:2850
 msgid "from string"
 msgstr "de cadena"
 
-#: radiusd/rewrite.y:2851
+#: radiusd/rewrite.y:2852
 msgid "from UNKNOWN"
 msgstr "de DESCONEGUT"
 
-#: radiusd/rewrite.y:2860
+#: radiusd/rewrite.y:2861
 msgid "to Undefined"
 msgstr "a indefinit"
 
-#: radiusd/rewrite.y:2862 radtest/runtime.c:770
+#: radiusd/rewrite.y:2863 radtest/runtime.c:770
 msgid "to integer"
 msgstr "a enter"
 
-#: radiusd/rewrite.y:2864 radtest/runtime.c:772
+#: radiusd/rewrite.y:2865 radtest/runtime.c:772
 msgid "to string"
 msgstr "a cadena"
 
-#: radiusd/rewrite.y:2866
+#: radiusd/rewrite.y:2867
 msgid "to UNKNOWN"
 msgstr "a DESCONEGUT"
 
-#: radiusd/rewrite.y:3188
+#: radiusd/rewrite.y:3189
 msgid "missing return statement"
 msgstr "manca la sentència «return»"
 
-#: radiusd/rewrite.y:3339 radiusd/rewrite.y:3349
+#: radiusd/rewrite.y:3340 radiusd/rewrite.y:3350
 msgid "divide by zero"
 msgstr "divisió per zero"
 
-#: radiusd/rewrite.y:3973
+#: radiusd/rewrite.y:3974
 #, c-format
 msgid "regexp error: %s"
 msgstr "error de l'expressió regular: %s"
 
-#: radiusd/rewrite.y:4021
+#: radiusd/rewrite.y:4022
 msgid "out of pushdown space"
 msgstr "la pila ha estat desbordada"
 
 # Hmm, heap??
 #      
-#: radiusd/rewrite.y:4036 radiusd/rewrite.y:4067
+#: radiusd/rewrite.y:4037 radiusd/rewrite.y:4068
 msgid "heap overrun"
 msgstr "la memòria ha estat sobreescrita"
 
-#: radiusd/rewrite.y:4092
+#: radiusd/rewrite.y:4093
 msgid "out of heap space"
 msgstr "la pila ha estat desbordada"
 
-#: radiusd/rewrite.y:4120 radiusd/rewrite.y:4162
+#: radiusd/rewrite.y:4121 radiusd/rewrite.y:4163
 msgid "out of popup"
 msgstr "pila buida"
 
 # «rewrite» és el nom del llenguatge de programació
 #
-#: radiusd/rewrite.y:4218 radiusd/rewrite.y:4228
+#: radiusd/rewrite.y:4219 radiusd/rewrite.y:4229
 msgid "rewrite runtime error"
 msgstr "error de «rewrite» en temps d'execució"
 
-#: radiusd/rewrite.y:4325
+#: radiusd/rewrite.y:4326
 msgid "no request supplied"
 msgstr "ni hi ha cap petició"
 
-#: radiusd/rewrite.y:4360
+#: radiusd/rewrite.y:4361
 msgid "can't create A/V pair"
 msgstr "ne és pot crear parell atribut-valor"
 
-#: radiusd/rewrite.y:4657 radiusd/rewrite.y:4673
+#: radiusd/rewrite.y:4658 radiusd/rewrite.y:4674
 msgid "division by zero!"
 msgstr "divisió per zero!"
 
-#: radiusd/rewrite.y:4880
+#: radiusd/rewrite.y:4881
 #, c-format
 msgid "rewrite regex failure: %s. Input: %s"
 msgstr "l'expressió regular ha fallat en «rewrite»: %s. Entrada: %s"
 
 # Què és «pc»? jm
-#: radiusd/rewrite.y:4931
+#: radiusd/rewrite.y:4932
 msgid "pc out of range"
 msgstr "pc és fora de l'interval"
 
-#: radiusd/rewrite.y:5386
+#: radiusd/rewrite.y:5387
 msgid "Invalid backreference"
 msgstr "Referència cap enrere no vàlida"
 
-#: radiusd/rewrite.y:5422 radiusd/rewrite.y:5464
+#: radiusd/rewrite.y:5423 radiusd/rewrite.y:5465
 msgid "regexp compile error: "
 msgstr "error de compilació de l'expressió regular: "
 
-#: radiusd/rewrite.y:5428
+#: radiusd/rewrite.y:5429
 msgid "gsub: not enough memory"
 msgstr "gsub: no hi ha prou memòria"
 
-#: radiusd/rewrite.y:5470
+#: radiusd/rewrite.y:5471
 msgid "sub: not enough memory"
 msgstr "sub: no hi ha prou memòria"
 
-#: radiusd/rewrite.y:5710
+#: radiusd/rewrite.y:5711
 #, c-format
 msgid "redefinition of function %s"
 msgstr "la funció %s és redefinida"
 
-#: radiusd/rewrite.y:5766
+#: radiusd/rewrite.y:5767
 #, c-format
 msgid "function %s not defined"
 msgstr "la funció %s no està definida"
 
-#: radiusd/rewrite.y:5770
+#: radiusd/rewrite.y:5771
 #, c-format
 msgid "function %s returns wrong data type"
 msgstr "el tipus de retorn de funció %s és erroni"
 
-#: radiusd/rewrite.y:5778
+#: radiusd/rewrite.y:5779
 #, c-format
 msgid "function %s takes too many arguments"
 msgstr "la funció %s accepta massa arguments"
 
-#: radiusd/rewrite.y:5785
+#: radiusd/rewrite.y:5786
 #, c-format
 msgid "function %s: argument %d must be integer"
 msgstr "funció %s: el paràmetre %d ha de ser un nombre enter"
 
-#: radiusd/rewrite.y:5794
+#: radiusd/rewrite.y:5795
 #, c-format
 msgid "function %s: argument %d must be string"
 msgstr "funció %s: el paràmetre %d ha de ser una cadena"
 
-#: radiusd/rewrite.y:5807
+#: radiusd/rewrite.y:5808
 #, c-format
 msgid "function %s takes too few arguments"
 msgstr "la funció %s accepta massa pocs arguments"
 
-#: radiusd/rewrite.y:5994
+#: radiusd/rewrite.y:5995
 #, c-format
 msgid "function %s() requires %d parameter"
 msgid_plural "function %s() requires %d parameters"
 msgstr[0] "la funció %s() requereix %d paràmetre"
 msgstr[1] "la funció %s() requereix %d paràmetres"
 
-#: radiusd/rewrite.y:6151
+#: radiusd/rewrite.y:6152
 #, c-format
 msgid "file not found: %s"
 msgstr "no s'ha trobat el fitxer: %s"
 
-#: radiusd/rewrite.y:6288
+#: radiusd/rewrite.y:6289
 msgid "function ~S not defined"
 msgstr "la funció ~S no està definida"
 
-#: radiusd/rewrite.y:6304
+#: radiusd/rewrite.y:6305
 msgid "too many arguments for ~S"
 msgstr "hi ha massa arguments per ~S"
 
-#: radiusd/rewrite.y:6331
+#: radiusd/rewrite.y:6332
 msgid "type mismatch in argument ~S(~S) in call to ~S"
 msgstr "el tipus de dades ~S(~S) és incorrecte en la crida a ~S"
 
-#: radiusd/rewrite.y:6341
+#: radiusd/rewrite.y:6342
 msgid "too few arguments for ~S"
 msgstr "els arguments són insuficients per ~S"
 
@@ -1880,7 +1904,9 @@ msgstr "%s no és un objecte-procediment"
 #: radiusd/scheme.c:235
 #, c-format
 msgid "Procedure `%s' failed: see error output for details"
-msgstr "Procediment «%s» ha fallat: per a obtindre més detalls vegeu el fitxer de la eixida dels errors"
+msgstr ""
+"Procediment «%s» ha fallat: per a obtindre més detalls vegeu el fitxer de la "
+"eixida dels errors"
 
 #: radiusd/scheme.c:359 radiusd/scheme.c:403
 #, c-format
@@ -1964,139 +1990,151 @@ msgstr "S'ha DENEGAT la temptativa de accés a la comunitat «%s» de «%s»"
 msgid "Dropping SNMP request from client %s: %s"
 msgstr "S'està descartant la petició SNMP de client %s: %s"
 
-#: radiusd/sql.c:316
+#: radiusd/sql.c:317
 #, c-format
 msgid "could not read sqlserver file %s"
 msgstr "no s'ha pogut llegir el fitxer «sqlserver» «%s»"
 
-#: radiusd/sql.c:328
+#: radiusd/sql.c:329
 msgid "unrecognized keyword"
 msgstr "la paraula clau no és reconeguda"
 
-#: radiusd/sql.c:336
+#: radiusd/sql.c:337
 msgid "required argument missing"
 msgstr "manca argument requerit"
 
-#: radiusd/sql.c:361 radiusd/sql.c:388
+#: radiusd/sql.c:362 radiusd/sql.c:389
 msgid "number parse error"
 msgstr "s'ha produït un error en analitzar el nombre"
 
-#: radiusd/sql.c:380 radiusd/sql.c:398 radiusd/sql.c:406
+#: radiusd/sql.c:381 radiusd/sql.c:399 radiusd/sql.c:407
 msgid "expected boolean value"
 msgstr "s'esperava un valor booleà"
 
 # Es suposa «la paraula clau», llavors femení
-#: radiusd/sql.c:421
+#: radiusd/sql.c:422
 msgid "auth_max_connections is obsolete"
 msgstr "auth_max_connections és obsoleta"
 
-#: radiusd/sql.c:428
+#: radiusd/sql.c:429
 msgid "acct_max_connections is obsolete"
 msgstr "acct_max_connections és obsoleta"
 
-#: radiusd/sql.c:435
+#: radiusd/sql.c:436
 msgid "query_buffer_size is obsolete"
 msgstr "query_buffer_size és obsoleta"
 
-#: radiusd/sql.c:443
+#: radiusd/sql.c:444
 msgid "Unsupported SQL interface"
 msgstr "Interfície SQL no implementada"
 
-#: radiusd/sql.c:498
+#: radiusd/sql.c:499
 #, c-format
 msgid "%s: missing `%s' statement"
 msgstr "%s: manca una sentència «%s»"
 
-#: radiusd/sql.c:516
+#: radiusd/sql.c:517
 #, c-format
 msgid "%s: SQL interface not specified"
 msgstr "%s: no s'ha especificat la interfície SQL"
 
-#: radiusd/sql.c:585
+#: radiusd/sql.c:586
 msgid "disabling SQL authentication"
 msgstr "s'està desactivant l'autentificació SQL"
 
-#: radiusd/sql.c:587
+#: radiusd/sql.c:588
 msgid "disabling SQL accounting"
 msgstr "s'està desactivant la comptabilitat SQL"
 
-#: radiusd/sql.c:594
+#: radiusd/sql.c:595
 msgid "SQL configuration changed: closing existing connections"
-msgstr "la configuració SQL ha canviat: s'estan tancant les connexions existentes"
+msgstr ""
+"la configuració SQL ha canviat: s'estan tancant les connexions existentes"
 
-#: radiusd/sql.c:817
+#: radiusd/sql.c:818
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "manca «Acct-Status-Type» en rad_sql_acct()"
 
-#: radiusd/sql.c:894 radiusd/sql.c:1233
+#: radiusd/sql.c:895 radiusd/sql.c:1234
 #, c-format
 msgid "%s updated %d record"
 msgid_plural "%s updated %d records"
 msgstr[0] "%s ha actualitzat %d registre"
 msgstr[1] "%s ha actualitzat %d registres"
 
-#: radiusd/sql.c:915
+#: radiusd/sql.c:916
 msgid "SQL Auth specified in users file, but not in sqlserver file"
-msgstr "Es requereix l'autentificació SQL pel fitxer «users», però no pel fitxer «sqlserver»"
+msgstr ""
+"Es requereix l'autentificació SQL pel fitxer «users», però no pel fitxer "
+"«sqlserver»"
 
-#: radiusd/sql.c:1014
+#: radiusd/sql.c:1015
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr "SQL: l'operador «%s» no és vàlid"
 
-#: radiusd/sql.c:1085
+#: radiusd/sql.c:1086
 msgid "SQL authentication is not enabled in raddb/sqlserver"
 msgstr "l'autenticació SQL no és habilitada al raddb/servidor d'sql"
 
-#: radiusd/sql.c:1315
+#: radiusd/sql.c:1316
 msgid "Radiusd is compiled without SQL support"
 msgstr "Radiusd és compilat sense suport d'SQL"
 
-#: radiusd/stat.c:85
+#: radiusd/stat.c:86
 #, c-format
 msgid "SNMP system disabled: file `%s' has incorrect permissions"
-msgstr "s'ha desactivat el sistema SNMP: el fitxer «%s» té permisos incorrectes"
+msgstr ""
+"s'ha desactivat el sistema SNMP: el fitxer «%s» té permisos incorrectes"
 
-#: radiusd/stat.c:104
+#: radiusd/stat.c:105
 msgid "mmap failed"
 msgstr "mmap ha fallat"
 
-#: radiusd/stat.c:130
+#: radiusd/stat.c:131
 #, c-format
 msgid "shmem_get(): can't allocate %d byte"
 msgid_plural "shmem_get(): can't allocate %d bytes"
 msgstr[0] "shmem_get(): no és pot assignar %d octet"
 msgstr[1] "shmem_get(): no és poden assignar %d octets"
 
-#: radiusd/stat.c:166
+#: radiusd/stat.c:167
 msgid "stat_init failed"
 msgstr "stat_init ha fallat"
 
-#: radiusd/stat.c:227
-msgid "reached SNMP storage limit for the number of monitored ports: increase max-port-count"
-msgstr "s'ha arribat al límit de magatzement de dades SNMP pel nombre de ports: augmenti max-port-count"
+#: radiusd/stat.c:228
+msgid ""
+"reached SNMP storage limit for the number of monitored ports: increase max-"
+"port-count"
+msgstr ""
+"s'ha arribat al límit de magatzement de dades SNMP pel nombre de ports: "
+"augmenti max-port-count"
 
-#: radiusd/stat.c:287
+#: radiusd/stat.c:288
 #, c-format
 msgid "stat_update(): portno %d: can't find nas for IP %s"
 msgstr "stat_update(): port %d: no és pot trobar cap NAS amb IP %s"
 
-#: radiusd/stat.c:298
+#: radiusd/stat.c:299
 #, c-format
 msgid "stat_update(): port %d not found on NAS %s"
 msgstr "stat_update(): port %d no s'ha trobat en NAS %s"
 
-#: radiusd/stat.c:312
+#: radiusd/stat.c:313
 msgid "negative port idle time"
 msgstr "El temps d'inactivitat del port és negatiu"
 
-#: radiusd/stat.c:336
+#: radiusd/stat.c:337
 msgid "negative port session time"
 msgstr "El temps de la sessió del port és negatiu"
 
-#: radiusd/stat.c:468
-msgid "reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"
-msgstr "s'ha arribat al límit de magatzement de dades SNMP pel nombre de NASes: aumenteu el max-port-count"
+#: radiusd/stat.c:469
+msgid ""
+"reached SNMP storage limit for the number of monitored NASes: increase max-"
+"nas-count"
+msgstr ""
+"s'ha arribat al límit de magatzement de dades SNMP pel nombre de NASes: "
+"aumenteu el max-port-count"
 
 #: radiusd/version.c:140
 msgid "GNU RADIUS server version "
@@ -2212,7 +2250,8 @@ msgstr "s'ha produït un error en llegir dades"
 
 #: radiusd/rpp.c:737
 msgid "error reading data; wrong data size returned"
-msgstr "s'ha produït un error en llegir dades; s'ha tornat una mida de dades errònia"
+msgstr ""
+"s'ha produït un error en llegir dades; s'ha tornat una mida de dades errònia"
 
 #: radiusd/tsh.c:74
 msgid "Print this help screen"
@@ -2494,7 +2533,8 @@ msgstr "estableix el nivell de depuració"
 
 #: radtest/main.c:50
 msgid "Read input from FILE. Stops further processing of the command line."
-msgstr "Llegeix l'entrada des de FITXER. Atura el processat de la línia d'ordres."
+msgstr ""
+"Llegeix l'entrada des de FITXER. Atura el processat de la línia d'ordres."
 
 #: radtest/main.c:54
 msgid "set number of retries"
@@ -2696,7 +2736,9 @@ msgstr "no és una llista de parelles"
 
 #: radtest/runtime.c:1254
 msgid "invalid data type in send statement (expected A/V list)"
-msgstr "el tipus de dades és invàlid a l'expressió d'enviament (s'esperava una llista A/V)"
+msgstr ""
+"el tipus de dades és invàlid a l'expressió d'enviament (s'esperava una "
+"llista A/V)"
 
 #: radtest/runtime.c:1270
 #, c-format
@@ -2867,16 +2909,16 @@ msgstr "%s: no s'ha trobat l'ordinador\n"
 msgid "Failed query was"
 msgstr "La consulta fallida era"
 
-#: sql/mysql.c:79
+#: sql/mysql.c:80
 msgid "gave up on connect"
 msgstr "s'ha abandonat la connexió"
 
-#: sql/mysql.c:107
+#: sql/mysql.c:108
 #, c-format
 msgid "[MYSQL] cannot connect to %s as %s: %s"
 msgstr "[MYSQL] no es pot connectar a %s com a %s: %s"
 
-#: sql/mysql.c:162
+#: sql/mysql.c:163
 msgid "[MYSQL]: can't get result"
 msgstr "[MYSQL]: no es pot obtindre un resultat"
 
@@ -2890,17 +2932,17 @@ msgstr "la consulta ha tornat més tuples: %s"
 msgid "too few columns returned (%d req'd)"
 msgstr "s'han tornat massa poques columnes (es requereixen %d)"
 
-#: sql/postgres.c:70
+#: sql/postgres.c:71
 #, c-format
 msgid "PQconnectStart failed: %s"
 msgstr "Ha fallat PQconnectStart: %s"
 
-#: sql/postgres.c:151 sql/postgres.c:203 sql/postgres.c:272
+#: sql/postgres.c:152 sql/postgres.c:204 sql/postgres.c:273
 #, c-format
 msgid "PQexec returned %s"
 msgstr "PQexec ha tornat %s"
 
-#: sql/postgres.c:194
+#: sql/postgres.c:195
 #, c-format
 msgid "query returned %d tuple: %s"
 msgid_plural "query returned %d tuples: %s"
@@ -2930,7 +2972,8 @@ msgstr[1] "la consulta ha tornat %d tuples: %s"
 #~ msgstr "setreuid(0,%d) ha fallat (ruid=%d, euid=%d)"
 
 #~ msgid "radius_exec_program(): won't execute, no such user: %s"
-#~ msgstr "radius_exec_program(): no s'executarà, l'usuari o usuària no existeix: %s"
+#~ msgstr ""
+#~ "radius_exec_program(): no s'executarà, l'usuari o usuària no existeix: %s"
 
 #~ msgid "won't execute, no such user: %s"
 #~ msgstr "no s'executarà, l'usuari no existeix: %s"
@@ -2945,7 +2988,8 @@ msgstr[1] "la consulta ha tornat %d tuples: %s"
 #~ msgstr "s'esperava un codi d'operació, però s'ha trobat «%s»"
 
 #~ msgid "%s(): wrong number of arguments (should be %d, passed %d)"
-#~ msgstr "%s(): el nombre d'arguments és incorrecte (ha de ser %d, s'han passat %d)"
+#~ msgstr ""
+#~ "%s(): el nombre d'arguments és incorrecte (ha de ser %d, s'han passat %d)"
 
 #~ msgid "missing '(' in function call"
 #~ msgstr "manca «(» en la crida a la funció"
@@ -2954,10 +2998,13 @@ msgstr[1] "la consulta ha tornat %d tuples: %s"
 #~ msgstr "manca «)» en la crida a la funció"
 
 #~ msgid "calling %s: expected ',' but found %s after arg %d"
-#~ msgstr "crida a %s: s'esperava «,», però s'ha trobat «%s» després del argument %d"
+#~ msgstr ""
+#~ "crida a %s: s'esperava «,», però s'ha trobat «%s» després del argument %d"
 
 #~ msgid "disabling SQL auth: no auth_query specified"
-#~ msgstr "s'està desactivant l'autentificació SQL: «auth_query» no ha estat especificat"
+#~ msgstr ""
+#~ "s'està desactivant l'autentificació SQL: «auth_query» no ha estat "
+#~ "especificat"
 
 #~ msgid "SQL auth: no group_query specified"
 #~ msgstr "autentificació SQL: «group_query» no ha estat especificat"
@@ -2966,7 +3013,9 @@ msgstr[1] "la consulta ha tornat %d tuples: %s"
 #~ msgstr "comptabilitat SQL: «acct_start_query» no ha estat especificat"
 
 #~ msgid "disabling SQL acct: no acct_stop_query specified"
-#~ msgstr "desactivant la comptabilitat SQL: «acct_stop_query» no ha estat especificat"
+#~ msgstr ""
+#~ "desactivant la comptabilitat SQL: «acct_stop_query» no ha estat "
+#~ "especificat"
 
 #~ msgid "SQL acct: no acct_nasdown_query specified"
 #~ msgstr "comptabilitat SQL: «acct_nasdown_query» no ha estat especificat"
@@ -2980,8 +3029,12 @@ msgstr[1] "la consulta ha tornat %d tuples: %s"
 #~ msgid "send arbitrary radius packets"
 #~ msgstr "envia paquets arbitraris de radius"
 
-#~ msgid "Read input from FILE. When this option is used, all unknown options in the form --VAR=VALUE are treated as variable assignments"
-#~ msgstr "Llig dades del FITXER. Quan s'utilitza aquesta opció, totes les opcions desconeguts en forma --VAR=VALOR es tracten com assignacions de variable"
+#~ msgid ""
+#~ "Read input from FILE. When this option is used, all unknown options in "
+#~ "the form --VAR=VALUE are treated as variable assignments"
+#~ msgstr ""
+#~ "Llig dades del FITXER. Quan s'utilitza aquesta opció, totes les opcions "
+#~ "desconeguts en forma --VAR=VALOR es tracten com assignacions de variable"
 
 #~ msgid "wrong datatype: expected vector"
 #~ msgstr "tipus de dades erroni: s'esperava un vector"

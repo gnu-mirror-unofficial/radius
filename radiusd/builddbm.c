@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2001,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003,2004,2005,2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -251,7 +251,7 @@ dbm_find(DBM_FILE file, char *name, radiusd_request_t *req,
                         int dummy;
                         char *name;
                         
-                        debug(1, ("submatch: %s", p->avp_strvalue));
+                        GRAD_DEBUG(1, ("submatch: %s", p->avp_strvalue));
                         name = grad_estrdup(p->avp_strvalue);
                         if (!dbm_match(file, name, _dbm_dup_name,
                                        req,
@@ -322,7 +322,7 @@ dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), radiusd_request_t *req,
                         int dummy;
                         char *name;
                         
-                        debug(1, ("next: %s", p->avp_strvalue));
+                        GRAD_DEBUG(1, ("next: %s", p->avp_strvalue));
                         name = grad_estrdup(p->avp_strvalue);
                         grad_avl_delete(reply_pairs, DA_MATCH_PROFILE);
                         dbm_match(dbmfile, name, _dbm_dup_name,
@@ -385,7 +385,7 @@ user_find_db(char *name, radiusd_request_t *req,
         grad_dbm_close(dbmfile);
         grad_free(path);
 
-        debug(1, ("returning %d", found));
+        GRAD_DEBUG(1, ("returning %d", found));
 
         return found;
 }

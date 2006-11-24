@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU radius 1.3\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2006-09-08 15:25+0300\n"
+"POT-Creation-Date: 2006-11-24 13:01+0200\n"
 "PO-Revision-Date: 2004-12-27 18:36+0100\n"
 "Last-Translator: Santiago Vila Doncel <sanvila@unex.es>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -25,50 +25,51 @@ msgstr ""
 msgid "make_pair(): attribute %d not found in dictionary"
 msgstr "make_pair(): atributo %d no encontrado en el diccionario"
 
-#: lib/client.c:127
+#: lib/client.c:128
 #, c-format
 msgid "Actual request length does not match reported length (%d, %d)"
-msgstr "La petición actual de longitud no coincide con la longitud reportada (%d, %d)"
+msgstr ""
+"La petición actual de longitud no coincide con la longitud reportada (%d, %d)"
 
-#: lib/client.c:141
+#: lib/client.c:142
 msgid "Received invalid reply digest from server"
 msgstr "Respuesta inválida recibida por el servidor"
 
-#: lib/client.c:219
+#: lib/client.c:220
 msgid "invalid port type"
 msgstr "tipo de puerto inválido"
 
-#: lib/client.c:324
+#: lib/client.c:325
 msgid "select() interrupted"
 msgstr "select() interrumpida"
 
-#: lib/client.c:344
+#: lib/client.c:345
 #, c-format
 msgid "error receiving data from %s:%d"
 msgstr "error al recibir datos de %s:%d"
 
-#: lib/client.c:402 lib/dict.c:811 radiusd/config.y:211
+#: lib/client.c:403 lib/dict.c:812 radiusd/config.y:211
 msgid "unknown keyword"
 msgstr "palabra clave desconocida"
 
-#: lib/client.c:411 radiusd/files.c:937 radiusd/files.c:1132
+#: lib/client.c:412 radiusd/files.c:938 radiusd/files.c:1133
 msgid "wrong number of fields"
 msgstr "número incorrecto de campos"
 
-#: lib/client.c:420
+#: lib/client.c:421
 msgid "bad IP address or host name"
 msgstr "dirección IP o nombre de anfitrión erróneo"
 
-#: lib/client.c:428 lib/client.c:435 radtest/main.c:276 radtest/main.c:286
+#: lib/client.c:429 lib/client.c:436 radtest/main.c:276 radtest/main.c:286
 #, c-format
 msgid "bad port number %s"
 msgstr "número inválido de puerto %s"
 
-#: lib/client.c:447
+#: lib/client.c:448
 msgid "bad timeout value"
 msgstr "valor inválido del tiempo de espera"
 
-#: lib/client.c:453
+#: lib/client.c:454
 msgid "bad retry value"
 msgstr "valor inválido del número de reintentos"
 
@@ -76,91 +77,91 @@ msgstr "valor inválido del número de reintentos"
 msgid "compiled without debugging support"
 msgstr "compilado sin soporte de depuración"
 
-#: lib/dict.c:122 lib/nas.c:54 radiusd/files.c:1040
+#: lib/dict.c:123 lib/nas.c:54 radiusd/files.c:1041
 msgid "too few fields"
 msgstr "insuficiente número de campos"
 
-#: lib/dict.c:125
+#: lib/dict.c:126
 msgid "too many fields"
 msgstr "demasiados campos"
 
-#: lib/dict.c:256
+#: lib/dict.c:257
 msgid "missing ]"
 msgstr "falta ]"
 
-#: lib/dict.c:272 lib/dict.c:285
+#: lib/dict.c:273 lib/dict.c:286
 #, c-format
 msgid "invalid syntax flag %c"
 msgstr "opción de sintaxis inválida: %c"
 
-#: lib/dict.c:363
+#: lib/dict.c:364
 #, c-format
 msgid "invalid flag %c"
 msgstr "la opción %c es inválida"
 
-#: lib/dict.c:419 lib/dict.c:608 lib/dict.c:652
+#: lib/dict.c:420 lib/dict.c:609 lib/dict.c:653
 #, c-format
 msgid "value not a number (near %s)"
 msgstr "el valor no es un número (cerca de %s)"
 
-#: lib/dict.c:430
+#: lib/dict.c:431
 msgid "no parser registered for this attribute"
 msgstr "no hay analizador registrado para este atributo"
 
-#: lib/dict.c:439
+#: lib/dict.c:440
 msgid "invalid type"
 msgstr "tipo inválido"
 
-#: lib/dict.c:446 lib/dict.c:695
+#: lib/dict.c:447 lib/dict.c:696
 msgid "unknown vendor"
 msgstr "fabricante inválido"
 
-#: lib/dict.c:474
+#: lib/dict.c:475
 #, c-format
 msgid "Redefining attribute %s"
 msgstr "Redefinición del atributo %s"
 
-#: lib/dict.c:481
+#: lib/dict.c:482
 #, c-format
 msgid "Redefining alias %s"
 msgstr "Redefinición del alias `%s'"
 
-#: lib/dict.c:511 lib/dict.c:547 lib/dict.c:617
+#: lib/dict.c:512 lib/dict.c:548 lib/dict.c:618
 #, c-format
 msgid "Attribute %s is not defined"
 msgstr "El atributo %s no está definido"
 
-#: lib/dict.c:519
+#: lib/dict.c:520
 #, c-format
 msgid "Symbol %s already declared"
 msgstr "El símbolo %s ya está declarado"
 
-#: lib/dict.c:577
+#: lib/dict.c:578
 msgid "PROPERTY syntax error"
 msgstr "error de sintaxis en PROPERTY"
 
-#: lib/dict.c:671
+#: lib/dict.c:672
 msgid "blocks cannot be nested"
 msgstr "los bloques no se pueden anidar"
 
-#: lib/dict.c:673
+#: lib/dict.c:674
 msgid "block opened here"
 msgstr "bloque abierto aquí"
 
-#: lib/dict.c:685
+#: lib/dict.c:686
 #, c-format
 msgid "block syntax: expected `VENDOR' but found `%s'"
 msgstr "sintaxis de bloques: se esperaba `VENDOR', pero se ha encontrado `%s'"
 
-#: lib/dict.c:708
+#: lib/dict.c:709
 msgid "unexpected END"
 msgstr "END inesperado"
 
-#: lib/dict.c:834
+#: lib/dict.c:835
 msgid "BEGIN without END"
 msgstr "BEGIN sin END"
 
-#: lib/dict.c:840
+#: lib/dict.c:841
 #, c-format
 msgid "%s: %d error"
 msgid_plural "%s: %d errors"
@@ -222,12 +223,12 @@ msgstr "%s: la opción `-W %s' es ambigua\n"
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: la opción `-W %s' no admite ningún argumento\n"
 
-#: lib/leakdetect.c:237 lib/leakdetect.c:248
+#: lib/leakdetect.c:238 lib/leakdetect.c:249
 msgid "low core: aborting"
 msgstr "memoria agotada: abortando"
 
-#: lib/raddb.c:50 lib/raddb.c:54 radiusd/rewrite.y:1292 radiusd/rewrite.y:2879
-#: radiusd/scheme.c:203 radiusd/stat.c:72
+#: lib/raddb.c:50 lib/raddb.c:54 radiusd/rewrite.y:1293 radiusd/rewrite.y:2880
+#: radiusd/scheme.c:203 radiusd/stat.c:73
 #, c-format
 msgid "can't open file `%s'"
 msgstr "no se puede abrir el archivo `%s'"
@@ -250,14 +251,16 @@ msgstr "login: entrada para NAS %s, puerto %d está en orden incorrecto"
 #: lib/radutmp.c:209
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr "logout: entrada para NAS %s, puerto %d tiene ID incorrecto (se esperaba %s, se ha encontrado %s)"
+msgstr ""
+"logout: entrada para NAS %s, puerto %d tiene ID incorrecto (se esperaba %s, "
+"se ha encontrado %s)"
 
 #: lib/radutmp.c:233
 #, c-format
 msgid "logout: login entry for NAS %s port %d not found"
 msgstr "logout: no se ha encontrado entrada login para NAS %s, puerto %d"
 
-#: lib/radutmp.c:251 radiusd/acct.c:674
+#: lib/radutmp.c:251 radiusd/acct.c:675
 #, c-format
 msgid "can't open %s"
 msgstr "no se puede abrir %s"
@@ -266,7 +269,7 @@ msgstr "no se puede abrir %s"
 msgid "not enough memory"
 msgstr "memoria insuficiente"
 
-#: lib/users.l:232 radiusd/config.y:856 radiusd/stat.c:78
+#: lib/users.l:232 radiusd/config.y:856 radiusd/stat.c:79
 #, c-format
 msgid "can't stat `%s'"
 msgstr "stat ha fallado para `%s'"
@@ -286,12 +289,12 @@ msgstr "`%s' ya incluido en el nivel superior"
 msgid "can't open `%s'"
 msgstr "no se puede abrir `%s'"
 
-#: lib/users.y:100 radiusd/files.c:183
+#: lib/users.y:100 radiusd/files.c:184
 #, c-format
 msgid "discarding user `%s'"
 msgstr "borrando entrada del usuario `%s'"
 
-#: lib/users.y:210 radiusd/rewrite.y:1865 gram.y:660 gram.y:840
+#: lib/users.y:210 radiusd/rewrite.y:1866 gram.y:660 gram.y:840
 #: radtest/gram.y:660 radtest/gram.y:840
 #, c-format
 msgid "unknown attribute `%s'"
@@ -360,7 +363,9 @@ msgid "Garbage in ARGP_HELP_FMT: %s"
 msgstr "Inconsistencias en ARGP_HELP_FMT: %s"
 
 #: lib/argp-help.c:1229
-msgid "Mandatory or optional arguments to long options are also mandatory or optional for any corresponding short options."
+msgid ""
+"Mandatory or optional arguments to long options are also mandatory or "
+"optional for any corresponding short options."
 msgstr ""
 "Los argumentos obligatorios u opcionales para las opciones largas son\n"
 "también obligatorios u opcionales para las opciones cortas correspondientes."
@@ -444,7 +449,9 @@ msgstr "(ERROR DEL PROGRAMA) ¿¡La opción debería haberse reconocido!?"
 #: lib/printutmp.c:490
 #, c-format
 msgid "missing closing quote in string started near `%s'"
-msgstr "Falta la comilla de cierre en la cadena de caracteres que comienza cerca de `%s'"
+msgstr ""
+"Falta la comilla de cierre en la cadena de caracteres que comienza cerca de `"
+"%s'"
 
 #: lib/printutmp.c:566
 #, c-format
@@ -511,171 +518,172 @@ msgstr ""
 "   a la Free Software Foundation, Inc., 59 Temple Place - Suite 330,\n"
 "   Boston, MA 02111-1307, EE.UU.\n"
 
-#: radiusd/acct.c:198
+#: radiusd/acct.c:199
 msgid "no Acct-Status-Type attribute"
 msgstr "falta el atributo Acct-Status-Type"
 
-#: radiusd/acct.c:299
+#: radiusd/acct.c:300
 #, c-format
 msgid "NAS %s started (Accounting-On packet seen)"
 msgstr "NAS %s iniciado (recibido paquete Accounting-On)"
 
-#: radiusd/acct.c:307
+#: radiusd/acct.c:308
 #, c-format
 msgid "NAS %s shut down (Accounting-Off packet seen)"
 msgstr "NAS %s apagado (recibido paquete Accounting-Off)"
 
-#: radiusd/acct.c:319
+#: radiusd/acct.c:320
 #, c-format
 msgid "unknown packet type (%d)"
 msgstr "tipo de paquete (%d) desconocido"
 
-#: radiusd/acct.c:375
+#: radiusd/acct.c:376
 msgid "NOT writing wtmp record"
 msgstr "NO es posible escribir registro en wtmp"
 
-#: radiusd/acct.c:423
+#: radiusd/acct.c:424
 msgid "System accounting is disabled"
 msgstr "La contabilidad del sistema está desactivada"
 
-#: radiusd/acct.c:466
+#: radiusd/acct.c:467
 #, c-format
 msgid "Cannot stat path component: %s"
 msgstr "No se puede efectuar `stat' sobre la componente de la ruta: %s"
 
-#: radiusd/acct.c:483
+#: radiusd/acct.c:484
 #, c-format
 msgid "Cannot create directory %s"
 msgstr "No se puede crear el directorio %s"
 
-#: radiusd/acct.c:489
+#: radiusd/acct.c:490
 #, c-format
 msgid "Path component is not a directory: %s"
 msgstr "La componente de la ruta no es un directorio: %s"
 
 # FIXME: writable?
-#: radiusd/acct.c:505
+#: radiusd/acct.c:506
 #, c-format
 msgid "%s: directory not writable"
 msgstr "%s: no se puede escribir en el directorio"
 
-#: radiusd/acct.c:511
+#: radiusd/acct.c:512
 #, c-format
 msgid "%s: not a directory"
 msgstr "%s: no es un directorio"
 
-#: radiusd/acct.c:531
+#: radiusd/acct.c:532
 msgid "Detailed accounting is disabled"
 msgstr "La contabilidad detallada está desactivada"
 
-#: radiusd/acct.c:595 radiusd/radutil.c:487
+#: radiusd/acct.c:596 radiusd/radutil.c:487
 msgid "wrong return type"
 msgstr "tipo de retorno incorrecto"
 
-#: radiusd/auth.c:199
+#: radiusd/auth.c:200
 #, c-format
 msgid "Invalid password aging information for user '%s'"
 msgstr "Información de caducidad de contraseña inválida para el usuario '%s'"
 
-#: radiusd/auth.c:234
+#: radiusd/auth.c:235
 msgid "account locked"
 msgstr "cuenta cerrada"
 
-#: radiusd/auth.c:285
+#: radiusd/auth.c:286
 msgid "No username"
 msgstr "Falta el nombre del usuario"
 
-#: radiusd/auth.c:287
+#: radiusd/auth.c:288
 msgid "Malformed username"
 msgstr "Nombre mal escrito"
 
-#: radiusd/auth.c:318
+#: radiusd/auth.c:319
 #, c-format
 msgid "Access denied by huntgroup %s:%d"
 msgstr "Acceso denegado por grupo %s:%d"
 
-#: radiusd/auth.c:590
+#: radiusd/auth.c:591
 #, c-format
 msgid "unknown Password-Location value: %ld"
 msgstr "valor desconocido de Password-Location: %ld"
 
-#: radiusd/auth.c:626
+#: radiusd/auth.c:627
 msgid "PAM authentication not available"
 msgstr "La autentificación PAM no está disponible"
 
-#: radiusd/auth.c:880 radiusd/auth.c:990
+#: radiusd/auth.c:881 radiusd/auth.c:991
 msgid "No such user"
 msgstr "No existe tal usuario"
 
-#: radiusd/auth.c:898
+#: radiusd/auth.c:899
 msgid "Login rejected"
 msgstr "Login rechazado"
 
-#: radiusd/auth.c:900
+#: radiusd/auth.c:901
 msgid "denied by Scheme procedure "
 msgstr "rechazado por la función Scheme"
 
-#: radiusd/auth.c:934
+#: radiusd/auth.c:935
 #, c-format
 msgid "Invalid Auth-Failure-Trigger value: %s"
 msgstr "Valor Auth-Failure-Trigger inválido: %s"
 
-#: radiusd/auth.c:937
+#: radiusd/auth.c:938
 msgid "The value of Auth-Failure-Trigger attribute must begin with '/' or '('."
-msgstr "El valor del atributo Auth-Failure-Trigger debe comenzar por '/' o '('."
+msgstr ""
+"El valor del atributo Auth-Failure-Trigger debe comenzar por '/' o '('."
 
-#: radiusd/auth.c:975
+#: radiusd/auth.c:976
 msgid "Rejected"
 msgstr "Rechazado"
 
-#: radiusd/auth.c:983
+#: radiusd/auth.c:984
 msgid "Ignored"
 msgstr "Descartado"
 
-#: radiusd/auth.c:999 radiusd/auth.c:1012 radiusd/auth.c:1023
-#: radiusd/auth.c:1161
+#: radiusd/auth.c:1000 radiusd/auth.c:1013 radiusd/auth.c:1024
+#: radiusd/auth.c:1162
 msgid "Login incorrect"
 msgstr "Login incorrecto"
 
-#: radiusd/auth.c:1014
+#: radiusd/auth.c:1015
 msgid "Account expired"
 msgstr "Cuenta caducada"
 
-#: radiusd/auth.c:1025
+#: radiusd/auth.c:1026
 msgid "Password expired"
 msgstr "Contraseña caducada"
 
-#: radiusd/auth.c:1040
+#: radiusd/auth.c:1041
 msgid "Account disabled"
 msgstr "Cuenta desactivada"
 
-#: radiusd/auth.c:1054
+#: radiusd/auth.c:1055
 msgid "Login failed"
 msgstr "Login ha fallado"
 
-#: radiusd/auth.c:1055
+#: radiusd/auth.c:1056
 msgid "realm quota exceeded for "
 msgstr "Se ha excedido la cuota de `realm' para "
 
-#: radiusd/auth.c:1080
+#: radiusd/auth.c:1081
 #, c-format
 msgid "Multiple logins: [%s] max. %ld%s"
 msgstr "Logins múltiples: [%s] max. %ld%s"
 
-#: radiusd/auth.c:1083
+#: radiusd/auth.c:1084
 msgid " [MPP attempt]"
 msgstr " [intento de MPP]"
 
-#: radiusd/auth.c:1116
+#: radiusd/auth.c:1117
 #, c-format
 msgid "Outside allowed timespan (%s)"
 msgstr "Fuera de tiempo permitido (%s)"
 
-#: radiusd/auth.c:1163
+#: radiusd/auth.c:1164
 msgid "external check failed: "
 msgstr "prueba externa ha fallado: "
 
-#: radiusd/auth.c:1245
+#: radiusd/auth.c:1246
 msgid "Login OK"
 msgstr "Autentificación válida"
 
@@ -693,55 +701,55 @@ msgstr "no se puede guardar datum %s"
 msgid "cannot open dbm file %s"
 msgstr "no se puede abrir archivo dbm %s"
 
-#: radiusd/checkrad.c:91
+#: radiusd/checkrad.c:92
 #, c-format
 msgid "unknown NAS type: %s (nas %s)"
 msgstr "tipo de NAS desconocido: %s (nas %s)"
 
-#: radiusd/checkrad.c:246
+#: radiusd/checkrad.c:247
 #, c-format
 msgid "timed out in waiting SNMP response from NAS %s"
 msgstr "Expiró el tiempo de respuesta SNMP de NAS %s"
 
-#: radiusd/checkrad.c:296
+#: radiusd/checkrad.c:297
 msgid "no snmp_oid"
 msgstr "no hay ningún snmp_oid"
 
-#: radiusd/checkrad.c:305
+#: radiusd/checkrad.c:306
 #, c-format
 msgid "invalid OID: %s"
 msgstr "OID inválido: %s"
 
-#: radiusd/checkrad.c:322
+#: radiusd/checkrad.c:323
 #, c-format
 msgid "can't create snmp session: %s"
 msgstr "no se puede crear sesión SNMP: %s"
 
-#: radiusd/checkrad.c:330
+#: radiusd/checkrad.c:331
 #, c-format
 msgid "can't open snmp session: %s"
 msgstr "no se puede abrir sesión SNMP: %s"
 
-#: radiusd/checkrad.c:338 radiusd/checkrad.c:347 radiusd/snmpserv.c:2682
+#: radiusd/checkrad.c:339 radiusd/checkrad.c:348 radiusd/snmpserv.c:2682
 #, c-format
 msgid "can't create SNMP PDU: %s"
 msgstr "no se puede crear SNMP PDU: %s"
 
-#: radiusd/checkrad.c:419
+#: radiusd/checkrad.c:420
 #, c-format
 msgid "unknown host: %s"
 msgstr "máquina desconocida: %s"
 
-#: radiusd/checkrad.c:483
+#: radiusd/checkrad.c:484
 #, c-format
 msgid "timed out in waiting for finger response from NAS %s"
 msgstr "Expiró el tiempo de respuesta \"finger\" de NAS %s"
 
-#: radiusd/checkrad.c:572
+#: radiusd/checkrad.c:573
 msgid "path variable not set"
 msgstr "no se ha establecido la variable path"
 
-#: radiusd/checkrad.c:598
+#: radiusd/checkrad.c:599
 msgid "expr variable not set"
 msgstr "no se ha establecido la variable expr"
 
@@ -757,14 +765,15 @@ msgstr "longitud de máscara de red incorrecta: %d"
 #: radiusd/config.y:426
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
-msgstr "%s:%d: fin de archivo inesperado en el comentario que comienza en la línea %d"
+msgstr ""
+"%s:%d: fin de archivo inesperado en el comentario que comienza en la línea %d"
 
 #: radiusd/config.y:644
 #, c-format
 msgid "%s:%d: no such service: %s"
 msgstr "%s:%d: no existe tal servicio: %s"
 
-#: radiusd/config.y:670 radiusd/sql.c:345
+#: radiusd/config.y:670 radiusd/sql.c:346
 #, c-format
 msgid "%s:%d: unknown host: %s"
 msgstr "%s:%d: anfitrión desconocido: %s"
@@ -864,7 +873,8 @@ msgstr "no se pueden abandonar los privilegios «setuid» del usuario ordinario"
 #, fuzzy, c-format
 msgid "radius_exec_command(): won't execute, not an absolute pathname: %s"
 msgstr ""
-"radius_exec_program(): no se puede ejecutar: el nombre del programa no es una\n"
+"radius_exec_program(): no se puede ejecutar: el nombre del programa no es "
+"una\n"
 "ruta absoluta: %s"
 
 #: radiusd/exec.c:180 radiusd/exec.c:276
@@ -878,7 +888,8 @@ msgstr "no se puede restaurar SIGCHLD"
 # FUZZY
 #: radiusd/exec.c:228 radiusd/exec.c:358
 #, c-format
-msgid "can't run external program `%s' (reason reported via syslog channel user.err)"
+msgid ""
+"can't run external program `%s' (reason reported via syslog channel user.err)"
 msgstr ""
 "no se puede ejecutar el programa externo `%s' (la razón se ha reportado a\n"
 "través del canal syslog `user.err')"
@@ -892,7 +903,8 @@ msgstr "programa externo `%s': %s"
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
 msgstr ""
-"radius_exec_program(): no se puede ejecutar: el nombre del programa no es una\n"
+"radius_exec_program(): no se puede ejecutar: el nombre del programa no es "
+"una\n"
 "ruta absoluta: %s"
 
 #: radiusd/exec.c:272
@@ -952,21 +964,21 @@ msgstr "filter %s (acct): salida incorrecta: %s"
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: filtro ya declarado en %s:%d"
 
-#: radiusd/files.c:222
+#: radiusd/files.c:223
 #, c-format
 msgid "discarding entry `%s'"
 msgstr "borrando entrada `%s'"
 
-#: radiusd/files.c:419
+#: radiusd/files.c:420
 msgid "zero length username not permitted"
 msgstr "No está permitido un nombre de usuario vacío"
 
-#: radiusd/files.c:554
+#: radiusd/files.c:555
 #, c-format
 msgid "unknown attribute `%s/%s'"
 msgstr "atributo desconocido `%s/%s'"
 
-#: radiusd/files.c:566 radiusd/files.c:592
+#: radiusd/files.c:567 radiusd/files.c:593
 #, c-format
 msgid "expected %s, but found %s"
 msgstr "se esperaba %s, pero se ha encontrado %s"
@@ -974,75 +986,75 @@ msgstr "se esperaba %s, pero se ha encontrado %s"
 #. TRANSLATORS: This is used in place of the first %s in the message
 #. "expected %s, but found %s", i.e. it acts as a direct object to
 #. the verb 'expect'. Please bear this in mind when translating
-#: radiusd/files.c:570
+#: radiusd/files.c:571
 msgid "opcode"
 msgstr "un código de operación"
 
-#: radiusd/files.c:581
+#: radiusd/files.c:582
 #, c-format
 msgid "grad_create_pair failed on %s"
 msgstr "grad_create_pair falló en %s"
 
-#: radiusd/files.c:613
+#: radiusd/files.c:614
 msgid "not defined"
 msgstr "no definido"
 
-#: radiusd/files.c:651
+#: radiusd/files.c:652
 #, fuzzy, c-format
 msgid "cannot execute `%s'"
 msgstr "no se puede abrir al archivo menú `%s'"
 
-#: radiusd/files.c:1053
+#: radiusd/files.c:1054
 msgid "unknown method"
 msgstr "método desconocido"
 
-#: radiusd/files.c:1137
+#: radiusd/files.c:1138
 #, c-format
 msgid "user `%s' already found in %s"
 msgstr "usuario `%s' ya fue encontrado en %s"
 
-#: radiusd/files.c:1163
+#: radiusd/files.c:1164
 #, c-format
 msgid "%d user disabled"
 msgid_plural "%d users disabled"
 msgstr[0] "%d usuario desactivado"
 msgstr[1] "%d usuarios desactivados"
 
-#: radiusd/files.c:1705
+#: radiusd/files.c:1706
 msgid "using only dbm: USERS NOT LOADED"
 msgstr "usando solo dbm: NO SE HA CARGADO EL ARCHIVO USERS"
 
-#: radiusd/files.c:1713
+#: radiusd/files.c:1714
 msgid "DBM files found but no -b flag given - NOT using DBM"
 msgstr ""
 "se han encontrado archivos DBM, pero no se ha especificado la opción -b.\n"
 "NO se usará DBM"
 
-#: radiusd/files.c:1717
+#: radiusd/files.c:1718
 #, c-format
 msgid "can't load %s: exited"
 msgstr "no se puede cargar %s: terminando"
 
-#: radiusd/files.c:1720
+#: radiusd/files.c:1721
 #, c-format
 msgid "%s reloaded."
 msgstr "%s recargado."
 
-#: radiusd/files.c:1791
+#: radiusd/files.c:1792
 msgid "SQL Error: SQL client could not be initialized"
 msgstr "Error SQL: no se puede inicializar el cliente SQL"
 
-#: radiusd/files.c:1807
+#: radiusd/files.c:1808
 #, c-format
 msgid "INTERNAL ERROR: unknown reload code: %d"
 msgstr "ERROR INTERNO: código de recarga desconocido: %d"
 
-#: radiusd/files.c:1878
+#: radiusd/files.c:1879
 #, c-format
 msgid "can't create parser output file `%s'"
 msgstr "no se puede crear archivo de salida del analizador `%s'"
 
-#: radiusd/files.c:1892
+#: radiusd/files.c:1893
 #, c-format
 msgid "dumped users database to %s"
 msgstr "base de usuarios guardada en archivo %s"
@@ -1256,7 +1268,9 @@ msgstr "Match-Profile se refiere a entrada DEFAULT"
 
 #: radiusd/radck.c:285
 msgid "Simultaneous-Use is used, but multiple login checking is not enabled"
-msgstr "Se está usando Simultaneous-Use, pero no está activada la comprobación de entradas múltiples"
+msgstr ""
+"Se está usando Simultaneous-Use, pero no está activada la comprobación de "
+"entradas múltiples"
 
 #: radiusd/radck.c:325 radiusd/radck.c:356
 msgid "No User-Password attribute in LHS"
@@ -1265,7 +1279,9 @@ msgstr "Falta atributo User-Password en LHS"
 # FIXME
 #: radiusd/radck.c:333
 msgid "Auth-Type = System can only be used when running with root privileges"
-msgstr "Auth-Type = System sólo se puede usar si radiusd corre con privilegios de root"
+msgstr ""
+"Auth-Type = System sólo se puede usar si radiusd corre con privilegios de "
+"root"
 
 #: radiusd/radck.c:343 radiusd/radck.c:380
 msgid "User-Password attribute ignored for this Auth-Type"
@@ -1273,7 +1289,8 @@ msgstr "No se tendrá en cuenta el atributo User-Password para este Auth-Type"
 
 #: radiusd/radck.c:348
 msgid "Password-Location attribute ignored for this Auth-Type"
-msgstr "No se tendrá en cuenta el atributo Password-Location para este Auth-Type"
+msgstr ""
+"No se tendrá en cuenta el atributo Password-Location para este Auth-Type"
 
 #: radiusd/radck.c:364
 msgid "Authentication type not supported"
@@ -1466,7 +1483,8 @@ msgid ""
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
 msgstr ""
 "\n"
-"La cuenta esta actualmente utilizada %R{Simultaneous-Use} veces - acceso denegado\n"
+"La cuenta esta actualmente utilizada %R{Simultaneous-Use} veces - acceso "
+"denegado\n"
 
 #: radiusd/radiusd.c:319
 msgid ""
@@ -1497,7 +1515,9 @@ msgstr "Radiusd no está escuchando en ningún puerto."
 
 #: radiusd/radiusd.c:401
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
-msgstr "Radiusd no está escuchando en ningún puerto. No obstante, tratando de continuar..."
+msgstr ""
+"Radiusd no está escuchando en ningún puerto. No obstante, tratando de "
+"continuar..."
 
 #: radiusd/radiusd.c:457
 msgid "Starting"
@@ -1593,7 +1613,9 @@ msgstr "Terminando proceso colgado de %s %lu"
 #: radiusd/request.c:246
 #, c-format
 msgid "Cannot terminate child %lu. Attempting to kill inexisting process?"
-msgstr "No se puede terminar el hijo %lu. ¿Se está intentando terminar un proceso que no existe?"
+msgstr ""
+"No se puede terminar el hijo %lu. ¿Se está intentando terminar un proceso "
+"que no existe?"
 
 # FUZZY
 #: radiusd/request.c:256
@@ -1625,252 +1647,253 @@ msgstr "demasiadas peticiones de este tipo"
 msgid "Maximum number of children active"
 msgstr "Se activó el número máximo de subprocesos"
 
-#: radiusd/rewrite.y:840 gram.y:396 radtest/gram.y:396
+#: radiusd/rewrite.y:841 gram.y:396 radtest/gram.y:396
 #, c-format
 msgid "redefinition of function `%s'"
 msgstr "función `%s' redefinida"
 
-#: radiusd/rewrite.y:842 radiusd/rewrite.y:5712
+#: radiusd/rewrite.y:843 radiusd/rewrite.y:5713
 msgid "previously defined here"
 msgstr "previamente definida aquí"
 
-#: radiusd/rewrite.y:1028
+#: radiusd/rewrite.y:1029
 msgid "nothing to break from"
 msgstr "el `break' es irrelevante o está mal colocado"
 
 # nada para continuar?
-#: radiusd/rewrite.y:1042
+#: radiusd/rewrite.y:1043
 msgid "nothing to continue"
 msgstr "el `continue' es irrelevante o está mal colocado"
 
-#: radiusd/rewrite.y:1118
+#: radiusd/rewrite.y:1119
 #, c-format
 msgid "undefined variable: %s"
 msgstr "variable no definida: %s"
 
-#: radiusd/rewrite.y:1609
+#: radiusd/rewrite.y:1610
 #, c-format
 msgid "unexpected EOF in comment started at line %lu"
-msgstr "fin de archivo inesperado en el comentario que comienza en la línea %lu"
+msgstr ""
+"fin de archivo inesperado en el comentario que comienza en la línea %lu"
 
-#: radiusd/rewrite.y:1670
+#: radiusd/rewrite.y:1671
 msgid "Malformed pragma"
 msgstr "Instrucción #pragma mal formada"
 
-#: radiusd/rewrite.y:1684
+#: radiusd/rewrite.y:1685
 #, c-format
 msgid "Unknown regexp flag: %s"
 msgstr "Opción desconocida de expresión regular: %s"
 
-#: radiusd/rewrite.y:1821
+#: radiusd/rewrite.y:1822
 msgid "unterminated character constant"
 msgstr "constante de caracteres no terminada"
 
-#: radiusd/rewrite.y:2553
+#: radiusd/rewrite.y:2554
 #, c-format
 msgid "%s implicit coercion %s %s"
 msgstr "%s coacción implícita de %s a %s"
 
-#: radiusd/rewrite.y:2618
+#: radiusd/rewrite.y:2619
 msgid "operation not applicable to strings"
 msgstr "operación no aplicable para las cadenas de caracteres"
 
-#: radiusd/rewrite.y:2722 radiusd/rewrite.y:2788
+#: radiusd/rewrite.y:2723 radiusd/rewrite.y:2789
 #, c-format
 msgid "(argument %d)"
 msgstr "(argumento %d)"
 
 # mejor `la llamada a'?
-#: radiusd/rewrite.y:2737 radiusd/rewrite.y:2799
+#: radiusd/rewrite.y:2738 radiusd/rewrite.y:2800
 #, c-format
 msgid "too many arguments in call to %s"
 msgstr "demasiados argumentos para la invocación de %s"
 
-#: radiusd/rewrite.y:2742 radiusd/rewrite.y:2804
+#: radiusd/rewrite.y:2743 radiusd/rewrite.y:2805
 #, c-format
 msgid "too few arguments in call to %s"
 msgstr "insuficiente número de argumentos para la invocación de %s"
 
-#: radiusd/rewrite.y:2830 radiusd/tsh.c:247
+#: radiusd/rewrite.y:2831 radiusd/tsh.c:247
 #, c-format
 msgid "Undefined"
 msgstr "No definido"
 
-#: radiusd/rewrite.y:2832 radtest/runtime.c:757
+#: radiusd/rewrite.y:2833 radtest/runtime.c:757
 msgid "integer"
 msgstr "entero"
 
-#: radiusd/rewrite.y:2834 radtest/runtime.c:759
+#: radiusd/rewrite.y:2835 radtest/runtime.c:759
 msgid "string"
 msgstr "cadena"
 
-#: radiusd/rewrite.y:2836
+#: radiusd/rewrite.y:2837
 msgid "UNKNOWN"
 msgstr "DESCONOCIDO"
 
-#: radiusd/rewrite.y:2845
+#: radiusd/rewrite.y:2846
 msgid "from Undefined"
 msgstr "de no definido"
 
-#: radiusd/rewrite.y:2847
+#: radiusd/rewrite.y:2848
 msgid "from integer"
 msgstr "de entero"
 
-#: radiusd/rewrite.y:2849
+#: radiusd/rewrite.y:2850
 msgid "from string"
 msgstr "de cadena"
 
-#: radiusd/rewrite.y:2851
+#: radiusd/rewrite.y:2852
 msgid "from UNKNOWN"
 msgstr "de DESCONOCIDO"
 
-#: radiusd/rewrite.y:2860
+#: radiusd/rewrite.y:2861
 msgid "to Undefined"
 msgstr "a no definido"
 
-#: radiusd/rewrite.y:2862 radtest/runtime.c:770
+#: radiusd/rewrite.y:2863 radtest/runtime.c:770
 msgid "to integer"
 msgstr "a entero"
 
-#: radiusd/rewrite.y:2864 radtest/runtime.c:772
+#: radiusd/rewrite.y:2865 radtest/runtime.c:772
 msgid "to string"
 msgstr "a cadena"
 
-#: radiusd/rewrite.y:2866
+#: radiusd/rewrite.y:2867
 msgid "to UNKNOWN"
 msgstr "a DESCONOCIDO"
 
 # FIXME: comando de regreso no encontrado?
-#: radiusd/rewrite.y:3188
+#: radiusd/rewrite.y:3189
 msgid "missing return statement"
 msgstr "falta orden return"
 
-#: radiusd/rewrite.y:3339 radiusd/rewrite.y:3349
+#: radiusd/rewrite.y:3340 radiusd/rewrite.y:3350
 msgid "divide by zero"
 msgstr "división por cero"
 
-#: radiusd/rewrite.y:3973
+#: radiusd/rewrite.y:3974
 #, c-format
 msgid "regexp error: %s"
 msgstr "error en expresión regular: %s"
 
-#: radiusd/rewrite.y:4021
+#: radiusd/rewrite.y:4022
 msgid "out of pushdown space"
 msgstr "pila agotada"
 
-#: radiusd/rewrite.y:4036 radiusd/rewrite.y:4067
+#: radiusd/rewrite.y:4037 radiusd/rewrite.y:4068
 msgid "heap overrun"
 msgstr "sobreescritura de memoria"
 
-#: radiusd/rewrite.y:4092
+#: radiusd/rewrite.y:4093
 msgid "out of heap space"
 msgstr "pila agotada"
 
-#: radiusd/rewrite.y:4120 radiusd/rewrite.y:4162
+#: radiusd/rewrite.y:4121 radiusd/rewrite.y:4163
 msgid "out of popup"
 msgstr "pila vacía"
 
-#: radiusd/rewrite.y:4218 radiusd/rewrite.y:4228
+#: radiusd/rewrite.y:4219 radiusd/rewrite.y:4229
 msgid "rewrite runtime error"
 msgstr "error en tiempo de ejecución"
 
-#: radiusd/rewrite.y:4325
+#: radiusd/rewrite.y:4326
 msgid "no request supplied"
 msgstr "falta petición"
 
-#: radiusd/rewrite.y:4360
+#: radiusd/rewrite.y:4361
 msgid "can't create A/V pair"
 msgstr "no se puede crear par A/V"
 
-#: radiusd/rewrite.y:4657 radiusd/rewrite.y:4673
+#: radiusd/rewrite.y:4658 radiusd/rewrite.y:4674
 msgid "division by zero!"
 msgstr "¡división por cero!"
 
-#: radiusd/rewrite.y:4880
+#: radiusd/rewrite.y:4881
 #, c-format
 msgid "rewrite regex failure: %s. Input: %s"
 msgstr "regex ha fallado: %s. Entrada: %s"
 
-#: radiusd/rewrite.y:4931
+#: radiusd/rewrite.y:4932
 msgid "pc out of range"
 msgstr "pc está fuera de rango"
 
-#: radiusd/rewrite.y:5386
+#: radiusd/rewrite.y:5387
 msgid "Invalid backreference"
 msgstr "Referencia hacia atrás inválida"
 
-#: radiusd/rewrite.y:5422 radiusd/rewrite.y:5464
+#: radiusd/rewrite.y:5423 radiusd/rewrite.y:5465
 msgid "regexp compile error: "
 msgstr "error de compilación de expresión regular: "
 
-#: radiusd/rewrite.y:5428
+#: radiusd/rewrite.y:5429
 msgid "gsub: not enough memory"
 msgstr "gsub: memoria insuficiente"
 
-#: radiusd/rewrite.y:5470
+#: radiusd/rewrite.y:5471
 msgid "sub: not enough memory"
 msgstr "sub: memoria insuficiente"
 
-#: radiusd/rewrite.y:5710
+#: radiusd/rewrite.y:5711
 #, c-format
 msgid "redefinition of function %s"
 msgstr "función %s redefinida"
 
-#: radiusd/rewrite.y:5766
+#: radiusd/rewrite.y:5767
 #, c-format
 msgid "function %s not defined"
 msgstr "función %s no definida"
 
-#: radiusd/rewrite.y:5770
+#: radiusd/rewrite.y:5771
 #, c-format
 msgid "function %s returns wrong data type"
 msgstr "la función %s devuelve el tipo de datos incorrecto"
 
-#: radiusd/rewrite.y:5778
+#: radiusd/rewrite.y:5779
 #, c-format
 msgid "function %s takes too many arguments"
 msgstr "la función %s acepta demasiados argumentos"
 
-#: radiusd/rewrite.y:5785
+#: radiusd/rewrite.y:5786
 #, c-format
 msgid "function %s: argument %d must be integer"
 msgstr "función %s(): el parámetro %d debe ser un número entero"
 
-#: radiusd/rewrite.y:5794
+#: radiusd/rewrite.y:5795
 #, c-format
 msgid "function %s: argument %d must be string"
 msgstr "función %s(): el parámetro %d debe ser una cadena de caracteres"
 
-#: radiusd/rewrite.y:5807
+#: radiusd/rewrite.y:5808
 #, c-format
 msgid "function %s takes too few arguments"
 msgstr "la función %s acepta un número insuficiente de argumentos"
 
-#: radiusd/rewrite.y:5994
+#: radiusd/rewrite.y:5995
 #, c-format
 msgid "function %s() requires %d parameter"
 msgid_plural "function %s() requires %d parameters"
 msgstr[0] "la función %s() requiere %d parámetro"
 msgstr[1] "la función %s() requiere %d parámetros"
 
-#: radiusd/rewrite.y:6151
+#: radiusd/rewrite.y:6152
 #, c-format
 msgid "file not found: %s"
 msgstr "archivo no encontrado: %s"
 
-#: radiusd/rewrite.y:6288
+#: radiusd/rewrite.y:6289
 msgid "function ~S not defined"
 msgstr "función ~S no definida"
 
-#: radiusd/rewrite.y:6304
+#: radiusd/rewrite.y:6305
 msgid "too many arguments for ~S"
 msgstr "demasiados argumentos para ~S"
 
-#: radiusd/rewrite.y:6331
+#: radiusd/rewrite.y:6332
 msgid "type mismatch in argument ~S(~S) in call to ~S"
 msgstr "no coincide el tipo de argumento ~S(~S) el la llamada a ~S"
 
-#: radiusd/rewrite.y:6341
+#: radiusd/rewrite.y:6342
 msgid "too few arguments for ~S"
 msgstr "insuficiente número de argumentos para ~S"
 
@@ -1882,17 +1905,21 @@ msgstr "%s no es un objeto procedural"
 #: radiusd/scheme.c:235
 #, c-format
 msgid "Procedure `%s' failed: see error output for details"
-msgstr "El procedimiento `%s' falló: vea el fichero de salida de errores para más información"
+msgstr ""
+"El procedimiento `%s' falló: vea el fichero de salida de errores para más "
+"información"
 
 #: radiusd/scheme.c:359 radiusd/scheme.c:403
 #, c-format
 msgid "Unexpected return value from Guile authentication function `%s'"
-msgstr "Valor de devolución inesperado de la función de autentificación Guile `%s'"
+msgstr ""
+"Valor de devolución inesperado de la función de autentificación Guile `%s'"
 
 #: radiusd/scheme.c:425
 #, c-format
 msgid "Unexpected return value from Guile accounting function `%s'"
-msgstr "Valor de devolución inesperado de la función de contabilidad Guile `%s'"
+msgstr ""
+"Valor de devolución inesperado de la función de contabilidad Guile `%s'"
 
 #: radiusd/scheme.c:519
 #, c-format
@@ -1924,11 +1951,15 @@ msgstr "%s:%d: la comunidad %s no definida"
 
 #: radiusd/snmpserv.c:1329
 msgid "acct server re-initializing on SNMP request"
-msgstr "La petición SNMP requiere que el servidor de contabilidad recargue la configuración"
+msgstr ""
+"La petición SNMP requiere que el servidor de contabilidad recargue la "
+"configuración"
 
 #: radiusd/snmpserv.c:1681
 msgid "auth server re-initializing on SNMP request"
-msgstr "La petición SNMP requiere que el servidor de autorización recargue la configuración"
+msgstr ""
+"La petición SNMP requiere que el servidor de autorización recargue la "
+"configuración"
 
 #: radiusd/snmpserv.c:1961
 msgid "server re-initializing on SNMP request"
@@ -1965,139 +1996,150 @@ msgstr "Tentativa de acceso a comunidad %s de %s DENEGADA"
 msgid "Dropping SNMP request from client %s: %s"
 msgstr "Descartando petición SNMP del cliente %s: %s"
 
-#: radiusd/sql.c:316
+#: radiusd/sql.c:317
 #, c-format
 msgid "could not read sqlserver file %s"
 msgstr "no se puede leer archivo sqlserver %s"
 
-#: radiusd/sql.c:328
+#: radiusd/sql.c:329
 msgid "unrecognized keyword"
 msgstr "palabra clave desconocida"
 
-#: radiusd/sql.c:336
+#: radiusd/sql.c:337
 msgid "required argument missing"
 msgstr "falta argumento requerido"
 
-#: radiusd/sql.c:361 radiusd/sql.c:388
+#: radiusd/sql.c:362 radiusd/sql.c:389
 msgid "number parse error"
 msgstr "el número no se puede analizar"
 
-#: radiusd/sql.c:380 radiusd/sql.c:398 radiusd/sql.c:406
+#: radiusd/sql.c:381 radiusd/sql.c:399 radiusd/sql.c:407
 msgid "expected boolean value"
 msgstr "se esperaba un valor booleano"
 
-#: radiusd/sql.c:421
+#: radiusd/sql.c:422
 msgid "auth_max_connections is obsolete"
 msgstr "auth_max_connections está obsoleto"
 
-#: radiusd/sql.c:428
+#: radiusd/sql.c:429
 msgid "acct_max_connections is obsolete"
 msgstr "acct_max_connections está obsoleto"
 
-#: radiusd/sql.c:435
+#: radiusd/sql.c:436
 msgid "query_buffer_size is obsolete"
 msgstr "query_buffer_size está obsoleto"
 
-#: radiusd/sql.c:443
+#: radiusd/sql.c:444
 msgid "Unsupported SQL interface"
 msgstr "Interfaz SQL no soportado"
 
-#: radiusd/sql.c:498
+#: radiusd/sql.c:499
 #, c-format
 msgid "%s: missing `%s' statement"
 msgstr "%s: falta la orden `%s'"
 
-#: radiusd/sql.c:516
+#: radiusd/sql.c:517
 #, c-format
 msgid "%s: SQL interface not specified"
 msgstr "%s: no se ha especificado el interfaz SQL"
 
-#: radiusd/sql.c:585
+#: radiusd/sql.c:586
 msgid "disabling SQL authentication"
 msgstr "desactivando autentificación SQL"
 
-#: radiusd/sql.c:587
+#: radiusd/sql.c:588
 msgid "disabling SQL accounting"
 msgstr "desactivando contabilidad SQL"
 
-#: radiusd/sql.c:594
+#: radiusd/sql.c:595
 msgid "SQL configuration changed: closing existing connections"
 msgstr "La configuración SQL ha cambiado: cerrando conexiones."
 
-#: radiusd/sql.c:817
+#: radiusd/sql.c:818
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "rad_sql_acct(): falta atributo Acct-Status-Type"
 
-#: radiusd/sql.c:894 radiusd/sql.c:1233
+#: radiusd/sql.c:895 radiusd/sql.c:1234
 #, c-format
 msgid "%s updated %d record"
 msgid_plural "%s updated %d records"
 msgstr[0] "%s modificó %d registro"
 msgstr[1] "%s modificó %d registros"
 
-#: radiusd/sql.c:915
+#: radiusd/sql.c:916
 msgid "SQL Auth specified in users file, but not in sqlserver file"
-msgstr "Autentificación SQL se requiere por archivo `users' pero no está activada en el archivo `sqlserver'"
+msgstr ""
+"Autentificación SQL se requiere por archivo `users' pero no está activada en "
+"el archivo `sqlserver'"
 
-#: radiusd/sql.c:1014
+#: radiusd/sql.c:1015
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr "SQL: operador inválido: %s"
 
-#: radiusd/sql.c:1085
+#: radiusd/sql.c:1086
 msgid "SQL authentication is not enabled in raddb/sqlserver"
 msgstr "La autentificación SQL no está disponible en raddb/sqlserver"
 
-#: radiusd/sql.c:1315
+#: radiusd/sql.c:1316
 msgid "Radiusd is compiled without SQL support"
 msgstr "Radiusd compilado sin soporte para SQL"
 
-#: radiusd/stat.c:85
+#: radiusd/stat.c:86
 #, c-format
 msgid "SNMP system disabled: file `%s' has incorrect permissions"
 msgstr "Sistema SNMP deshabilitado: el archivo `%s' tiene permisos incorrectos"
 
-#: radiusd/stat.c:104
+#: radiusd/stat.c:105
 msgid "mmap failed"
 msgstr "mmap ha fallado"
 
-#: radiusd/stat.c:130
+#: radiusd/stat.c:131
 #, c-format
 msgid "shmem_get(): can't allocate %d byte"
 msgid_plural "shmem_get(): can't allocate %d bytes"
 msgstr[0] "shmem_get(): no se puede reservar %d byte"
 msgstr[1] "shmem_get(): no se pueden reservar %d bytes"
 
-#: radiusd/stat.c:166
+#: radiusd/stat.c:167
 msgid "stat_init failed"
 msgstr "stat_init ha fallado"
 
-#: radiusd/stat.c:227
-msgid "reached SNMP storage limit for the number of monitored ports: increase max-port-count"
-msgstr "alcanzado límite de memoria por el número de puertos: aumente el valor de max-port-count"
+#: radiusd/stat.c:228
+msgid ""
+"reached SNMP storage limit for the number of monitored ports: increase max-"
+"port-count"
+msgstr ""
+"alcanzado límite de memoria por el número de puertos: aumente el valor de "
+"max-port-count"
 
-#: radiusd/stat.c:287
+#: radiusd/stat.c:288
 #, c-format
 msgid "stat_update(): portno %d: can't find nas for IP %s"
-msgstr "stat_update(): puerto %d: no se puede encontrar NAS con dirección IP %s"
+msgstr ""
+"stat_update(): puerto %d: no se puede encontrar NAS con dirección IP %s"
 
-#: radiusd/stat.c:298
+#: radiusd/stat.c:299
 #, c-format
 msgid "stat_update(): port %d not found on NAS %s"
 msgstr "stat_update(): puerto %d no encontrado en NAS %s"
 
 # FIXME: Tiempo negativo desviado
-#: radiusd/stat.c:312
+#: radiusd/stat.c:313
 msgid "negative port idle time"
 msgstr "duración de inactividad del puerto negativa"
 
-#: radiusd/stat.c:336
+#: radiusd/stat.c:337
 msgid "negative port session time"
 msgstr "duración de sesión negativa"
 
-#: radiusd/stat.c:468
-msgid "reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"
-msgstr "alcanzado el límite de memoria por el número de NASes: aumente el valor de max-nas-count"
+#: radiusd/stat.c:469
+msgid ""
+"reached SNMP storage limit for the number of monitored NASes: increase max-"
+"nas-count"
+msgstr ""
+"alcanzado el límite de memoria por el número de NASes: aumente el valor de "
+"max-nas-count"
 
 #: radiusd/version.c:140
 msgid "GNU RADIUS server version "
@@ -2695,7 +2737,8 @@ msgstr "no es una lista de parejas"
 
 #: radtest/runtime.c:1254
 msgid "invalid data type in send statement (expected A/V list)"
-msgstr "tipo de dato inválido en la sentencia `send' (se esperaba una lista A/V)"
+msgstr ""
+"tipo de dato inválido en la sentencia `send' (se esperaba una lista A/V)"
 
 #: radtest/runtime.c:1270
 #, c-format
@@ -2864,16 +2907,16 @@ msgstr "%s: no se encontró el anfitrión.\n"
 msgid "Failed query was"
 msgstr "La petición fallida era"
 
-#: sql/mysql.c:79
+#: sql/mysql.c:80
 msgid "gave up on connect"
 msgstr "se abandona la conexión"
 
-#: sql/mysql.c:107
+#: sql/mysql.c:108
 #, c-format
 msgid "[MYSQL] cannot connect to %s as %s: %s"
 msgstr "[MYSQL] no se puede conectar a %s como usuario %s: %s"
 
-#: sql/mysql.c:162
+#: sql/mysql.c:163
 msgid "[MYSQL]: can't get result"
 msgstr "[MYSQL] no se puede obtener resultado"
 
@@ -2887,17 +2930,17 @@ msgstr "la petición devolvió más tuplas: %s"
 msgid "too few columns returned (%d req'd)"
 msgstr "número de columnas insuficiente (debe ser %d)"
 
-#: sql/postgres.c:70
+#: sql/postgres.c:71
 #, c-format
 msgid "PQconnectStart failed: %s"
 msgstr "PQconnectStart falló: %s"
 
-#: sql/postgres.c:151 sql/postgres.c:203 sql/postgres.c:272
+#: sql/postgres.c:152 sql/postgres.c:204 sql/postgres.c:273
 #, c-format
 msgid "PQexec returned %s"
 msgstr "PQexec devolvió %s"
 
-#: sql/postgres.c:194
+#: sql/postgres.c:195
 #, c-format
 msgid "query returned %d tuple: %s"
 msgid_plural "query returned %d tuples: %s"
@@ -2919,9 +2962,12 @@ msgstr[1] "la petición devolvió %d tuplas: %s"
 #~ msgid "send arbitrary radius packets"
 #~ msgstr "mandar peticiones radius arbitrarias"
 
-#~ msgid "Read input from FILE. When this option is used, all unknown options in the form --VAR=VALUE are treated as variable assignments"
+#~ msgid ""
+#~ "Read input from FILE. When this option is used, all unknown options in "
+#~ "the form --VAR=VALUE are treated as variable assignments"
 #~ msgstr ""
-#~ "Leer ARCHIVO de entrada. Cuando se utiliza esta opción, todas las opciones\n"
+#~ "Leer ARCHIVO de entrada. Cuando se utiliza esta opción, todas las "
+#~ "opciones\n"
 #~ "desconocidas de la forma --VAR=VALOR serán tratadas como asignaciones\n"
 #~ "a variable"
 
@@ -2935,7 +2981,8 @@ msgstr[1] "la petición devolvió %d tuplas: %s"
 #~ msgstr "setreuid(0,%d) falló (ruid=%d, euid=%d)"
 
 #~ msgid "radius_exec_program(): won't execute, no such user: %s"
-#~ msgstr "radius_exec_program(): no se puede ejecutar: el usuario `%s' no existe"
+#~ msgstr ""
+#~ "radius_exec_program(): no se puede ejecutar: el usuario `%s' no existe"
 
 #~ msgid "won't execute, no such user: %s"
 #~ msgstr "no se puede ejecutar: el usuario `%s' no existe"
@@ -2992,4 +3039,6 @@ msgstr[1] "la petición devolvió %d tuplas: %s"
 #~ msgstr "falta ')' en la llamada a la función"
 
 #~ msgid "calling %s: expected ',' but found %s after arg %d"
-#~ msgstr "invocación de %s: se esperaba ',' pero se ha encontrado %s (después de argumento %d)"
+#~ msgstr ""
+#~ "invocación de %s: se esperaba ',' pero se ha encontrado %s (después de "
+#~ "argumento %d)"

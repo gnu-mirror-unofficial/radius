@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -49,7 +49,7 @@ _free_loaded_module (void *item, void *data)
 	lt_dlhandle handle = (lt_dlhandle) item;
 	rdl_done_t fp = (rdl_done_t) lt_dlsym(handle, "done");
 
-	debug(1,("Freeing handle %p, rdl_done %p", handle, fp));
+	GRAD_DEBUG(1,("Freeing handle %p, rdl_done %p", handle, fp));
 	if (fp)
 		fp();
 	lt_dlclose(handle);
@@ -69,9 +69,9 @@ radiusd_load_ext(const char *name, const char *ident, void **symbol)
 {
 	lt_dlhandle handle;
 
-	debug(1,("Loading module '%s', symbol '%s'", name, ident));
+	GRAD_DEBUG(1,("Loading module '%s', symbol '%s'", name, ident));
 	if (lt_dlinit()) {
-		debug(1,("lt_ldinit failed"));
+		GRAD_DEBUG(1,("lt_ldinit failed"));
 		return NULL;
 	}
 	
@@ -102,7 +102,7 @@ radiusd_load_ext(const char *name, const char *ident, void **symbol)
 		grad_log(L_NOTICE, _("Cannot load module %s: %s"),
 			 name, lt_dlerror());
 
-	debug(1,("Handle %p", handle));
+	GRAD_DEBUG(1,("Handle %p", handle));
 	if (!handle) 
 		lt_dlexit();
 	else
@@ -136,21 +136,21 @@ dynload_free_modules()
 void *
 radiusd_load_ext(const char *name, const char *ident, void **symbol)
 {
-	debug(1,("radiusd is compiled without dynamic loading support"));
+	GRAD_DEBUG(1,("radiusd is compiled without dynamic loading support"));
 	return NULL;
 }
 
 int
 radiusd_add_load_path(const char *path)
 {
-	debug(1,("radiusd is compiled without dynamic loading support"));
+	GRAD_DEBUG(1,("radiusd is compiled without dynamic loading support"));
 	return 1;
 }
 
 int
 radiusd_set_load_path(const char *path)
 {
-	debug(1,("radiusd is compiled without dynamic loading support"));
+	GRAD_DEBUG(1,("radiusd is compiled without dynamic loading support"));
 	return 1;
 }
 

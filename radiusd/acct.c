@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -321,7 +322,7 @@ rad_acct_system(radiusd_request_t *radreq, int dowtmp)
                 return 0;
         } else if (status == DV_ACCT_STATUS_TYPE_START ||
                    status == DV_ACCT_STATUS_TYPE_STOP) {
-                debug(1,
+                GRAD_DEBUG(1,
                     ("%s: User %s at NAS %s port %d session %-*.*s",
                      status == DV_ACCT_STATUS_TYPE_START ? "start" : "stop",
                      ut.login,
@@ -344,13 +345,13 @@ rad_acct_system(radiusd_request_t *radreq, int dowtmp)
                 return 0;
 
         if (!ACCT_TYPE(radreq->request->avlist, DV_ACCT_TYPE_SYSTEM)) {
-                debug(1,("Acct type system disabled for %s", ut.login));
+                GRAD_DEBUG(1,("Acct type system disabled for %s", ut.login));
                 return 0;
         }
         
         /* Update radutmp file. */
         rc = grad_utmp_putent(grad_utmp_file, &ut, status);
-        debug(1, ("grad_utmp_putent=%d for %s/%s",
+        GRAD_DEBUG(1, ("grad_utmp_putent=%d for %s/%s",
                   rc,
                   ut.login,
                   ut.session_id));

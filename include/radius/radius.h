@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -588,14 +589,14 @@ void grad_log_loc(int lvl, grad_locus_t *loc, const char *msg, ...);
 #endif
 
 #if RADIUS_DEBUG
-# define debug_on(level) grad_debug_p(__FILE__, level)
-# define debug(level, vlist) \
+# define GRAD_DEBUG_LEVEL(level) grad_debug_p(__FILE__, level)
+# define GRAD_DEBUG(level, vlist) \
    if (grad_debug_p(__FILE__, level)) \
     _grad_debug_print(__FILE__, __LINE__, __FUNCTION__, \
                       _grad_debug_format_string vlist)
 #else
-# define debug_on(level) 0
-# define debug(mode,vlist)
+# define GRAD_DEBUG_LEVEL(level) 0
+# define GRAD_DEBUG(mode,vlist)
 #endif
 
 int grad_debug_p(char *name, int level);

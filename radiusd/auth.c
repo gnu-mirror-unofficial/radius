@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,
+   2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -596,14 +597,14 @@ rad_check_password(radiusd_request_t *radreq, AUTH_MACH *m, time_t *exp)
         /* Process any prefixes/suffixes. */
         strip_username(1, m->namepair->avp_strvalue, m->user_check, name);
 
-        debug(1,
+        GRAD_DEBUG(1,
 	      ("auth_type=%d, userpass=%s, name=%s, password=%s",
 	       auth_type, m->userpass, name,
 	       real_password ? real_password : "NONE"));
 
         switch (auth_type) {
         case DV_AUTH_TYPE_SYSTEM:
-                debug(1, ("  auth: System"));
+                GRAD_DEBUG(1, ("  auth: System"));
                 if (unix_pass(name, m->userpass) != 0)
                         result = auth_fail;
 		else
@@ -612,7 +613,7 @@ rad_check_password(radiusd_request_t *radreq, AUTH_MACH *m, time_t *exp)
 		
         case DV_AUTH_TYPE_PAM:
 #ifdef USE_PAM
-                debug(1, ("  auth: Pam"));
+                GRAD_DEBUG(1, ("  auth: Pam"));
                 /* Provide defaults for authdata */
                 if (authdata == NULL &&
                     (tmp = grad_avl_find(m->user_check, DA_PAM_AUTH)) != NULL) {
@@ -629,7 +630,7 @@ rad_check_password(radiusd_request_t *radreq, AUTH_MACH *m, time_t *exp)
                 break;
 
         case DV_AUTH_TYPE_CRYPT_LOCAL:
-                debug(1, ("  auth: Crypt"));
+                GRAD_DEBUG(1, ("  auth: Crypt"));
                 if (real_password == NULL) {
                         result = auth_fail;
                         break;
@@ -640,12 +641,12 @@ rad_check_password(radiusd_request_t *radreq, AUTH_MACH *m, time_t *exp)
                         result = auth_fail;
                 else if (strcmp(real_password, pwbuf) != 0)
                         result = auth_fail;
-                debug(1,("pwbuf: %s", pwbuf));
+                GRAD_DEBUG(1,("pwbuf: %s", pwbuf));
                 grad_free(pwbuf);
                 break;
                 
         case DV_AUTH_TYPE_LOCAL:
-                debug(1, ("  auth: Local"));
+                GRAD_DEBUG(1, ("  auth: Local"));
                 /* Local password is just plain text. */
                 if (auth_item->attribute != DA_CHAP_PASSWORD) {
                         if (real_password == NULL ||
@@ -758,7 +759,7 @@ rad_authenticate(radiusd_request_t *radreq, int activefd)
 
         m.namepair = grad_avl_find(m.req->request->avlist, DA_USER_NAME);
 
-        debug(1, ("auth: %s", m.namepair->avp_strvalue)); 
+        GRAD_DEBUG(1, ("auth: %s", m.namepair->avp_strvalue)); 
         m.state = as_init;
 
         while (m.state != as_stop) {
@@ -805,7 +806,7 @@ rad_authenticate(radiusd_request_t *radreq, int activefd)
 
 #if RADIUS_DEBUG
 # define newstate(s) do {\
-             debug(2, ("%d -> %d", m->state, s));\
+             GRAD_DEBUG(2, ("%d -> %d", m->state, s));\
              m->state = s;\
   } while (0)
 #else
@@ -1121,7 +1122,7 @@ sfn_time(AUTH_MACH *m)
                  * User is allowed, but set Session-Timeout.
                  */
                 grad_uint32_t to = set_session_timeout(m, rest);
-                debug(2, ("user %s, span %s, timeout %d, real timeout %d",
+                GRAD_DEBUG(2, ("user %s, span %s, timeout %d, real timeout %d",
                           m->namepair->avp_strvalue,
                           m->check_pair->avp_strvalue,
                           rest,
@@ -1221,7 +1222,7 @@ sfn_menu_challenge(AUTH_MACH *m)
         radius_send_challenge(m->req, msg, state_value, m->activefd);
         grad_free(msg);
 	
-        debug(1,
+        GRAD_DEBUG(1,
               ("sending challenge (menu %s) to %s",
                m->check_pair->avp_strvalue, m->namepair->avp_strvalue));
         newstate(as_stop);
@@ -1231,7 +1232,7 @@ sfn_menu_challenge(AUTH_MACH *m)
 void
 sfn_ack(AUTH_MACH *m)
 {
-        debug(1, ("ACK: %s", m->namepair->avp_strvalue));
+        GRAD_DEBUG(1, ("ACK: %s", m->namepair->avp_strvalue));
         
 	radius_eval_avl(m->req, m->user_reply);
 
@@ -1259,7 +1260,7 @@ sfn_reject_cleanup(AUTH_MACH *m)
 void
 sfn_reject(AUTH_MACH *m)
 {
-        debug(1, ("REJECT: %s", m->namepair->avp_strvalue));
+        GRAD_DEBUG(1, ("REJECT: %s", m->namepair->avp_strvalue));
 	radius_eval_avl(m->req, m->user_reply);
         radius_send_reply(RT_ACCESS_REJECT,
                           m->req,

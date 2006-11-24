@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -852,7 +852,7 @@ mib_get_next(struct mib_node_t *node, struct snmp_var **varp, int *errp)
         struct snmp_var *temp_var;
         struct mib_node_t *found_node;
         
-        debug(2, ("OID %s",
+        GRAD_DEBUG(2, ("OID %s",
                   sprint_oid(buf, sizeof(buf), (*varp)->name)));
         
         /* first, find the node itself */
@@ -882,7 +882,7 @@ mib_get_next(struct mib_node_t *node, struct snmp_var **varp, int *errp)
                 if (!node) {
                         /* The subtree is exhausted. Roll back until we find
                            first non-traversed down link */
-                        debug(2, ("rolling back from %d:%d",
+                        GRAD_DEBUG(2, ("rolling back from %d:%d",
                                   found_node->index,
                                   found_node->subid));
                         while (node = found_node->up) {
@@ -896,7 +896,7 @@ mib_get_next(struct mib_node_t *node, struct snmp_var **varp, int *errp)
                         }
 
                         if (node)
-                                debug(2, ("rollback stopped at %d:%d",
+                                GRAD_DEBUG(2, ("rollback stopped at %d:%d",
                                           node->index,
                                           node->subid));
 
@@ -918,7 +918,7 @@ mib_get_next(struct mib_node_t *node, struct snmp_var **varp, int *errp)
         temp_var = snmp_var_create(oid);
         snmp_free(oid);
 
-        debug(2, ("NXT %s",
+        GRAD_DEBUG(2, ("NXT %s",
                   sprint_oid(buf, sizeof(buf),
                              temp_var->name)));
                          
@@ -1020,11 +1020,11 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                         /* First, check for the consistency of
                          * the request (rfc1157, 4.1.5):
                          */
-                        debug(1, ("SetRequest-PDU"));
+                        GRAD_DEBUG(1, ("SetRequest-PDU"));
                         if (access == SNMP_RO) {
                                 answer->err_stat = SNMP_ERR_GENERR;
                                 answer->err_ind = 1;
-                                debug(1, ("bad access mode"));
+                                GRAD_DEBUG(1, ("bad access mode"));
                                 return answer;
                         }
                         for (vp = pdu->var; vp; vp = vp->next) {
@@ -1038,7 +1038,7 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                         if (answer->err_stat != SNMP_ERR_NOERROR) {
                                 answer->var = snmp_var_dup_list(pdu->var);
                                 answer->err_ind = index;
-                                debug(1, ("returning error"));
+                                GRAD_DEBUG(1, ("returning error"));
                                 return answer;
                         }
 
@@ -1057,11 +1057,11 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                                 vresp = &vnew->next;
                         }
 
-                        debug(1, ("success"));
+                        GRAD_DEBUG(1, ("success"));
                         return answer;
 
                 case SNMP_PDU_GET:
-                        debug(1, ("GetRequest-PDU"));
+                        GRAD_DEBUG(1, ("GetRequest-PDU"));
 
                         vresp = &answer->var;
                         /* Loop through all variables */
@@ -1078,7 +1078,7 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                                 if (answer->err_stat != SNMP_ERR_NOERROR
                                     || vnew == NULL) {
                                         answer->err_ind = index;
-                                        debug(1, ("returning"));
+                                        GRAD_DEBUG(1, ("returning"));
                                         /* preserve the rest of vars */
                                         *vresp = snmp_var_dup_list(vp);
                                         return answer;
@@ -1093,7 +1093,7 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                         return answer;
 
                 case SNMP_PDU_GETNEXT:
-                        debug(1, ("GetNextRequest-PDU"));
+                        GRAD_DEBUG(1, ("GetNextRequest-PDU"));
 
                         vresp = &answer->var;
                         /* Loop through all variables */
@@ -1108,7 +1108,7 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                                 if (answer->err_stat != SNMP_ERR_NOERROR
                                     || vnew == NULL) {
                                         answer->err_ind = index;
-                                        debug(1, ("returning: err_stat=%d",
+                                        GRAD_DEBUG(1, ("returning: err_stat=%d",
 						  answer->err_stat));
                                         /* preserve the rest of vars */
                                         *vresp = snmp_var_dup_list(vp);

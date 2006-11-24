@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -218,7 +218,7 @@ grad_create_pdu(void **rptr, int code, int id, u_char *authenticator,
                 grad_uint32_t lval;
                 int vendorcode, vendorpec;
                 
-                if (debug_on(10)) {
+                if (GRAD_DEBUG_LEVEL(10)) {
                         char *save;
                         grad_log(L_DEBUG,
                                  "send: %s", grad_format_pair(pair, 1, &save));
@@ -280,7 +280,7 @@ grad_create_pdu(void **rptr, int code, int id, u_char *authenticator,
                                 status = 1;
                                 break;
                         }
-			debug(10,("send: Reply-Message = %*.*s",
+			GRAD_DEBUG(10,("send: Reply-Message = %*.*s",
 				  block_len, block_len, attr.data));
                         grad_pdu_add(&pdu, attr);
                         msg += block_len;
@@ -304,12 +304,12 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
         grad_uint32_t lval;
         
         if ((attr = grad_attr_number_to_dict(attrno)) == NULL) {
-                debug(1, ("Received unknown attribute %d", attrno));
+                GRAD_DEBUG(1, ("Received unknown attribute %d", attrno));
                 return NULL;
         }
 
         if ( attrlen > GRAD_STRING_LENGTH ) {
-                debug(1, ("attribute %d too long, %d >= %d", attrno,
+                GRAD_DEBUG(1, ("attribute %d too long, %d >= %d", attrno,
                           attrlen, GRAD_STRING_LENGTH));
                 return NULL;
         }
@@ -331,7 +331,7 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
                 memcpy(pair->avp_strvalue, ptr, attrlen);
                 pair->avp_strvalue[attrlen] = 0;
 
-                if (debug_on(10)) {
+                if (GRAD_DEBUG_LEVEL(10)) {
                         char *save;
                         grad_log(L_DEBUG, "recv: %s",
                                  grad_format_pair(pair, 1, &save));
@@ -345,7 +345,7 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
                 memcpy(&lval, ptr, sizeof(grad_uint32_t));
                 pair->avp_lvalue = ntohl(lval);
 
-                if (debug_on(10)) {
+                if (GRAD_DEBUG_LEVEL(10)) {
                         char *save;
                         grad_log(L_DEBUG, 
                                  "recv: %s", 
@@ -355,7 +355,7 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
                 break;
                         
         default:
-                debug(1, ("    %s (Unknown Type %d)",
+                GRAD_DEBUG(1, ("    %s (Unknown Type %d)",
                           attr->name,attr->type));
                 grad_avp_free(pair);
                 pair = NULL;
@@ -400,7 +400,7 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
         int stop;
         
         radreq = grad_request_alloc();
-        debug(1,("allocated radreq: %p",radreq));
+        GRAD_DEBUG(1,("allocated radreq: %p",radreq));
 	
         auth = (grad_packet_header_t *)buffer;
         reported_len = ntohs(auth->length);
@@ -411,7 +411,7 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
                 length = reported_len;
         }
                 
-        debug(1, ("%s from %s, id=%d, length=%d",
+        GRAD_DEBUG(1, ("%s from %s, id=%d, length=%d",
 		  grad_request_code_to_name(auth->code),
 		  grad_ip_iptostr(host, NULL),
 		  auth->id,
@@ -439,7 +439,7 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
                 attrno = *ptr++;
                 attrlen = *ptr++;
                 if (attrlen < 2) {
-			debug(1,("exit from the loop"));
+			GRAD_DEBUG(1,("exit from the loop"));
                         stop = 1;
                         continue;
                 }

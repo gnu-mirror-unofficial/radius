@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2006 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -67,14 +67,14 @@ int
 radius_mlc_collect_user(char *name, radiusd_request_t *request,
 			grad_list_t **sess_list)
 {
-	debug(20,("Entered"));
+	GRAD_DEBUG(20,("Entered"));
 	return mlc_disptab->collect_user(name, request, sess_list);
 }
 
 int
 radius_mlc_collect_realm(radiusd_request_t *request, grad_list_t **sess_list)
 {
-	debug(20,("Entered"));
+	GRAD_DEBUG(20,("Entered"));
 	return mlc_disptab->collect_realm(request, sess_list);
 }
 
@@ -83,7 +83,7 @@ radius_mlc_close(struct radutmp *up)
 {
         char ipbuf[GRAD_IPV4_STRING_LENGTH];
 	
-	debug(20,("Closing session: NAS %s port %d",
+	GRAD_DEBUG(20,("Closing session: NAS %s port %d",
 	      grad_ip_iptostr(ntohl(up->nas_address), ipbuf),
 	      up->nas_port));
 	mlc_disptab->close(up);
@@ -169,14 +169,14 @@ radius_mlc_user(char *name, radiusd_request_t *request,
         grad_list_t *sess_list = NULL;
 	size_t count;
 
-	debug(1, ("User %s, maxsimul %lu", name, (u_long) maxsimul));
+	GRAD_DEBUG(1, ("User %s, maxsimul %lu", name, (u_long) maxsimul));
         if (radius_mlc_collect_user(name, request, &sess_list)) {
-		debug(1,("radius_mlc_collect_user() failed"));
+		GRAD_DEBUG(1,("radius_mlc_collect_user() failed"));
 		return 0;
 	}
 	
         count = grad_list_count(sess_list);
-        debug(1, ("Found %lu active sessions for user %s",
+        GRAD_DEBUG(1, ("Found %lu active sessions for user %s",
 		  (u_long) count, name));
 	      
         if (count >= maxsimul) {
@@ -213,7 +213,7 @@ radius_mlc_user(char *name, radiusd_request_t *request,
 
 	grad_list_destroy(&sess_list, utmp_free, NULL);
 	
-        debug(1, ("%lu sessions really active", (u_long) count));
+        GRAD_DEBUG(1, ("%lu sessions really active", (u_long) count));
         *pcount = count;
         return (count < maxsimul) ? 0 : mpp;
 }
@@ -232,12 +232,12 @@ radius_mlc_realm(radiusd_request_t *request)
                 return 0;
 
 	if (radius_mlc_collect_realm(request, &sess_list)) {
-		debug(1,("radius_mlc_collect_realm() failed"));
+		GRAD_DEBUG(1,("radius_mlc_collect_realm() failed"));
 		return 0;
 	}
 
 	count = grad_list_count(sess_list);
-	debug(1, ("Found %lu active sessions for realm %s",
+	GRAD_DEBUG(1, ("Found %lu active sessions for realm %s",
 		  (u_long) count, realm->realm));
 
         if (count >= maxlogins) {
@@ -256,7 +256,7 @@ radius_mlc_realm(radiusd_request_t *request)
 	}
 	grad_list_destroy(&sess_list, utmp_free, NULL);
 
-	debug(1, ("%lu sessions really active", (u_long) count));
+	GRAD_DEBUG(1, ("%lu sessions really active", (u_long) count));
 
         return count >= maxlogins;
 }

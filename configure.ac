@@ -20,7 +20,7 @@
 AC_PREREQ(2.59)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 1.3.91, bug-gnu-radius@gnu.org)
+AC_INIT(GNU Radius, 1.4, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -32,7 +32,7 @@ AC_SUBST(INCLUDEPATH)
 AC_SUBST(RADIUS_PID)
 
 AC_SUBST(RADIUS_INCLUDE_PATH,
-         ['-I$(top_builddir) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)/include/radius -I$(top_srcdir)/include/radius'])
+         ['-I$(top_builddir) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)/include/radius -I$(top_srcdir)/include/radius -I$(top_srcdir)/lib'])
 
 dnl Library versioning
 AC_SUBST(VI_CURRENT, 1)
@@ -283,7 +283,7 @@ gl_INIT
 
 ## * Check for national language support
 AM_GNU_GETTEXT([external], [need-ngettext])
-AM_GNU_GETTEXT_VERSION(0.12.1)
+AM_GNU_GETTEXT_VERSION(0.15)
 
 AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  mkdir mktime select socket strdup strtol lockf \
@@ -414,7 +414,7 @@ AC_ARG_WITH(log-dir,
             RADLOG_DIR="NONE"
          fi])
 AC_MSG_RESULT($RADLOG_DIR)
-if test $RADLOG_DIR == NONE; then
+if test $RADLOG_DIR = NONE; then
    AC_MSG_ERROR("Don't know where to place default logging directory")
 fi  
 

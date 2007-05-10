@@ -1,5 +1,6 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2002,2003,2004,2005,
+# 2007 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -20,7 +21,7 @@
 AC_PREREQ(2.59)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 1.4, bug-gnu-radius@gnu.org)
+AC_INIT([GNU Radius], [1.4.1], [bug-gnu-radius@gnu.org])
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -323,6 +324,10 @@ CPPFLAGS=$save_CPPFLAGS
 # while offering --with-included-argp configuration option. This proved
 # to be unreliable, since there are too many broken argp implementations
 # around
+
+AH_BOTTOM([
+#define GNULIB_ARGP_EXTERN_BASENAME 1
+])
 
 AC_CONFIG_LINKS([include/radius/argp.h:lib/argp.h])
 GNU_INCLUDES="$GNU_INCLUDES argp.h"

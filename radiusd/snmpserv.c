@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2006 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2006,
+   2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -460,6 +461,8 @@ snmpserv_before_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 static void
 snmpserv_after_config_hook(void *arg, void *data ARG_UNUSED)
 {
+	stat_done();
+	stat_init();
 	if (server_stat) {
 		grad_nas_t *nas;
 		grad_iterator_t *itr;

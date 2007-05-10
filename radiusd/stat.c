@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006 Free Software Foundation, Inc.
+   2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -117,6 +117,8 @@ shmem_free()
 {
 	munmap(shmem_base, shmem_size);
 	close(tempfd);
+	tempfd = -1;
+	offset = 0;
 }
 
 void *
@@ -188,8 +190,10 @@ stat_init()
 void
 stat_done()
 {
-	if (server_stat) 
+	if (server_stat) {
 		shmem_free();
+		server_stat = NULL;
+	}
 }
 
 #define FOR_EACH_PORT(p) \

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003,2005 Free Software Foundation, Inc.
+   Copyright (C) 2003,2005,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -24,9 +24,9 @@
 #include <libguile.h>
 #include <radius/radius.h>
 #include <rewrite.h>
+#define RADIUS_SERVER_GUILE
 #include <radiusd.h>
 #include <radius/radscm.h>
-#define RADIUS_SERVER_GUILE
 #include <radsql.h>
 
 #if defined(USE_SQL)
@@ -36,12 +36,22 @@ SCM_DEFINE(radius_sql_query, "radius-sql-query", 2, 0, 0,
 "FIXME")
 #define FUNC_NAME s_radius_sql_query
 {
-	SCM res;
-
         SCM_ASSERT(SCM_IMP(TYPE) && SCM_INUMP(TYPE),
                    TYPE, SCM_ARG1, FUNC_NAME);
 	
 	return sql_exec_query(SCM_INUM(TYPE), SCM_STRING_CHARS(STRING));
+}
+#undef FUNC_NAME
+
+SCM_DEFINE(radius_sql_run_query, "radius-sql-run-query", 2, 0, 0,
+           (SCM TYPE, SCM STRING),
+"FIXME")
+#define FUNC_NAME s_radius_sql_run_query
+{
+        SCM_ASSERT(SCM_IMP(TYPE) && SCM_INUMP(TYPE),
+                   TYPE, SCM_ARG1, FUNC_NAME);
+	
+	return sql_run_query(SCM_INUM(TYPE), SCM_STRING_CHARS(STRING));
 }
 #undef FUNC_NAME
 

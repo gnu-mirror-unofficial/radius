@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006 Free Software Foundation, Inc.
+   2006, 2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -1507,91 +1507,82 @@ matching_rule_free(void *item, void *data ARG_UNUSED)
 }
 
 /* ***************************************************************************
- * a *very* restricted version  of wildmat
+ * an extended version of wildmat
  */
-char *
-wild_start(char *str)
-{
-        char *p;
+#define WILD_FALSE 0
+#define WILD_TRUE  1
+#define WILD_ABORT 2
 
-        p = str;
-        while (*p) {
-                switch (*p) {
-                case '*':
-                case '?':
-                        return p;
-                        
-                case '\\':
-                        if (p[1] == '(' || p[1] == ')')
-                                return p;
-                        /*FALLTHRU*/
-                default:
-                        p++;
-                }
-        }
-        return NULL;
+struct wild_match_range {
+	char *start;
+	char *end;
+};
+
+int
+match_char_class(char **pexpr, char c)
+{
+	int res;
+	int rc;
+	char *expr = *pexpr;
+	
+	expr++;
+	if (*expr == '^') {
+		res = 0;
+		expr++;
+	} else
+		res = 1;
+
+	if (*expr == '-' || *expr == ']') 
+		rc = c == *expr++;
+	else
+		rc = !res;
+	
+	for (; *expr && *expr != ']'; expr++) {
+		if (rc == res) {
+			if (*expr == '\\' && expr[1] == ']')
+				expr++;
+		} else if (expr[1] == '-') {
+			if (*expr == '\\')
+				rc = *++expr == c;
+			else {
+				rc = *expr <= c && c <= expr[2];
+				expr += 2;
+			}
+		} else if (*expr == '\\' && expr[1] == ']')
+			rc == *++expr == c;
+		else
+			rc = *expr == c;
+	}
+	*pexpr = *expr ? expr + 1 : expr;
+	return rc == res;
 }
 
 int
-match_any_chars(char **expr, char **name)
+_wild_match(char *expr, char *name, struct wild_match_range *r)
 {
-        char *exprp, *expr_start, *p, *namep;
-        int length;
-        
-        exprp = *expr;
-        while (*exprp && *exprp == '*')
-                exprp++;
-        
-        expr_start = exprp;
-        while (exprp[0] == '\\' && (exprp[1] == '(' || exprp[1] == ')'))
-                exprp += 2;
-        
-        p = wild_start(exprp);
-        
-        if (p) 
-                length = p - exprp;
-        else
-                length = strlen(exprp);
-
-        if (length == 0) {
-                *name += strlen(*name);
-        } else {
-                namep = *name + strlen(*name) - 1;
-                while (namep > *name) {
-                        if (strncmp(namep, exprp, length) == 0) {
-                                *name = namep;
-                                break;
-                        }
-                        namep--;
-                }
-        }
-        *expr = (exprp == expr_start) ? p : expr_start;
-        return 0;
-}
-
-int
-wild_match(char *expr, char *name, char *return_name)
-{
-        char *curp;
-        char *start_pos, *end_pos;
         int c;
         
-        strcpy(return_name, name);
-        start_pos = end_pos = NULL;
-        curp = name;
         while (expr && *expr) {
+		if (*name == 0 && *expr != '*')
+			return WILD_ABORT;
                 switch (*expr) {
                 case '*':
-                        expr++;
-                        if (match_any_chars(&expr, &curp))
-                                return curp - name + 1;
-                        break;
+			while (*++expr == '*')
+				;
+			if (*expr == 0)
+				return WILD_TRUE;
+			while (*name) {
+				int res = _wild_match(expr, name++, r);
+				if (res != WILD_FALSE)
+					return res;
+			}
+                        return WILD_ABORT;
                         
                 case '?':
                         expr++;
-                        if (*curp == 0)
-                                return curp - name + 1;
-                        curp++;
+                        if (*name == 0)
+                                return WILD_FALSE;
+                        name++;
                         break;
                         
                 case '\\':
@@ -1599,31 +1590,51 @@ wild_match(char *expr, char *name, char *return_name)
                                 goto def;
                         c = *++expr; expr++;
                         if (c == '(') {
-                                start_pos = curp;
+                                if (r)
+					r->start = name;
                         } else if (c == ')') {
-                                end_pos = curp;
-                                if (start_pos) {
-                                        int len = end_pos - start_pos;
-                                        strncpy(return_name, start_pos, len);
-                                        return_name += len;
-                                        *return_name = 0;
-                                }
+                                if (r)
+					r->end = name;
                         } else {
-                                if (*curp != c)
-                                        return curp - name + 1;
-                                curp++;
+                                if (*name != c)
+                                        return WILD_FALSE;
+                                name++;
                         }
                         break;
-                        
+
+		case '[':
+			if (!match_char_class(&expr, *name))
+				return WILD_FALSE;
+			name++;
+			break;
+			
+			
                 default:
                 def:
-                        if (*expr != *curp)
-                                return curp - name + 1;
+                        if (*expr != *name)
+                                return WILD_FALSE;
                         expr++;
-                        curp++;
+                        name++;
                 }
         }
-        return *curp != 0;
+        return *name == 0;
+}
+
+int
+wild_match(char *expr, char *name, char *return_name)
+{
+	int rc;
+	struct wild_match_range range;
+	range.start = range.end = NULL;
+	rc = _wild_match(expr, name, &range) == WILD_TRUE;
+	if (rc) {
+		if (range.start && range.end) {
+			int len = range.end - range.start;
+			strncpy(return_name, range.start, len);
+		} else
+			strncpy(return_name, name, GRAD_STRING_LENGTH);
+	}
+	return rc;
 }
 
 /* ************************************************************************* */
@@ -1632,12 +1643,14 @@ wild_match(char *expr, char *name, char *return_name)
  * Match a username with a wildcard expression.
  */
 int
-matches(radiusd_request_t *req, char *name, grad_matching_rule_t *pl, char *matchpart)
+matches(radiusd_request_t *req, char *name, grad_matching_rule_t *pl,
+	char *matchpart)
 {
 	memcpy(matchpart, name, GRAD_STRING_LENGTH);
-        if (strncmp(pl->name, "DEFAULT", 7) == 0
-	    || wild_match(pl->name, name, matchpart) == 0)
+	if (strncmp(pl->name, "DEFAULT", 7) == 0
+	    || wild_match(pl->name, name, matchpart)) 
                 return paircmp(req, pl->lhs, matchpart);
+
         return 1;
 }       
         

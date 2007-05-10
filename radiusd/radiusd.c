@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation
+   Copyright (C) 2000,2001,2002,2003,2004,2005,2007 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1011,9 +1011,8 @@ void
 radiusd_signal_init(RETSIGTYPE (*hp)(int sig))
 {
 	static int signum[] = {
-		SIGHUP, SIGUSR1, SIGUSR2, SIGQUIT,
-		SIGTERM, SIGCHLD, SIGBUS, 
-		SIGFPE, SIGSEGV, SIGILL, SIGPIPE
+		SIGHUP, SIGUSR1, SIGUSR2, SIGCHLD, 
+		SIGTERM, SIGQUIT, SIGPIPE
 	};
 	int i;
 

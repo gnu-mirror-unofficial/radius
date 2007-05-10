@@ -17,6 +17,8 @@ if [ -r lib/Makefile.tmpl ]; then
   echo "$0: Bootstrapping GNU Radius"
   gnulib-tool --lib=libgnuradius\
               --makefile-name=Makefile.gnulib\
+              --avoid error --avoid xalloc-die\
+	      --avoid dirname \
               --import $MODULES
 
   (cd lib

@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2005 Free Software Foundation, Inc.
+# Copyright (C) 2005,2007 Free Software Foundation, Inc.
 #      
 # Written by Sergey Poznyakoff
 #
@@ -26,6 +26,7 @@ GNURADIUS_0.0 {
                 obstack*;
                 _obstack*;
                 program_invocation_*;
+		gnu_*;
 	local: *;
 };
 

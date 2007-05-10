@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006 Free Software Foundation, Inc.
+   2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -1305,6 +1305,23 @@ sql_exec_query(int type, char *query)
 	disp_sql_free(conn, data);
 	
 	return row_head;
+}
+
+SCM
+sql_run_query(int type, char *query)
+{
+	int rc;
+        struct sql_connection *conn;
+	int count;
+	SCM res;
+	
+	if (type < 0 || type > SQL_NSERVICE)
+		return SCM_BOOL_F;
+	conn = attach_sql_connection(type);
+	rc = disp_sql_query(conn, query, &count);
+	if (rc)
+                return SCM_BOOL_F;
+	return scm_long2num(count);
 }
 #endif
 

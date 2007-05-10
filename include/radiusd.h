@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -738,6 +739,7 @@ char *radiusd_sql_pass(radiusd_request_t *req, char *data);
 
 # ifdef RADIUS_SERVER_GUILE
 SCM sql_exec_query(int type, char *query);
+SCM sql_run_query(int type, char *query);
 # endif
 
 #else

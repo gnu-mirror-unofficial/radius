@@ -1,8 +1,24 @@
-GNU Radius NEWS -- history of user-visible changes. 2006-11-24
+GNU Radius NEWS -- history of user-visible changes. 2007-05-10
 Copyright (C) 2002,2003,2004,2005,2006 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
+
+Version 1.4.1 (CVS):
+
+* Wildcard matching in raddb/hints considerably improved
+
+The new code supports everything wildmat used to support plus allows
+to select arbitrary parts of the matched string using \( and \)
+grouping.
+
+* Fix builds on non-glibc systems
+
+* Fix handling of max-port-count statement.
+
+Previous version (1.4) did not change the size of the statistics file
+(radiusd.stat) when max-port-count changes. 
+
 
 Version 1.4:
 
@@ -1234,4 +1250,8 @@ Copyright (C) 2002,2003,2004,2005 Free Software Foundation, Inc.
 Local variables:
 mode: outline
 paragraph-separate: "[	]*$"
+eval: (add-hook 'write-file-hooks 'time-stamp)
+time-stamp-start: "changes. "
+time-stamp-format: "%:y-%02m-%02d"
+time-stamp-end: "\n"
 end:

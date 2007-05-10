@@ -1,3 +1,24 @@
+2007-05-10  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS: Update
+	* bootstrap: Do not import error, xalloc-die and dirname.
+	* configure.ac: Define GNULIB_ARGP_EXTERN_BASENAME. Raise version
+	number to 1.4.1
+	* include/radiusd.h, radiusd/sql.c (sql_run_query): New function
+	* radscm/rscm_sql.c (radius-sql-run-query): New function
+	
+	* lib/argp_basename.c: New file
+	* lib/Makefile.tmpl (libgnuradius_la_SOURCES): Add argp_basename.c
+	* lib/gnuradius.vers: Export gnu_*
+	* radiusd/files.c (wild_match): Rewrite. Support character classes
+	and improve execution time.
+	* radiusd/radiusd.c (radiusd_signal_init): Do not install special
+	hanlders for SIGFPE, SIGSEGV, SIGILL, SIGBUS
+	* radiusd/snmpserv.c (snmpserv_after_config_hook): Re-initialize
+	stat subsystem.
+	* radiusd/stat.c (shmem_free): Reset tempfd and offset
+	(stat_done): Reset server_stat
+
 2006-11-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* configure.ac: Raise version number to 1.4

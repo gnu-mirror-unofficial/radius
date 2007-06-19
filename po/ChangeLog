@@ -1,3 +1,11 @@
+2007-06-19  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Remove .po from the CVS. We will get them right from the TP site.
+	
+	* po/.cvsignore, po/POTFILES.in: Update
+	* po/LINGUAS,po/Makevars: Remove
+	* ca.po, es.po, fr.po, pl.po, ru.po, uk.po: Remove
+
 2006-11-09  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* ca.po, es.po, fr.po, pl.po, ru.po, uk.po: Update translations.

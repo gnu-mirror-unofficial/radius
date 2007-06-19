@@ -1,8 +1,11 @@
+gnu/getopt.c
+gnu/argp-help.c
+gnu/argp-parse.c
+
 lib/avl.c
 lib/client.c
 lib/debug.c
 lib/dict.c
-lib/getopt.c
 lib/leakdetect.c
 lib/nas.c
 lib/raddb.c
@@ -10,8 +13,6 @@ lib/radutmp.c
 lib/users.l
 lib/users.y
 lib/util.c
-lib/argp-help.c
-lib/argp-parse.c
 lib/printutmp.c
 lib/radargp.c
 

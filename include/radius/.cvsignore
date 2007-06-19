@@ -2,6 +2,4 @@ Makefile
 Makefile.in
 dictionary.h
 types.h
-obstack.h
-argp.h
-getopt.h
+debug.h

@@ -38,10 +38,15 @@ ld.m4
 lib-ld.m4
 lib-link.m4
 lib-prefix.m4
+libtool.m4
 localcharset.m4
 lock.m4
 longdouble.m4
 longlong.m4
+ltoptions.m4
+ltsugar.m4
+ltversion.m4
+lt~obsolete.m4
 mbchar.m4
 mbiter.m4
 mbrtowc.m4
@@ -85,8 +90,3 @@ wint_t.m4
 xalloc.m4
 xsize.m4
 xstrndup.m4
-ltoptions.m4
-ltsugar.m4
-ltversion.m4
-lt~obsolete.m4
-libtool.m4

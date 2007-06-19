@@ -2,6 +2,9 @@
 *.pot
 *.pot~
 *.po~
+*.po
+LINGUAS
+stamp-po
 *.sed
 Makefile
 Makefile.in

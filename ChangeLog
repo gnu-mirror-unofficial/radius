@@ -1,3 +1,27 @@
+2007-06-19  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Move gnulib functions into a separate library. Rewrite
+	libgnuradius to avoid depending on gnulib (only asprintf
+	dependency is pending). Rewrite debugging system. 
+	
+	* .cvsignore, Makefile.am, NEWS, configure.ac, include/common.h,
+	include/radius/Makefile.am, include/radius/radius.h, lib/argcv.c,
+	lib/client.c, lib/debug.c, lib/dict.c, lib/gnuradius.vers,
+	lib/leakdetect.c, lib/logger.c, lib/printutmp.c, lib/raddb.c,
+	lib/radpdu.c, lib/radsrv.c, lib/realms.c, lib/users.l, lib/util.c,
+	m4/.cvsignore, radiusd/Makefile.am, radiusd/acct.c,
+	radiusd/auth.c, radiusd/builddbm.c, radiusd/checkrad.c,
+	radiusd/config.y, radiusd/dynload.c, radiusd/exec.c,
+	radiusd/files.c, radiusd/input.c, radiusd/mlc.c, radiusd/pam.c,
+	radiusd/proxy.c, radiusd/radius.c, radiusd/request.c,
+	radiusd/rewrite.y, radiusd/rpp.c, radiusd/snmpserv.c,
+	radiusd/sql.c, radiusd/stat.c, scripts/.cvsignore,
+	scripts/Makefile.am, sql/mysql.c, sql/odbc.c, sql/postgres.c: Update
+	* README-hacking, include/radius/debug.hin, lib/Makefile.am,
+	lib/c-strcase.c, lib/deflog.c, scripts/debugdef.m4: New file
+	* bootstrap: Rewrite
+	* lib/Makefile.tmpl, scripts/ylwrap: Remove
+
 2007-05-10  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Update

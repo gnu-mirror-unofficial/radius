@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003,2004,2006 Free Software Foundation, Inc.
+   Copyright (C) 2003,2004,2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -100,25 +100,26 @@ pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 			rc = select(fd + 1, NULL, &wr_set, NULL, &tval);
 			if (rc == 0) {
 				errno = ETIMEDOUT;
-				GRAD_DEBUG(100, ("rc = 0"));
+				GRAD_DEBUG(100, "rc = 0");
 				break;
 			} else if (rc < 0) {
 				if (errno == EINTR) 
 					continue;
-				GRAD_DEBUG(100, ("rc = %d, errno = %d", rc, errno));
+				GRAD_DEBUG2(100, "rc = %d, errno = %d", 
+                                            rc, errno);
 				break;
 			} else if (rc > 0) {
 				rc = write(fd, data, 1);
 				if (rc != 1) {
-					GRAD_DEBUG(100, ("rc = %d, errno = %d", rc,
-                                              errno));
+					GRAD_DEBUG2(100, "rc = %d, errno = %d", 
+                                                    rc, errno);
 					break;
 				}
 				data++;
 				n++;
 			}
 		}
-		GRAD_DEBUG(100,("n = %d",n));
+		GRAD_DEBUG1(100,"n = %d",n);
 		return n;
 	}
 }
@@ -197,7 +198,7 @@ rpp_fd_read(int fd, void *data, size_t size, struct timeval *tv)
 	sz = pipe_read(fd, &nbytes, sizeof(nbytes), tv);
 	if (sz == 0)
 		return 0; /* eof */
-	GRAD_DEBUG(100,("nbytes=%lu",nbytes));
+	GRAD_DEBUG1(100,"nbytes=%lu",nbytes);
 	if (sz != sizeof(nbytes)) 
 		return -1;
 	sz = nbytes > size ? size : nbytes;
@@ -209,7 +210,7 @@ rpp_fd_read(int fd, void *data, size_t size, struct timeval *tv)
 			return -3;
 	}
 	
-	GRAD_DEBUG(100,("return %lu", (unsigned long)sz));
+	GRAD_DEBUG1(100,"return %lu", (unsigned long)sz);
 	return sz;
 }
 
@@ -218,12 +219,12 @@ static int
 rpp_fd_write(int fd, void *data, size_t size, struct timeval *tv)
 {
 	int rc;
-	GRAD_DEBUG(100,("size=%lu",size));
+	GRAD_DEBUG1(100,"size=%lu",size);
 	if (pipe_write(fd, &size, sizeof(size), tv) != sizeof(size)) 
 		return -1;
 	if (pipe_write(fd, data, size, tv) != size) 
 		return -2;
-	GRAD_DEBUG(1,("return %lu", (unsigned long)size));
+	GRAD_DEBUG1(1,"return %lu", (unsigned long)size);
 	return size;
 }
 
@@ -559,7 +560,7 @@ rpp_forward_request(REQUEST *req)
 
 	if (!p)
 		return 1;
-	GRAD_DEBUG(1, ("sending request to %d", p->pid));
+	GRAD_DEBUG1(1, "sending request to %d", p->pid);
 	
 	frq.type = req->type;
 	frq.addr = req->addr;
@@ -685,7 +686,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		rc = request_handle(req, request_respond);
 			
 		/* Inform the master */
-		GRAD_DEBUG(1, ("notifying the master"));
+		GRAD_DEBUG(1, "notifying the master");
 		repl.code = RPP_COMPLETE;
 		repl.size = 0;
 		rpp_fd_write(rpp_stdout, &repl, sizeof repl, NULL);
@@ -728,7 +729,7 @@ rpp_input_handler(int fd, void *data)
 		}
 		
 		if (p) {
-		        GRAD_DEBUG(1, ("updating pid %d", p->pid));
+		        GRAD_DEBUG1(1, "updating pid %d", p->pid);
 			p->status = process_ready;
 			request_update(p->pid, RS_COMPLETED, data);
 		} 

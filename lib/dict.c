@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006 Free Software Foundation, Inc.
+   2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -403,12 +403,12 @@ _dict_attribute(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
         if (nfields(fc, 4, 6, loc))
                 return 0;
 
-	GRAD_DEBUG(100,
-	      ("%s:%lu: ATTR_NAME=%s ATTR_VALUE=%s ATTR_TYPE=%s ATTR_VENDOR=%s ATTR_FLAGS=%s",
+	GRAD_DEBUG7(100,
+	      "%s:%lu: ATTR_NAME=%s ATTR_VALUE=%s ATTR_TYPE=%s ATTR_VENDOR=%s ATTR_FLAGS=%s",
 	       loc->file, loc->line,
 	       ATTR_NAME,ATTR_VALUE,ATTR_TYPE,
 	       HAS_VENDOR(fc, fv) ? ATTR_VENDOR : pd->vendor ? "BLOCK" : "N/A",
-	       HAS_FLAGS(fc,fv) ? ATTR_FLAGS : "N/A"));
+	       HAS_FLAGS(fc,fv) ? ATTR_FLAGS : "N/A");
 	
         /*
          * Validate all entries
@@ -698,8 +698,8 @@ _dict_begin(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 		return;
 	}
 	pd->begin_locus = *loc;
-	GRAD_DEBUG(1, ("%s:%lu: BEGIN VENDOR %s (%d)",
-		  loc->file, loc->line, fv[2], pd->vendor));
+	GRAD_DEBUG4(1, "%s:%lu: BEGIN VENDOR %s (%d)",
+		  loc->file, loc->line, fv[2], pd->vendor);
 }
 
 static void
@@ -709,7 +709,7 @@ _dict_end(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 		grad_log_loc(L_ERR, loc, _("unexpected END"));
 		pd->errcnt++;
 	}
-	GRAD_DEBUG(1, ("END VENDOR %d", pd->vendor));
+	GRAD_DEBUG1(1, "END VENDOR %d", pd->vendor);
 	pd->vendor = 0;
 }
 
@@ -829,7 +829,7 @@ parse_dict(char *name)
 		path = grad_estrdup(name);
 	else
 		path = grad_mkfilename(grad_config_dir, name);
-	GRAD_DEBUG(1,("parsing %s", path));
+	GRAD_DEBUG1(1,"parsing %s", path);
         rc = grad_read_raddb_file(path, 1, NULL, parse_dict_entry, &pd);
 	if (pd.vendor) {
 		grad_log_loc(L_ERR, &pd.begin_locus, _("BEGIN without END"));

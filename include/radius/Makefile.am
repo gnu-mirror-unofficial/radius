@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004,2007 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -25,10 +25,18 @@ dictionary.h: $(top_srcdir)/raddb/dict/standard
 types.h: $(top_builddir)/scripts/mktypes
 	$(top_builddir)/scripts/mktypes > $@
 
-MAINTAINERCLEANFILES = dictionary.h
+SUFFIXES = .h .hin
+
+debug.h: Makefile.in debug.hin $(top_builddir)/scripts/debugdef.m4
+
+.hin.h:
+	m4 $(top_srcdir)/scripts/debugdef.m4 $< > $@
+
+MAINTAINERCLEANFILES = dictionary.h debug.h
 
 pkginclude_HEADERS = \
  types.h\
+ debug.h\
  dictionary.h\
  radius.h\
  argcv.h\
@@ -37,15 +45,13 @@ pkginclude_HEADERS = \
  md4.h\
  md5.h\
  mem.h\
- radargp.h\
  raddbm.h\
  radpaths.h\
  radscm.h\
  radutmp.h\
  sha1.h\
- symtab.h\
- @GNU_INCLUDES@
+ symtab.h
 
-EXTRA_HEADERS=
-DISTCLEANFILES = types.h getopt.h argp.h obstack.h
+EXTRA_DIST=radargp.h debug.hin
+DISTCLEANFILES = types.h 
 

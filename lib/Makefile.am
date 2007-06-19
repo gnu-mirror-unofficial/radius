@@ -19,14 +19,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 noinst_LIBRARIES = libradextra.a
-libradextra_a_SOURCES = readline.c 
+libradextra_a_SOURCES = \
+ argp_basename.c\
+ deflog.c\
+ radargp.c\
+ readline.c 
 
 lib_LTLIBRARIES=libgnuradius.la
 libgnuradius_la_SOURCES= \
  argcv.c\
- argp_basename.c\
  ascend.c\
  avl.c\
+ c-strcase.c\
  client.c\
  cryptpass.c\
  dbm.c\
@@ -47,7 +51,6 @@ libgnuradius_la_SOURCES= \
  md5crypt.c\
  nas.c\
  printutmp.c\
- radargp.c\
  raddb.c\
  radpaths.c\
  radpdu.c\
@@ -56,6 +59,7 @@ libgnuradius_la_SOURCES= \
  realms.c\
  sha1.c\
  smbdes.c\
+ slist.c\
  symtab.c\
  sysdep.c\
  users_gram.c\
@@ -77,7 +81,7 @@ EXTRA_DIST=users.y users.l gnuradius.vers
 
 noinst_HEADERS=users_gram.h 
 
-YLWRAP=$(SHELL) $(top_srcdir)/scripts/ylwrap
+YLWRAP=$(SHELL) $(top_srcdir)/scripts/gylwrap
 
 users_gram.c users_gram.h: $(srcdir)/users.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/users.y \
@@ -91,5 +95,3 @@ users_lex.c: $(srcdir)/users.l
 users_lex.o: users_lex.c users_gram.h $(top_srcdir)/include/parser.h
 users_gram.o: users_gram.c users_gram.h $(top_srcdir)/include/parser.h
 
-## BEGIN GNULIB SECTION ##
-## END GNULIB SECTION ##

@@ -1,0 +1,67 @@
+/* This file is part of GNU Radius.
+   Copyright (C) 2007 Free Software Foundation, Inc.
+
+   Written by Sergey Poznyakoff
+  
+   GNU Radius is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   GNU Radius is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with GNU Radius; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+/* Debugging facilities */
+
+#ifndef _gnu_radius_debug_h
+#define _gnu_radius_debug_h
+
+#ifndef GRAD_MAX_DEBUG_LEVEL
+# define GRAD_MAX_DEBUG_LEVEL 100
+#endif
+
+#if RADIUS_DEBUG
+# define GRAD_DEBUG_LEVEL(level) grad_debug_p(__FILE__, level)
+#define __grad_debug(text)                                                    \
+ do {                                                                         \
+   if (grad_source_info_option)                                               \
+     grad_log(L_DEBUG, "%s:%lu:%s: %s", __FILE__, __LINE__, __FUNCTION__,     \
+              text);                                                          \
+   else                                                                       \
+     grad_log(L_DEBUG, "%s", text);                                           \
+ } while (0)
+
+#define GRAD_DEBUG(lev,text)                                                  \
+ do { if (GRAD_DEBUG_LEVEL(lev)) __grad_debug(text); } while(0)
+#else
+# define GRAD_DEBUG_LEVEL(level) 0
+# define GRAD_DEBUG(mode,str)
+#endif
+
+MKDEBUG(1)
+MKDEBUG(2)
+MKDEBUG(3)
+MKDEBUG(4)
+MKDEBUG(5)
+MKDEBUG(6)
+MKDEBUG(7)
+MKDEBUG(8)
+MKDEBUG(9)
+
+int grad_debug_p(char *name, int level);
+const char *grad_request_code_to_name(int code);
+int grad_request_name_to_code(const char *);
+void grad_set_debug_levels(char *str);
+int grad_set_module_debug_level(char *name, int level);
+void grad_clear_debug();
+
+const char *grad_next_matching_code_name(void *data);
+const char *grad_first_matching_code_name(const char *name, void **ptr);
+
+#endif

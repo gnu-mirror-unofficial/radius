@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2003,2004 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2003,2004,2007 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -15,15 +15,16 @@ SUBDIRS=guile
 EXTRA_DIST=\
  config-conv\
  config-conv.awk\
- dot.emacs\
+ debugdef.m4\
  dict.awk\
+ dot.emacs\
  gud-wrapper\
+ gylwrap\
  mksnmp-h.awk\
  radius-devel.el\
  request.list\
  sqlmod.sh\
  texi2html.diff\
- update-dict.awk\
- ylwrap
+ update-dict.awk
 
 noinst_PROGRAMS = mktypes

@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006 Free Software Foundation, Inc.
+   2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -256,20 +256,20 @@ converse(int type, struct snmp_session *sp, struct snmp_pdu *pdu, void *closure)
                 switch (vlist->type) {
                 case SMI_STRING:
                         rc = compare(checkp, vlist->var_str);
-                        GRAD_DEBUG(2, ("(STRING) %s: %d", vlist->var_str, rc));
+                        GRAD_DEBUG2(2, "(STRING) %s: %d", vlist->var_str, rc);
                         break;
                 case SMI_INTEGER:
                 case SMI_COUNTER32:
                 case SMI_COUNTER64:
                         snprintf(buf, sizeof(buf), "%d", vlist->var_int);
                         rc = compare(checkp, buf);
-                        GRAD_DEBUG(2, ("(INT) %d: %d", vlist->var_int, rc));
+                        GRAD_DEBUG2(2, "(INT) %d: %d", vlist->var_int, rc);
                         break;
                 case SMI_IPADDRESS:
                         grad_ip_iptostr(*(grad_uint32_t*)vlist->var_int, buf);
                         rc = compare(checkp, buf);
-                        GRAD_DEBUG(2, ("(IPADDR) %#x: %d",
-                                  *(grad_uint32_t*)vlist->var_str, rc));
+                        GRAD_DEBUG2(2, "(IPADDR) %#x: %d",
+                                    *(grad_uint32_t*)vlist->var_str, rc);
                         break;
                 }
 
@@ -356,11 +356,11 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
         snmp_pdu_add_var(pdu, var);
         snmp_free(oid);
 
-        GRAD_DEBUG(1, ("snmpget: %s:%d %s %s",
-                  peername,
-                  remote_port,
-                  community,
-                  snmp_oid));
+        GRAD_DEBUG4(1, "snmpget: %s:%d %s %s",
+                    peername,
+                    remote_port,
+                    community,
+                    snmp_oid);
 
         checkp->result = rc;
         
@@ -369,7 +369,7 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
         rc = checkp->result;
         snmp_session_close(sp);
         
-        GRAD_DEBUG(1, ("result: %d", rc));
+        GRAD_DEBUG1(1, "result: %d", rc);
         return rc;
 }
 
@@ -440,8 +440,8 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
                 return -1;
         }
 
-        GRAD_DEBUG(1, ("finger %s@%s:%d",
-                  namebuf, hp->h_name, ntohs(port)));
+        GRAD_DEBUG3(1, "finger %s@%s:%d",
+                    namebuf, hp->h_name, ntohs(port));
 
         /* have network connection; identify the host connected with */
         memset(&msg, 0, sizeof(msg));
@@ -521,7 +521,7 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
                                 
                                 obstack_1grow(&checkp->stack, 0);
                                 ptr = obstack_finish(&checkp->stack);
-                                GRAD_DEBUG(2,("got : %s", ptr));
+                                GRAD_DEBUG1(2, "got : %s", ptr);
                                 found = compare(checkp, ptr);
                                 obstack_free(&checkp->stack, ptr);
                                 if (found) 
@@ -542,7 +542,7 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
 
                         obstack_1grow(&checkp->stack, '\n');
                         obstack_1grow(&checkp->stack, 0);
-                        GRAD_DEBUG(2,("got : %s", ptr));
+                        GRAD_DEBUG1(2, "got : %s", ptr);
                         ptr = obstack_finish(&checkp->stack);
                         found = compare(checkp, ptr);
                 }
@@ -556,7 +556,7 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
         /* restore alarm settings */
         alarm(0);
 
-        GRAD_DEBUG(1, ("result: %d", found));
+        GRAD_DEBUG1(1, "result: %d", found);
         checkp->result = found;
         return found;
 }

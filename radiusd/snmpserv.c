@@ -855,8 +855,8 @@ mib_get_next(struct mib_node_t *node, struct snmp_var **varp, int *errp)
         struct snmp_var *temp_var;
         struct mib_node_t *found_node;
         
-        GRAD_DEBUG(2, ("OID %s",
-                  sprint_oid(buf, sizeof(buf), (*varp)->name)));
+        GRAD_DEBUG1(2, "OID %s",
+                    sprint_oid(buf, sizeof(buf), (*varp)->name));
         
         /* first, find the node itself */
         rc = mib_lookup(node, oid, OIDLEN(oid), &found_node);
@@ -885,9 +885,9 @@ mib_get_next(struct mib_node_t *node, struct snmp_var **varp, int *errp)
                 if (!node) {
                         /* The subtree is exhausted. Roll back until we find
                            first non-traversed down link */
-                        GRAD_DEBUG(2, ("rolling back from %d:%d",
-                                  found_node->index,
-                                  found_node->subid));
+                        GRAD_DEBUG2(2, "rolling back from %d:%d",
+                                    found_node->index,
+                                    found_node->subid);
                         while (node = found_node->up) {
                                 mib_reset(node);
                                 if (node->down && node->down != found_node)
@@ -899,9 +899,9 @@ mib_get_next(struct mib_node_t *node, struct snmp_var **varp, int *errp)
                         }
 
                         if (node)
-                                GRAD_DEBUG(2, ("rollback stopped at %d:%d",
-                                          node->index,
-                                          node->subid));
+                                GRAD_DEBUG2(2, "rollback stopped at %d:%d",
+                                            node->index,
+                                            node->subid);
 
                         if (node && node->subid != SUBID_X)
                                 node = node->down;
@@ -921,9 +921,7 @@ mib_get_next(struct mib_node_t *node, struct snmp_var **varp, int *errp)
         temp_var = snmp_var_create(oid);
         snmp_free(oid);
 
-        GRAD_DEBUG(2, ("NXT %s",
-                  sprint_oid(buf, sizeof(buf),
-                             temp_var->name)));
+        GRAD_DEBUG1(2, "NXT %s", sprint_oid(buf, sizeof(buf), temp_var->name));
                          
         *varp = temp_var;
         (*found_node->handler)(MIB_NODE_GET,
@@ -1023,11 +1021,11 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                         /* First, check for the consistency of
                          * the request (rfc1157, 4.1.5):
                          */
-                        GRAD_DEBUG(1, ("SetRequest-PDU"));
+                        GRAD_DEBUG(1, "SetRequest-PDU");
                         if (access == SNMP_RO) {
                                 answer->err_stat = SNMP_ERR_GENERR;
                                 answer->err_ind = 1;
-                                GRAD_DEBUG(1, ("bad access mode"));
+                                GRAD_DEBUG(1,"bad access mode");
                                 return answer;
                         }
                         for (vp = pdu->var; vp; vp = vp->next) {
@@ -1041,7 +1039,7 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                         if (answer->err_stat != SNMP_ERR_NOERROR) {
                                 answer->var = snmp_var_dup_list(pdu->var);
                                 answer->err_ind = index;
-                                GRAD_DEBUG(1, ("returning error"));
+                                GRAD_DEBUG(1, "returning error");
                                 return answer;
                         }
 
@@ -1060,11 +1058,11 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                                 vresp = &vnew->next;
                         }
 
-                        GRAD_DEBUG(1, ("success"));
+                        GRAD_DEBUG(1, "success");
                         return answer;
 
                 case SNMP_PDU_GET:
-                        GRAD_DEBUG(1, ("GetRequest-PDU"));
+                        GRAD_DEBUG(1, "GetRequest-PDU");
 
                         vresp = &answer->var;
                         /* Loop through all variables */
@@ -1081,7 +1079,7 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                                 if (answer->err_stat != SNMP_ERR_NOERROR
                                     || vnew == NULL) {
                                         answer->err_ind = index;
-                                        GRAD_DEBUG(1, ("returning"));
+                                        GRAD_DEBUG(1,"returning");
                                         /* preserve the rest of vars */
                                         *vresp = snmp_var_dup_list(vp);
                                         return answer;
@@ -1096,7 +1094,7 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                         return answer;
 
                 case SNMP_PDU_GETNEXT:
-                        GRAD_DEBUG(1, ("GetNextRequest-PDU"));
+                        GRAD_DEBUG(1, "GetNextRequest-PDU");
 
                         vresp = &answer->var;
                         /* Loop through all variables */
@@ -1111,8 +1109,9 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                                 if (answer->err_stat != SNMP_ERR_NOERROR
                                     || vnew == NULL) {
                                         answer->err_ind = index;
-                                        GRAD_DEBUG(1, ("returning: err_stat=%d",
-						  answer->err_stat));
+                                        GRAD_DEBUG1(1, 
+                                                    "returning: err_stat=%d",
+						     answer->err_stat);
                                         /* preserve the rest of vars */
                                         *vresp = snmp_var_dup_list(vp);
                                         return answer;

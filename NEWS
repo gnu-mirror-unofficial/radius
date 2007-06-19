@@ -1,10 +1,10 @@
-GNU Radius NEWS -- history of user-visible changes. 2007-05-10
-Copyright (C) 2002,2003,2004,2005,2006 Free Software Foundation, Inc.
+GNU Radius NEWS -- history of user-visible changes. 2007-06-19
+Copyright (C) 2002,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
-Version 1.4.1 (CVS):
+Version 1.4.90 (CVS):
 
 * Wildcard matching in raddb/hints considerably improved
 
@@ -1235,7 +1235,7 @@ be told the ways of handling them without recompiling.
 =========================================================================
 Copyright information:
 
-Copyright (C) 2002,2003,2004,2005 Free Software Foundation, Inc.
+Copyright (C) 2002,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
 
    Permission is granted to anyone to make or distribute verbatim copies
    of this document as received, in any medium, provided that the

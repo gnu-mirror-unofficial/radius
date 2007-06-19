@@ -1,7 +1,7 @@
 %{
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006 Free Software Foundation, Inc.
+   2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -1297,7 +1297,7 @@ parse_rewrite(char *path)
                 return -2;
         }
 
-	GRAD_DEBUG(1,("Loading file %s", locus.file));
+	GRAD_DEBUG1(1, "Loading file %s", locus.file);
         rw_code_lock();
         yyeof = 0;
         locus.line = 1;
@@ -4018,7 +4018,7 @@ pushn(RWSTYPE n)
 {
         if (mach.st >= mach.ht) {
                 /*FIXME: gc();*/
-                GRAD_DEBUG(1, ("st=%d, ht=%d", mach.st, mach.ht));
+                GRAD_DEBUG2(1, "st=%d, ht=%d", mach.st, mach.ht);
                 rw_error(_("out of pushdown space"));
         }
         mach.stack[mach.st++] = n;

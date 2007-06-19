@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -20,7 +20,7 @@
 AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS= scripts include lib sql snmplib radscm radiusd radwho \
+SUBDIRS= scripts include lib gnu sql snmplib radscm radiusd radwho \
          radzap radlast radscripts elisp raddb db client radtest \
          examples tests doc po\
          mibs contrib 

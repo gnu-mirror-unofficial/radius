@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2003,2004 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2003,2004,2007 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -44,13 +44,13 @@ radiusd_SOURCES = \
  tsh.c\
  version.c
 
-radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ @LIBGNURADIUS@ ../lib/libradextra.a @READLINE_LIBS@ @LIBINTL@
+radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ @LIBGNURADIUS@ @READLINE_LIBS@ @LIBINTL@
 BUILT_SOURCES   = config.c rewrite.c
 MAINTAINERCLEANFILES=config.c rewrite.c y.output
 INCLUDES = @RADIUS_INCLUDE_PATH@ @GUILE_INCLUDES@
 AM_CPPFLAGS=@PATHFLAGS@ -DRADIUS_DATADIR=\"$(pkgdatadir)/$(VERSION)\"
 EXTRA_DIST      = config.y rewrite.y .gdbinit
-YLWRAP = $(SHELL) $(top_srcdir)/scripts/ylwrap
+YLWRAP = $(SHELL) $(top_srcdir)/scripts/gylwrap
 
 config.c: $(srcdir)/config.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/config.y \

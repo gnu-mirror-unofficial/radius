@@ -235,7 +235,7 @@ stat_find_port(grad_nas_t *nas, int port_no)
 	port->ip = nas->netdef.ipaddr;
 	port->port_no = port_no;
 	
-	GRAD_DEBUG(1, ("next offset %d", port - port_stat));
+	GRAD_DEBUG1(1, "next offset %d", port - port_stat);
 
 	return port;
 }
@@ -359,12 +359,12 @@ stat_update(struct radutmp *ut, int status)
 		break;
 	}
 
-	GRAD_DEBUG(1,
-		("NAS %#x port %d: act %d, cnt %d, start %d, inuse %d/%d idle %d/%d",
-		 port->ip, port->port_no, port->active,
-		 port->count, port->start,
-		 port->inuse, port->maxinuse.time,
-		 port->idle, port->maxidle.time));
+	GRAD_DEBUG9(1,
+		"NAS %#x port %d: act %d, cnt %d, start %d, inuse %d/%d idle %d/%d",
+		port->ip, port->port_no, port->active,
+		port->count, port->start,
+		port->inuse, port->maxinuse.time,
+		port->idle, port->maxidle.time);
 }
 
 void

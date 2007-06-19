@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -23,14 +24,41 @@
 #endif
 
 #include <stdlib.h>
-#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <errno.h>
 #include <ctype.h>
 #include <common.h>
 
-#if !HAVE_DECL_GETLINE
-int getline (char **lineptr, size_t *n, FILE *stream);
-#endif
+static int
+get_argcv(const char *str, const char *delim, size_t *pargc, char ***pargv)
+{
+	int n;
+	int argc;
+	char **argv;
+
+	if (n = grad_argcv_get(str, delim, "#", &argc, &argv)) {
+		grad_argcv_free(argc, argv);
+		return n;
+	}
+	
+	*pargc = argc;
+	*pargv = argv;
+	return 0;
+}
+
+static int
+continuation_line_p(const char *str, const char *delim)
+{
+	int argc;
+	char **argv;
+	int rc = get_argcv(str, delim, &argc, &argv) == 0
+		&& argc > 0
+		&& argv[argc-1][strlen(argv[argc-1]) - 1] == '\\';
+	grad_argcv_free(argc, argv);
+	return rc;
+}
 
 int
 grad_read_raddb_file(char *filename, int vital, char *delim,
@@ -38,14 +66,18 @@ grad_read_raddb_file(char *filename, int vital, char *delim,
 {
         int    argc;
         char **argv;
-        FILE *input;
-        char *lineptr = NULL;
-        size_t bsize = 0;
-        int nread;
         grad_locus_t loc;
+	int fd;
+	struct stat st;
+	char *buffer, *lineptr, *endp, *p;
+	size_t rdsize;
 	
-        input = fopen(filename, "r");
-        if (!input) {
+	if (stat(filename, &st)) {
+                fprintf (stderr, _("can't stat `%s'"), filename);
+                return -1;
+        }
+	fd = open(filename, O_RDONLY);
+        if (fd == -1) {
                 if (vital) {
                         grad_log(L_ERR|L_PERROR, _("can't open file `%s'"),
                                  filename);
@@ -56,35 +88,71 @@ grad_read_raddb_file(char *filename, int vital, char *delim,
                         return 0;
                 }
         }
-
+	
+	buffer = grad_malloc(st.st_size + 1);
+	for (lineptr = buffer, rdsize = st.st_size; rdsize; ) {
+		ssize_t s = read(fd, lineptr, rdsize);
+		if (s <= 0) {
+			if (s == -1) {
+				grad_log(L_ERR|L_PERROR, _("%s: read error"),
+					 filename);
+			} else if (s == 0) 
+				grad_log(L_WARN, _("%s: short read"),
+					  filename);
+			grad_free(buffer);
+			close(fd);
+			return 1;
+		}
+		rdsize -= s;
+		lineptr += s;
+	}
+	*lineptr = 0;
+	close(fd);
+	
 	if (!delim)
 		delim = "";
 	loc.file = filename;
         loc.line = 0;
-        while (getline(&lineptr, &bsize, input) > 0) {
-                nread = strlen(lineptr);
-                if (nread == 0)
-                        break;
-                if (lineptr[nread-1] == '\n') {
-			loc.line++;
-			lineptr[nread-1] = 0;
-		}
-		if (lineptr[0] == 0)
+	lineptr = buffer;
+
+	for (p = endp = lineptr; *endp;) {
+		if (endp[0] == '\\' && endp[1] == '\n') {
+			endp[1] = 0;
+			if (continuation_line_p(lineptr, delim)) {
+				endp += 2;
+				lineptr = endp;
+				continue;
+			} else 
+				endp[1] = '\n';
+		} else if (endp[0] == '\n')
+			lineptr = endp;
+		*p++ = *endp++;
+	}
+	*p = 0;
+	
+	lineptr = buffer;
+	while (*lineptr) {
+		char *str;
+		
+		for (endp = lineptr; *endp && *endp != '\n'; endp++) 
+			;
+		
+		if (*endp)
+			*endp++ = 0;
+		loc.line++;
+		str = lineptr;
+		lineptr = endp;
+		if (str[0] == 0)
 			continue;
-                if (grad_argcv_get(lineptr, delim, NULL, &argc, &argv) == 0) {
-                        int n;
-                        for (n = 0; n < argc && argv[n][0] != '#'; n++)
-                                ;
-                        if (n)
-                                fun(closure, n, argv, &loc);
-                }
+		
+                if (get_argcv(str, delim, &argc, &argv) == 0 && argc)
+			fun(closure, argc, argv, &loc);
+
                 if (argv)
                         grad_argcv_free(argc, argv);
         }
 
-        if (lineptr)
-                free(lineptr);
-        fclose(input);
+	grad_free(buffer);
 
         return 0;
 }

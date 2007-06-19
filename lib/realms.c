@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation
+   Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -178,7 +178,7 @@ static int
 realm_match_name_p(const grad_realm_t *realm, const char *name)
 {
 	return (grad_envar_lookup_int(realm->args, "ignorecase", 0) ?
-		strcasecmp : strcmp) (realm->realm, name) == 0;
+		grad_c_strcasecmp : strcmp) (realm->realm, name) == 0;
 }
 
 /* Find a realm in the REALM list */

@@ -8,6 +8,7 @@ config.rpath
 config.sub
 depcomp
 install-sh
+link-warning.h
 ltmain.sh
 mdate-sh
 missing

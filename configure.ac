@@ -21,9 +21,10 @@
 AC_PREREQ(2.59)
 
 AC_REVISION($Revision$)
-AC_INIT([GNU Radius], [1.4.1], [bug-gnu-radius@gnu.org])
+AC_INIT([GNU Radius], [1.4.90], [bug-gnu-radius@gnu.org])
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
+AC_CONFIG_LIBOBJ_DIR([gnu])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(no-exeext)
 AC_CONFIG_HEADERS([config.h])
@@ -292,8 +293,6 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  inet_ntoa inet_aton \
  setvbuf setegid setregid setresgid seteuid setreuid getdtablesize sigaction)
 
-AC_SUBST(GNU_INCLUDES)
-
 # FIXME: Do we need to check for the functions before `crypt'?
 AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf,
 getline, crypt, crypt_set_format], , ,
@@ -328,9 +327,6 @@ CPPFLAGS=$save_CPPFLAGS
 AH_BOTTOM([
 #define GNULIB_ARGP_EXTERN_BASENAME 1
 ])
-
-AC_CONFIG_LINKS([include/radius/argp.h:lib/argp.h])
-GNU_INCLUDES="$GNU_INCLUDES argp.h"
 
 AC_ARG_WITH([readline],
             AC_HELP_STRING([--without-readline],
@@ -937,7 +933,7 @@ AH_BOTTOM([
 ])
 
 AC_SUBST(LIBGNURADIUS)
-LIBGNURADIUS='${top_builddir}/lib/libgnuradius.la'
+LIBGNURADIUS='-L${top_builddir}/gnu -lgnu -L${top_builddir}/lib -lgnuradius -lradextra'
 
 RADIUS_INCLUDE_PATH="$RADIUS_INCLUDE_PATH $INCLUDEPATH"
 
@@ -948,6 +944,7 @@ AC_CONFIG_FILES(Makefile
           include/Makefile
 	  include/radius/Makefile
           include/snmp/Makefile
+          gnu/Makefile
           lib/Makefile
           sql/Makefile
           snmplib/Makefile 

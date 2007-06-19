@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006 Free Software Foundation, Inc.
+   2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -110,8 +110,8 @@ grad_client_message_id(grad_server_t *server)
 }
 	
 grad_request_t *
-grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret, char *authenticator,
-	     char *buffer, int length)
+grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret,
+		 char *authenticator, char *buffer, int length)
 {
         grad_packet_header_t *auth;
         int totallen;
@@ -137,7 +137,7 @@ grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret, char *authe
         memcpy(buffer + length, secret, secretlen);
         grad_md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
         
-	GRAD_DEBUG(1, ("received %s", grad_request_code_to_name(auth->code)));
+	GRAD_DEBUG1(1, "received %s", grad_request_code_to_name(auth->code));
         if (memcmp(reply_digest, calc_digest, GRAD_AUTHENTICATOR_LENGTH) != 0) {
                 grad_log(L_WARN, _("Received invalid reply digest from server"));
         }
@@ -245,8 +245,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                 return NULL;
         }
 
-	GRAD_DEBUG(1,
-	      ("sending %s", grad_request_code_to_name(code)));
+	GRAD_DEBUG1(1, "sending %s", grad_request_code_to_name(code));
 	recv_buf = grad_emalloc(config->buffer_size);
         itr = grad_iterator_create(config->servers);
         server = grad_iterator_first(itr);
@@ -262,11 +261,9 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                 if (server->port[port_type] <= 0)
                         continue;
                 
-                if (GRAD_DEBUG_LEVEL(10)) {
-                        grad_log(L_DEBUG, "server %s:%d",
+                GRAD_DEBUG2(10, "server %s:%d",
                                  grad_ip_iptostr(server->addr, ipbuf),
                                  server->port[port_type]);
-                }
 
                 if (authid && (flags & RADCLT_AUTHENTICATOR))
 			memcpy(authenticator, authvec, sizeof authenticator);
@@ -319,7 +316,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                                 if (errno == EINTR) {
                                         i--;
 					GRAD_DEBUG(20,
-					      ("select interrupted. retrying."));
+					      "select interrupted. retrying.");
                                         continue;
                                 }
                                 grad_log(L_NOTICE, _("select() interrupted"));
@@ -348,15 +345,15 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                                 
                                 break;
                         }
-			GRAD_DEBUG(10,("no response. retrying."));
+			GRAD_DEBUG(10,"no response. retrying.");
                 }
 		
 		grad_free(pdu);
 		
                 if (!req)
-                        GRAD_DEBUG(10,("no reply from %s:%d",
-				  grad_ip_iptostr(server->addr, ipbuf),
-				  server->port[port_type]));
+                        GRAD_DEBUG2(10,"no reply from %s:%d",
+				    grad_ip_iptostr(server->addr, ipbuf),
+				    server->port[port_type]);
 		
         } while (!req && (server = grad_iterator_next(itr)) != NULL);
 	grad_iterator_destroy(&itr);

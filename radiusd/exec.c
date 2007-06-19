@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004,2005,2006 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -222,7 +222,7 @@ radius_exec_command(char *cmd)
 
         if (WIFEXITED(status)) {
                 status = WEXITSTATUS(status);
-                GRAD_DEBUG(1, ("returned: %d", status));
+                GRAD_DEBUG1(1, "returned: %d", status);
                 if (status == 2) {
                         grad_log(L_ERR,
                                  _("can't run external program `%s' "
@@ -282,7 +282,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
                 int argc;
                 char **argv;
 
-                GRAD_DEBUG(1, ("command line: %s", cmd));
+                GRAD_DEBUG1(1, "command line: %s", cmd);
 
                 grad_argcv_get(cmd, "", NULL, &argc, &argv);
                 
@@ -333,7 +333,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
 
         while (ptr = fgets(buffer, sizeof(buffer), fp)) {
                 line_num++;
-                GRAD_DEBUG(1, ("got `%s'", buffer));
+                GRAD_DEBUG1(1, "got `%s'", buffer);
                 if (userparse(ptr, &vp, &errp)) {
                         grad_log(L_ERR,
 			         _("<stdout of %s>:%d: %s"),
@@ -352,7 +352,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
 
         if (WIFEXITED(status)) {
                 status = WEXITSTATUS(status);
-                GRAD_DEBUG(1, ("returned: %d", status));
+                GRAD_DEBUG1(1, "returned: %d", status);
                 if (status == 2) {
                         grad_log(L_ERR,
                                  _("can't run external program `%s' "
@@ -617,7 +617,7 @@ filter_write(Filter *filter, char *fmt, radiusd_request_t *radreq)
 	} else {
 		char nl = '\n';
 		length = strlen(str);
-		GRAD_DEBUG(1,("%s < \"%s\"", filter->name, str));
+		GRAD_DEBUG2(1, "%s < \"%s\"", filter->name, str);
 		rc = write(filter->output, str, length);
 		if (rc == length) {
 			if (write(filter->output, &nl, 1) == 1)
@@ -698,7 +698,7 @@ filter_auth(char *name, radiusd_request_t *req, grad_avp_t **reply_pairs)
 			grad_avp_t *vp = NULL;
 			char *errp;
 
-			GRAD_DEBUG(1, ("%s > \"%s\"", filter->name, buffer));
+			GRAD_DEBUG2(1, "%s > \"%s\"", filter->name, buffer);
 			rc = strtoul(buffer, &ptr, 0);
 			if (userparse(ptr, &vp, &errp)) {
 				grad_log(L_ERR,
@@ -751,7 +751,7 @@ filter_acct(char *name, radiusd_request_t *req)
 		} else if (isdigit(buffer[0])) {
 			char *ptr;
 
-			GRAD_DEBUG(1, ("%s > \"%s\"", filter->name, buffer));
+			GRAD_DEBUG2(1, "%s > \"%s\"", filter->name, buffer);
 			rc = strtoul(buffer, &ptr, 0);
 			if (!isspace(*ptr)) {
 				grad_log(L_ERR,

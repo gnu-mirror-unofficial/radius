@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -70,7 +71,7 @@ grad_parse_time_string(char *valstr, struct tm *tm)
 
         /* Get the month */
         for (i = 0; i < 12; i++) {
-                if (strncasecmp(months[i], valstr, 3) == 0) {
+                if (grad_c_strncasecmp(months[i], valstr, 3) == 0) {
                         tm->tm_mon = i;
                         break;
                 }
@@ -179,61 +180,6 @@ grad_decode_backslash(int c)
                         return p[1];
         }
         return c;
-}
-
-#define to_num(c) \
-  (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : 255 ))
-
-void
-grad_obstack_grow_backslash_num(struct obstack *stk, char *text, char **pend,
-				int len, int base)
-{
-	int i;
-	int val = 0;
-	char *start = text;
-	
-	if (text[0] == '\\') {
-		text++;
-		if (base == 16)
-			text++;
-	}
-	
-	for (i = 0; i < len; i++) {
-		int n = (unsigned char)text[i];
-		if (n > 127 || (n = to_num(n)) >= base)
-			break;
-		val = val*base + n;
-	}
-	
-	if (i == 0) {
-		obstack_grow(stk, start, 1);
-		if (pend)
-			*pend = start + 1;
-	} else {
-		obstack_1grow(stk, val);
-		if (pend)
-			*pend = text + i;
-	}
-}
-
-
-void
-grad_obstack_grow_backslash(struct obstack *stk, char *text, char **endp)
-{
-	if (text[1] == '\\' || (unsigned char)text[1] > 127) {
-		obstack_1grow(stk, text[1]);
-		text += 2;
-	} else if (isdigit(text[1])) 
-		grad_obstack_grow_backslash_num(stk, text, &text, 3, 8);
-	else if (text[1] == 'x' || text[1] == 'X')
-		grad_obstack_grow_backslash_num(stk, text, &text, 2, 16);
-	else {
-		int c = grad_decode_backslash(text[1]);
-		obstack_1grow(stk, c);
-		text += 2;
-	}
-		
-	*endp = text;
 }
 
 void

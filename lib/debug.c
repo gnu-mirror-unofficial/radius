@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -31,6 +31,8 @@
 #include <errno.h>
 #include <string.h>
 #include <common.h>
+
+int grad_source_info_option = 1;
 
 static grad_keyword_t auth_codes_abbr[] = {
         { "Access-Request", RT_ACCESS_REQUEST }, 

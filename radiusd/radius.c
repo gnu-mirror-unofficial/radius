@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2006 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2006,
+   2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -390,8 +391,8 @@ radius_req_update(void *req_ptr, void *data_ptr)
 	req->server_id = upd->proxy_id;
 	req->realm = grad_realm_lookup_name(upd->realmname);
 	req->server_no = upd->server_no;
-	GRAD_DEBUG(1, ("Update request %d: proxy_id=%d, realm=%s, server_no=%d",
-		  req->request->id,upd->proxy_id,upd->realmname,upd->server_no));
+	GRAD_DEBUG4(1, "Update request %d: proxy_id=%d, realm=%s, server_no=%d",
+		  req->request->id,upd->proxy_id,upd->realmname,upd->server_no);
 }
 
 void

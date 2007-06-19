@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2003,2004,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -32,38 +32,6 @@
 #include <radargp.h>
 
 #define SP(p) ((p)?(p):"")
-
-static char *priname[] = { /* priority names */
-        "emerg",
-        "alert",
-        "crit",
-        "error",
-        "warning",
-        "notice",
-        "info",
-        "debug"
-};
-
-void
-grad_default_logger(int level, 
-     const grad_request_t *req,
-     const grad_locus_t *loc,
-     const char *func_name, int en,
-     const char *fmt, va_list ap)
-{
-        fprintf(stderr, "%s: %s: ", program_invocation_short_name,
-		priname[level & L_PRIMASK]);
-        if (loc) {
-                fprintf(stderr, "%s:%lu:", loc->file, (unsigned long) loc->line);
-		if (func_name)
-			fprintf(stderr, "%s:", func_name);
-		fprintf(stderr, " ");
-	}
-        vfprintf(stderr, fmt, ap);
-        if (en)
-                fprintf(stderr, ": %s", strerror(en));
-        fprintf(stderr, "\n");
-}
 
 
 
@@ -117,40 +85,4 @@ grad_log_loc(int lvl, grad_locus_t *loc, const char *msg, ...)
 	va_start(ap, msg);
 	_grad_logger(lvl, NULL, loc, NULL, ec, msg, ap);
 	va_end(ap);
-}
-
-void
-_dolog(int level, char *file, size_t line, char *func_name, char *fmt, ...)
-{
-        va_list ap;
-        int ec = 0;
-        grad_locus_t loc;
-
-        if (level & L_PERROR)
-                ec = errno;
-	loc.file = file;
-	loc.line = line;
-	va_start(ap, fmt);
-        _grad_logger(level, NULL, &loc, func_name, ec, fmt, ap);
-        va_end(ap);
-}
-
-void
-_grad_debug_print(char *file, size_t line, char *func_name, char *str)
-{
-        _dolog(L_DEBUG, file, line, func_name, "%s", str);
-        free(str);
-}
-
-/*VARARGS*/
-char *
-_grad_debug_format_string(char *fmt, ...)
-{
-        va_list ap;
-        char *str = NULL;
-
-	va_start(ap, fmt);
-        vasprintf(&str, fmt, ap);
-        va_end(ap);
-        return str;
 }

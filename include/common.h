@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -26,17 +26,14 @@
 #include <radius/radutmp.h>
 #include <radius/symtab.h>
 #include <radius/argcv.h>
+#include <radius/debug.h>
 #include <pwd.h>
 
 #define obstack_chunk_alloc grad_emalloc
 #define obstack_chunk_free grad_free
 #include <obstack.h>
 
-#ifdef WITH_INCLUDED_REGEX
-# include <../lib/rx.h>
-#else
-# include <regex.h>
-#endif
+#include <regex.h>
 
 /* Internationalization support */
 #include <gettext.h>

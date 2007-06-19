@@ -1,6 +1,6 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -86,7 +86,7 @@ void _cfg_free_argv(int argc, cfg_value_t *argv);
 struct cfg_stmt *_cfg_find_keyword(struct cfg_stmt *stmt, char *str);
 static int _get_value(cfg_value_t *arg, int type, void *base);
 
-static struct obstack cfg_obstack;
+static grad_slist_t cfg_slist;
 char *cfg_filename;
 int cfg_line_num;
 static char *buffer;
@@ -332,11 +332,11 @@ static char *
 copy_alpha()
 {
         do {
-		obstack_1grow(&cfg_obstack, *curp);
+		grad_slist_append_char(cfg_slist, *curp);
                 curp++;
         } while (*curp && isword(*curp));
-	obstack_1grow(&cfg_obstack, 0);
-	return obstack_finish(&cfg_obstack);
+	grad_slist_append_char(cfg_slist, 0);
+	return grad_slist_finish(cfg_slist);
 }
 
 static char *
@@ -346,17 +346,17 @@ copy_string()
 
         while (*curp) {
 		if (*curp == '\\') {
-			grad_obstack_grow_backslash(&cfg_obstack, curp, &curp);
+			grad_slist_grow_backslash(cfg_slist, curp, &curp);
 		} else if (*curp == quote) {
                         curp++;
                         break;
                 } else {
-			obstack_1grow(&cfg_obstack, *curp);
+			grad_slist_append_char(cfg_slist, *curp);
 			curp++;
 		}
         } 
-	obstack_1grow(&cfg_obstack, 0);
-	return obstack_finish(&cfg_obstack);
+	grad_slist_append_char(cfg_slist, 0);
+	return grad_slist_finish(cfg_slist);
 }
 
 static int
@@ -366,20 +366,20 @@ copy_digit()
 
         if (*curp == '0') {
                 if (curp[1] == 'x' || curp[1] == 'X') {
-			obstack_1grow(&cfg_obstack, *curp);
+			grad_slist_append_char(cfg_slist, *curp);
 			curp++;
-			obstack_1grow(&cfg_obstack, *curp);
+			grad_slist_append_char(cfg_slist, *curp);
 			curp++;
                 }
         }
         
         do {
-		obstack_1grow(&cfg_obstack, *curp);
+		grad_slist_append_char(cfg_slist, *curp);
                 if (*curp++ == '.')
                         dot++;
         } while (*curp && (isdigit(*curp) || *curp == '.'));
-	obstack_1grow(&cfg_obstack, 0);
-	yylval.string = obstack_finish(&cfg_obstack);
+	grad_slist_append_char(cfg_slist, 0);
+	yylval.string = grad_slist_finish(cfg_slist);
         return dot;
 }
 
@@ -882,7 +882,7 @@ cfg_read(char *fname, struct cfg_stmt *syntax, void *data)
                 yydebug = 0;
         }
 
-	obstack_init(&cfg_obstack);
+	cfg_slist = grad_slist_create();
 	_cfg_run_begin(syntax, data);
 	
         /* Parse configuration */
@@ -895,7 +895,7 @@ cfg_read(char *fname, struct cfg_stmt *syntax, void *data)
 		;
 
 	_cfg_free_memory_pool();
-	obstack_free(&cfg_obstack, NULL);
+	grad_slist_free(&cfg_slist);
 
         return 0;
 }       

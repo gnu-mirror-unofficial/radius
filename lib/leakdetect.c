@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006 Free Software Foundation, Inc.
+   2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -143,8 +143,7 @@ grad_malloc(size_t size)
 
         p = malloc(size + EXTRA);
 
-	if (GRAD_DEBUG_LEVEL(10)) 
-		printf("malloc(%d) = %p\n", size, p);
+	GRAD_DEBUG2(10, "malloc(%d) = %p", size, p);
         
         if (p) {
 #ifdef LEAK_DETECTOR
@@ -210,11 +209,9 @@ grad_free(void *ptr)
         mallocstat.size -= mhdr->s.size;
         mallocstat.count--;
         
-        if (GRAD_DEBUG_LEVEL(10))
-		printf("free(%p) %d bytes\n", mhdr, mhdr->s.size);
+        GRAD_DEBUG2(10, "free(%p) %d bytes", mhdr, mhdr->s.size);
 #else
-        if (GRAD_DEBUG_LEVEL(10))
-		printf("free(%p)\n", ptr);
+        GRAD_DEBUG1(10, "free(%p)", ptr);
 #endif
         free(ptr);
 }

@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -52,10 +53,10 @@ static char *addstring();
 static char *addquote();
 static int preproc();
 static void read_number(char *text, int len, int base);
-static void grow_backslash_num(struct obstack *stk, char *text,
-			       int len, int base);
+static void grow_backslash_num(grad_slist_t slist, char *text, int len,
+			       int base);
 
-static struct obstack stack; /* Obstack for keeping string values */ 
+static grad_slist_t slist;   /* Slist for keeping string values */ 
 grad_locus_t grad_parser_source_locus;
 ino_t source_inode;          /* Inode of the current source (for preventing
                                 recursive inclusion */
@@ -342,7 +343,7 @@ NULL    return NUL;
 \"[^"\\\n]*\\\n {
           BEGIN(in_string);
           if (yyleng > 3)
-                 obstack_grow(&stack, yytext+1, yyleng-3);
+		  grad_slist_append(slist, yytext+1, yyleng-3);
 }
 \"[^"\\\n]*\n {
           BEGIN(INITIAL);
@@ -352,48 +353,48 @@ NULL    return NUL;
 \"[^"\\\n]*\\[^xX0-9] {
           BEGIN(in_string);
           if (yyleng > 3)
-                 obstack_grow(&stack, yytext+1, yyleng-3);
-          obstack_1grow(&stack, grad_decode_backslash(yytext[yyleng-1]));
+                 grad_slist_append(slist, yytext+1, yyleng-3);
+          grad_slist_append_char(slist, grad_decode_backslash(yytext[yyleng-1]));
 }
 \"[^"\\\n]*\\[xX]{X} |
 \"[^"\\\n]*\\[xX]{X}{X} {
 	  BEGIN(in_string);
-	  grow_backslash_num(&stack, yytext + 1, yyleng - 1, 16);
+	  grow_backslash_num(slist, yytext + 1, yyleng - 1, 16);
 }
 \"[^"\\\n]*\\{O} |
 \"[^"\\\n]*\\{O}{O} |
 \"[^"\\\n]*\\{O}{O}{O} {
           BEGIN(in_string);
-          grow_backslash_num(&stack, yytext + 1, yyleng - 1, 8); 
+          grow_backslash_num(slist, yytext + 1, yyleng - 1, 8); 
 }
 <in_string>[^"\\\n]*\\\n {
-          obstack_grow(&stack, yytext, yyleng-2);
+          grad_slist_append(slist, yytext, yyleng-2);
 }
 <in_string>[^"\\\n]*\n {
           BEGIN(INITIAL);
-          obstack_finish(&stack);
+          grad_slist_clear(slist);
           yyerror("unterminated character string");
           return BOGUS;
 }         
 <in_string>[^"\\\n]*\\[^xX0-9] {
           if (yyleng > 2)
-                   obstack_grow(&stack, yytext, yyleng-2);
-          obstack_1grow(&stack, grad_decode_backslash(yytext[yyleng-1]));
+                   grad_slist_append(slist, yytext, yyleng-2);
+          grad_slist_append_char(slist, grad_decode_backslash(yytext[yyleng-1]));
 }
 <in_string>[^"\\\n]*\\[xX]{X} |
 <in_string>[^"\\\n]*\\[xX]{X}{X} {
-	  grow_backslash_num(&stack, yytext, yyleng, 16);
+	  grow_backslash_num(slist, yytext, yyleng, 16);
 }
 <in_string>[^"\\\n]*\\{O} |
 <in_string>[^"\\\n]*\\{O}{O} |
 <in_string>[^"\\\n]*\\{O}{O}{O} {
-          grow_backslash_num(&stack, yytext, yyleng, 8);
+          grow_backslash_num(slist, yytext, yyleng, 8);
 }
 <in_string>[^"\\\n]*\" {
           BEGIN(INITIAL);
-          obstack_grow(&stack, yytext, yyleng-1);
-          obstack_1grow(&stack, 0);
-          yylval.string = obstack_finish(&stack);
+          grad_slist_append(slist, yytext, yyleng-1);
+          grad_slist_append_char(slist, 0);
+          yylval.string = grad_slist_finish(slist);
           return QUOTE;
 }
 {WS}    ;
@@ -420,8 +421,8 @@ char *
 addstring(char *s)
 {
         int length = strlen(s);
-        obstack_grow(&stack, s, length+1);
-        return obstack_finish(&stack);
+        grad_slist_append(slist, s, length+1);
+        return grad_slist_finish(slist);
 }
         
 char *
@@ -429,9 +430,9 @@ addquote(char *s)
 {
         int length = strlen(s);
         if (length-2 > 0)
-                obstack_grow(&stack, s+1, length-2);
-        obstack_1grow(&stack, 0);
-        return obstack_finish(&stack);
+                grad_slist_append(slist, s+1, length-2);
+        grad_slist_append_char(slist, 0);
+        return grad_slist_finish(slist);
 }
 
 int
@@ -439,20 +440,20 @@ grad_parser_lex_init(char *name)
 {
 	int rc;
 
-        obstack_init(&stack);
+        slist = grad_slist_create();
         
         context_stack = NULL;
         grad_parser_source_locus.file = NULL;
         rc = push_source(name);
 	if (rc)	
-		obstack_free(&stack, NULL);
+		grad_slist_free(&slist);
 	return rc;
 }
 
 void
 grad_parser_lex_finish()
 {
-        obstack_free(&stack, NULL);
+        grad_slist_free(&slist);
 #ifdef FLEX_SCANNER     
         yy_delete_buffer(yy_current_buffer); 
 #endif
@@ -525,13 +526,13 @@ preproc()
                 
                 if (*sp != '/') {
                         /* append standard configuration directory path */
-                        obstack_grow(&stack, grad_config_dir, strlen(grad_config_dir));
-                        obstack_1grow(&stack, '/');
+                        grad_slist_append(slist, grad_config_dir, strlen(grad_config_dir));
+                        grad_slist_append_char(slist, '/');
                 }
         
-                obstack_grow(&stack, sp, len);
-                obstack_1grow(&stack, 0);
-                name = obstack_finish(&stack);
+                grad_slist_append(slist, sp, len);
+                grad_slist_append_char(slist, 0);
+                name = grad_slist_finish(slist);
                 return push_source(name);
         } else if (len == 5 && strncmp(sp, "DEBUG", 5) == 0) {
                 int v;
@@ -556,15 +557,15 @@ preproc()
 }
 
 void
-grow_backslash_num(struct obstack *stk, char *text, int len, int base)
+grow_backslash_num(grad_slist_t slist, char *text, int len, int base)
 {
 	char *p = strchr(text, '\\');
 	int n = p - text;
-	obstack_grow(&stack, text, n);
+	grad_slist_append(slist, text, n);
 	len -= n + 1;
 	if (base == 16)
 		len--;
-	grad_obstack_grow_backslash_num(stk, p, NULL, len, base);
+	grad_slist_grow_backslash_num(slist, p, NULL, len, base);
 }
 
 

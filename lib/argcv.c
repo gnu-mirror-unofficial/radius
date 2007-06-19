@@ -1,5 +1,6 @@
 /* argcv.c - simple functions for parsing input based on whitespace
-   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005,
+   2007 Free Software Foundation, Inc.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -47,7 +48,7 @@
 #define isdelim(c,delim) (strchr(delim,(c))!=NULL)
 
 static int
-argcv_scan (int len, const char *command, const char *delim, const char* cmnt,
+argcv_scan (int len, const char *command, const char *delim, const char *cmnt,
 	    int *start, int *end, int *save)
 {
   int i = 0;
@@ -215,7 +216,7 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 	case '"':
 	  if (!expect_delim)
 	    {
-	      char *p;
+	      const char *p;
 	      
 	      for (p = src+i+1; *p && *p != src[i]; p++)
 		if (*p == '\\')
@@ -233,7 +234,12 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 	  
 	case '\\':
 	  ++i;
-	  if (src[i] == 'x' || src[i] == 'X')
+	  if (src[i] == 0)
+	    {
+	      *dst++ = '\\';
+	      *dst++ = src[i++];
+	    }
+	  else if (src[i] == 'x' || src[i] == 'X')
 	    {
 	      if (n - i < 2)
 		{
@@ -361,8 +367,11 @@ argcv_get_n (const char *command, int len, const char *delim, const char *cmnt,
       if ((command[start] == '"' || command[end] == '\'')
 	  && command[end] == command[start])
 	{
-	  start++;
-	  end--;
+	  if (start < end)
+	    {
+	      start++;
+	      end--;
+	    }
 	  unquote = 0;
 	}
       else

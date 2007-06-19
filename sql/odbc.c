@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2001 Vlad Lungu
-   Copyright (C) 2000,2001,2004,2006 Sergey Pozniakoff  
+   Copyright (C) 2000,2001,2004,2006,2007 Sergey Pozniakoff  
 
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -146,7 +146,7 @@ rad_odbc_query(struct sql_connection *conn, char *query, int *return_count)
         if (!conn || !conn->data)
                 return -1;
 
-        GRAD_DEBUG(1, ("query: %s", query));
+        GRAD_DEBUG1(1, "query: %s", query);
         odata = (ODBCconn*)(conn->data);
         result = SQLAllocHandle(SQL_HANDLE_STMT,odata->dbc,&stmt);      
         if (result != SQL_SUCCESS) {
@@ -188,7 +188,7 @@ rad_odbc_getpwd(struct sql_connection *conn, char *query)
         if (!conn || !conn->data)
                 return NULL;
 
-        GRAD_DEBUG(1, ("query: %s", query));
+        GRAD_DEBUG1(1, "query: %s", query);
 
         odata = (ODBCconn*)(conn->data);
         result = SQLAllocHandle(SQL_HANDLE_STMT, odata->dbc, &stmt);    
@@ -287,7 +287,7 @@ rad_odbc_exec(struct sql_connection *conn, char *query)
         if (!conn || !conn->data)
                 return NULL;
 
-        GRAD_DEBUG(1, ("query: %s", query));
+        GRAD_DEBUG1(1, "query: %s", query);
 
         odata = (ODBCconn*)conn->data;
         result = SQLAllocHandle(SQL_HANDLE_STMT,odata->dbc, &stmt);     

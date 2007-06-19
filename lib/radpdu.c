@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004,2006 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -38,8 +38,7 @@
 
 /* Structure for building radius PDU. */
 struct radius_pdu {
-        size_t size;        /* Size of the data, collected so far */
-        struct obstack st;  /* Data buffer */
+        grad_slist_t slist;  /* Data buffer */
 };
 
 /* Structure for building single attribute */
@@ -58,8 +57,7 @@ int grad_encode_pair(struct radius_attr *ap, grad_avp_t *pair);
 static void
 grad_pdu_init(struct radius_pdu *pdu)
 {
-        pdu->size = 0;
-        obstack_init(&pdu->st);
+        pdu->slist = grad_slist_create();
 }
 
 /* Finalize the PDU.
@@ -77,21 +75,22 @@ grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
         grad_packet_header_t *hdr;
         void *p;
         size_t secretlen = 0;
-        size_t len = sizeof(grad_packet_header_t) + pdu->size;
+        size_t size = grad_slist_size(pdu->slist);
+        size_t len = sizeof(grad_packet_header_t) + size;
         u_char digest[GRAD_MD5_DIGEST_LENGTH];
-        
+	
 	if (code != RT_ACCESS_REQUEST && code != RT_STATUS_SERVER) {
                 secretlen = strlen(secret);
-                obstack_grow(&pdu->st, secret, secretlen);
+                grad_slist_append(pdu->slist, secret, secretlen);
         }
         /* Create output array */
-        p = obstack_finish(&pdu->st);
+        p = grad_slist_finish(pdu->slist);
         hdr = grad_emalloc(len + secretlen);
         hdr->code = code;
         hdr->id = id;
         hdr->length = htons(len);
      
-        memcpy(hdr + 1, p, pdu->size + secretlen);
+        memcpy(hdr + 1, p, size + secretlen);
 
 	/* Seal the message properly. Note that the secret has already been
 	   appended to the pdu wherever necessary */
@@ -135,13 +134,12 @@ grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
 void 
 grad_pdu_destroy(struct radius_pdu *pdu)
 {
-        obstack_free(&pdu->st, NULL);
+	grad_slist_free(&pdu->slist);
 }
 
 /* Append attribute A to the PDU P */
 #define grad_pdu_add(p,a) \
- do { obstack_grow(&(p)->st,&(a),(a).length); \
-      (p)->size+=(a).length; } while (0)
+ grad_slist_append((p)->slist, &(a),(a).length)
 
 /* Initialize the attribute structure. */       
 #define grad_attr_init(a) (a)->length = 2
@@ -280,8 +278,8 @@ grad_create_pdu(void **rptr, int code, int id, u_char *authenticator,
                                 status = 1;
                                 break;
                         }
-			GRAD_DEBUG(10,("send: Reply-Message = %*.*s",
-				  block_len, block_len, attr.data));
+			GRAD_DEBUG3(10,"send: Reply-Message = %*.*s",
+				  block_len, block_len, attr.data);
                         grad_pdu_add(&pdu, attr);
                         msg += block_len;
                         len -= block_len;
@@ -304,13 +302,13 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
         grad_uint32_t lval;
         
         if ((attr = grad_attr_number_to_dict(attrno)) == NULL) {
-                GRAD_DEBUG(1, ("Received unknown attribute %d", attrno));
+                GRAD_DEBUG1(1, "Received unknown attribute %d", attrno);
                 return NULL;
         }
 
         if ( attrlen > GRAD_STRING_LENGTH ) {
-                GRAD_DEBUG(1, ("attribute %d too long, %d >= %d", attrno,
-                          attrlen, GRAD_STRING_LENGTH));
+                GRAD_DEBUG3(1, "attribute %d too long, %d >= %d", attrno,
+                            attrlen, GRAD_STRING_LENGTH);
                 return NULL;
         }
 
@@ -355,8 +353,7 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
                 break;
                         
         default:
-                GRAD_DEBUG(1, ("    %s (Unknown Type %d)",
-                          attr->name,attr->type));
+                GRAD_DEBUG2(1, "%s (Unknown Type %d)", attr->name,attr->type);
                 grad_avp_free(pair);
                 pair = NULL;
                 break;
@@ -400,7 +397,7 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
         int stop;
         
         radreq = grad_request_alloc();
-        GRAD_DEBUG(1,("allocated radreq: %p",radreq));
+        GRAD_DEBUG1(1,"allocated radreq: %p",radreq);
 	
         auth = (grad_packet_header_t *)buffer;
         reported_len = ntohs(auth->length);
@@ -411,11 +408,11 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
                 length = reported_len;
         }
                 
-        GRAD_DEBUG(1, ("%s from %s, id=%d, length=%d",
+        GRAD_DEBUG4(1, "%s from %s, id=%d, length=%d",
 		  grad_request_code_to_name(auth->code),
 		  grad_ip_iptostr(host, NULL),
 		  auth->id,
-                  ntohs(auth->length)));
+                  ntohs(auth->length));
 
         /*
          *      Fill header fields
@@ -439,7 +436,7 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
                 attrno = *ptr++;
                 attrlen = *ptr++;
                 if (attrlen < 2) {
-			GRAD_DEBUG(1,("exit from the loop"));
+			GRAD_DEBUG(1,"exit from the loop");
                         stop = 1;
                         continue;
                 }

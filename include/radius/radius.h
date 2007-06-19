@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006 Free Software Foundation, Inc.
+   2006,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -36,8 +36,6 @@
 #else
 # include <time.h>
 #endif
-
-struct obstack;
 
 /* Length of an IPv4 address in 'dotted-quad' representation including
    null terminator */
@@ -319,6 +317,7 @@ extern char *grad_stat_file;
 extern char *grad_msgid_file;
 extern char *grad_pid_dir;
 extern char *grad_bug_report_address;
+extern int grad_source_info_option;
 
 /* Parser */
 extern grad_locus_t grad_parser_source_locus;
@@ -455,12 +454,10 @@ int grad_format_string_visual(char *buf, int runlen, char *str, int len);
 char *grad_op_to_str(enum grad_operator op);
 enum grad_operator grad_str_to_op(char *str);
 int grad_xlat_keyword(grad_keyword_t *kw, const char *str, int def);
-void grad_obstack_grow_backslash_num(struct obstack *stk,
-				     char *text, char **pend,
-				     int len, int base);
-void grad_obstack_grow_backslash(struct obstack *stk, char *text,
-				 char **endp);
 
+/* c-strcase.c */
+int grad_c_strcasecmp(const char *a, const char *b);
+int grad_c_strncasecmp(const char *a, const char *b, size_t n);
 
 /* cryptpass.c */
 void grad_encrypt_password(grad_avp_t *pair, char *password,
@@ -572,45 +569,15 @@ typedef void (*grad_logger_fp) (int lvl,
 				const char *fmt,
 				va_list ap);
 grad_logger_fp grad_set_logger(grad_logger_fp fp);
-void grad_app_logger(int level,
-		     const grad_request_t *req,
-		     const grad_locus_t *loc,
-		     const char *func_name, int en,
-		     const char *fmt, va_list ap);
+void grad_default_logger(int level,  const grad_request_t *req,
+			 const grad_locus_t *loc,
+			 const char *func_name, int en,
+			 const char *fmt, va_list ap);
 
 void grad_log(int level, const char *fmt, ...);
 int __grad_insist_failure(const char *, const char *, int);
 void grad_log_req(int level, grad_request_t *req, const char *fmt, ...);
 void grad_log_loc(int lvl, grad_locus_t *loc, const char *msg, ...);
-
-/* Debugging facilities */
-#ifndef GRAD_MAX_DEBUG_LEVEL
-# define GRAD_MAX_DEBUG_LEVEL 100
-#endif
-
-#if RADIUS_DEBUG
-# define GRAD_DEBUG_LEVEL(level) grad_debug_p(__FILE__, level)
-# define GRAD_DEBUG(level, vlist) \
-   if (grad_debug_p(__FILE__, level)) \
-    _grad_debug_print(__FILE__, __LINE__, __FUNCTION__, \
-                      _grad_debug_format_string vlist)
-#else
-# define GRAD_DEBUG_LEVEL(level) 0
-# define GRAD_DEBUG(mode,vlist)
-#endif
-
-int grad_debug_p(char *name, int level);
-void _debug_print(char *file, size_t line, char *func_name, char *str);
-char *_grad_debug_format_string(char *fmt, ...);
-const char *grad_request_code_to_name(int code);
-int grad_request_name_to_code(const char *);
-void grad_set_debug_levels(char *str);
-int grad_set_module_debug_level(char *name, int level);
-void grad_clear_debug();
-
-const char *grad_next_matching_code_name(void *data);
-const char *grad_first_matching_code_name(const char *name, void **ptr);
-
 
 /* sysdep.h */
 int grad_set_nonblocking(int fd);
@@ -623,5 +590,24 @@ grad_uint32_t grad_first_ip();
 
 typedef int (*rdl_init_t) (void);
 typedef void (*rdl_done_t) (void);
+
+/* slist.c */
+#define GRAD_SLIST_BUCKET_SIZE 1024
+
+typedef struct grad_slist *grad_slist_t;
+
+grad_slist_t grad_slist_create(void);
+void grad_slist_clear(grad_slist_t slist);
+void grad_slist_free(grad_slist_t *slist);
+void grad_slist_append(grad_slist_t slist, void *str, size_t n);
+void grad_slist_append_char(grad_slist_t slist, char c);
+size_t grad_slist_size(grad_slist_t slist);
+size_t grad_slist_coalesce(grad_slist_t slist);
+void *grad_slist_finish(grad_slist_t slist);
+void *grad_slist_head(grad_slist_t slist, size_t *psize);
+void grad_slist_grow_backslash_num(grad_slist_t slist, char *text, char **pend,
+				   int len, int base);
+void grad_slist_grow_backslash(grad_slist_t slist, char *text, char **endp);
+
 
 #endif /* !_gnu_radius_radius_h */

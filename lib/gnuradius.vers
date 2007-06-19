@@ -20,13 +20,6 @@
 GNURADIUS_0.0 {
         global: grad_*;
                 __grad_insist_failure;
-                _grad_debug_format_string; _grad_debug_print;
-	        argp_*;
-                rpl_*;
-                obstack*;
-                _obstack*;
-                program_invocation_*;
-		gnu_*;
 	local: *;
 };
 

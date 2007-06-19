@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -43,7 +44,7 @@ int grad_printutmp_use_naslist = 1; /* use naslist when displaying nas names */
 char *grad_printutmp_date_format = "%a %H:%M";
 char *grad_printutmp_empty_string = "";
 
-static struct obstack stk;
+static grad_slist_t slist;
 
 #define FDATA_FH 0
 #define FDATA_STRING 1
@@ -464,13 +465,13 @@ parse_string0(char *fmt, format_data_t *form, int (*cond)(), void *closure)
 			default:
 				c = *p;
 			}
-			obstack_1grow(&stk, c);
+			grad_slist_append_char(slist, c);
 		} else
-			obstack_1grow(&stk, *p);
+			grad_slist_append_char(slist, *p);
 	}
 
 	form->type = FDATA_STRING;
-	form->v.string = grad_estrdup(obstack_finish(&stk));
+	form->v.string = grad_estrdup(grad_slist_finish(slist));
 	return p;
 }
 
@@ -520,15 +521,15 @@ get_token(char **fmtp)
 		++*fmtp;
 	p = *fmtp;
 	if (*p == ')') {
-		obstack_1grow(&stk, *p);
+		grad_slist_append_char(slist, *p);
 		++*fmtp;
 	} else {
 		while (**fmtp && !isspace(**fmtp) && **fmtp != ')')
 			++*fmtp;
-		obstack_grow(&stk, p, *fmtp - p);
+		grad_slist_append(slist, p, *fmtp - p);
 	}
-	obstack_1grow(&stk, 0);
-	return obstack_finish(&stk);
+	grad_slist_append_char(slist, 0);
+	return grad_slist_finish(slist);
 }
 
 static int
@@ -624,7 +625,7 @@ grad_utent_compile_form(char *fmt)
 {
 	format_data_t *form_head = NULL, *form_tail;
 	
-	obstack_init(&stk);
+	slist = grad_slist_create();
 	while (*fmt) {
 		int rc;
 		
@@ -649,7 +650,7 @@ grad_utent_compile_form(char *fmt)
 		}
 	}
 
-	obstack_free(&stk, NULL);
+	grad_slist_free(&slist);
 	
 	return form_head;
 }

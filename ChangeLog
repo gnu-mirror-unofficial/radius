@@ -1,3 +1,17 @@
+2007-06-20  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap.conf (XGETTEXT_OPTIONS): Describe logging functions
+	* include/radius/radius.h (grad_astrcat, grad_inttostr)
+	(grad_longtostr,grad_offtostr,grad_sizetostr,grad_uinttostr)
+	(grad_uinttostr): New functions
+
+	* intprops.h, numtostr.c, inttostr.c, longtostr.c, offtostr.c,
+	sizetostr.c, uinttostr.c, ulongtostr.c: New files
+	* lib/Makefile.am (libgnuradius_la_SOURCES): Add number to string
+	conversion sources
+	* lib/ascend.c, lib/leakdetect.c, lib/logger.c, lib/readline.c,
+	lib/users.y, lib/util.c: Do not use asprintf
+	
 2007-06-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Move gnulib functions into a separate library. Rewrite

@@ -57,11 +57,26 @@ dump(time_t t)
 {
 	FILE *fp;
 	char *fname;
+	pid_t pid = getpid();
+	size_t size, len;
 	
 	if (!grad_log_dir)
 		return;
-	asprintf(&fname, "%s/radmem.%lu",
-		 grad_log_dir, (unsigned long) getpid());
+
+#define DUMPFILENAME "/radmem."
+	
+	size = grad_ulongtostr((unsigned long) pid, NULL, 0);
+	size += strlen(grad_log_dir) + sizeof DUMPFILENAME;
+	fname = malloc(fname);
+	if (!fname) {
+		grad_log(L_ERR|L_PERROR, _("not enough memory"));
+		return;
+	}
+	strcpy(fname, grad_log_dir);
+	strcat(fname, DUMPFILENAME);
+	len = strlen(fname);
+	grad_ulongtostr(pid, fname + len, size - len);
+
 	fp = fopen(fname, "w");
 	if (!fp) 
 		grad_log(L_ERR|L_PERROR, "cannot open file %s", fname);

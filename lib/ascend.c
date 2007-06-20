@@ -121,6 +121,25 @@ struct ascend_parse_buf {
 	char **errmsg;   /* Error message */
 };
 
+/* Error printing */
+static void
+ascend_errprint(struct ascend_parse_buf *pb, char *msg, char *arg)
+{
+	if (arg)
+		grad_astrcat(pb->errmsg, msg, ": ", arg);
+	else
+		grad_astrcat(pb->errmsg, msg);
+}
+
+static void
+ascend_errprints(struct ascend_parse_buf *pb, char *fmt, char *arg)
+{
+	size_t size = strlen(fmt) + strlen(arg) + 1;
+	*pb->errmsg = malloc(size);
+	if (*pb->errmsg)
+		sprintf(*pb->errmsg, fmt, arg);
+}
+
 /* generic (more or less) calls */
 #define _moreinput(pb) ((pb)->tokn < (pb)->tokc)
 
@@ -130,7 +149,8 @@ _get_token(struct ascend_parse_buf *pb, int require)
 
 	if (!_moreinput(pb)) {
 		if (require) {
-			asprintf(pb->errmsg, _("Unexpected end of string"));
+			ascend_errprint(pb, _("Unexpected end of string"),
+					NULL);
 			return NULL;
 		}
 		return NULL;
@@ -159,8 +179,7 @@ _get_type(struct ascend_parse_buf *pb)
 	else if (strcmp(tok, "generic") == 0)
 		pb->flt->type = ascend_filter_generic;
 	else {
-		asprintf(pb->errmsg, "%s: %s",
-			 _("Unknown filter type"), tok);
+		ascend_errprint(pb, _("Unknown filter type"), tok);
 		return 1;
 	}
 	return 0;
@@ -177,7 +196,7 @@ _get_dir(struct ascend_parse_buf *pb)
 	else if (strcmp(tok, "out") == 0)
 		pb->flt->input = 0;
 	else {
-		asprintf(pb->errmsg, _("Invalid direction"));
+		ascend_errprint(pb, _("Invalid direction"), NULL);
 		return 1;
 	}
 	return 0;
@@ -194,8 +213,7 @@ _get_action(struct ascend_parse_buf *pb)
 	else if (strcmp(tok, "drop") == 0)
 		pb->flt->forward = 0;
 	else {
-		asprintf(pb->errmsg, "%s: %s",
-			 _("Unknown action"), tok);
+		ascend_errprint(pb, _("Unknown action"), tok);
 		return 1;
 	}
 	return 0;
@@ -216,7 +234,7 @@ _get_hex_string(struct ascend_parse_buf *pb, u_char *buf)
 
 	len = strlen(tok);
 	if (len > 2*ASCEND_MAX_CMP_LENGTH) {
-		asprintf(pb->errmsg, _("Octet string too long"));
+		ascend_errprint(pb, _("Octet string too long"), NULL);
 		return -1;
 	}
 
@@ -235,8 +253,9 @@ _get_hex_string(struct ascend_parse_buf *pb, u_char *buf)
 			else
 				*p = *tok - 'A' + 10;
 		} else {
-			asprintf(pb->errmsg,
-				 _("Invalid hex character (near %s)"), tok);
+			ascend_errprints(pb,
+					 _("Invalid hex character (near %s)"),
+					 tok);
 			return -1;
 		}
 	}
@@ -266,8 +285,7 @@ _ascend_parse_generic(struct ascend_parse_buf *pb)
 		return 1;
 	num = strtoul(tok, &p, 0);
 	if (*p) {
-		asprintf(pb->errmsg, "%s: %s",
-			 _("Invalid offset"), tok);
+		ascend_errprint(pb, _("Invalid offset"), tok);
 		return 1;
 	}
 	pb->flt->v.generic.offset = ntohs(num);
@@ -290,8 +308,8 @@ _ascend_parse_generic(struct ascend_parse_buf *pb)
 	if ((num = _get_hex_string(pb, pb->flt->v.generic.value)) < 0)
 		return 1;
 	if (num != len) {
-		asprintf(pb->errmsg,
-			 _("Value and mask are not of same size"));
+		ascend_errprint(pb, _("Value and mask are not of same size"),
+				NULL);
 		return 1;
 	}
 	
@@ -302,9 +320,9 @@ _ascend_parse_generic(struct ascend_parse_buf *pb)
 	if (strcmp(tok, "more") == 0)
 		pb->flt->v.generic.more = 1;
 	else {
-		asprintf(pb->errmsg,
-			 _("Expected `more', but found `%s'"),
-			 tok);
+		ascend_errprints(pb,
+				 _("Expected `more', but found `%s'"),
+				 tok);
 		return 1;
 	}
 	return 0;
@@ -326,9 +344,7 @@ _get_protocol(struct ascend_parse_buf *pb)
 		/* Try /etc/protocols */
 		struct protoent *p = getprotobyname(tok);
 		if (!p) {
-			asprintf(pb->errmsg,
-				 "%s: %s",
-				 _("Unknown protocol"), tok);
+			ascend_errprint(pb, _("Unknown protocol"), tok);
 			return 1;
 		}
 		pb->flt->v.ip.proto = p->p_proto;
@@ -354,8 +370,9 @@ _get_direction_type(struct ascend_parse_buf *pb, char *suffix, int lookahead)
 			return ASCEND_DIR_SRC;
 	}
 	if (!lookahead)
-		asprintf(pb->errmsg,
-			 _("Expected `{src|dst}port', but found `%s'"), tok);
+		ascend_errprints(pb,
+				 _("Expected `{src|dst}port', but found `%s'"),
+				 tok);
 	return ASCEND_DIR_NONE;
 }
 
@@ -382,9 +399,7 @@ _get_ip(struct ascend_parse_buf *pb)
 			return ASCEND_DIR_NONE;
 		mask = strtoul(tok, &p, 0);
 		if (*p || mask > 32) {
-			asprintf(pb->errmsg,
-				 "%s: %s",
-				 _("Invalid netmask length"), tok);
+			ascend_errprint(pb, _("Invalid netmask length"), tok);
 			return ASCEND_DIR_NONE;
 		}
 	} else
@@ -420,8 +435,8 @@ _ascend_parse_ip_clause(struct ascend_parse_buf *pb)
 	if (_get_direction_type(pb, "ip", 1) != ASCEND_DIR_NONE) {
 		int n1 = _get_ip(pb);
 		if (n1 == n) {
-			asprintf(pb->errmsg,
-				 _("Duplicate IP specification"));
+			ascend_errprint(pb,
+					_("Duplicate IP specification"), NULL);
 			return 1;
 		}
 	}
@@ -445,7 +460,7 @@ _get_op(struct ascend_parse_buf *pb)
 		if (s[1] == '=')
 			return ascend_cmp_ne;
 	}
-	asprintf(pb->errmsg, "%s: %s", _("Invalid operation"), s);
+	ascend_errprint(pb, _("Invalid operation"), s);
 	return ascend_cmp_none;
 }
 
@@ -477,15 +492,14 @@ _get_port(struct ascend_parse_buf *pb)
 
 		if (!pp) {
 			/* Shouldn't happen */
-			asprintf(pb->errmsg,
-				 _("Cannot map back the protocol number"));
+			ascend_errprint(pb,
+				      _("Cannot map back the protocol number"),
+				      NULL);
 			return ASCEND_DIR_NONE;
 		}
 		sp = getservbyname(tok, pp->p_name);
 		if (!sp) {
-			asprintf(pb->errmsg,
-				 "%s: %s",
-				 _("Unknown service"), tok);
+			ascend_errprint(pb, _("Unknown service"), tok);
 			return 1;
 		}
 		num = sp->s_port;
@@ -527,8 +541,9 @@ _ascend_parse_port_clause(struct ascend_parse_buf *pb)
 		if (n1 == ASCEND_DIR_NONE)
 			return -1;
 		if (n1 == n) {
-			asprintf(pb->errmsg,
-				 _("Duplicate port specification"));
+			ascend_errprint(pb,
+					_("Duplicate port specification"),
+					NULL);
 			return -1;
 		}
 	}
@@ -572,7 +587,7 @@ _ascend_parse_ip(struct ascend_parse_buf *pb)
 			if (strcmp(tok, "est") == 0)
 				pb->flt->v.ip.established = 1;
 			else {
-				asprintf(pb->errmsg,
+				ascend_errprints(pb,
 					 have_port ?
 					 _("Expected `est' but found `%s'") :
 					 _("Expected `{src|dst}port' or `est', but found `%s'"),
@@ -596,7 +611,7 @@ _ascend_parse_ip(struct ascend_parse_buf *pb)
 static int
 _ascend_parse_ipx(struct ascend_parse_buf *pb)
 {
-	asprintf(pb->errmsg, "IPX filters are not yet supported");
+	ascend_errprint(pb, "IPX filters are not yet supported", NULL);
 	return 1;
 }
  
@@ -633,7 +648,7 @@ _ascend_parse_filter(const char *input, ASCEND_FILTER *flt, char **errp)
 	*errp = NULL;
 	if (grad_argcv_get(input, "/", NULL, &pb.tokc, &pb.tokv)) {
 		grad_argcv_free(pb.tokc, pb.tokv);
-		asprintf(errp, _("Failed to tokenize"));
+		ascend_errprint(&pb, _("Failed to tokenize"), NULL);
 		return 1;
 	}
 
@@ -643,7 +658,7 @@ _ascend_parse_filter(const char *input, ASCEND_FILTER *flt, char **errp)
 	rc = _ascend_parse(&pb);
 	grad_argcv_free(pb.tokc, pb.tokv);
 	if (rc && !*errp) 
-		asprintf(errp, _("Malformed attribute value"));
+		ascend_errprint(&pb, _("Malformed attribute value"), NULL);
 	return rc;
 }
 

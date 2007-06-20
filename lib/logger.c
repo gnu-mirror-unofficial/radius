@@ -45,7 +45,6 @@ grad_set_logger(grad_logger_fp fp)
 	return tmp;
 }
 
-/*PRINTFLIKE2*/
 void
 grad_log(int lvl, const char *msg, ...)
 {
@@ -59,7 +58,6 @@ grad_log(int lvl, const char *msg, ...)
         va_end(ap);
 }
 
-/*PRINTFLIKE3*/
 void
 grad_log_req(int lvl, grad_request_t *req, const char *msg, ...)
 {

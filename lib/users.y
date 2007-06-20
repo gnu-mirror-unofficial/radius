@@ -1,6 +1,6 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -40,7 +40,8 @@
 #include <sys/wait.h>
 
 #include <common.h>
-
+#include "intprops.h"
+	
 #define YYMAXDEPTH 10
 
 static grad_locus_t start_loc;
@@ -311,8 +312,11 @@ grad_create_pair(grad_locus_t *loc, char *name,
 
 			if (x) {
 				char *s;
-				asprintf(&s, "%lu+%%{NAS-Port-Id}",
-					 pair->avp_lvalue);
+				char buf[INT_STRLEN_BOUND(long)];
+				grad_longtostr(pair->avp_lvalue,
+					       buf, sizeof buf);
+				grad_astrcat(&s, buf, "+", "%{NAS-Port-Id}",
+					     NULL);
 				pair->avp_strvalue = grad_estrdup(s);
 				pair->avp_strlength = strlen(pair->avp_strvalue);
 				pair->eval_type = grad_eval_interpret;

@@ -454,6 +454,7 @@ int grad_format_string_visual(char *buf, int runlen, char *str, int len);
 char *grad_op_to_str(enum grad_operator op);
 enum grad_operator grad_str_to_op(char *str);
 int grad_xlat_keyword(grad_keyword_t *kw, const char *str, int def);
+int grad_astrcat(char **pptr, ...);
 
 /* c-strcase.c */
 int grad_c_strcasecmp(const char *a, const char *b);
@@ -609,5 +610,12 @@ void grad_slist_grow_backslash_num(grad_slist_t slist, char *text, char **pend,
 				   int len, int base);
 void grad_slist_grow_backslash(grad_slist_t slist, char *text, char **endp);
 
+/* *tostr.c */
+size_t grad_inttostr(int, char *, size_t);
+size_t grad_longtostr(int, char *, size_t);
+size_t grad_offtostr(int, char *, size_t);
+size_t grad_sizetostr(int, char *, size_t);
+size_t grad_uinttostr(int, char *, size_t);
+size_t grad_ulongtostr(int, char *, size_t);
 
 #endif /* !_gnu_radius_radius_h */

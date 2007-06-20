@@ -26,6 +26,15 @@ libradextra_a_SOURCES = \
  readline.c 
 
 lib_LTLIBRARIES=libgnuradius.la
+
+NTOSTR_C = \
+ inttostr.c\
+ longtostr.c\
+ offtostr.c\
+ sizetostr.c\
+ uinttostr.c\
+ ulongtostr.c
+
 libgnuradius_la_SOURCES= \
  argcv.c\
  ascend.c\
@@ -64,7 +73,8 @@ libgnuradius_la_SOURCES= \
  sysdep.c\
  users_gram.c\
  users_lex.c\
- util.c
+ util.c\
+ $(NTOSTR_C)
 
 localedir = $(datadir)/locale
 
@@ -77,7 +87,7 @@ BUILT_SOURCES=users_gram.c users_lex.c
 MAINTAINERCLEANFILES=users_gram.c users_gram.h users_lex.c
 MOSTLYCLEANFILES=
 INCLUDES=@RADIUS_INCLUDE_PATH@ 
-EXTRA_DIST=users.y users.l gnuradius.vers
+EXTRA_DIST=users.y users.l gnuradius.vers numtostr.c intprops.h
 
 noinst_HEADERS=users_gram.h 
 

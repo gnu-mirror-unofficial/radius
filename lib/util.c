@@ -42,6 +42,7 @@
 #include <grp.h>
 
 #include <common.h>
+#include "intprops.h"
 
 grad_request_t *
 grad_request_alloc()
@@ -165,6 +166,31 @@ grad_mkfilename3(char *dir, char *subdir, char *name)
                                         */
         sprintf(p, "%s/%s/%s", dir, subdir, name);
         return p;
+}
+
+int
+grad_astrcat(char **pptr, ...)
+{
+	va_list ap;
+	size_t size = 0;
+	char *s, *p;
+	
+	va_start(ap, pptr);
+	while ((s = va_arg(ap, char*)))
+		size += strlen(s);
+	va_end(ap);
+	size++;
+	p = malloc(size);
+	if (!p)
+		return 1;
+	*p = 0;
+	va_start(ap, pptr);
+	while ((s = va_arg(ap, char*)))
+		strcat(p, s);
+	va_end(ap);
+	
+	*pptr = p;
+	return 0;
 }
 
 /* Convert second character of a backslash sequence to its ASCII
@@ -416,17 +442,22 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
 	}
 	
         if (pair->name)
-                asprintf(&buf1, "%s %s %s%s",
-                         pair->name,
-                         grad_op_to_str(pair->operator),
-			 type,
-                         buf2ptr ? buf2ptr : buf2);
-        else
-                asprintf(&buf1, "%d %s %s%s",
-                         pair->attribute,
-                         grad_op_to_str(pair->operator),
-			 type,
-                         buf2ptr ? buf2ptr : buf2);
+		grad_astrcat(&buf1,
+			     pair->name, " ",
+			     grad_op_to_str(pair->operator), " ",
+			     type,
+			     buf2ptr ? buf2ptr : buf2,
+			     NULL);
+        else {
+		char buf[INT_STRLEN_BOUND (int)];
+
+		grad_inttostr(pair->attribute, buf, sizeof buf);
+                grad_astrcat(&buf1,
+			     buf, " ",
+			     grad_op_to_str(pair->operator), " ",
+			     buf2ptr ? buf2ptr : buf2,
+			     NULL);
+	}
 
         if (buf2ptr)
                 free(buf2ptr);

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003,2004 Free Software Foundation
+   Copyright (C) 2003,2004,2007 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -190,8 +190,8 @@ get_history_file_name()
 				return NULL;
 			home = pw->pw_dir;
 		}
-		asprintf(&filename, "%s/.%s_history",
-			 home, rl_readline_name);
+		grad_astrcat(&filename, home, "/.", rl_readline_name,
+			     "_history", NULL);
 	}
 	return filename;
 }

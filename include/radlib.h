@@ -1,5 +1,7 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2007 Free Software Foundation
+   Copyright (C) 2004,2007 Free Software Foundation, Inc.
+
+   Written by Sergey Poznyakoff
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,19 +17,20 @@
    along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-#include <string.h>
-#include "argp.h"
+#include <radius/radius.h>
+#include <sysdep.h>
+#include <radius/mem.h>
+#include <radius/list.h>
+#include <radius/envar.h>
+#include <radius/radpaths.h>
+#include <radius/radutmp.h>
+#include <radius/symtab.h>
+#include <radius/argcv.h>
+#include <radius/debug.h>
+#include <pwd.h>
 
-char *
-__argp_base_name(const char *arg)
-{
-	const char *p = strrchr(arg, '/');
-	if (!p)
-		p = arg;
-	else
-		p++;
-	return (char*)p;
-}
+/* Internationalization support */
+#include <gettext.h>
+#define _(s) dgettext(PACKAGE, s)
+#define N_(s) gettext_noop(s)
+

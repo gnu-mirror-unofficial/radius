@@ -28,14 +28,14 @@
 #include <time.h>
 #include <errno.h>
 #include <string.h>
-#include <common.h>
+#include <radlib.h>
 #include <radargp.h>
 
 #define SP(p) ((p)?(p):"")
 
 
 
-static grad_logger_fp _grad_logger = grad_default_logger;
+static grad_logger_fp _grad_logger;
 
 grad_logger_fp
 grad_set_logger(grad_logger_fp fp)

@@ -24,7 +24,7 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#include <common.h>
+#include <radlib.h>
 
 #ifdef LEAK_DETECTOR
 # if LEAK_DETECTOR > 1

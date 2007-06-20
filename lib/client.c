@@ -35,7 +35,7 @@
 #include <errno.h>
 #include <ctype.h>
 
-#include <common.h>
+#include <radlib.h>
 
 void
 grad_client_random_authenticator(char *authenticator)

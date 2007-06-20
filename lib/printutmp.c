@@ -32,7 +32,7 @@
 #include <pwd.h>
 #include <stdio.h>
 
-#include <common.h>
+#include <radlib.h>
 
 #define TAB_SIZE 8 /* FIXME */
 

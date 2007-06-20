@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2005,
+   2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -35,7 +36,7 @@
 #include <ctype.h>
 #include <signal.h>
 
-#include <common.h>
+#include <radlib.h>
 
 int grad_resolve_hostnames = 1;
 

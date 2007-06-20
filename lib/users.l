@@ -44,7 +44,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 
-#include <common.h>
+#include <radlib.h>
 #include <users_gram.h>
 
 extern void grad_enable_rule_debug(int);

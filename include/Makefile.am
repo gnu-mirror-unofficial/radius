@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -30,9 +30,9 @@ EXTRA_DIST = \
  cfg.h\
  checkrad.h\
  common.h\
- gettext.h\
  radiusd.h\
  radlast.h\
+ radlib.h\
  radmibs.h\
  radsnmp.h\
  radsql.h\

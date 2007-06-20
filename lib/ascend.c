@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2005,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -28,7 +28,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <netdb.h>
-#include <common.h>
+#include <radlib.h>
 #include <radius/argcv.h>
 
 enum ascend_filter_type {
@@ -123,7 +123,7 @@ struct ascend_parse_buf {
 
 /* Error printing */
 static void
-ascend_errprint(struct ascend_parse_buf *pb, char *msg, char *arg)
+ascend_errprint(struct ascend_parse_buf *pb, const char *msg, const char *arg)
 {
 	if (arg)
 		grad_astrcat(pb->errmsg, msg, ": ", arg);
@@ -132,7 +132,7 @@ ascend_errprint(struct ascend_parse_buf *pb, char *msg, char *arg)
 }
 
 static void
-ascend_errprints(struct ascend_parse_buf *pb, char *fmt, char *arg)
+ascend_errprints(struct ascend_parse_buf *pb, const char *fmt, const char *arg)
 {
 	size_t size = strlen(fmt) + strlen(arg) + 1;
 	*pb->errmsg = malloc(size);
@@ -146,7 +146,6 @@ ascend_errprints(struct ascend_parse_buf *pb, char *fmt, char *arg)
 static char *
 _get_token(struct ascend_parse_buf *pb, int require)
 {
-
 	if (!_moreinput(pb)) {
 		if (require) {
 			ascend_errprint(pb, _("Unexpected end of string"),

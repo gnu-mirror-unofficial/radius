@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2005 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2005,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -62,6 +62,16 @@ struct argp_child grad_common_argp_child[] = {
 	{ NULL },
 };
 
+char *
+__argp_base_name(const char *arg)
+{
+	const char *p = strrchr(arg, '/');
+	if (!p)
+		p = arg;
+	else
+		p++;
+	return (char*)p;
+}
 
 static char license_text[] = N_(
     "   This program is free software; you can redistribute it and/or modify\n"

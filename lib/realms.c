@@ -21,7 +21,7 @@
 #endif
 
 #include <stdlib.h>
-#include <common.h>
+#include <radlib.h>
 
 static grad_list_t /* of grad_realm_t */ *realms; 
 

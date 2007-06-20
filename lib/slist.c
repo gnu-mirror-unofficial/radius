@@ -21,7 +21,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#include <common.h>
+#include <radlib.h>
 
 struct grad_slist_bucket {
 	struct grad_slist_bucket *next;

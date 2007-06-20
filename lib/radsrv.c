@@ -34,7 +34,7 @@
 #include <time.h>
 #include <ctype.h>
 
-#include <common.h>
+#include <radlib.h>
 
 /* Build and send a reply to the incoming request.
    Input: fd          -- Socket descriptor.

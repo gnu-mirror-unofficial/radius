@@ -29,7 +29,7 @@
 #include <pwd.h>
 #include <ctype.h>
 
-#include <common.h>
+#include <radlib.h>
 
 #ifndef DICT_INDEX_SIZE
 # define DICT_INDEX_SIZE 2048
@@ -838,8 +838,9 @@ parse_dict(char *name)
 	}
         if (pd.errcnt)
                 grad_log(L_NOTICE,
-		         ngettext("%s: %d error", "%s: %d errors",
-			  	  pd.errcnt), path, pd.errcnt);
+		         dngettext(PACKAGE,
+				   "%s: %d error", "%s: %d errors",
+				   pd.errcnt), path, pd.errcnt);
         grad_free(path);
         return rc;
 }

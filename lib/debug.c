@@ -30,7 +30,7 @@
 #include <time.h>
 #include <errno.h>
 #include <string.h>
-#include <common.h>
+#include <radlib.h>
 
 int grad_source_info_option = 1;
 

@@ -39,7 +39,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 
-#include <common.h>
+#include <radlib.h>
 #include "intprops.h"
 	
 #define YYMAXDEPTH 10

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -21,7 +21,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#include <common.h>
+#include <radlib.h>
 
 static grad_list_t /* of grad_nas_t */ *naslist;      /* raddb/naslist */
 

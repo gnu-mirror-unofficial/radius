@@ -28,6 +28,7 @@
 #include <time.h>
 #include <errno.h>
 #include <common.h>
+#include <argp.h>
 
 static char *priname[] = { /* priority names */
         "emerg",

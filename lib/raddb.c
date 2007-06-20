@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <ctype.h>
-#include <common.h>
+#include <radlib.h>
 
 static int
 get_argcv(const char *str, const char *delim, size_t *pargc, char ***pargv)

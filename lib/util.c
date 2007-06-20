@@ -41,7 +41,7 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include <common.h>
+#include <radlib.h>
 #include "intprops.h"
 
 grad_request_t *

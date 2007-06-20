@@ -1,6 +1,23 @@
 2007-06-20  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* bootstrap.conf: Avoid dirname
+	* configure.ac (RADIUS_INCLUDE_PATH): Add gnu
+	* include/gettext.h: Remove
+	* inclide/radlib.h: New file
+	* include/Makefile.am: Update
+	* lib/argp_basename.c: Remove
+	* lib/Makefile.am: Move intl.c to libradextra_a_SOURCES, remove
+	argp_basename.c
+	* lib/ascend.c, lib/avl.c, lib/client.c, lib/cryptpass.c,
+	lib/debug.c, lib/deflog.c, lib/dict.c, lib/envar.c, lib/intl.c,
+	lib/iputil.c, lib/leakdetect.c, lib/logger.c, lib/nas.c,
+	lib/printutmp.c, lib/radargp.c, lib/raddb.c, lib/radpaths.c,
+	lib/radpdu.c, lib/radsrv.c, lib/radutmp.c, lib/realms.c,
+	lib/slist.c, lib/sysdep.c, lib/users.l, lib/users.y, lib/util.c:
+	Include radlib.h instead of common.h
+	
 	* bootstrap.conf (XGETTEXT_OPTIONS): Describe logging functions
+
 	* include/radius/radius.h (grad_astrcat, grad_inttostr)
 	(grad_longtostr,grad_offtostr,grad_sizetostr,grad_uinttostr)
 	(grad_uinttostr): New functions

@@ -20,8 +20,8 @@
 
 noinst_LIBRARIES = libradextra.a
 libradextra_a_SOURCES = \
- argp_basename.c\
  deflog.c\
+ intl.c\
  radargp.c\
  readline.c 
 
@@ -50,7 +50,6 @@ libgnuradius_la_SOURCES= \
  gethost_r.c\
  getpw_r.c\
  insist.c\
- intl.c\
  iputil.c\
  leakdetect.c\
  list.c\

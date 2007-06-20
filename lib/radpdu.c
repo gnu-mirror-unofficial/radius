@@ -34,7 +34,7 @@
 #include <time.h>
 #include <ctype.h>
 
-#include <common.h>
+#include <radlib.h>
 
 /* Structure for building radius PDU. */
 struct radius_pdu {

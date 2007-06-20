@@ -1,11 +1,10 @@
 *.gmo
+*.po
 *.pot
 *.pot~
 *.po~
-*.po
-LINGUAS
-stamp-po
 *.sed
+LINGUAS
 Makefile
 Makefile.in
 Makefile.in.in
@@ -18,3 +17,4 @@ en@quot.header
 insert-header.sin
 quot.sed
 remove-potcdate.sin
+stamp-po

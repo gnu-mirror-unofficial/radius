@@ -34,7 +34,7 @@ AC_SUBST(INCLUDEPATH)
 AC_SUBST(RADIUS_PID)
 
 AC_SUBST(RADIUS_INCLUDE_PATH,
-         ['-I$(top_builddir) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)/include/radius -I$(top_srcdir)/include/radius -I$(top_srcdir)/lib -I$(top_builddir)/gnu'])
+         ['-I$(top_builddir) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)/include/radius -I$(top_srcdir)/include/radius -I$(top_srcdir)/lib -I$(top_srcdir)/gnu -I$(top_builddir)/gnu'])
 
 dnl Library versioning
 AC_SUBST(VI_CURRENT, 1)

@@ -33,14 +33,16 @@ typedef struct {
 	int port;
 } cfg_host_t;
 
-#define CFG_INTEGER 0
-#define CFG_BOOLEAN 1
-#define CFG_STRING  2
-#define CFG_NETWORK 3
-#define CFG_IPADDR  4
-#define CFG_PORT    5
-#define CFG_CHAR    6
-#define CFG_HOST    7
+#define CFG_INTEGER  0
+#define CFG_BOOLEAN  1
+#define CFG_STRING   2
+#define CFG_NETWORK  3
+#define CFG_IPADDR   4
+#define CFG_PORT     5
+#define CFG_CHAR     6
+#define CFG_HOST     7
+#define CFG_UNSIGNED 8
+#define CFG_SIZE_T   9
 
 typedef struct {
         int type;
@@ -85,6 +87,12 @@ int cfg_get_ipaddr(int argc, cfg_value_t *argv,
 		   void *block_data, void *handler_data);
 int cfg_get_integer(int argc, cfg_value_t *argv,
 		    void *block_data, void *handler_data);
+int cfg_get_unsigned(int argc, cfg_value_t *argv,
+		     void *block_data, void *handler_data);
+int cfg_get_size_t(int argc, cfg_value_t *argv,
+		   void *block_data, void *handler_data);
+int cfg_get_uint32_t(int argc, cfg_value_t *argv,
+		     void *block_data, void *handler_data);
 int cfg_get_number(int argc, cfg_value_t *argv,
 		   void *block_data, void *handler_data);
 int cfg_get_string(int argc, cfg_value_t *argv,

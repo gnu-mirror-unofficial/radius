@@ -696,6 +696,14 @@ _get_value(cfg_value_t *arg, int type, void *base)
 
         switch (type) {
         case CFG_INTEGER:
+                *(int*) base = value.v.number;
+                break;
+		
+        case CFG_UNSIGNED:
+                *(unsigned*) base = value.v.number;
+                break;
+		
+        case CFG_SIZE_T:
                 *(size_t*) base = value.v.number;
                 break;
 		
@@ -788,15 +796,49 @@ cfg_get_ipaddr(int argc, cfg_value_t *argv, void *block_data,
 }
 
 int
+cfg_get_uint32_t(int argc, cfg_value_t *argv, void *block_data,
+		 void *handler_data)
+{
+	_check_argc(argc, 1);
+	return _get_value(&argv[1], CFG_IPADDR, handler_data);
+}
+
+int
 cfg_get_integer(int argc, cfg_value_t *argv, void *block_data,
 		void *handler_data)
+{
+	int val;
+	int rc;
+	
+	_check_argc(argc, 1);
+	rc = _get_value(&argv[1], CFG_INTEGER, &val);
+	*(int*)handler_data = val;
+	return rc;
+}
+
+int
+cfg_get_unsigned(int argc, cfg_value_t *argv, void *block_data,
+		 void *handler_data)
+{
+	unsigned val;
+	int rc;
+	
+	_check_argc(argc, 1);
+	rc = _get_value(&argv[1], CFG_UNSIGNED, &val);
+	*(unsigned*)handler_data = val;
+	return rc;
+}
+
+int
+cfg_get_size_t(int argc, cfg_value_t *argv, void *block_data,
+	       void *handler_data)
 {
 	size_t val;
 	int rc;
 	
 	_check_argc(argc, 1);
 	rc = _get_value(&argv[1], CFG_INTEGER, &val);
-	*(int*)handler_data = val;
+	*(size_t*)handler_data = val;
 	return rc;
 }
 

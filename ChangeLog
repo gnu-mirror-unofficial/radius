@@ -1,3 +1,15 @@
+2007-06-22  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* configure.ac (LIBGNURADIUS): Split extra libraries off to
+	LIBRADEXTRA
+	* radiusd/Makefile.am, radlast/Makefile.am, radtest/Makefile.am,
+	radwho/Makefile.am, radzap/Makefile.am: Likewise
+	* include/cfg.h (CFG_UNSIGNED,CFG_SIZE_T): New macros
+	(cfg_get_unsigned,cfg_get_size_t,cfg_get_uint32_t): New functions
+	* radiusd/config.y (_get_value): Handle new data types
+	* radiusd/radiusd.c, radiusd/scheme.c: Fix configuration tables.
+	* sql/postgres.c: Fix typo
+
 2007-06-20  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap.conf: Avoid dirname

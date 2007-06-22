@@ -184,7 +184,7 @@ rad_postgres_getpwd(struct sql_connection *conn, char *query)
         
         stat = PQresultStatus(res);
 
-        GRAD_DEBUG1(1, "status: %s", PQresStatus(stat)));
+        GRAD_DEBUG1(1, "status: %s", PQresStatus(stat));
 
         if (stat == PGRES_TUPLES_OK) {
                 int ntuples = PQntuples(res);

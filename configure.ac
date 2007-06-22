@@ -932,8 +932,8 @@ AH_BOTTOM([
 #define LOCK_RELEASE(name)
 ])
 
-AC_SUBST(LIBGNURADIUS)
-LIBGNURADIUS='-L${top_builddir}/lib -lgnuradius -lradextra -L${top_builddir}/gnu -lgnu'
+AC_SUBST(LIBGNURADIUS,'-L${top_builddir}/lib -lgnuradius')
+AC_SUBST(LIBRADEXTRA,'-lradextra -L${top_builddir}/gnu -lgnu')
 
 RADIUS_INCLUDE_PATH="$RADIUS_INCLUDE_PATH $INCLUDEPATH"
 

@@ -44,7 +44,7 @@ radiusd_SOURCES = \
  tsh.c\
  version.c
 
-radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ @LIBGNURADIUS@ @READLINE_LIBS@ @LIBINTL@
+radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ @LIBGNURADIUS@ @LIBRADEXTRA@ @READLINE_LIBS@ @LIBINTL@
 BUILT_SOURCES   = config.c rewrite.c
 MAINTAINERCLEANFILES=config.c rewrite.c y.output
 INCLUDES = @RADIUS_INCLUDE_PATH@ @GUILE_INCLUDES@

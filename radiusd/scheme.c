@@ -663,7 +663,7 @@ struct cfg_stmt guile_stmt[] = {
 	{ "eval", CS_STMT, NULL, scheme_cfg_eval, NULL, NULL, NULL },
 	{ "debug", CS_STMT, NULL, scheme_cfg_debug, NULL, NULL, NULL },
 	{ "outfile", CS_STMT, NULL, scheme_cfg_outfile, NULL, NULL, NULL },
-	{ "gc-interval", CS_STMT, NULL, cfg_get_integer, &scheme_gc_interval,
+	{ "gc-interval", CS_STMT, NULL, cfg_get_unsigned, &scheme_gc_interval,
 	  NULL, NULL },
 	{ NULL }
 };

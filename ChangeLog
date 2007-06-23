@@ -1,3 +1,10 @@
+2007-06-23  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* configure.ac: Display configuration summary
+	* tests/atlocal.in: Bug fixes
+	* tests/testsuite.at (AT_SKIP_TEST): New macro
+	(AT_CHECK): Skip test if the necessary prerequisites are not met.
+
 2007-06-22  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* configure.ac (LIBGNURADIUS): Split extra libraries off to

@@ -1,6 +1,6 @@
 # @configure_input@                                     -*- shell-script -*-
 # Configurable variable values for tar test suite.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2007 Free Software Foundation, Inc
 
 SOURCEDIR=$abs_srcdir
 BUILDDIR=$abs_builddir
@@ -28,8 +28,8 @@ s^@PROXY_ACCT_PORT@^%d^;\
 s^@USER@^%u^;\
 s^@BUILDDIR@^$BUILDDIR^;\
 s^@SOURCEDIR@^$SOURCEDIR^;\
-s^@GUILE@^$GUILE^;\
-s^@SNMP@^$SNMP^;"`
+s^@GUILE@^$GUILE_CONFIG^;\
+s^@SNMP@^$SNMP_CONFIG^;"`
 
     for file in $*
     do
@@ -101,4 +101,19 @@ begin_server() {
 
 end_server() {
   stop_server $LOCAL_CONF $PROXY_CONF
+}
+
+catlog() {
+  dir=$1
+  shift
+  for file in $*
+  do
+    if test -r $dir/$file; then
+	echo "$dir/$file reports:" 
+	cat $dir/$file 
+    else
+	echo "$dir/$file not available"
+    fi
+  done
 }  
+

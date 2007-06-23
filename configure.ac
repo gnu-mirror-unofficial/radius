@@ -87,6 +87,11 @@ if test $USE_GUILE = yes; then
                         [USE_GUILE=no])
 fi
 
+AC_SUBST(GUILE_CONFIG, ["# "])
+if test "$USE_GUILE" = yes; then
+  GUILE_CONFIG=
+fi
+
 # We used to have 'case' here that determined the Guile snarfer version
 # to use. Now that we don't support 1.4 any more, it is gone as well.
 # Hopefully, next versions of Guile will install the snarfer, so I
@@ -869,8 +874,9 @@ AC_SUBST(PAMDIR)
 AC_ARG_ENABLE(livingston-menus,
 	AC_HELP_STRING([--enable-livingston-menus],
 	[enable Livingston-compatible menus]),
-	[case $enableval in
-		yes) 	AC_DEFINE(USE_LIVINGSTON_MENUS,1,
+	[USE_LIVINGSTON_MENUS=$enableval
+         case $enableval in
+		yes)    AC_DEFINE(USE_LIVINGSTON_MENUS,1,
                                   [Enable support for Livingstone menus]);;
 		*)	;;
 	esac])
@@ -881,7 +887,8 @@ AH_TEMPLATE(DENY_SHELL,
 AC_ARG_ENABLE(deny_shell,
 	AC_HELP_STRING([--enable-deny-shell=STRING],
 	[always reject users with given shell]),
-	[case $enableval in
+	[USE_DENY_SHELL=$enableval
+         case $enableval in
 		yes|no)		AC_MSG_ERROR(--enable-deny-shell requires an argument)
 				exit 1;;
 		"*")		AC_DEFINE_UNQUOTED(DENY_SHELL, $enableval);;
@@ -936,6 +943,86 @@ AC_SUBST(LIBGNURADIUS,'-L${top_builddir}/lib -lgnuradius')
 AC_SUBST(LIBRADEXTRA,'-lradextra -L${top_builddir}/gnu -lgnu')
 
 RADIUS_INCLUDE_PATH="$RADIUS_INCLUDE_PATH $INCLUDEPATH"
+
+### Display the status
+
+AC_CONFIG_COMMANDS([status],[
+cat <<EOF
+
+*******************************************************************
+GNU Radius configured with the following settings:
+
+General
+
+NLS .............................. $status_nls
+Debug ............................ $status_debug
+Build Server (radiusd) ........... $status_server
+Build client ..................... $status_client
+Guile ............................ $status_guile
+Readline ......................... $status_readline
+
+EOF
+
+if test "$status_server" = yes; then
+cat <<EOF
+Server
+
+Authentication port .............. $status_auth_port
+Accounting port .................. $status_acct_port
+Log directory .................... $status_logdir
+PID directory .................... $status_piddir
+PAM .............................. $status_pam
+DBM .............................. $status_dbm
+SNMP ............................. $status_snmp
+Livingston Menus ................. $status_menus
+Deny Shell ....................... $status_deny_shell
+Guile ............................ $status_server_guile
+SQL .............................. $status_sql_modules
+
+EOF
+fi
+
+cat <<EOF
+Modules
+
+PHP .............................. $status_mod_php
+Apache ........................... $status_mod_apache
+*******************************************************************
+EOF
+],
+[status_nls=$USE_NLS
+if test $RADIUS_DEBUG -eq 1; then
+  status_debug=yes
+else
+  status_debug=no
+fi
+status_server="$BUILD_SERVER"
+status_client="$BUILD_CLIENT"
+status_guile="${USE_GUILE:-no}"
+status_readline="$usereadline"
+status_lispdir="${lispdir:-none}"
+status_auth_port="$AUTH_PORT"
+status_acct_port="$ACCT_PORT"
+status_logdir="$RADLOG_DIR"
+status_piddir="$RADPID_DIR"
+status_pam="${USE_PAM:-no}"
+status_dbm="${USE_DBM:-no}"
+status_snmp="$USE_SNMP"
+status_menus="$USE_LIVINGSTON_MENUS"
+status_deny_shell="${USE_DENY_SHELL:-no}"
+status_server_guile="$USE_SERVER_GUILE"
+status_sql_modules="${SQL_MODULES:-no}"
+if test "$PHP_PREFIX" != ""; then
+  status_mod_php=yes
+else
+  status_mod_php=no
+fi
+if test "$BUILD_MOD_AUTH_RADIUS_LA" != ""; then
+  status_mod_apache=yes
+else
+  status_mod_apache=no
+fi
+])
 
 AC_CONFIG_FILES(Makefile 
           po/Makefile.in

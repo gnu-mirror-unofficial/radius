@@ -1,16 +1,16 @@
 ;;; radconf-mode.el --- major mode for editing GNU radius raddb/config file
 
-;; Authors: 2001,2003,2004 Sergey Poznyakoff
+;; Authors: 2001,2003,2004,2007 Sergey Poznyakoff
 ;; Version:  1.1
 ;; Keywords: radius
 ;; $Id$
 
 ;; This file is part of GNU Radius.
-;; Copyright (c) 2001,2003,2004 Free Software Foundation, Inc.
+;; Copyright (c) 2001,2003,2004,2007 Free Software Foundation, Inc.
 
 ;; GNU Radius is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
+;; the Free Software Foundation; either version 3, or (at your option)
 ;; any later version.
 
 ;; GNU Radius is distributed in the hope that it will be useful,

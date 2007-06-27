@@ -1,12 +1,12 @@
 divert(-1)
 dnl This file is part of GNU Radius.
-dnl Copyright (C) 2001,2003,2004 Free Software Foundation, Inc.
+dnl Copyright (C) 2001,2003,2004,2007 Free Software Foundation, Inc.
 dnl
 dnl Written by Sergey Poznyakoff
 dnl  
 dnl GNU Radius is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
-dnl the Free Software Foundation; either version 2 of the License, or
+dnl the Free Software Foundation; either version 3 of the License, or
 dnl (at your option) any later version.
 dnl  
 dnl GNU Radius is distributed in the hope that it will be useful,

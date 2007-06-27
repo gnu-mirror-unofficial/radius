@@ -1,11 +1,11 @@
 ;;;; This is a set of Emacs developer tools for GNU Radius.
-;;;; Copyright (C) 2004 Free Software Foundation
+;;;; Copyright (C) 2004, 2007 Free Software Foundation
 ;;;;
 ;;;; Written by Sergey Poznyakoff
 ;;;;
 ;;;; GNU Radius is free software; you can redistribute it and/or modify
 ;;;; it under the terms of the GNU General Public License as published by
-;;;; the Free Software Foundation; either version 2 of the License, or
+;;;; the Free Software Foundation; either version 3 of the License, or
 ;;;; (at your option) any later version.
 ;;;;
 ;;;; GNU Radius is distributed in the hope that it will be useful,

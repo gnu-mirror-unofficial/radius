@@ -143,7 +143,7 @@
       (beginning-of-line)
       (delete-region (point) start-of-line)
       (indent-to shift-amt))
-      (goto-char (+ (point) off))))
+    (goto-char (+ (point) off))))
 
 (defun radconf-indent-command (arg)
   "Indent current line"

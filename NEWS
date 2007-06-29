@@ -1,18 +1,24 @@
-GNU Radius NEWS -- history of user-visible changes. 2007-06-19
+GNU Radius NEWS -- history of user-visible changes. 2007-06-29
 Copyright (C) 2002,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
-Version 1.4.90 (CVS):
+Version 1.5 - Sergey Poznyakoff, 2007-06-29:
 
-* Wildcard matching in raddb/hints considerably improved
+* GPLv3
+
+This release is licensed under the GNU General Public License version 3. 
+
+* The libgnuradius library uses its own namespace. 
+
+* Wildcard matching in raddb/hints considerably improved.
 
 The new code supports everything wildmat used to support plus allows
 to select arbitrary parts of the matched string using \( and \)
 grouping.
 
-* Fix builds on non-glibc systems
+* Fix builds on non-glibc systems.
 
 * Fix handling of max-port-count statement.
 

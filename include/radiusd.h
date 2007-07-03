@@ -339,10 +339,6 @@ extern unsigned long stat_start_time;
 extern REQUEST_CLASS    request_class[];
 extern int max_threads;
 extern int num_threads;
-#ifdef USE_SERVER_GUILE
-extern unsigned scheme_gc_interval;
-extern u_int scheme_task_timeout;
-#endif
 #ifdef USE_SNMP
 extern int snmp_port;
 extern char *server_id;

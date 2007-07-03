@@ -1,3 +1,8 @@
+2007-07-03  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* include/radiusd.h (scheme_gc_interval)
+	(scheme_task_timeout): Remove externs
+
 2007-06-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Relicense under GPLv3 (snmplib under LGPLv3)

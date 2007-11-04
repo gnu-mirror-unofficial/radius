@@ -351,8 +351,8 @@ int grad_server_send_challenge(int fd, grad_request_t *radreq,
 int grad_dict_init();
 void grad_dict_free();
 grad_dict_attr_t *grad_attr_number_to_dict(int);
-grad_dict_attr_t *grad_attr_name_to_dict(char *);
-grad_dict_value_t *grad_value_name_to_value(char *, int);
+grad_dict_attr_t *grad_attr_name_to_dict(const char *);
+grad_dict_value_t *grad_value_name_to_value(const char *, int);
 grad_dict_value_t *grad_value_lookup(grad_uint32_t, char *);
 int grad_vendor_id_to_pec(int);
 int grad_vendor_pec_to_id(int);

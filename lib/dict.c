@@ -76,7 +76,7 @@ dict_symbol_ptr(DICT_SYMBOL *sym)
 }
 
 static grad_dict_attr_t *
-dict_attr_lookup(char *ident)
+dict_attr_lookup(const char *ident)
 {
 	DICT_SYMBOL *sym = grad_sym_lookup(dict_attr_tab, ident);
 	if (sym) 
@@ -909,7 +909,7 @@ grad_attr_number_to_dict(int attribute)
  */
 
 grad_dict_attr_t *
-grad_attr_name_to_dict(char *attrname)
+grad_attr_name_to_dict(const char *attrname)
 {
         return dict_attr_lookup(attrname);
 }
@@ -918,7 +918,7 @@ grad_attr_name_to_dict(char *attrname)
  * Return the full value structure based on the value name.
  */
 struct val_lookup {
-        char *name;
+        const char *name;
         char *attrname;
         int number;
 };
@@ -934,7 +934,7 @@ valname_cmp(const void *item, const void *data)
 }
 
 grad_dict_value_t *
-grad_value_name_to_value(char *valname, int attr)
+grad_value_name_to_value(const char *valname, int attr)
 {
         struct val_lookup data;
         data.name = valname;

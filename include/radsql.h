@@ -97,9 +97,10 @@ void disp_init();
 int disp_sql_interface_index(char *name);
 int disp_sql_reconnect(int interface, int conn_type, struct sql_connection *conn);
 void disp_sql_disconnect(struct sql_connection *conn);
-int disp_sql_query(struct sql_connection *conn, char *query, int *report_cnt);
-char *disp_sql_getpwd(struct sql_connection *conn, char *query);
-void *disp_sql_exec(struct sql_connection *conn, char *query);
+int disp_sql_query(struct sql_connection *conn, const char *query,
+		   int *report_cnt);
+char *disp_sql_getpwd(struct sql_connection *conn, const char *query);
+void *disp_sql_exec(struct sql_connection *conn, const char *query);
 char *disp_sql_column(struct sql_connection *conn, void *data, size_t ncol);
 int disp_sql_next_tuple(struct sql_connection *conn, void *data);
 void disp_sql_free(struct sql_connection *conn, void *data);
@@ -111,9 +112,10 @@ typedef struct {
         int port;
         int (*reconnect)(int type, struct sql_connection *);
         void (*disconnect)(struct sql_connection *conn, int drop);
-        int (*query)(struct sql_connection *, char *query, int *report_cnt);
-        char *(*getpwd)(struct sql_connection *, char *query);
-        void *(*exec_query)(struct sql_connection *conn, char *query);
+        int (*query)(struct sql_connection *, const char *query,
+		     int *report_cnt);
+        char *(*getpwd)(struct sql_connection *, const char *query);
+        void *(*exec_query)(struct sql_connection *conn, const char *query);
         char *(*column)(void *data, size_t ncol);
         int  (*next_tuple)(struct sql_connection *conn, void *data);
         void (*free)(struct sql_connection *conn, void *data);

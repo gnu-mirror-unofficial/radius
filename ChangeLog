@@ -1,3 +1,30 @@
+2007-11-04  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* include/radiusd.h (sql_exec_query, sql_run_query): Second arg is
+	const char *.
+	* include/radsql.h (disp_sql_query,disp_sql_getpwd,disp_sql_exec):
+	Query is const char *.
+	* include/radius/md4.h, lib/md4.c (grad_md4_calc): in is const char *.
+	* include/radius/md5.h, lib/md5.c (grad_md5_calc): input is const
+	char *. 
+	* include/radius/radius.h, lib/dict.c (grad_attr_name_to_dict)
+	(grad_value_name_to_value): First arg is const char *.
+	* include/radius/radutmp.h, lib/radutmp.c (grad_ut_setent)
+	(grad_utmp_putent,grad_radwtmp_putent): First arg is const char *.
+
+	* lib/ascend.c (_get_type): Fix typo (ipx instead of ip).
+
+	* m4/guile.m4: Require Guile v. 1.8.0 at least.
+	* radiusd/rewrite.y, radiusd/scheme.c, radiusd/sql.c,
+	radscm/radscm.c, radscm/rscm_avl.c, radscm/rscm_dict.c,
+	radscm/rscm_hash.c, radscm/rscm_lib.c, radscm/rscm_radlog.c,
+	radscm/rscm_rewrite.c, radscm/rscm_sql.c, radscm/rscm_syslog.c,
+	radscm/rscm_utmp.c, sql/disp.c, sql/mysql.c, sql/odbc.c,
+	sql/postgres.c: Switch to Guile 1.8
+
+	* radiusd/rpp.c (rpp_request_handler): Move call to
+	scheme_redirect_output to scheme.c:catch_body.
+	
 2007-07-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* include/radiusd.h (scheme_gc_interval)

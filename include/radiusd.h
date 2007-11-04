@@ -734,8 +734,8 @@ void radiusd_sql_cleanup(int type, void *req);
 char *radiusd_sql_pass(radiusd_request_t *req, char *data);
 
 # ifdef RADIUS_SERVER_GUILE
-SCM sql_exec_query(int type, char *query);
-SCM sql_run_query(int type, char *query);
+SCM sql_exec_query(int type, const char *query);
+SCM sql_run_query(int type, const char *query);
 # endif
 
 #else

@@ -113,7 +113,7 @@ mdfour64(grad_uint32_t *M)
 }
 
 static void
-copy64(grad_uint32_t *M, unsigned char *in)
+copy64(grad_uint32_t *M, unsigned char const *in)
 {
 	int i;
 
@@ -133,7 +133,7 @@ copy4(unsigned char *out,grad_uint32_t x)
 
 /* produce a md4 message digest from data of length n bytes */
 void
-grad_md4_calc(unsigned char *out, unsigned char *in, int n)
+grad_md4_calc(unsigned char *out, unsigned char const *in, int n)
 {
 	unsigned char buf[128];
 	grad_uint32_t M[16];

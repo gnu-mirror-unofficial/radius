@@ -26,7 +26,7 @@
 #include <radius/md5.h>
 
 void
-grad_md5_calc(unsigned char *output, unsigned char *input,
+grad_md5_calc(unsigned char *output, unsigned char const *input,
 	      unsigned int inlen)  
 {
         MD5_CTX context;

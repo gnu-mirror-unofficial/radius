@@ -91,7 +91,8 @@ rad_postgres_disconnect(struct sql_connection *conn,
 }
 
 static int
-rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
+rad_postgres_query(struct sql_connection *conn, const char *query,
+		   int *return_count)
 {
         PGresult       *res;
         ExecStatusType stat;
@@ -161,7 +162,7 @@ rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
 }
 
 static char *
-rad_postgres_getpwd(struct sql_connection *conn, char *query)
+rad_postgres_getpwd(struct sql_connection *conn, const char *query)
 {
         PGresult       *res;
         ExecStatusType stat;
@@ -237,7 +238,7 @@ rad_postgres_n_tuples(struct sql_connection *conn, void *data, size_t *np)
 }
 
 static void *
-rad_postgres_exec(struct sql_connection *conn, char *query)
+rad_postgres_exec(struct sql_connection *conn, const char *query)
 {
         PGresult       *res;
         ExecStatusType stat;

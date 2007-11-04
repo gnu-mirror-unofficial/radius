@@ -127,7 +127,7 @@ disp_sql_disconnect(struct sql_connection *conn)
 }
 
 int
-disp_sql_query(struct sql_connection *conn, char *query, int *report_cnt)
+disp_sql_query(struct sql_connection *conn, const char *query, int *report_cnt)
 {
 	int rc;
 
@@ -140,7 +140,7 @@ disp_sql_query(struct sql_connection *conn, char *query, int *report_cnt)
 }
 
 char *
-disp_sql_getpwd(struct sql_connection *conn, char *query)
+disp_sql_getpwd(struct sql_connection *conn, const char *query)
 {
 	if (!conn)
 		return NULL;
@@ -148,7 +148,7 @@ disp_sql_getpwd(struct sql_connection *conn, char *query)
 }
 
 void *
-disp_sql_exec(struct sql_connection *conn, char *query)
+disp_sql_exec(struct sql_connection *conn, const char *query)
 {
         return disp_sql_entry(conn->interface)->exec_query(conn, query);
 }

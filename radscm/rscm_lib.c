@@ -25,39 +25,13 @@
 #include <radius/radius.h>
 #include <radius/radscm.h>
 
-SCM 
-rad_scm_cell(SCM car, SCM cdr)
-{
-	SCM c;
-	
-	SCM_NEWCELL(c);
-	SCM_SETCAR(c, car);
-	SCM_SETCDR(c, cdr);
-	return c;
-}
-
-#ifndef HAVE_SCM_LONG2NUM
-SCM 
-scm_long2num(long val)
-{
-  if (SCM_FIXABLE ((long) val))
-    return SCM_MAKINUM (val);
-
-#ifdef SCM_BIGDIG
-  return scm_long2big (val);
-#else /* SCM_BIGDIG */
-  return scm_make_real ((double) val);
-#endif /* SCM_BIGDIG */
-}
-#endif
-
 SCM
 radscm_avl_to_list(grad_avp_t *pair)
 {
         SCM scm_first = SCM_EOL, scm_last;
         
         for (; pair; pair = pair->next) {
-                SCM new = rad_scm_cell(radscm_avp_to_cons(pair), SCM_EOL);
+                SCM new = scm_cons(radscm_avp_to_cons(pair), SCM_EOL);
                 if (scm_first == SCM_EOL) {
                         scm_last = scm_first = new;
                 } else {
@@ -65,8 +39,6 @@ radscm_avl_to_list(grad_avp_t *pair)
                         scm_last = new;
                 }
         }
-        if (scm_first != SCM_EOL)
-                SCM_SETCDR(scm_last, SCM_EOL);
         return scm_first;
 }
 
@@ -103,17 +75,17 @@ radscm_avp_to_cons(grad_avp_t *pair)
         if (dict = grad_attr_number_to_dict(pair->attribute)) 
                 scm_attr = scm_makfrom0str(dict->name);
         else
-                scm_attr = SCM_MAKINUM(pair->attribute);
+                scm_attr = scm_from_int(pair->attribute);
         switch (pair->type) {
         case GRAD_TYPE_STRING:
         case GRAD_TYPE_DATE:
                 scm_value = scm_makfrom0str(pair->avp_strvalue);
                 break;
         case GRAD_TYPE_INTEGER:
-                scm_value = scm_long2num(pair->avp_lvalue);
+                scm_value = scm_from_long(pair->avp_lvalue);
                 break;
         case GRAD_TYPE_IPADDR:
-                scm_value = scm_ulong2num(pair->avp_lvalue);
+                scm_value = scm_from_ulong(pair->avp_lvalue);
                 break;
         default:
                 abort();
@@ -140,14 +112,15 @@ radscm_cons_to_avp(SCM scm)
         car = SCM_CAR(scm);
         cdr = SCM_CDR(scm);
         memset(&pair, 0, sizeof(pair));
-        if (SCM_IMP(car) && SCM_INUMP(car)) {
-                pair.attribute = SCM_INUM(car);
+        if (scm_is_integer(car)) {
+                pair.attribute = scm_to_int(car);
                 dict = grad_attr_number_to_dict(pair.attribute);
                 if (!dict) 
                         return NULL;
                 pair.name = dict->name;
-        } else if (SCM_NIMP(car) && SCM_STRINGP(car)) {
-                pair.name = SCM_STRING_CHARS(car);
+        } else if (scm_is_string(car)) {
+                /* FIXME: this may fail in future Guile versions */
+                pair.name = scm_i_string_chars(car);
                 dict = grad_attr_name_to_dict(pair.name);
                 if (!dict) 
                         return NULL;
@@ -162,18 +135,19 @@ radscm_cons_to_avp(SCM scm)
 
         switch (pair.type) {
         case GRAD_TYPE_INTEGER:
-                if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
-                        pair.avp_lvalue = SCM_INUM(cdr);
+                if (scm_is_integer(cdr)) {
+                        pair.avp_lvalue = scm_to_long(cdr);
                 } else if (SCM_BIGP(cdr)) {
                         pair.avp_lvalue = (grad_uint32_t) scm_i_big2dbl(cdr);
-                } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
-                        char *name = SCM_STRING_CHARS(cdr);
+                } else if (scm_is_string(cdr)) {
+                        const char *name = scm_i_string_chars(cdr);
+			char *endp;
                         val = grad_value_name_to_value(name, pair.attribute);
                         if (val) {
                                 pair.avp_lvalue = val->value;
                         } else {
-                                pair.avp_lvalue = strtol(name, &name, 0);
-                                if (*name)
+                                pair.avp_lvalue = strtol(name, &endp, 0);
+                                if (*endp)
                                         return NULL;
                         }
                 } else
@@ -181,21 +155,21 @@ radscm_cons_to_avp(SCM scm)
                 break;
                 
         case GRAD_TYPE_IPADDR:
-                if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
-                        pair.avp_lvalue = SCM_INUM(cdr);
+                if (scm_is_integer(cdr)) {
+                        pair.avp_lvalue = scm_to_long(cdr);
                 } else if (SCM_BIGP(cdr)) {
                         pair.avp_lvalue = (grad_uint32_t) scm_i_big2dbl(cdr);
-                } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
+                } else if (scm_is_string(cdr)) {
                         pair.avp_lvalue =
-				grad_ip_gethostaddr(SCM_STRING_CHARS(cdr));
+				grad_ip_gethostaddr(scm_i_string_chars(cdr));
                 } else
                         return NULL;
                 break;
         case GRAD_TYPE_STRING:
         case GRAD_TYPE_DATE:
-                if (!(SCM_NIMP(cdr) && SCM_STRINGP(cdr)))
+                if (!scm_is_string(cdr))
                         return NULL;
-                pair.avp_strvalue = grad_estrdup(SCM_STRING_CHARS(cdr));
+                pair.avp_strvalue = grad_estrdup(scm_i_string_chars(cdr));
                 pair.avp_strlength = strlen(pair.avp_strvalue);
                 break;
         default:
@@ -217,8 +191,8 @@ rscm_add_load_path(char *path)
         path_scm = RAD_SCM_SYMBOL_VALUE("%load-path");
         for (scm = path_scm; scm != SCM_EOL; scm = SCM_CDR(scm)) {
                 SCM val = SCM_CAR(scm);
-                if (SCM_NIMP(val) && SCM_STRINGP(val))
-                        if (strcmp(SCM_STRING_CHARS(val), path) == 0)
+                if (scm_is_string(val))
+                        if (strcmp(scm_i_string_chars(val), path) == 0)
                                 return;
         }
 

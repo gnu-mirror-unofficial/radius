@@ -33,6 +33,7 @@
 #ifdef USE_SERVER_GUILE
 # include <libguile.h>
 #endif
+#include <radscm.h>
 
 #if defined(USE_SQL)
 
@@ -1257,7 +1258,7 @@ sql_init()
 #ifdef USE_SERVER_GUILE
 
 SCM
-sql_exec_query(int type, char *query)
+sql_exec_query(int type, const char *query)
 {
 	int i, j;
         struct sql_connection *conn;
@@ -1277,36 +1278,27 @@ sql_exec_query(int type, char *query)
 		SCM head = SCM_EOL, tail;
 		
 		for (j = 0; tuple = disp_sql_column(conn, data, j); j++) {
-			SCM new_elt;
-			SCM_NEWCELL(new_elt);
-			SCM_SETCAR(new_elt, scm_makfrom0str(tuple));
+			SCM new_elt = scm_cons(scm_makfrom0str(tuple), SCM_EOL);
 			if (head == SCM_EOL)
 				head = new_elt;
 			else
 				SCM_SETCDR(tail, new_elt);
 			tail = new_elt;
 		}
-		if (head != SCM_EOL)
-			SCM_SETCDR(tail, SCM_EOL);
-		SCM_NEWCELL(new_row);
-		SCM_SETCAR(new_row, head);
-
+		new_row = scm_cons(head, SCM_EOL);
 		if (row_head == SCM_EOL)
 			row_head = new_row;
 		else
 			SCM_SETCDR(row_tail, new_row);
 		row_tail = new_row;
 	}
-	if (row_head != SCM_EOL)
-		SCM_SETCDR(row_tail, SCM_EOL);
-
 	disp_sql_free(conn, data);
 	
 	return row_head;
 }
 
 SCM
-sql_run_query(int type, char *query)
+sql_run_query(int type, const char *query)
 {
 	int rc;
         struct sql_connection *conn;
@@ -1319,7 +1311,7 @@ sql_run_query(int type, char *query)
 	rc = disp_sql_query(conn, query, &count);
 	if (rc)
                 return SCM_BOOL_F;
-	return scm_long2num(count);
+	return scm_from_long(count);
 }
 #endif
 

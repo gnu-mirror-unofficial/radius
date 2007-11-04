@@ -41,15 +41,24 @@ die(char *msg)
         grad_log(L_ERR, "%s", msg);
 }
 
+#if SCM_MAJOR_VERSION == 1 && SCM_MINOR_VERSION == 6
+SCM
+scm_i_make_string(size_t len, char **p)
+{
+  SCM ret = scm_allocate_string(len);
+  *p = SCM_STRING_CHARS(ret);
+  return ret;
+}
+#endif
 
 SCM_DEFINE(rad_directory, "rad-directory", 1, 0, 0,
            (SCM DIR),
            "Sets radius database directory to dir")
 #define FUNC_NAME s_rad_directory
 {
-        SCM_ASSERT(SCM_NIMP(DIR) && SCM_STRINGP(DIR),
-                   DIR, SCM_ARG1, FUNC_NAME);
-        grad_config_dir = SCM_STRING_CHARS(DIR);
+        SCM_ASSERT(scm_is_string(DIR), DIR, SCM_ARG1, FUNC_NAME);
+        /* FIXME: perhaps should allocate memory here */
+        grad_config_dir = scm_i_string_chars (DIR);
         if (grad_dict_init())
                 return SCM_BOOL_F;
         return SCM_BOOL_T;
@@ -88,12 +97,10 @@ SCM_DEFINE(rad_send_internal, "rad-send-internal", 3, 0, 0,
         SCM scm_auth, scm_plist;
         grad_request_t *auth;
         
-        SCM_ASSERT((SCM_IMP(PORT) && SCM_INUMP(PORT)),
-                   PORT, SCM_ARG1, FUNC_NAME);
-        port = SCM_INUM(PORT);
-        SCM_ASSERT((SCM_IMP(CODE) && SCM_INUMP(CODE)),
-                   CODE, SCM_ARG2, FUNC_NAME);
-        code = SCM_INUM(CODE);
+        SCM_ASSERT(scm_is_integer(PORT), PORT, SCM_ARG1, FUNC_NAME);
+        port = scm_to_int(PORT);
+        SCM_ASSERT(scm_is_integer(CODE), CODE, SCM_ARG2, FUNC_NAME);
+        code = scm_to_int(CODE);
         SCM_ASSERT(((SCM_IMP(PAIRS) && SCM_EOL == PAIRS) ||
                     (SCM_NIMP(PAIRS) && SCM_CONSP(PAIRS))),
                    PAIRS, SCM_ARG3, FUNC_NAME);
@@ -109,7 +116,7 @@ SCM_DEFINE(rad_send_internal, "rad-send-internal", 3, 0, 0,
         /*
          * Construct scheme return values
          */
-        scm_auth = SCM_MAKINUM(auth->code);
+        scm_auth = scm_from_int(auth->code);
         scm_plist = radscm_avl_to_list(auth->avlist);
         
         return scm_cons(scm_auth, scm_plist);
@@ -161,33 +168,30 @@ scheme_to_server(SRVLIST, func)
                    SRVLIST, SCM_ARG1, func);
         
         scm = SCM_CAR(SRVLIST);
-        SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
-                   scm, SCM_ARG1, func);
-        serv.name = SCM_STRING_CHARS(scm);
+        SCM_ASSERT(scm_is_string(scm), scm, SCM_ARG1, func);
+        /* FIXME: alloc memory here */
+        serv.name = scm_i_string_chars(scm); 
 
         scm = SCM_CADR(SRVLIST);
-        SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
-                   scm, SCM_ARG1, func);
-        serv.addr = grad_ip_gethostaddr(SCM_STRING_CHARS(scm));
+        SCM_ASSERT(scm_is_string(scm), scm, SCM_ARG1, func);
+        serv.addr = grad_ip_gethostaddr(scm_i_string_chars(scm));
         if (serv.addr == 0) 
                 scm_misc_error(func,
                                "Bad hostname or ip address ~S\n",
                                scm);
 
         scm = SCM_CADDR(SRVLIST);
-        SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
-                   scm, SCM_ARG1, func);
-        serv.secret = SCM_STRING_CHARS(scm);
+        SCM_ASSERT(scm_is_string(scm), scm, SCM_ARG1, func);
+        /* FIXME: alloc memory here */
+        serv.secret = scm_i_string_chars(scm);
 
         scm = SCM_CADDDR(SRVLIST);
-        SCM_ASSERT(SCM_IMP(scm) && SCM_INUMP(scm),
-                   scm, SCM_ARG1, func);
-        serv.port[GRAD_PORT_AUTH] = SCM_INUM(scm);
+        SCM_ASSERT(scm_is_integer(scm), scm, SCM_ARG1, func);
+        serv.port[GRAD_PORT_AUTH] = scm_to_int(scm);
         
         scm = SCM_CAR(SCM_CDDDDR(SRVLIST));
-        SCM_ASSERT(SCM_IMP(scm) && SCM_INUMP(scm),
-                   scm, SCM_ARG1, func);
-        serv.port[GRAD_PORT_ACCT] = SCM_INUM(scm);
+        SCM_ASSERT(scm_is_integer(scm), scm, SCM_ARG1, func);
+        serv.port[GRAD_PORT_ACCT] = scm_to_int(scm);
 
         return grad_client_alloc_server(&serv);
 }
@@ -230,8 +234,8 @@ SCM_DEFINE(rad_client_source_ip, "rad-client-source-ip", 1, 0, 0,
 {
         grad_uint32_t ip;
         
-        SCM_ASSERT((SCM_NIMP(IP) && SCM_STRINGP(IP)), IP, SCM_ARG1, FUNC_NAME);
-        ip = grad_ip_gethostaddr(SCM_STRING_CHARS(IP));
+        SCM_ASSERT(scm_is_string(IP), IP, SCM_ARG1, FUNC_NAME);
+        ip = grad_ip_gethostaddr(scm_i_string_chars(IP));
         if (ip)
                 srv_queue->source_ip = ip;
         else {
@@ -249,8 +253,8 @@ SCM_DEFINE(rad_client_timeout, "rad-client-timeout", 1, 0, 0,
 "Sets the timeout for waiting for the server reply.\n")
 #define FUNC_NAME s_rad_client_timeout
 {
-        SCM_ASSERT(SCM_IMP(TO) && SCM_INUMP(TO), TO, SCM_ARG1, FUNC_NAME);
-        srv_queue->timeout = SCM_INUM(TO);
+        SCM_ASSERT(scm_is_integer(TO), TO, SCM_ARG1, FUNC_NAME);
+        srv_queue->timeout = scm_to_ulong(TO);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -260,9 +264,8 @@ SCM_DEFINE(rad_client_retry, "rad-client-retry", 1, 0, 0,
 "Sets the number of retries for sending requests to a radius server.")
 #define FUNC_NAME s_rad_client_retry
 {
-        SCM_ASSERT(SCM_IMP(RETRY) && SCM_INUMP(RETRY),
-                   RETRY, SCM_ARG1, FUNC_NAME);
-        srv_queue->retries = SCM_INUM(RETRY);
+        SCM_ASSERT(scm_is_integer(RETRY), RETRY, SCM_ARG1, FUNC_NAME);
+        srv_queue->retries = scm_to_uint(RETRY);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -277,9 +280,8 @@ SCM_DEFINE(rad_read_no_echo, "rad-read-no-echo", 1, 0, 0,
 {
         char *s;
         
-        SCM_ASSERT((SCM_NIMP(PROMPT) && SCM_STRINGP(PROMPT)),
-                   PROMPT, SCM_ARG1, FUNC_NAME);
-        s = getpass(SCM_STRING_CHARS(PROMPT));
+        SCM_ASSERT(scm_is_string(PROMPT), PROMPT, SCM_ARG1, FUNC_NAME);
+        s = getpass(scm_i_string_chars(PROMPT));
         return scm_makfrom0str(s);
 }
 #undef FUNC_NAME

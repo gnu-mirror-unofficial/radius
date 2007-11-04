@@ -54,11 +54,11 @@ parse_facility(SCM list)
                 SCM car = SCM_CAR(list);
                 int val = 0;
                 
-                if (SCM_IMP(car) && SCM_INUMP(car)) 
-                        val = SCM_INUM(car);
-                else if (SCM_NIMP(car) && SCM_STRINGP(car))
+                if (scm_is_integer(car)) 
+                        val = scm_to_int(car);
+                else if (scm_is_string(car))
                         val = grad_xlat_keyword(radlog_kw,
-						SCM_STRING_CHARS(car), 0);
+						scm_i_string_chars(car), 0);
                 else if (SCM_BIGP(car)) 
 		  val = (grad_uint32_t) scm_i_big2dbl(car);
                 else
@@ -75,8 +75,8 @@ SCM_DEFINE(rad_log_open, "rad-log-open", 1, 0, 0,
 {
         int prio;
 
-        if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
-                prio = SCM_INUM(PRIO);
+        if (scm_is_integer(PRIO)) {
+                prio = scm_to_int(PRIO);
         } else if (SCM_BIGP(PRIO)) {
                 prio = (grad_uint32_t) scm_i_big2dbl(PRIO);
         } else {
@@ -99,8 +99,8 @@ SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
         int prio;
         if (PRIO == SCM_BOOL_F) {
                 prio = L_INFO;
-        } else if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
-                prio = SCM_INUM(PRIO);
+        } else if (scm_is_integer(PRIO)) {
+                prio = scm_to_int(PRIO);
         } else if (SCM_BIGP(PRIO)) {
                 prio = (grad_uint32_t) scm_i_big2dbl(PRIO);
         } else {
@@ -109,9 +109,8 @@ SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
                 prio = parse_facility(PRIO);
         }
 
-        SCM_ASSERT(SCM_NIMP(TEXT) && SCM_STRINGP(TEXT),
-                   TEXT, SCM_ARG1, FUNC_NAME);
-        grad_log(prio, "%s", SCM_STRING_CHARS(TEXT));
+        SCM_ASSERT(scm_is_string(TEXT), TEXT, SCM_ARG1, FUNC_NAME);
+        grad_log(prio, "%s", scm_i_string_chars(TEXT));
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -132,6 +131,6 @@ rscm_radlog_init()
         int i;
         for (i = 0; radlog_kw[i].name; i++)
                 scm_c_define(radlog_kw[i].name,
-                              SCM_MAKINUM(radlog_kw[i].tok));
+                             scm_from_int(radlog_kw[i].tok));
 #include <rscm_radlog.x>
 }

@@ -136,7 +136,8 @@ rad_odbc_disconnect(struct sql_connection *conn, int drop ARG_UNUSED)
 }
 
 static int
-rad_odbc_query(struct sql_connection *conn, char *query, int *return_count)
+rad_odbc_query(struct sql_connection *conn, const char *query,
+	       int *return_count)
 {
         ODBCconn        *odata;
         long            result;
@@ -176,7 +177,7 @@ rad_odbc_query(struct sql_connection *conn, char *query, int *return_count)
 }
 
 static char *
-rad_odbc_getpwd(struct sql_connection *conn, char *query)
+rad_odbc_getpwd(struct sql_connection *conn, const char *query)
 {
         ODBCconn        *odata;
         long            result;
@@ -274,7 +275,7 @@ rad_odbc_n_tuples(struct sql_connection *conn, void *data, size_t *np)
 }
 
 static void *
-rad_odbc_exec(struct sql_connection *conn, char *query)
+rad_odbc_exec(struct sql_connection *conn, const char *query)
 {
 
         ODBCconn        *odata;

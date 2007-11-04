@@ -36,10 +36,9 @@ SCM_DEFINE(rscm_md5_calc, "md5-calc", 1, 0, 0,
 {
 	char digest[GRAD_AUTHENTICATOR_LENGTH];
 	
-	SCM_ASSERT (SCM_NIMP(INPUT) && SCM_STRINGP(INPUT),
-		    INPUT, SCM_ARG1, FUNC_NAME);
-	grad_md5_calc(digest, SCM_STRING_CHARS(INPUT),
-		      SCM_STRING_LENGTH(INPUT));
+	SCM_ASSERT (scm_is_string(INPUT), INPUT, SCM_ARG1, FUNC_NAME);
+	grad_md5_calc(digest, scm_i_string_chars(INPUT),
+		      scm_c_string_length(INPUT));
 	return scm_mem2string(digest, sizeof digest);
 }
 #undef FUNC_NAME
@@ -51,10 +50,9 @@ SCM_DEFINE(rscm_md4_calc, "md4-calc", 1, 0, 0,
 {
 	char digest[16];
 	
-	SCM_ASSERT(SCM_NIMP(INPUT) && SCM_STRINGP(INPUT),
-		   INPUT, SCM_ARG1, FUNC_NAME);
-	grad_md4_calc(digest, SCM_STRING_CHARS(INPUT),
-		      SCM_STRING_LENGTH(INPUT));
+	SCM_ASSERT(scm_is_string(INPUT), INPUT, SCM_ARG1, FUNC_NAME);
+	grad_md4_calc(digest, scm_i_string_chars(INPUT),
+		      scm_c_string_length(INPUT));
 	return scm_mem2string(digest, sizeof digest);
 }
 #undef FUNC_NAME
@@ -75,10 +73,9 @@ SCM_DEFINE(rscm_sha1_calc_list, "sha1-calc-list", 1, 0, 0,
 	for(; SCM_CONSP(HLIST); HLIST = SCM_CDR(HLIST)) {
 		SCM car = SCM_CAR(HLIST);
 		
-		SCM_ASSERT(SCM_NIMP(car) && SCM_STRINGP(car),
-			   car, SCM_ARG1, FUNC_NAME);
-		SHA1Update(&ctx, SCM_STRING_CHARS(car),
-			   SCM_STRING_LENGTH(car));
+		SCM_ASSERT(scm_is_string(car), car, SCM_ARG1, FUNC_NAME);
+		SHA1Update(&ctx, scm_i_string_chars(car),
+			   scm_c_string_length(car));
 	}
 	SHA1Final(digest, &ctx);
 	return scm_mem2string(digest, sizeof digest);
@@ -91,9 +88,8 @@ SCM_DEFINE(rscm_lm_password_hash, "lm-password-hash", 1, 0, 0,
 #define FUNC_NAME s_rscm_lm_password_hash
 {
 	unsigned char digest[72];
-	SCM_ASSERT(SCM_NIMP(INPUT) && SCM_STRINGP(INPUT),
-		   INPUT, SCM_ARG1, FUNC_NAME);
-	grad_lmpwdhash(SCM_STRING_CHARS(INPUT), digest);
+	SCM_ASSERT(scm_is_string(INPUT), INPUT, SCM_ARG1, FUNC_NAME);
+	grad_lmpwdhash(scm_i_string_chars(INPUT), digest);
 	return scm_mem2string(digest, sizeof digest);
 }
 #undef FUNC_NAME
@@ -104,12 +100,10 @@ SCM_DEFINE(rscm_mschap_response, "mschap-response", 2, 0, 0,
 #define FUNC_NAME s_rscm_mschap_response
 {
 	unsigned char digest[24];
-	SCM_ASSERT(SCM_NIMP(PASSWORD) && SCM_STRINGP(PASSWORD),
-		   PASSWORD, SCM_ARG1, FUNC_NAME);
-	SCM_ASSERT(SCM_NIMP(CHALLENGE) && SCM_STRINGP(CHALLENGE),
-		   CHALLENGE, SCM_ARG2, FUNC_NAME);
-	grad_mschap(SCM_STRING_CHARS(PASSWORD),
-		    SCM_STRING_CHARS(CHALLENGE),
+	SCM_ASSERT(scm_is_string(PASSWORD), PASSWORD, SCM_ARG1, FUNC_NAME);
+	SCM_ASSERT(scm_is_string(CHALLENGE), CHALLENGE, SCM_ARG2, FUNC_NAME);
+	grad_mschap(scm_i_string_chars(PASSWORD),
+		    scm_i_string_chars(CHALLENGE),
 		    digest);
 	return scm_mem2string(digest, sizeof digest);
 }
@@ -123,20 +117,19 @@ SCM_DEFINE(rscm_string_hex_to_bin, "string-hex->bin", 1, 0, 0,
 #define FUNC_NAME s_rscm_string_hex_to_bin
 {
 	int i, len;
-	unsigned char *p, *q;
+	const unsigned char *p; 
+	char *q;
 	SCM ret;
 
-	SCM_ASSERT(SCM_NIMP(STR) && SCM_STRINGP(STR),
-		   STR, SCM_ARG1, FUNC_NAME);
-	len = SCM_STRING_LENGTH(STR);
+	SCM_ASSERT(scm_is_string(STR), STR, SCM_ARG1, FUNC_NAME);
+	len = scm_c_string_length(STR);
 	if (len % 2)
 		scm_misc_error(FUNC_NAME,
 			       "Input string has odd length",
 			       SCM_EOL);
 	len /= 2;
-	ret = scm_allocate_string(len);
-	p = SCM_STRING_CHARS(STR);
-	q = SCM_STRING_CHARS(ret);
+	ret = scm_i_make_string(len, &q);
+	p = scm_i_string_chars(STR);
 	for (i = 0; i < len; i++) {
 		char *c1, *c2;
 		if (!(c1 = memchr(xlet, toupper(p[i << 1]), sizeof xlet))
@@ -157,15 +150,14 @@ SCM_DEFINE(rscm_string_bin_to_hex, "string-bin->hex", 1, 0, 0,
 #define FUNC_NAME s_rscm_string_bin_to_hex
 {
 	int i, len;
-	unsigned char *p, *q;
+	const unsigned char *p;
+	char *q;
 	SCM ret;
 
-	SCM_ASSERT(SCM_NIMP(STR) && SCM_STRINGP(STR),
-		   STR, SCM_ARG1, FUNC_NAME);
-	len = SCM_STRING_LENGTH(STR);
-	ret = scm_allocate_string(2*len);
-	p = SCM_STRING_CHARS(STR);
-	q = SCM_STRING_CHARS(ret);
+	SCM_ASSERT(scm_is_string(STR), STR, SCM_ARG1, FUNC_NAME);
+	len = scm_c_string_length(STR);
+	ret = scm_i_make_string(2*len, &q);
+	p = scm_i_string_chars(STR);
 	for (i = 0; i < len; i++) {
 		q[i << 1] = xlet[p[i] >> 4];
 		q[(i << 1) + 1] = xlet[p[i] & 0x0f];

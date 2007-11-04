@@ -36,10 +36,9 @@ SCM_DEFINE(radius_sql_query, "radius-sql-query", 2, 0, 0,
 "FIXME")
 #define FUNC_NAME s_radius_sql_query
 {
-        SCM_ASSERT(SCM_IMP(TYPE) && SCM_INUMP(TYPE),
-                   TYPE, SCM_ARG1, FUNC_NAME);
+        SCM_ASSERT(scm_is_integer(TYPE), TYPE, SCM_ARG1, FUNC_NAME);
 	
-	return sql_exec_query(SCM_INUM(TYPE), SCM_STRING_CHARS(STRING));
+	return sql_exec_query(scm_to_int(TYPE), scm_i_string_chars(STRING));
 }
 #undef FUNC_NAME
 
@@ -48,10 +47,9 @@ SCM_DEFINE(radius_sql_run_query, "radius-sql-run-query", 2, 0, 0,
 "FIXME")
 #define FUNC_NAME s_radius_sql_run_query
 {
-        SCM_ASSERT(SCM_IMP(TYPE) && SCM_INUMP(TYPE),
-                   TYPE, SCM_ARG1, FUNC_NAME);
+        SCM_ASSERT(scm_is_integer(TYPE), TYPE, SCM_ARG1, FUNC_NAME);
 	
-	return sql_run_query(SCM_INUM(TYPE), SCM_STRING_CHARS(STRING));
+	return sql_run_query(scm_to_int(TYPE), scm_i_string_chars(STRING));
 }
 #undef FUNC_NAME
 
@@ -66,7 +64,7 @@ rscm_sql_init()
 {
         int i;
         for (i = 0; kw[i].name; i++)
-                scm_c_define(kw[i].name, SCM_MAKINUM(kw[i].tok));
+                scm_c_define(kw[i].name, scm_from_int(kw[i].tok));
 #include <rscm_sql.x>
 }
 

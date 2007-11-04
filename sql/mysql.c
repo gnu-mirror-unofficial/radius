@@ -49,7 +49,7 @@ static void rad_mysql_disconnect(struct sql_connection *conn, int drop);
  *************************************************************************/
 
 static int 
-do_mysql_query(struct sql_connection *conn, char *query)
+do_mysql_query(struct sql_connection *conn, const char *query)
 {
         int    ret;
         int    i;
@@ -130,7 +130,8 @@ rad_mysql_disconnect(struct sql_connection *conn, int drop ARG_UNUSED)
 }
 
 static int
-rad_mysql_query(struct sql_connection *conn, char *query, int *return_count)
+rad_mysql_query(struct sql_connection *conn, const char *query,
+		int *return_count)
 {
         if (!conn) 
                 return -1;
@@ -145,7 +146,7 @@ rad_mysql_query(struct sql_connection *conn, char *query, int *return_count)
 }
 
 static char *
-rad_mysql_getpwd(struct sql_connection *conn, char *query)
+rad_mysql_getpwd(struct sql_connection *conn, const char *query)
 {
         MYSQL_RES      *result;
         MYSQL_ROW       row;
@@ -205,7 +206,7 @@ rad_mysql_n_tuples(struct sql_connection *conn, void *data, size_t *np)
 }
 
 static void *
-rad_mysql_exec(struct sql_connection *conn, char *query)
+rad_mysql_exec(struct sql_connection *conn, const char *query)
 {
         MYSQL_RES      *result;
         RADMYSQL_DATA  *data;

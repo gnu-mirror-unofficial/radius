@@ -36,17 +36,16 @@ SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
         SCM_ASSERT(SCM_NIMP(LIST) && SCM_CONSP(LIST),
                    LIST, SCM_ARG1, FUNC_NAME);
         pairlist = radscm_list_to_avl(LIST);
-        if (SCM_NIMP(ATTR) && SCM_STRINGP(ATTR)) {
-                grad_dict_attr_t *da = grad_attr_name_to_dict(SCM_STRING_CHARS(ATTR));
+        if (scm_is_string(ATTR)) {
+                grad_dict_attr_t *da = grad_attr_name_to_dict(scm_i_string_chars(ATTR));
                 if (!da)
                         scm_misc_error(FUNC_NAME,
                                        "Unknown attribute: ~S",
                                        scm_list_1(ATTR));
                 attr = da->value;
         } else {
-                SCM_ASSERT(SCM_IMP(ATTR) && SCM_INUMP(ATTR),
-                           ATTR, SCM_ARG2, FUNC_NAME);
-                attr = SCM_INUM(ATTR);
+                SCM_ASSERT(scm_is_integer(ATTR), ATTR, SCM_ARG2, FUNC_NAME);
+                attr = scm_to_int(ATTR);
         }
         grad_avl_delete(&pairlist, attr);
         RETVAL = radscm_avl_to_list(pairlist);

@@ -63,11 +63,11 @@ parse_facility(SCM list)
                 SCM car = SCM_CAR(list);
                 int val = 0;
                 
-                if (SCM_IMP(car) && SCM_INUMP(car)) 
-                        val = SCM_INUM(car);
-                else if (SCM_NIMP(car) && SCM_STRINGP(car))
+                if (scm_is_integer(car)) 
+                        val = scm_to_int(car);
+                else if (scm_is_string(car))
                         val = grad_xlat_keyword(syslog_kw,
-						SCM_STRING_CHARS(car), 0);
+						scm_i_string_chars(car), 0);
                 else
                         continue;
                 accval |= val;
@@ -80,19 +80,18 @@ SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
 "Scheme interface to the system openlog() call.")          
 #define FUNC_NAME s_rad_openlog
 {
-        char *ident;
+        const char *ident;
         int option, facility;
 
         if (IDENT == SCM_BOOL_F)
                 ident = "radius";
         else {
-                SCM_ASSERT(SCM_NIMP(IDENT) && SCM_STRINGP(IDENT),
-                           IDENT, SCM_ARG1, FUNC_NAME);
-                ident = SCM_STRING_CHARS(IDENT);
+                SCM_ASSERT(scm_is_string(IDENT), IDENT, SCM_ARG1, FUNC_NAME);
+                ident = scm_i_string_chars(IDENT);
         }
         
-        if (SCM_IMP(OPTION) && SCM_INUMP(OPTION)) {
-                option = SCM_INUM(OPTION);
+        if (scm_is_integer(OPTION)) {
+                option = scm_to_int(OPTION);
         } else if (SCM_BIGP(OPTION)) {
                 option = (grad_uint32_t) scm_i_big2dbl(OPTION);
         } else {
@@ -101,8 +100,8 @@ SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
                 option = parse_facility(OPTION);
         }
 
-        if (SCM_IMP(FACILITY) && SCM_INUMP(FACILITY)) {
-                facility = SCM_INUM(FACILITY);
+        if (scm_is_integer(FACILITY)) {
+                facility = scm_to_int(FACILITY);
         } else if (SCM_BIGP(FACILITY)) {
                 facility = (grad_uint32_t) scm_i_big2dbl(FACILITY);
         } else {
@@ -125,8 +124,8 @@ SCM_DEFINE(rad_syslog, "rad-syslog", 2, 0, 0,
 
         if (PRIO == SCM_BOOL_F) {
                 prio = LOG_INFO;
-        } else if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
-                prio = SCM_INUM(PRIO);
+        } else if (scm_is_integer(PRIO)) {
+                prio = scm_to_int(PRIO);
         } else if (SCM_BIGP(PRIO)) {
                 prio = (grad_uint32_t) scm_i_big2dbl(PRIO);
         } else {
@@ -135,9 +134,8 @@ SCM_DEFINE(rad_syslog, "rad-syslog", 2, 0, 0,
                 prio = parse_facility(PRIO);
         }
 
-        SCM_ASSERT(SCM_NIMP(TEXT) && SCM_STRINGP(TEXT),
-                   TEXT, SCM_ARG1, FUNC_NAME);
-        syslog(prio, "%s", SCM_STRING_CHARS(TEXT));
+        SCM_ASSERT(scm_is_string(TEXT), TEXT, SCM_ARG1, FUNC_NAME);
+        syslog(prio, "%s", scm_i_string_chars(TEXT));
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -158,6 +156,6 @@ rscm_syslog_init()
         int i;
         for (i = 0; syslog_kw[i].name; i++)
                 scm_c_define(syslog_kw[i].name,
-                              SCM_MAKINUM(syslog_kw[i].tok));
+                             scm_from_int(syslog_kw[i].tok));
 #include <rscm_syslog.x>
 }

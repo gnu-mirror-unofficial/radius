@@ -6222,7 +6222,7 @@ radscm_datum_to_scm(grad_value_t *val)
 {
         switch (val->type) {
         case Integer:
-                return scm_long2num(val->datum.ival);
+                return scm_from_long(val->datum.ival);
 
         case String:
 		/* FIXME! */
@@ -6253,9 +6253,9 @@ radscm_scm_to_ival(SCM cell, int *val)
                 else
                         return -1;
         } else {
-                if (SCM_STRINGP(cell)) {
+                if (scm_is_string(cell)) {
                         char *p;
-                        *val = strtol(SCM_STRING_CHARS(cell), &p, 0);
+                        *val = strtol(scm_i_string_chars(cell), &p, 0);
                         if (*p)
                                 return -1;
                 } else
@@ -6267,7 +6267,7 @@ radscm_scm_to_ival(SCM cell, int *val)
 SCM
 radscm_rewrite_execute(const char *func_name, SCM ARGS)
 {
-        char *name;
+        const char *name;
         FUNCTION *fun;
         PARAMETER *parm;
         int nargs;
@@ -6279,10 +6279,9 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
 	
         FNAME = SCM_CAR(ARGS);
         ARGS  = SCM_CDR(ARGS);
-        SCM_ASSERT(SCM_NIMP(FNAME) && SCM_STRINGP(FNAME),
-                   FNAME, SCM_ARG1, func_name);
+        SCM_ASSERT(scm_is_string(FNAME), FNAME, SCM_ARG1, func_name);
 
-        name = SCM_STRING_CHARS(FNAME);
+        name = scm_i_string_chars(FNAME);
         fun = (FUNCTION*) grad_sym_lookup(rewrite_tab, name);
         if (!fun) 
                 scm_misc_error(func_name,
@@ -6314,8 +6313,8 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
                         break;
                         
                 case String:
-                        if (SCM_NIMP(car) && SCM_STRINGP(car)) {
-                                char *p = SCM_STRING_CHARS(car);
+                        if (scm_is_string(car)) {
+                                const char *p = scm_i_string_chars(car);
                                 pushstr(p, strlen(p));
                                 rc = 0;
                         } else
@@ -6330,7 +6329,7 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
                         rw_mach_destroy();
                         scm_misc_error(func_name,
 				       _("type mismatch in argument ~S(~S) in call to ~S"),
-                                       scm_list_3(SCM_MAKINUM(nargs),
+                                       scm_list_3(scm_from_int(nargs),
 						  car,
 						  FNAME));
                 }

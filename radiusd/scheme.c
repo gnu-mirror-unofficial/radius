@@ -236,9 +236,7 @@ scheme_call_proc(SCM *result, char *procname, SCM arglist)
 		         procname);
 		return 1;
 	}
-	SCM_NEWCELL(cell);
-	SCM_SETCAR(cell, procsym);
-	SCM_SETCDR(cell, arglist);
+	cell = scm_cons(procsym, arglist);
 	*result = scm_internal_lazy_catch(SCM_BOOL_T,
 					  eval_catch_body, cell,
 					  eval_catch_handler, &jmp_env);
@@ -268,6 +266,7 @@ catch_body(void *data)
 {
         SCM orig_load_path;
          
+        scheme_redirect_output();
 	scm_init_load_path();
 	grad_scm_init();
 	orig_load_path = RAD_SCM_SYMBOL_VALUE("%load-path");
@@ -332,18 +331,10 @@ scheme_try_auth(int auth_type, radiusd_request_t *req,
 
 	if (scheme_call_proc(&res,
 			     try_auth,
-			     SCM_LIST4(scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-						   scm_long2num(auth_type),
-						   SCM_UNDEFINED),
-				       scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-						   s_request,
-						   SCM_UNDEFINED),
-				       scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-						   s_check,
-						   SCM_UNDEFINED),
-				       scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-						   s_reply,
-						   SCM_UNDEFINED))))
+			     scm_list_4(scm_cons(SCM_IM_QUOTE, auth_type),
+					scm_cons(SCM_IM_QUOTE, s_request),
+					scm_cons(SCM_IM_QUOTE, s_check),
+					scm_cons(SCM_IM_QUOTE, s_reply))))
 		return 1;
 	
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
@@ -379,15 +370,9 @@ scheme_auth(char *procname, radiusd_request_t *req,
 
 	if (scheme_call_proc(&res,
 			     procname,
-			     SCM_LIST3(scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-						   s_request,
-						   SCM_UNDEFINED),
-				       scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-						   s_check,
-						   SCM_UNDEFINED),
-				       scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-						   s_reply,
-						   SCM_UNDEFINED))))
+			     scm_list_3(scm_cons(SCM_IM_QUOTE, s_request),
+					scm_cons(SCM_IM_QUOTE, s_check),
+					scm_cons(SCM_IM_QUOTE, s_reply))))
 		return 1;
 	
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
@@ -413,9 +398,7 @@ scheme_acct(char *procname, radiusd_request_t *req)
 
 	if (scheme_call_proc(&res,
 			     procname,
-			     SCM_LIST1(scm_listify(SCM_IM_QUOTE,
-						   s_request,
-						   SCM_UNDEFINED))))
+			     scm_list_1(scm_cons(SCM_IM_QUOTE, s_request))))
 		return 1;
 	
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
@@ -486,11 +469,10 @@ arglist_to_scm(int argc, cfg_value_t *argv)
 	
 	for (i = 1; i < argc; i++) {
                 SCM cell;
-		SCM_NEWCELL(cell);
 
 		switch (argv[i].type) {
 		case CFG_INTEGER:
-			val = scm_long2num(argv[i].v.number);
+			val = scm_from_long(argv[i].v.number);
 			break;
 			
 		case CFG_BOOLEAN:
@@ -520,7 +502,7 @@ arglist_to_scm(int argc, cfg_value_t *argv)
 							 argv[i].v.string);
 						return SCM_BOOL_F;
 					}
-					val = scm_long2num(num);
+					val = scm_from_long(num);
 				default:
 					val = scm_makfrom0str(p);
 				}
@@ -532,9 +514,8 @@ arglist_to_scm(int argc, cfg_value_t *argv)
 		break;
 
 		case CFG_NETWORK:
-			SCM_NEWCELL(val);
-			SCM_SETCAR(val, scm_ulong2num(argv[i].v.network.ipaddr));
-			SCM_SETCDR(val, scm_ulong2num(argv[i].v.network.netmask));
+			val = scm_cons(scm_from_ulong(argv[i].v.network.ipaddr),
+			               scm_from_ulong(argv[i].v.network.netmask));
 			break;
 			
 		case CFG_IPADDR:
@@ -547,12 +528,11 @@ arglist_to_scm(int argc, cfg_value_t *argv)
 			break;
 			
 		case CFG_HOST:
-			SCM_NEWCELL(val);
-			SCM_SETCAR(val, scm_long2num(argv[i].v.host.ipaddr));
-			SCM_SETCDR(val, scm_long2num(argv[i].v.host.port));
+			val = scm_cons(scm_from_long(argv[i].v.host.ipaddr),
+			               scm_from_long(argv[i].v.host.port));
 		}
-		
-		SCM_SETCAR(cell, scm_list_2(SCM_IM_QUOTE, val));
+
+		cell = scm_cons(scm_cons(SCM_IM_QUOTE, val), SCM_EOL);
 
 		if (head == SCM_EOL)
 			head = cell;

@@ -38,9 +38,8 @@ SCM_DEFINE(rad_rewrite_execute_string, "rad-rewrite-execute-string", 1, 0, 0,
 	grad_value_t val;
 	SCM retval;
 	
-        SCM_ASSERT(SCM_NIMP(STRING) && SCM_STRINGP(STRING),
-                   STRING, SCM_ARG1, FUNC_NAME);
-        if (rewrite_interpret(SCM_STRING_CHARS(STRING), NULL, &val)) {
+        SCM_ASSERT(scm_is_string(STRING), STRING, SCM_ARG1, FUNC_NAME);
+        if (rewrite_interpret(scm_i_string_chars(STRING), NULL, &val)) {
                 scm_misc_error(FUNC_NAME,
                                "Error parsing expression: ~S",
                                scm_list_1(STRING));

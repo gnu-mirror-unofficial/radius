@@ -174,7 +174,7 @@ _get_type(struct ascend_parse_buf *pb)
 	if (strcmp(tok, "ip") == 0)
 		pb->flt->type = ascend_filter_ip;
 	else if (strcmp(tok, "ipx") == 0)
-		pb->flt->type = ascend_filter_ip;
+		pb->flt->type = ascend_filter_ipx;
 	else if (strcmp(tok, "generic") == 0)
 		pb->flt->type = ascend_filter_generic;
 	else {

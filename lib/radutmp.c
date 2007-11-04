@@ -30,7 +30,7 @@
 #include <radlib.h>
 
 struct _radut_file {
-	char *name;
+	const char *name;
         int fd;
         int eof;
         int readonly;
@@ -39,7 +39,7 @@ struct _radut_file {
 };
 
 radut_file_t
-grad_ut_setent(char *name, int append)
+grad_ut_setent(const char *name, int append)
 {
         int fd;
         int ro = 0;
@@ -153,7 +153,7 @@ grad_ut_putent(radut_file_t file, struct radutmp *ent)
 }
         
 int
-grad_utmp_putent(char *filename, struct radutmp *ut, int status)
+grad_utmp_putent(const char *filename, struct radutmp *ut, int status)
 {
         radut_file_t file;
         struct radutmp *ent;
@@ -243,7 +243,7 @@ grad_utmp_putent(char *filename, struct radutmp *ut, int status)
 }
         
 int
-grad_radwtmp_putent(char *filename, struct radutmp *ut)
+grad_radwtmp_putent(const char *filename, struct radutmp *ut)
 {
         radut_file_t file;
                 

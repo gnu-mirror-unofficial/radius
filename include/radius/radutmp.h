@@ -82,7 +82,7 @@ PORT_STAT * findportbyindex(int ind);
 
 typedef struct _radut_file *radut_file_t;
 
-radut_file_t grad_ut_setent(char *name, int append);
+radut_file_t grad_ut_setent(const char *name, int append);
 void grad_ut_endent(radut_file_t file);
 struct radutmp *grad_ut_getent(radut_file_t file);
 int grad_ut_putent(radut_file_t file, struct radutmp *ent);
@@ -92,8 +92,8 @@ void grad_ut_rewind(radut_file_t file);
 #define PUTENT_NOENT   1
 #define PUTENT_UPDATE  2
 
-int grad_utmp_putent(char *filename, struct radutmp *ut, int status);
-int grad_radwtmp_putent(char *filename, struct radutmp *ut);
+int grad_utmp_putent(const char *filename, struct radutmp *ut, int status);
+int grad_radwtmp_putent(const char *filename, struct radutmp *ut);
 
 typedef struct format_data format_data_t;
 

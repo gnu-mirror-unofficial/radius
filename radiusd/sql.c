@@ -1222,6 +1222,9 @@ rad_sql_mlc_close(struct radutmp *up)
 			  grad_avp_create_integer(DA_NAS_PORT_ID,
 						  up->nas_port));
 	grad_avl_add_pair(&req->avlist,
+			  grad_avp_create_integer(DA_NAS_IP_ADDRESS,
+						  ntohl(up->nas_address)));
+	grad_avl_add_pair(&req->avlist,
 			  grad_avp_create_string(DA_ACCT_SESSION_ID,
 						 up->session_id));
 	query = radius_xlate(&stack, sql_cfg.query[query_index], req, NULL);

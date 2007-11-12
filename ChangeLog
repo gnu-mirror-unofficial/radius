@@ -1,3 +1,7 @@
+2007-11-12  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* radiusd/sql.c (rad_sql_mlc_close): Pass NAS-IP-Address
+
 2007-11-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* include/radiusd.h (sql_exec_query, sql_run_query): Second arg is

@@ -337,10 +337,10 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 
 /* Find the rpp_proc_t with a given PID */
 static int
-rpp_comparator(void *item, void *data)
+rpp_comparator(const void *item, const void *data)
 {
-	rpp_proc_t *p = item;
-	pid_t *pid = data;
+	const rpp_proc_t *p = item;
+	const pid_t *pid = data;
 	return p->pid != *pid;
 }
 
@@ -529,10 +529,11 @@ rpp_count()
 
 
 struct rpp_request {
-	int type;                  /* Request type */
-	struct sockaddr_in addr;   /* Sender address */
-	int fd;                    /* Source descriptor */
-	size_t size;               /* Size of the raw data */
+	int type;                    /* Request type */
+	struct sockaddr_in srv_addr; /* Server address */
+	struct sockaddr_in clt_addr; /* Sender address */
+	int fd;                      /* Source descriptor */
+	size_t size;                 /* Size of the raw data */
 	/* Raw data follow */
 };
 
@@ -563,7 +564,8 @@ rpp_forward_request(REQUEST *req)
 	GRAD_DEBUG1(1, "sending request to %d", p->pid);
 	
 	frq.type = req->type;
-	frq.addr = req->addr;
+	frq.srv_addr = req->srv_addr;
+	frq.clt_addr = req->addr;
 	frq.fd = req->fd;
 	frq.size = req->rawsize;
 	
@@ -676,7 +678,8 @@ rpp_request_handler(void *arg ARG_UNUSED)
 			radiusd_exit0();
 		}
 
-		req = request_create(frq.type, frq.fd, &frq.addr,
+		req = request_create(frq.type, frq.fd,
+				     &frq.srv_addr, &frq.clt_addr,
 				     data, frq.size);
 
 		req->status = RS_COMPLETED;

@@ -1,3 +1,32 @@
+2007-12-13  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap.conf: Do not use --source-base in
+	gnulib_tool_option_extras, to avoid triggering gnulib bootstrap
+	bug.
+	* configure.ac, NEWS: Version 1.15.90.
+	* Makefile.am (distuninstallcheck_listfiles): Fix rule.
+	* include/radiusd.h (struct request.srv_addr): New field.
+	(struct request_class.decode): Change signature.
+	(request_create,radius_auth_req_decode)
+	(radius_acct_req_decode,snmp_req_decode): Change signature.
+	* raddb/dict/standard (GNU-Server-Address,GNU-Server-Port): New
+	attributes.
+	* radiusd/radius.c (radius_auth_req_decode)
+	(radius_acct_req_decode): Change signature. Add
+	GNU-Server-Address, GNU-Server-Port to the request.
+	* radiusd/radiusd.c (udp_input_handler): Update call to
+	request_create.
+	* radiusd/request.c (request_create): Change signature. Update
+	call to decode.
+	* radiusd/rpp.c (rpp_comparator): Fix declaration.
+	(struct rpp_request.srv_addr): New member.
+	(struct rpp_request.addr): Rename to clt_addr.
+	(rpp_request_handler): update call to request_create.
+	* radiusd/snmpserv.c (snmp_req_decode): Change signature.
+	* radiusd/sql.c: Include radscm.h conditionally.
+	* tests/scheme-acct.at: Ignore GNU-Server-Address and
+	GNU-Server-Port attributes.
+
 2007-11-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* radiusd/sql.c (rad_sql_mlc_close): Pass NAS-IP-Address

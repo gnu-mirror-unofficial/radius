@@ -51,6 +51,7 @@ ltoptions.m4
 ltsugar.m4
 ltversion.m4
 lt~obsolete.m4
+malloc.m4
 mbchar.m4
 mbiter.m4
 mbrtowc.m4
@@ -62,6 +63,7 @@ onceonly_2_57.m4
 po.m4
 printf-posix.m4
 progtest.m4
+realloc.m4
 regex.m4
 signed.m4
 size_max.m4
@@ -76,6 +78,7 @@ strcase.m4
 strchrnul.m4
 strerror.m4
 string_h.m4
+strings_h.m4
 strndup.m4
 strnlen.m4
 sysexits.m4

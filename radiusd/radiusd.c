@@ -1084,6 +1084,7 @@ udp_input_handler(int fd, void *data)
 	else {
 		REQUEST *req = request_create(sd->type,
 					      fd,
+					      &sd->addr,
 					      (struct sockaddr_in*)&sa,
 					      recv_buffer, size);
 

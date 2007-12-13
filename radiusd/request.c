@@ -71,19 +71,22 @@ static grad_list_t *request_list; /* List of REQUEST structures */
 /* ************************* General-purpose functions ********************* */
 
 REQUEST *
-request_create(int type, int fd, struct sockaddr_in *sa,
+request_create(int type, int fd,
+	       const struct sockaddr_in *srv_sa,
+	       const struct sockaddr_in *clt_sa,
 	       u_char *buf, size_t bufsize)
 {
 	void *data;
 	REQUEST *req;
 
-	if (request_class[type].decode(sa, buf, bufsize, &data))
+	if (request_class[type].decode(srv_sa, clt_sa, buf, bufsize, &data))
 		return NULL;
 	req = grad_emalloc(sizeof *req);
 	req->data = data;
 	time(&req->timestamp);
         req->type = type;
-	req->addr = *sa;
+	req->srv_addr = *srv_sa;
+	req->addr = *clt_sa;
 	req->rawdata = grad_emalloc(bufsize);
 	memcpy(req->rawdata, buf, bufsize);
 	req->rawsize = bufsize;

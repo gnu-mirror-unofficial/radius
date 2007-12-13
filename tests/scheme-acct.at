@@ -28,7 +28,7 @@ RA_PREREQ([USE_SERVER_GUILE],
                         Acct-Status-Type = Start \
 			Acct-Session-Id = "0001" 
 	    expect Accounting-Response])
-  AT_CHECK([cat $BUILDDIR/raddb/acct/scheme],
+  AT_CHECK([sed '/GNU-Server-Address/d;/GNU-Server-Port/d' $BUILDDIR/raddb/acct/scheme],
            [0],
            [User-Name=scheme
 NAS-IP-Address=2130706433

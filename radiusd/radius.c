@@ -155,8 +155,20 @@ radius_verify_digest(REQUEST *req)
 
 /* *********************** Radius Protocol Support ************************* */
 
+static void
+add_server_address(grad_request_t *req, const struct sockaddr_in *sa)
+{
+	grad_avl_add_pair(&req->avlist,
+			  grad_avp_create_integer(DA_GNU_SERVER_ADDRESS,
+						  ntohl(sa->sin_addr.s_addr)));
+	grad_avl_add_pair(&req->avlist,
+			  grad_avp_create_integer(DA_GNU_SERVER_PORT,
+						  ntohs(sa->sin_port)));
+}
+
 int
-radius_auth_req_decode(struct sockaddr_in *sa,
+radius_auth_req_decode(const struct sockaddr_in *srv_sa,
+		       const struct sockaddr_in *clt_sa,
 		       void *input, size_t inputsize, void **output)
 {
 	grad_request_t *greq;
@@ -165,12 +177,12 @@ radius_auth_req_decode(struct sockaddr_in *sa,
 	log_open(L_AUTH);
 
         if (suspend_flag) {
-		stat_inc(auth, ntohl(sa->sin_addr.s_addr), num_dropped);
+		stat_inc(auth, ntohl(clt_sa->sin_addr.s_addr), num_dropped);
                 return 1;
 	}
         
-        greq = grad_decode_pdu(ntohl(sa->sin_addr.s_addr),
-			       ntohs(sa->sin_port),
+        greq = grad_decode_pdu(ntohl(clt_sa->sin_addr.s_addr),
+			       ntohs(clt_sa->sin_port),
 			       input,
 			       inputsize);
 	if (!greq)
@@ -183,6 +195,8 @@ radius_auth_req_decode(struct sockaddr_in *sa,
         }
 	
 	radreq = radiusd_request_alloc(greq);
+
+	add_server_address (radreq->request, srv_sa);
 	
 	/* RFC 2865 p. 2.2:
 	   The random challenge can either be included in the
@@ -203,7 +217,8 @@ radius_auth_req_decode(struct sockaddr_in *sa,
 }
 
 int
-radius_acct_req_decode(struct sockaddr_in *sa,
+radius_acct_req_decode(const struct sockaddr_in *srv_sa,
+		       const struct sockaddr_in *clt_sa,
 		       void *input, size_t inputsize, void **output)
 {
 	grad_request_t *greq;
@@ -211,12 +226,12 @@ radius_acct_req_decode(struct sockaddr_in *sa,
 	log_open(L_ACCT);
 	
         if (suspend_flag) {
-		stat_inc(acct, ntohl(sa->sin_addr.s_addr), num_dropped);
+		stat_inc(acct, ntohl(clt_sa->sin_addr.s_addr), num_dropped);
                 return 1;
 	}
         
-        greq = grad_decode_pdu(ntohl(sa->sin_addr.s_addr),
-			       ntohs(sa->sin_port),
+        greq = grad_decode_pdu(ntohl(clt_sa->sin_addr.s_addr),
+			       ntohs(clt_sa->sin_port),
 			       input,
 			       inputsize);
 	if (!greq)
@@ -228,7 +243,9 @@ radius_acct_req_decode(struct sockaddr_in *sa,
  		return 1;
         }
 
+	add_server_address (greq, srv_sa);
 	*output = radiusd_request_alloc(greq);
+	
 	return 0;
 }
 

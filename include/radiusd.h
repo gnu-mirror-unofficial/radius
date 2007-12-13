@@ -112,6 +112,7 @@ struct request {
 					 socket */  
 	size_t          rawsize;      /* Size of the data */
         int             fd;           /* socket the request came from */
+	struct sockaddr_in srv_addr;  /* Server address */
 	struct sockaddr_in addr;      /* Remote party address */
 	REQUEST         *orig;        /* Original request. For proxy */
 };
@@ -123,7 +124,8 @@ typedef struct request_class {
         int  max_requests;    /* Max.number of pending requests of this type */
         int  ttl;             /* Request time-to-live */
         int  cleanup_delay;   /* Delay before cleaning the completed request */
-	int  (*decode)(struct sockaddr_in *sa,
+	int  (*decode)(const struct sockaddr_in *srv_sa,
+		       const struct sockaddr_in *clt_sa,
 		       void *input, size_t inputsize, void **output);
         int  (*respond)(REQUEST *r);          /* Handler function */
         void (*xmit)(REQUEST *r);             /* Retransmit function */
@@ -387,7 +389,9 @@ int rpp_update(void *data, size_t size);
 pid_t rpp_check_pid(pid_t pid);
 
 /* request.c */
-REQUEST *request_create(int type, int fd, struct sockaddr_in *sa,
+REQUEST *request_create(int type, int fd,
+			const struct sockaddr_in *srv_sa,
+			const struct sockaddr_in *clt_sa,
 			u_char *buf, size_t bufsize);
 void request_free(REQUEST *req);
 int request_respond(REQUEST *req);
@@ -481,9 +485,11 @@ void radius_send_reply(int, radiusd_request_t *, grad_avp_t *, char *, int);
 void radius_send_challenge(radiusd_request_t *radreq, char *msg, char *state, int fd);
 int radius_verify_digest(REQUEST *req);
 
-int radius_auth_req_decode(struct sockaddr_in *sa,
+int radius_auth_req_decode(const struct sockaddr_in *srv_sa,
+			   const struct sockaddr_in *clt_sa,
 			   void *input, size_t inputsize, void **output);
-int radius_acct_req_decode(struct sockaddr_in *sa,
+int radius_acct_req_decode(const struct sockaddr_in *srv_sa,
+			   const struct sockaddr_in *clt_sa,
 			   void *input, size_t inputsize, void **output);
 int radius_req_cmp(void *a, void *b);
 void radius_req_free(void *req);
@@ -625,7 +631,8 @@ int stat_get_next_port_no(grad_nas_t *nas, int port_no);
 #endif
 
 /* snmpserver.c */
-int snmp_req_decode(struct sockaddr_in *sa,
+int snmp_req_decode(const struct sockaddr_in *srv_sa,
+		    const struct sockaddr_in *clt_sa,
 		    void *input, size_t inputsize, void **output);
 int snmp_req_cmp(void *ap, void *bp);
 void snmp_req_free(void *ptr);

@@ -34,7 +34,7 @@ update-dictionary:
 # We never remove the contents of configuration directory and the
 # info directory index
 distuninstallcheck_listfiles = \
- find . -type f | while read NAME; do expr $$NAME : '\..*/etc/raddb' >/dev/null || expr $$NAME : '\..*/info/dir' >/dev/null || echo $$NAME ; done
+ find $(prefix) -type f -not -path '$(sysconfdir)/raddb/*'
 
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES=core *~ err out

@@ -1,8 +1,29 @@
-GNU Radius NEWS -- history of user-visible changes. 2007-06-29
+GNU Radius NEWS -- history of user-visible changes. 2007-12-13
 Copyright (C) 2002,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
+
+Version 1.5.90
+
+
+* New attributes
+
+** GNU-Server-Address
+
+Holds IP address of the RADIUS server that recieved the
+request. Notice, that the value of this attribute is "0.0.0.0" if
+there are no `listen' statement in your `raddb/config'.
+    
+** GNU-Server-Port
+
+Holds UDP port number of the RADIUS server that recieved the request.
+
+* Guile support requires Gule version 1.8 or later.
+
+* Bugfixes
+** Pass NAS-IP-Address to mlc_stop_query	
+	
 
 Version 1.5 - Sergey Poznyakoff, 2007-06-29:
 

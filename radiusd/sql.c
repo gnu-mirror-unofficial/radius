@@ -32,8 +32,8 @@
 
 #ifdef USE_SERVER_GUILE
 # include <libguile.h>
+# include <radscm.h>
 #endif
-#include <radscm.h>
 
 #if defined(USE_SQL)
 

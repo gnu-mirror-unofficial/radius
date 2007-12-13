@@ -2711,13 +2711,14 @@ snmp_decode(SNMP_REQ *req, u_char *buf, size_t len)
 }
 
 int
-snmp_req_decode(struct sockaddr_in *sa,
-		  void *input, size_t inputsize, void **output)
+snmp_req_decode(const struct sockaddr_in *srv_sa,
+		const struct sockaddr_in *clt_sa,
+		void *input, size_t inputsize, void **output)
 {
         SNMP_REQ *req;
 
 	req = grad_emalloc(sizeof *req);
-	req->addr = *sa;
+	req->addr = *clt_sa;
         if (snmp_decode(req, input, inputsize)) {
                 grad_free(req);
                 return 1;

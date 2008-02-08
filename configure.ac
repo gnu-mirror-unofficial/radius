@@ -1,6 +1,6 @@
 # This file is part of GNU Radius.
 # Copyright (C) 2000,2001,2002,2003,2004,2005,
-# 2007 Free Software Foundation, Inc.
+# 2007,2008 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -23,14 +23,13 @@ AC_PREREQ(2.59)
 AC_REVISION($Revision$)
 AC_INIT([GNU Radius], [1.5.90], [bug-gnu-radius@gnu.org])
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
-AC_CONFIG_AUX_DIR([scripts])
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([gnu])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(no-exeext)
 AC_CONFIG_HEADERS([config.h])
 
 AC_SUBST(BUILD_TARGET)
-AC_SUBST(INCLUDEPATH)
 AC_SUBST(RADIUS_PID)
 
 AC_SUBST(RADIUS_INCLUDE_PATH,
@@ -55,7 +54,7 @@ AC_ARG_VAR(PS,[Full path to ps binary])
 AC_PROG_LN_S
 AM_PROG_LIBTOOL
 
-AC_SUBST(M4,['`cd $(top_srcdir); pwd`/scripts/missing --run m4'])
+AC_SUBST(M4,['`cd $(top_srcdir); pwd`/build-aux/missing --run m4'])
 RA_MAINTAINER_MODE
 RA_LD_VERSIONING
 
@@ -82,7 +81,7 @@ if test $USE_GUILE = yes; then
 			 if test $USE_SERVER_GUILE = yes; then
 				AC_DEFINE(USE_SERVER_GUILE,1,
                                     [Define this to enable Guile interface])
-				RA_RADIUSD_LDADD(-L../radscm -lradscm ../radscm/libservscm.a $GUILE_LIBS)
+				RA_RADIUSD_LDADD(../radscm/libradscm.la ../radscm/libservscm.a $GUILE_LIBS)
 			 fi],
                         [USE_GUILE=no])
 fi
@@ -129,30 +128,26 @@ main() { return strcmp(__FUNCTION__,"main"); },
 ## *************************************
 ## add any additional libraries/includes
 ## *************************************
-AC_MSG_CHECKING(for additional includes)
-AC_ARG_WITH(include-path,
-	AC_HELP_STRING([--with-include-path=PATH],
-	[specify additional include paths. PATH is a ':' separated list of additional include paths.]),
-	[ for path in `echo $withval | sed 's/:/ /g'`
-          do
-            INCLUDEPATH="$INCLUDEPATH -I$path"
-          done])
-AC_MSG_RESULT($INCLUDEPATH)
+## For backward compatibility, support --with-include-path ...
+if test "${with_include_path+set}" = set; then
+  for path in `echo $with_include_path | sed 's/:/ /g'`
+  do
+    CPPFLAGS="$CPPFLAGS -I$path"
+  done
+fi
+## ... and --with-lib-path, but do not promote them.
+if test "${with_lib_path+set}" = set; then
+  for path in `echo $with_lib_path | sed 's/:/ /g'`
+  do
+    LIBS="$LIBS -L$path"
+  done
+fi
 
-AC_MSG_CHECKING(for additional libraries)
-AC_ARG_WITH(lib-path,    
-	AC_HELP_STRING([--with-lib-path=PATH],
-	[specify additional library paths.]),
-	[ for path in `echo $withval | sed 's/:/ /g'`
-          do
-            LIBS="$LIBS -L$path"
-          done])
-AC_MSG_RESULT($LIBS)
 
 ## * Checks for libraries.
-AC_CHECK_LIB(socket, socket)
-AC_CHECK_LIB(nsl, gethostbyaddr)
-AC_CHECK_LIB(crypt, crypt)
+AC_SEARCH_LIBS(socket, socket)
+AC_SEARCH_LIBS(gethostbyaddr, nsl)
+AC_SEARCH_LIBS(crypt, crypt)
 
 USE_LOADABLE_MODULES=no
 if test "$enable_shared" = yes; then
@@ -169,10 +164,6 @@ if test $USE_LOADABLE_MODULES = yes; then
 fi
 
 ## * Checks for header files.
-
-# Override CPPFLAGS
-save_CPPFLAGS=$CPPFLAGS
-CPPLAGS="$CPPLAGS $INCLUDEPATH"
 
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
@@ -319,9 +310,6 @@ getline, crypt, crypt_set_format], , ,
 # include <crypt.h>
 #endif
 #include <stdio.h>])
-
-# Restore CPPFLAGS
-CPPFLAGS=$save_CPPFLAGS
 
 # Always use included argp stuff.
 # Earlier, configure preferred to use the one from glibc, if provided,
@@ -939,10 +927,8 @@ AH_BOTTOM([
 #define LOCK_RELEASE(name)
 ])
 
-AC_SUBST(LIBGNURADIUS,'-L${top_builddir}/lib -lgnuradius')
-AC_SUBST(LIBRADEXTRA,'-lradextra -L${top_builddir}/gnu -lgnu')
-
-RADIUS_INCLUDE_PATH="$RADIUS_INCLUDE_PATH $INCLUDEPATH"
+AC_SUBST(LIBGNURADIUS,'${top_builddir}/lib/libgnuradius.la')
+AC_SUBST(LIBRADEXTRA,'${top_builddir}/lib/libradextra.a ${top_builddir}/gnu/libgnu.la')
 
 ### Display the status
 

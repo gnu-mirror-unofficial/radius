@@ -1,12 +1,15 @@
 #! /bin/sh
 
-dir=${1:?}
+gnulibdir=${1:?}
 shift
 
-if [ -d gnu ]; then :; else mkdir gnu || exit 1; fi
+for dir in gnu build-aux
+do
+  if [ -d $dir ]; then :; else mkdir $dir || exit 1; fi
+done  
    
-if [ -x $dir/gnulib-tool -a -x $dir/build-aux/bootstrap ]; then
-   $dir/build-aux/bootstrap --gnulib-srcdir=$dir $* || exit 1
+if [ -x $gnulibdir/gnulib-tool -a -x $gnulibdir/build-aux/bootstrap ]; then
+   $gnulibdir/build-aux/bootstrap --gnulib-srcdir=$gnulibdir $* || exit 1
    echo "$0: Configuring"
    ./configure --enable-maintainer-mode || exit 1
    echo "$0: Done. You may run make now"

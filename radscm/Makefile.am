@@ -61,7 +61,7 @@ CLEANFILES = *.exp *.inc *.x *.doc radsession gnuradius.scm radiusd.scm guile-pr
 radsession: $(srcdir)/radsession.in
 	sed 's,GUILE_BINDIR,$(GUILE_BINDIR),;s,SCHEMEDIR,$(schemedir),;s,PACKAGE_STRING,$(PACKAGE_STRING),' $? > $@
 
-libradscm_la_LIBADD=@LIBGNURADIUS@ @LIBINTL@
+libradscm_la_LIBADD=@LIBGNURADIUS@ @LIBINTL@ @GUILE_LIBS@
 libradscm_la_LDFLAGS = -rpath $(libdir) -version-info @VI_CURRENT@:@VI_REVISION@:@VI_AGE@
 
 INCLUDES  = @RADIUS_INCLUDE_PATH@ -I$(srcdir) -I. @GUILE_INCLUDES@

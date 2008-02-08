@@ -173,7 +173,7 @@ int
 dynload_stmt_term(int finish, void *block_data, void *handler_data)
 {
 	if (!finish) 
-		radiusd_set_load_path (RADIUS_DATADIR "/modules");
+		radiusd_set_load_path (RADIUS_LIBDIR "/modules");
 }
 
 static int

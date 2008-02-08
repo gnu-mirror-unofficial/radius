@@ -1,3 +1,33 @@
+2008-02-08  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* radscm/radsession.in: Bugfix. Use #f, not nil.
+	* lib/slist.c (grad_slist_coalesce): Use c89
+
+	* NEWS: Update.
+	* README: Remove references to --with-include-path and
+	--with-include-path.
+	* bootstrap: Place auxiliary files in build-aux
+	* bootstrap.conf: Update.
+
+	* THANKS: Update.
+
+	Fixes proposed by Jakub Bogusz:
+	
+	* configure.ac: Version 1.15.90.
+	(AC_CONFIG_AUX_DIR): Change to build-aux
+	(INCLUDEPATH): Remove.
+	(M4): use build-aux
+	Use AC_SEARCH_LIBS instead of AC_CHECK_LIB
+	(RA_RADIUSD_LDADD,LIBRADEXTRA,LIBGNURADIUS): Use relative
+	references to .la files rather than -L/-l options in order to
+	prevent relative directories from being referenced in installed
+	.la files.
+	* radiusd/Makefile.am (AM_CPPFLAGS): Define RADIUS_LIBDIR
+	* radiusd/dynload.c (dynload_stmt_term): Search in RADIUS_LIBDIR,
+	not RADIUS_DATADIR.
+	* sql/Makefile.am (moddir): Install under pkglibdir.
+	* radscm/Makefile.am (libradscm_la_LIBADD): Add GUILE_LIBS.
+
 2007-12-13  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap.conf: Do not use --source-base in

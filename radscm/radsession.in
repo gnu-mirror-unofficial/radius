@@ -31,7 +31,7 @@
 (define opt-sid "00000000")
 (define opt-nas "127.0.0.1")
 
-(define action nil)
+(define action #f)
 (define flag-verbose #f)
 
 (define grammar
@@ -231,7 +231,7 @@
 
 ;; Select and perform appropriate action
 (case action
-  ((help nil)
+  ((help #f)
    (usage))
   ((version)
    (display "radsession (PACKAGE_STRING)")

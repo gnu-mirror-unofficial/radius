@@ -25,7 +25,7 @@ libsql_la_LIBADD=@SQL_LTLIBOBJS@
 
 libsql_la_DEPENDENCIES = @SQL_LTLIBOBJS@
 
-moddir = $(pkgdatadir)/$(VERSION)/modules
+moddir = $(pkglibdir)/$(VERSION)/modules
 mod_LTLIBRARIES = @SQL_LOADABLE_MODULES@
 
 MODFLAGS=-module -avoid-version -no-undefined -rpath $(moddir) -Wl,-Bsymbolic

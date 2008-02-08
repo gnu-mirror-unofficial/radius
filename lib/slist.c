@@ -143,10 +143,12 @@ grad_slist_coalesce(grad_slist_t slist)
 	if (slist->head && slist->head->next == NULL)
 		size = slist->head->level;
 	else {
-		size = grad_slist_size(slist);
-		struct grad_slist_bucket *bucket = alloc_bucket(size);
+		struct grad_slist_bucket *bucket;
 		struct grad_slist_bucket *p;
+
+		size = grad_slist_size(slist);
 	
+		bucket = alloc_bucket(size);
 		for (p = slist->head; p; ) {
 			struct grad_slist_bucket *next = p->next;
 			memcpy(bucket->buf + bucket->level, p->buf, p->level);

@@ -1,5 +1,5 @@
 GNU Radius README
-Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
+Copyright (C) 2002,2003,2004,2008 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 * Introduction
@@ -39,15 +39,6 @@ The applications-specific options are:
 	Specify port number to use for authentication. Default is 1812.
         The default port number for accounting is computed as auth_port + 1.
 
-*** --with-include-path=STRING
-	Specify any additional include directories that are required for
-	your configuration. Multiple directories are separated by colons.
-
-*** --with-lib-path=STRING
-	Specify any additional library directories that are required for
-	your configuration. Multiple directories are separated by
-	colons.
-
 *** --enable-pam
     	Enable PAM support.
 	
@@ -56,12 +47,12 @@ The applications-specific options are:
 	assumed. The `ndbm' argument instructs to enable support of NDBM.
 		
 *** --with-mysql
-	Enable MySQL support. Usually this requires adding appropriate
-	--with-lib-path and --with-include-path options.
+	Enable MySQL support. Usually this requires setting
+	appropriate values for LDFLAGS and CPPFLAGS variables.
     
 *** --with-postgres
-	Enable PostgreSQL support. Usually this requires adding appropriate
-	--with-lib-path and --with-include-path options.
+	Enable PostgreSQL support. Usually this requires setting
+	appropriate values for LDFLAGS and CPPFLAGS variables.
 
 *** --with-odbc[={odbc|iodbc}]
         Configure to work with ODBC. This is an experimental feature, it
@@ -327,7 +318,7 @@ Send bug reports to <bug-gnu-radius@gnu.org>.
 
 * Copyright information:
 
-Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
+Copyright (C) 2002,2003,2004,2008 Free Software Foundation, Inc.
 
    Permission is granted to anyone to make or distribute verbatim copies
    of this document as received, in any medium, provided that the

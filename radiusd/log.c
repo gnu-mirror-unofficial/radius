@@ -308,9 +308,10 @@ log_to_channel(void *item, void *pdata)
                 break;
                 
         case LM_SYSLOG:
-                spri = chan->id.prio;
-                if (chan->options & LO_PID)
-                        spri |= LOG_PID;
+                spri = chan->id.sl.prio;
+                openlog(chan->id.sl.tag ? chan->id.sl.tag : "radiusd",
+			(chan->options & LO_PID) ? LOG_PID : 0,
+			chan->id.sl.fac);
                 if (logbuf_printable_length(&pri_prefix)) {
 			if (data->errtext)
 				syslog(spri, "%s: %s%s%s: %s%s",
@@ -326,7 +327,7 @@ log_to_channel(void *item, void *pdata)
 				       SP(data->prefix),
 				       logbuf_ptr(&req_prefix),
 				       SP(data->text),
-				       logbuf_ptr(&req_suffix));
+ 				       logbuf_ptr(&req_suffix));
 		} else {
 			if (data->errtext)
 				syslog(spri, "%s%s%s: %s%s",
@@ -429,6 +430,8 @@ channel_free(Channel *chan)
         grad_free(chan->name);
         if (chan->mode == LM_FILE)
                 grad_free(chan->id.file);
+	else
+		grad_free(chan->id.sl.tag); 
 	grad_free(chan->prefix_hook);
 	grad_free(chan->suffix_hook);
         grad_free(chan);
@@ -544,8 +547,12 @@ register_channel(Channel *chan)
         channel->mode = chan->mode;
         if (chan->mode == LM_FILE)
                 channel->id.file = filename;
-        else if (chan->mode == LM_SYSLOG)
-                channel->id.prio = chan->id.prio;
+        else if (chan->mode == LM_SYSLOG) {
+                channel->id.sl.prio = chan->id.sl.prio;
+		channel->id.sl.fac  = chan->id.sl.fac;
+		channel->id.sl.tag = chan->id.sl.tag ?
+			                grad_estrdup(chan->id.sl.tag) : NULL;
+	}
         channel->options = chan->options;
 	channel->prefix_hook = chan->prefix_hook;
 	channel->suffix_hook = chan->suffix_hook;
@@ -1037,7 +1044,7 @@ channel_syslog_handler(int argc, cfg_value_t *argv, void *block_data,
 	int facility;
 	int prio;
 	
-	if (argc != 4) {
+	if (argc < 4 || argc > 5) {
 		cfg_argc_error(argc < 4);
 		return 0;
 	}
@@ -1079,8 +1086,17 @@ channel_syslog_handler(int argc, cfg_value_t *argv, void *block_data,
 	if (prio == -1)
 		return 1;
 	
+	if (argc == 5) {
+		if (argv[4].type != CFG_STRING) {
+			cfg_type_error(CFG_STRING);
+			return 0;
+		}
+		channel.id.sl.tag = argv[4].v.string;
+	} else
+		channel.id.sl.tag = NULL;
 	channel.mode = LM_SYSLOG;
-	channel.id.prio = facility | prio ;
+	channel.id.sl.prio = prio;
+	channel.id.sl.fac = facility;
 	return 0;
 }
 

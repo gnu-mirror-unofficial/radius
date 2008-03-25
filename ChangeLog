@@ -1,3 +1,15 @@
+2008-03-25  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* include/radiusd.h (struct channel): Redesign union id;
+	* radiusd/log.c (log_to_channel): LM_SYSLOG branch: fix
+	inconsistencies. Call openlog to properly initialize syslog.
+	This also allows to set a preconfigured syslog tag.
+	(channel_free): Free chan->id.sl.tag.
+	(register_channel): Initialize syslog data.
+	(channel_syslog_handler): Take an optional 4th argument - syslog
+	tag. 
+	* configure.texi, NEWS: Update.
+
 2008-02-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* radscm/radsession.in: Bugfix. Use #f, not nil.

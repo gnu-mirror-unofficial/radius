@@ -321,7 +321,7 @@ logging @{
         @} ; 
         channel channel_name @{
                 file @var{string} ;
-                syslog facility . priority ; 
+                syslog @var{facility} . @var{priority} [@var{tag}] ;
                 print-pid @var{bool} ; 
                 print-category @var{bool} ; 
                 print-cons @var{bool} ; 
@@ -462,7 +462,8 @@ a @code{channel} statement will use that channel.
 syslog.  The @code{file} statement sends the channel's output to the
 named file (@pxref{Naming Conventions}).  The @code{syslog} statement
 sends the channel's output to syslog with the specified facility and
-severity.
+severity.  Its optional last argument allows to alter default syslog
+tag.
 
 Channel options modify the data flowing through the channel:
 

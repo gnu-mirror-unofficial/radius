@@ -702,7 +702,11 @@ struct channel {
         int  pmask[L_NCAT]; 
         int mode;   /* LM_ constant */
         union {
-                int prio;        /* syslog: facility|priority */
+		struct {
+			int prio;   /* syslog priority */
+			int fac;    /* syslog facility */
+			char *tag;  /* syslog tag */
+		} sl;
                 char *file;      /* file: output file name */
         } id;
         int options;

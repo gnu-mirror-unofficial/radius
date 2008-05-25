@@ -313,6 +313,7 @@ grad_list_insert_sorted(struct list *list, void *data, list_comp_t cmp)
 		struct list_entry *ep = grad_emalloc(sizeof(*ep));
 		ep->data = data;
 		ep->next = cur;
+		list->count++;
 		prev->next = ep;
 	}
 	return 0;

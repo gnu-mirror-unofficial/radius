@@ -1,3 +1,7 @@
+2008-05-25  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* lib/list.c (grad_list_insert_sorted): Update list->count.
+
 2008-03-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* include/radiusd.h (struct channel): Redesign union id;

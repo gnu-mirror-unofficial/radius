@@ -35,7 +35,7 @@
 
 
 
-static grad_logger_fp _grad_logger;
+static grad_logger_fp _grad_logger = grad_default_logger;
 
 grad_logger_fp
 grad_set_logger(grad_logger_fp fp)
@@ -54,7 +54,8 @@ grad_log(int lvl, const char *msg, ...)
         if (lvl & L_PERROR)
                 ec = errno;
         va_start(ap, msg);
-        _grad_logger(lvl, NULL, NULL, NULL, ec, msg, ap);
+	if (_grad_logger)
+		_grad_logger(lvl, NULL, NULL, NULL, ec, msg, ap);
         va_end(ap);
 }
 
@@ -67,7 +68,8 @@ grad_log_req(int lvl, grad_request_t *req, const char *msg, ...)
         if (lvl & L_PERROR)
                 ec = errno;
         va_start(ap, msg);
-        _grad_logger(lvl, req, NULL, NULL, ec, msg, ap);
+	if (_grad_logger)
+		_grad_logger(lvl, req, NULL, NULL, ec, msg, ap);
         va_end(ap);
 }
 
@@ -81,6 +83,7 @@ grad_log_loc(int lvl, grad_locus_t *loc, const char *msg, ...)
 		ec = errno;
 
 	va_start(ap, msg);
-	_grad_logger(lvl, NULL, loc, NULL, ec, msg, ap);
+	if (_grad_logger)
+		_grad_logger(lvl, NULL, loc, NULL, ec, msg, ap);
 	va_end(ap);
 }

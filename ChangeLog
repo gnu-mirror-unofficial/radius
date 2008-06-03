@@ -1,3 +1,12 @@
+2008-06-03  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* lib/Makefile.am (libgnuradius_la_SOURCES): Add deflog.c (moved
+	from libradextra_a_SOURCES.
+	* lib/logger.c (_grad_logger): Initialize with
+	grad_default_logger.
+	(grad_log, grad_log_req, grad_log_loc): Do nothing if
+	_grad_logger is NULL.
+
 2008-05-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* lib/list.c (grad_list_insert_sorted): Update list->count.

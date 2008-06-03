@@ -1,6 +1,6 @@
 # This file is part of GNU Radius.
 # Copyright (C) 2000,2001,2002,2003,2004,2005,2006,
-# 2007 Free Software Foundation, Inc.
+# 2007,2008 Free Software Foundation, Inc.
 #      
 # Written by Sergey Poznyakoff
 #
@@ -20,7 +20,6 @@
 
 noinst_LIBRARIES = libradextra.a
 libradextra_a_SOURCES = \
- deflog.c\
  intl.c\
  radargp.c\
  readline.c 
@@ -44,6 +43,7 @@ libgnuradius_la_SOURCES= \
  cryptpass.c\
  dbm.c\
  debug.c\
+ deflog.c\
  dict.c\
  envar.c\
  getgr.c\

@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -196,6 +196,38 @@ grad_client_decrypt_pairlist(grad_avp_t *plist, u_char *authenticator, u_char *s
 	return plist;
 }
 
+static int
+wait_for_reply(int fd, unsigned timeout)
+{
+	fd_set readfds;
+	struct timeval start, tm;
+	
+	gettimeofday(&start, NULL);
+
+	for (;;) {
+		tm.tv_usec = 0L;
+		tm.tv_sec = (long) timeout;
+
+		FD_ZERO(&readfds);
+		FD_SET(fd, &readfds);
+		if (grad_recompute_timeout (&start, &tm)) 
+			return 0;
+
+		if (select(fd+1, &readfds, NULL, NULL, &tm) < 0) {
+			if (errno == EINTR) {
+				GRAD_DEBUG(20,
+					   "select interrupted. retrying.");
+				continue;
+			}
+			grad_log(L_NOTICE, _("select() interrupted"));
+			break;
+		}
+
+		return FD_ISSET (fd, &readfds);
+	}
+	return 1;
+}
+
 grad_request_t *
 grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 		  grad_avp_t *pairlist,
@@ -205,7 +237,6 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 	struct sockaddr salocal;
 	struct sockaddr saremote;
 	struct sockaddr_in *sin;
-        int local_port;
         int sockfd;
         int salen;
         int i;
@@ -231,15 +262,8 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
         sin->sin_family = AF_INET;
         sin->sin_addr.s_addr = config->source_ip ?
                                    htonl(config->source_ip) : INADDR_ANY;
-
-	/*FIXME: not necessary?*/
-        local_port = 1025;
-        do {
-                local_port++;
-                sin->sin_port = htons((u_short)local_port);
-        } while ((bind(sockfd, &salocal, sizeof (struct sockaddr_in)) < 0)
-		 && local_port < 65535);
-        if (local_port >= 65535) {
+        sin->sin_port = 0;
+        if (bind(sockfd, &salocal, sizeof (struct sockaddr_in))) {
                 grad_log(L_ERR|L_PERROR, "bind");
                 close(sockfd);
                 return NULL;
@@ -250,8 +274,6 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
         itr = grad_iterator_create(config->servers);
         server = grad_iterator_first(itr);
         do {
-		fd_set readfds;
-		struct timeval tm;
 		int result;
 		u_char authenticator[GRAD_AUTHENTICATOR_LENGTH];
 		void *pdu;
@@ -299,8 +321,14 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                 sin->sin_addr.s_addr = htonl(server->addr);
                 sin->sin_port = htons(server->port[port_type]);
 
+		GRAD_DEBUG2(10, "sending request (timeout=%u, retries=%u)",
+			    config->timeout, config->retries);
+		
                 for (i = 0; i < config->retries; i++) {
-                        if (sendto(sockfd, pdu, size, 0,
+			if (i)
+				GRAD_DEBUG(10,"no response. retrying.");
+				
+			if (sendto(sockfd, pdu, size, 0,
                                    &saremote,
                                    sizeof(struct sockaddr_in)) == -1) {
                                 grad_log(L_ERR|L_PERROR, "sendto");
@@ -308,22 +336,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 
                         salen = sizeof (saremote);
 
-                        tm.tv_usec = 0L;
-                        tm.tv_sec = (long) config->timeout;
-                        FD_ZERO(&readfds);
-                        FD_SET(sockfd, &readfds);
-                        if (select(sockfd+1, &readfds, NULL, NULL, &tm) < 0) {
-                                if (errno == EINTR) {
-                                        i--;
-					GRAD_DEBUG(20,
-					      "select interrupted. retrying.");
-                                        continue;
-                                }
-                                grad_log(L_NOTICE, _("select() interrupted"));
-                                break;
-                        }
-
-                        if (FD_ISSET (sockfd, &readfds)) {
+                        if (wait_for_reply (sockfd, config->timeout)) {
                                 result = recvfrom(sockfd,
                                                   recv_buf,
                                                   config->buffer_size,
@@ -345,7 +358,6 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                                 
                                 break;
                         }
-			GRAD_DEBUG(10,"no response. retrying.");
                 }
 		
 		grad_free(pdu);
@@ -378,6 +390,7 @@ grad_client_send(grad_server_queue_t *config, int port_type, int code,
 #define TOK_SERVER     2
 #define TOK_TIMEOUT    3
 #define TOK_RETRY      4
+#define TOK_DEBUG      5
 
 static grad_keyword_t kwd[] = {
         { "source_ip", TOK_SOURCE_IP },
@@ -385,6 +398,7 @@ static grad_keyword_t kwd[] = {
         { "server", TOK_SERVER },
         { "timeout", TOK_TIMEOUT },
         { "retry", TOK_RETRY },
+	{ "debug", TOK_DEBUG },
         { NULL }
 };
 
@@ -394,7 +408,8 @@ parse_client_config(void *closure, int argc, char **argv, grad_locus_t *loc)
 	grad_server_queue_t *client = closure;
         char *p;
         grad_server_t serv;
-        
+	int i;
+	
         switch (grad_xlat_keyword(kwd, argv[0], TOK_INVALID)) {
         case TOK_INVALID:
                 grad_log_loc(L_ERR, loc, _("unknown keyword"));
@@ -450,6 +465,11 @@ parse_client_config(void *closure, int argc, char **argv, grad_locus_t *loc)
                 if (*p) 
                         grad_log_loc(L_ERR, loc, _("bad retry value"));
                 break;
+
+	case TOK_DEBUG:
+		for (i = 1; i < argc; i++)
+			grad_set_debug_levels(argv[i]);
+		break;
         }
         return 0;
 }

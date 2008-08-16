@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003,2004,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 2003,2004,2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -50,24 +50,6 @@ typedef struct {
 
 /* Low-level calls */
 
-/* Recompute the timeout TVAL taking into account the time elapsed since
-   START */
-static int
-recompute_timeout(struct timeval *start, struct timeval *tval)
-{
-	struct timeval now, diff;
-	
-	gettimeofday(&now, NULL);
-	timersub(&now, start, &diff);
-	if (timercmp(&diff, tval, <)) {
-		struct timeval tmp;
-		timersub(tval, &diff, &tmp);
-		*tval = tmp;
-		return 0;
-	} 
-	return 1;
-}
-
 /* Write into the pipe (represented by FD) SIZE bytes from PTR. TV
    sets timeout. TV==NULL means no timeout is imposed.
 
@@ -92,7 +74,7 @@ pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 			FD_SET(fd, &wr_set);
 
 			tval = *tv;
-			if (recompute_timeout (&start, &tval)) {
+			if (grad_recompute_timeout (&start, &tval)) {
 				errno = ETIMEDOUT;
 				break;
 			}
@@ -159,7 +141,7 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 			FD_SET(fd, &rd_set);
 
 			tval = *tv;
-			if (recompute_timeout (&start, &tval)) {
+			if (grad_recompute_timeout (&start, &tval)) {
 				errno = ETIMEDOUT;
 				break;
 			}

@@ -1,3 +1,14 @@
+2008-08-15  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS, configure.ac: Version 1.5.91
+	* include/radius/radius.h (grad_recompute_timeout): New function.
+	* lib/client.c (grad_client_send0): Fix send-and-wait loop.
+	* lib/util.c (grad_recompute_timeout): New function.
+	* radiusd/config.y (typestr): New entries.
+	(_get_value): Handle CFG_UNSIGNED, CFG_SIZE_T, and CFG_INTEGER.
+	* radiusd/rpp.c (recompute_timeout): Replace by extern
+	grad_recompute_timeout.
+
 2008-06-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* lib/Makefile.am (libgnuradius_la_SOURCES): Add deflog.c (moved

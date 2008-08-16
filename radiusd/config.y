@@ -65,7 +65,9 @@ static char *typestr[] = {
 	"ipaddr",
 	"port",
 	"char",
-	"host"
+	"host",
+	"unsigned",
+	"size"
 };
 	 
 struct syntax_block {
@@ -687,6 +689,16 @@ _get_value(cfg_value_t *arg, int type, void *base)
                 }
 		break;
 		
+	case CFG_UNSIGNED:
+	case CFG_SIZE_T:
+	case CFG_INTEGER:
+		switch (value.type) {
+		case CFG_UNSIGNED:
+		case CFG_SIZE_T:
+		case CFG_INTEGER:
+			value.type = type;
+			break;
+		} 
         }
         
         if (type != value.type) {

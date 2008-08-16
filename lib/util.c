@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -464,5 +464,23 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
         
         *savep = buf1;
         return buf1;
+}
+
+/* Recompute the timeout TVAL taking into account the time elapsed since
+   START */
+int
+grad_recompute_timeout(struct timeval *start, struct timeval *tval)
+{
+	struct timeval now, diff;
+	
+	gettimeofday(&now, NULL);
+	timersub(&now, start, &diff);
+	if (timercmp(&diff, tval, <)) {
+		struct timeval tmp;
+		timersub(tval, &diff, &tmp);
+		*tval = tmp;
+		return 0;
+	} 
+	return 1;
 }
 

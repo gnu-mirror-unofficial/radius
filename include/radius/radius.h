@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -455,6 +455,9 @@ char *grad_op_to_str(enum grad_operator op);
 enum grad_operator grad_str_to_op(char *str);
 int grad_xlat_keyword(grad_keyword_t *kw, const char *str, int def);
 int grad_astrcat(char **pptr, ...);
+
+struct timeval;
+int grad_recompute_timeout(struct timeval *start, struct timeval *tval);
 
 /* c-strcase.c */
 int grad_c_strcasecmp(const char *a, const char *b);

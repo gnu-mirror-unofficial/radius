@@ -372,7 +372,7 @@ radiusd_logger(int level,
                 cat = log_get_category();
         pri = L_PRI(level);
         
-        if (loc) {
+        if (loc && loc->file) {
 		logbuf_append(&buf1, loc->file);
 		logbuf_append(&buf1, ":");
 		logbuf_append_line(&buf1, loc->line);

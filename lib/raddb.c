@@ -73,7 +73,7 @@ grad_read_raddb_file(char *filename, int vital, char *delim,
 	size_t rdsize;
 	
 	if (stat(filename, &st)) {
-                fprintf (stderr, _("can't stat `%s'"), filename);
+                grad_log(L_ERR|L_PERROR, _("can't stat `%s'"), filename);
                 return -1;
         }
 	fd = open(filename, O_RDONLY);

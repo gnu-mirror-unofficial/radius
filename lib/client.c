@@ -296,7 +296,8 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 		else
 			id = grad_client_message_id(server);
 		pair = grad_client_encrypt_pairlist(grad_avl_dup(pairlist),
-						    authenticator, server->secret);
+						    authenticator,
+						    server->secret);
 		size = grad_create_pdu(&pdu, code,
 				       id,
 				       authenticator,

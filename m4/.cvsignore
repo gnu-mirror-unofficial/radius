@@ -9,6 +9,7 @@ dirname.m4
 dos.m4
 double-slash-root.m4
 eoverflow.m4
+errno_h.m4
 error.m4
 exitfail.m4
 extensions.m4
@@ -86,6 +87,7 @@ strings_h.m4
 strndup.m4
 strnlen.m4
 sysexits.m4
+threadlib.m4
 uintmax_t.m4
 ulonglong.m4
 unistd_h.m4

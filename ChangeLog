@@ -1,3 +1,13 @@
+2008-12-03  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap: Replace with the gnulib version.
+	* bootstrap.conf: Read local configuration file.
+	* configure.ac: Add AC_CONFIG_MACRO_DIR
+	* lib/client.c: Minor change
+	* lib/raddb.c (grad_read_raddb_file): Remove leftover fprintf.
+	* radiusd/log.c (radiusd_logger): Check if loc->line != NULL.
+	* m4/.cvsignore: Update.
+
 2008-08-15  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS, configure.ac: Version 1.5.91

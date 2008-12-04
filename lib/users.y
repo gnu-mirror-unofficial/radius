@@ -312,7 +312,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
 
 			if (x) {
 				char *s;
-				char buf[INT_STRLEN_BOUND(long)];
+				char buf[INT_BUFSIZE_BOUND(long)];
 				grad_longtostr(pair->avp_lvalue,
 					       buf, sizeof buf);
 				grad_astrcat(&s, buf, "+", "%{NAS-Port-Id}",

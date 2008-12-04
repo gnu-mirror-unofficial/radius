@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with GNU Radius; if not, write to the Free Software Foundation,
 dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
 define({ARGS},{ifdef({server}, -h{}server){}ifdef({port}, -p{}port){}dnl
-ifdef({CREATOR},-U CREATOR){}ifdef({CREATOR_PASSWORD},{ -W})})
+ifdef({CREATOR},{ -U CREATOR}){}ifdef({CREATOR_PASSWORD},{ -W})})
 
 define({CREATEDATABASE},ifelse(MODE,{CREATE}, {
 createdb ARGS {$1}

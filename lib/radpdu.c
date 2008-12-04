@@ -367,9 +367,9 @@ decode_vsa(u_char *ptr, grad_uint32_t attrlen, grad_uint32_t *vendorpec, grad_ui
 {
 	grad_uint32_t x;
 	
-	if (attrlen <= 6) { /*FIXME*/
+	if (attrlen < 6) { /*FIXME*/
 		grad_log(L_NOTICE,
-		    _("Received a vendor-specific attribute with length <= 6"));
+		    _("Received a vendor-specific attribute with length < 6"));
 		return 1;
 	}
 	memcpy(&x, ptr, 4);

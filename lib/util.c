@@ -449,7 +449,7 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
 			     buf2ptr ? buf2ptr : buf2,
 			     NULL);
         else {
-		char buf[INT_STRLEN_BOUND (int)];
+		char buf[INT_BUFSIZE_BOUND (int)];
 
 		grad_inttostr(pair->attribute, buf, sizeof buf);
                 grad_astrcat(&buf1,

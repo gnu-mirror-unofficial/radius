@@ -28,6 +28,7 @@ basename.c
 config.charset
 dirname.c
 dirname.h
+dummy.c
 error.c
 error.h
 exitfail.c

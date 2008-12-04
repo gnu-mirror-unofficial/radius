@@ -164,7 +164,7 @@ grad_slist_coalesce(grad_slist_t slist)
 void *
 grad_slist_head(grad_slist_t slist, size_t *psize)
 {
-	if (*psize) 
+	if (psize) 
 		*psize = slist->head ? slist->head->level : 0;
 	return slist->head ? slist->head->buf : NULL;
 }

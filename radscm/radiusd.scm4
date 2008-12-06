@@ -1,6 +1,6 @@
 ;;;; -*- scheme -*-
 ;;;; This file is part of GNU Radius.
-;;;; Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+;;;; Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
 ;;;;
 ;;;; Written by Sergey Poznyakoff
 ;;;;
@@ -21,9 +21,9 @@
 changequote([,])dnl
 undefine([define])
 ;;; Export symbols defined in the server module
-(export L_MAIN L_AUTH L_ACCT L_PROXY
-        L_SNMP L_EMERG L_ALERT L_CRIT
-        L_ERR L_WARN L_NOTICE L_INFO L_DEBUG)
+(export GRAD_LOG_MAIN GRAD_LOG_AUTH GRAD_LOG_ACCT GRAD_LOG_PROXY
+        GRAD_LOG_SNMP GRAD_LOG_EMERG GRAD_LOG_ALERT GRAD_LOG_CRIT
+        GRAD_LOG_ERR GRAD_LOG_WARN GRAD_LOG_NOTICE GRAD_LOG_INFO GRAD_LOG_DEBUG)
 (export SQL_AUTH SQL_ACCT)
 
 (export include(BUILDDIR/rscm_radlog.exp))
@@ -46,9 +46,10 @@ undefine([define])
 ;;; from the server.
 (define-module (radiusd)
   :use-module (guile-user)
-  :re-export (L_MAIN L_AUTH L_ACCT L_PROXY
-	      L_SNMP L_EMERG L_ALERT L_CRIT
-	      L_ERR L_WARN L_NOTICE L_INFO L_DEBUG
+  :re-export (GRAD_LOG_MAIN GRAD_LOG_AUTH GRAD_LOG_ACCT GRAD_LOG_PROXY
+	      GRAD_LOG_SNMP GRAD_LOG_EMERG GRAD_LOG_ALERT GRAD_LOG_CRIT
+	      GRAD_LOG_ERR GRAD_LOG_WARN GRAD_LOG_NOTICE GRAD_LOG_INFO 
+	      GRAD_LOG_DEBUG
 	      SQL_AUTH SQL_ACCT
               include(BUILDDIR/rscm_radlog.exp)
               include(BUILDDIR/rscm_rewrite.exp)

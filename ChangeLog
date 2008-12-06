@@ -1,5 +1,14 @@
 2008-12-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* configure.ac, NEWS: Version 1.6
+	* lib/getgr.c, lib/getpw_r.c, lib/numtostr.c: include string.h.
+	* radiusd/rewrite.y (bi_gsub,bi_sub): Add typecasts.
+	* scripts/mktypes.c (print_number): Return also numeric
+	representation.
+	(main): Define GRAD_VERSION_NUMBER.
+	* tests/raddb/auth.scm: Replace L_INFO with GRAD_LOG_INFO.
+	* radscm/radiusd.scm4, radscm/ttl.scm: Likewise.
+
 	* scripts/radius.m4: New file.
 	* NEWS: Mention AM_GNU_RADIUS.
 

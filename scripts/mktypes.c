@@ -22,6 +22,7 @@ char header_text[] = "\
 # include <config.h>
 #endif
 #include <sys/types.h>
+#include <stdio.h>
 #include <ctype.h>
 #ifdef HAVE_STDINT_H
 # include <stdint.h>
@@ -35,14 +36,18 @@ char header_text[] = "\
 #endif
 
 char *
-print_number(char *prefix, char *p)
+print_number(char *prefix, char *p, unsigned *acc)
 {
+	unsigned n = 0;
 	if (isdigit(*p)) {
 		printf("#define %s ", prefix);
-		for (; isdigit(*p); p++) 
+		for (; isdigit(*p); p++) {
 			putchar(*p);
+			n = n * 10 + *p - '0';
+		}
 		putchar('\n');
 	}
+	*acc = n;
 	return p;
 }
 
@@ -50,6 +55,7 @@ int
 main()
 {
 	char *p;
+	unsigned version = 0, n;
 	
 	printf("%s\n\n", header_text);
 	printf("#ifndef _gnu_radius_types_h\n");
@@ -61,18 +67,22 @@ main()
 	printf("\n");
 	printf("#define GRAD_VERSION_STRING \"%s\"\n", PACKAGE_VERSION);
 	p = PACKAGE_VERSION;
-	p = print_number("GRAD_VERSION_MAJOR", p);
+	p = print_number("GRAD_VERSION_MAJOR", p, &version);
+	version *= 1000;
 	if (*p == '.') {
 		p++;
-		p = print_number("GRAD_VERSION_MINOR", p);
+		p = print_number("GRAD_VERSION_MINOR", p, &n);
+		version += n * 100;
 		if (*p == '.') {
 			p++;
-			p = print_number("GRAD_VERSION_PATCH", p);
-		}
-	}
+			p = print_number("GRAD_VERSION_PATCH", p, &n);
+			version += n;
+		} else 
+			printf("#define GRAD_VERSION_PATCH 0\n");
+	} 
 	if (*p)
 		printf("#define GRAD_VERSION_EXTRA \"%s\"\n");
-	
+	printf("#define GRAD_VERSION_NUMBER %u\n", version);
 	printf("typedef %s grad_uint32_t;\n",
 #if SIZEOF_UINT32_T == 4
 	       "uint32_t"

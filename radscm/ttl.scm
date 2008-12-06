@@ -1,5 +1,6 @@
 ;;;; This file is part of GNU Radius.
-;;;; Copyright (C) 2001,2002,2003,2004,2007 Free Software Foundation, Inc.
+;;;; Copyright (C) 2001,2002,2003,2004,2007,
+;;;; 2008 Free Software Foundation, Inc.
 ;;;;
 ;;;; Written by Sergey Poznyakoff
 ;;;;
@@ -87,14 +88,14 @@
 	      (checkval (lambda (key pred)
 			  (cond
 			   ((not value)
-			    (rad-log L_ERR
+			    (rad-log GRAD_LOG_ERR
 				     (format
 				      #f
 				      "ttl-init: No value specified for keyword ~A"
 				      key))
 			    (stop))
 			   ((not (pred value))
-			    (rad-log L_ERR
+			    (rad-log GRAD_LOG_ERR
 				     (format
 				      #f
 				      "ttl-init: Invalid data type specified for keyword ~A"
@@ -126,7 +127,7 @@
 	       (checkval key number?)
 	       (set! ttl-timeout value))
 	      (else
-		(rad-log L_ERR
+		(rad-log GRAD_LOG_ERR
 			 (string-append
 			  (format #f
 				  "ttl-init: Undefined keyword ~A"
@@ -136,13 +137,13 @@
 	   ((not value)
 	    (set! value key))
 	   (else
-	    (rad-log L_ERR
+	    (rad-log GRAD_LOG_ERR
 		     (format #f "ttl-init: stray argument near ~A" key)))))
 	(reverse rest))))))
 
 (define (ttl-debug fmt . rest)
   (if ttl-debug-enabled
-      (rad-log L_DEBUG (apply format
+      (rad-log GRAD_LOG_DEBUG (apply format
 			      (append
 			       (list #f fmt)
 			       rest)))))
@@ -183,7 +184,7 @@
     (ttl-debug "Sending ~A, ~A" code user-name)
     (cond
      ((not fd)
-      (rad-log L_ERR "can't open socket for ttl exchange"))
+      (rad-log GRAD_LOG_ERR "can't open socket for ttl exchange"))
      (else
       (catch #t
         (lambda ()
@@ -222,14 +223,14 @@
                               (if (not num)
                                   (begin
                                     (rad-log
-                                     L_ERR
+                                     GRAD_LOG_ERR
                                      (format #f "bad answer \"~A\""
                                              (ttl-reply-string packet)))
                                     (set! ttl 0)))
                                  (set! ttl num) ))))))))))))
         (lambda args
           ;;FIXME: more verbose
-          (rad-log L_ERR (format #f "~A" args))))
+          (rad-log GRAD_LOG_ERR (format #f "~A" args))))
       (close-port fd)))
     (ttl-debug "returning ~A" ttl)
     ttl))
@@ -247,7 +248,7 @@
          ((boolean? ttl)
           #t)
          ((= ttl 0)
-          (rad-log L_NOTICE
+          (rad-log GRAD_LOG_NOTICE
                    (format #f "Zero time to live ~A" (cdr user-pair)))
           (cons
            #f
@@ -259,7 +260,7 @@
                 (list
                  (cons "Session-Timeout" ttl))))
          (else
-          (rad-log L_NOTICE "Ignoring returned ttl")
+          (rad-log GRAD_LOG_NOTICE "Ignoring returned ttl")
           #t)))))))
 
 (define-public (ttl-session req)

@@ -69,10 +69,10 @@
 		   "' AND status <> 'BLCK' ORDER BY time"))))
 	(cond
 	 (res
-	  (rad-log L_DEBUG (string-append "ipalloc " user-name ": HIT"))
+	  (rad-log GRAD_LOG_DEBUG (string-append "ipalloc " user-name ": HIT"))
 	  (car (car res)))
 	 (else
-	  (rad-log L_DEBUG (string-append "ipalloc " user-name ": MISS"))
+	  (rad-log GRAD_LOG_DEBUG (string-append "ipalloc " user-name ": MISS"))
 	  (let ((assigned-ip #f))
 	    (do ((attempt 0 (1+ attempt)))
 		((or assigned-ip (= attempt ipalloc-max-attempts)) assigned-ip)
@@ -102,7 +102,7 @@
 			"' AND user_name='" user-name "'"))
 		      (set! assigned-ip (caar temp-ip))))
 		 (else
-		  (rad-log L_ERR "All IPs are busy"))))
+		  (rad-log GRAD_LOG_ERR "All IPs are busy"))))
 	      (usleep ipalloc-sleep-time)))))) =>
 	      (lambda (ip)
 		(cons

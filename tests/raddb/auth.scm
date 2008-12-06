@@ -1,5 +1,5 @@
 ;;;; This file is part of GNU Radius testsuite.
-;;;; Copyright (C) 2001,2003 Free Software Foundation, Inc.
+;;;; Copyright (C) 2001,2003,2008 Free Software Foundation, Inc.
 ;;;;
 ;;;; Written by Sergey Poznyakoff
 ;;;;
@@ -27,7 +27,7 @@
          (reply-list '()))
     (if username
         (let ((user-data (assoc (cdr username) staff-data)))
-          (rad-log L_INFO (format #f "~A" user-data))
+          (rad-log GRAD_LOG_INFO (format #f "~A" user-data))
           (if user-data
               (call-with-current-continuation
                (lambda (xx)

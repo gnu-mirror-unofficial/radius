@@ -21,9 +21,9 @@
 AC_PREREQ(2.59)
 
 AC_REVISION($Revision$)
-AC_INIT([GNU Radius], [1.5.91], [bug-gnu-radius@gnu.org])
+AC_INIT([GNU Radius], [1.6], [bug-gnu-radius@gnu.org])
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
-AC_CONFIG_MACRO_DIR(m4)
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([gnu])
 AC_CANONICAL_SYSTEM

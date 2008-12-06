@@ -41,13 +41,13 @@
 	      (= (string-length pass) 32))
 	  (string-hex->bin pass)
 	  (begin
-	    (grad-log L_ERR (_"Invalid LM-Password"))
+	    (grad-log GRAD_LOG_ERR (_"Invalid LM-Password"))
 	    #f))))
    ((get-attr "User-Password" pairlist) =>
     (lambda (user-pass)
       (substring (lm-password-hash user-pass) 0 16)))
    (else
-    (grad-log L_ERR
+    (grad-log GRAD_LOG_ERR
 	      (_"Cannot create LM-Password: User-Password is not present."))
     #f)))
 
@@ -70,13 +70,13 @@ notion about Unicode, then produce an MD4 hash of the resulting string"
 	      (= (string-length pass) 32))
 	  (string-hex->bin pass)
 	  (begin
-	    (grad-log L_ERR (_"Invalid NT-Passwors"))
+	    (grad-log GRAD_LOG_ERR (_"Invalid NT-Passwors"))
 	    #f))))
    ((get-attr "User-Password" pairlist) =>
     (lambda (x)
       (nt-password-hash x)))
    (else
-    (grad-log L_ERR
+    (grad-log GRAD_LOG_ERR
 	      (_"Cannot create NT-Password: User-Password is not present."))
     #f)))
 
@@ -129,7 +129,7 @@ notion about Unicode, then produce an MD4 hash of the resulting string"
 
 (define (auth-failure reason . reply-pairs)
   (if reason
-      (rad-log L_ERR reason))
+      (rad-log GRAD_LOG_ERR reason))
   (apply throw
 	 (append
 	  (list 'auth-failure)
@@ -137,7 +137,7 @@ notion about Unicode, then produce an MD4 hash of the resulting string"
 
 (define (auth-success reason . reply-pairs)
   (if reason
-      (rad-log L_NOTICE reason))
+      (rad-log GRAD_LOG_NOTICE reason))
   (apply throw
 	 (append
 	  (list 'auth-success)
@@ -162,20 +162,20 @@ notion about Unicode, then produce an MD4 hash of the resulting string"
 		(cond
 		 ((string=? (substring (lm-password-hash user-pass) 0 16)
 			    lm-pass)
-		  (rad-log L_DEBUG "User-Password matches LM-Password")
+		  (rad-log GRAD_LOG_DEBUG "User-Password matches LM-Password")
 		  #t)
 		 (else
-		  (rad-log L_DEBUG
+		  (rad-log GRAD_LOG_DEBUG
 			   "User-Password does not match LM-Password")
 		  (auth-failure #f))))
 	       (nt-pass
 		(cond
 		 ((string=? (nt-password-hash user-pass)
 			    lm-pass)
-		  (rad-log L_DEBUG "User-Password matches NT-Password")
+		  (rad-log GRAD_LOG_DEBUG "User-Password matches NT-Password")
 		  (auth-success #f))
 		 (else
-		  (rad-log L_DEBUG
+		  (rad-log GRAD_LOG_DEBUG
 			   "User-Password does not match NT-Password")
 		  (auth-failure #f))))
 	       (else
@@ -195,10 +195,10 @@ notion about Unicode, then produce an MD4 hash of the resulting string"
 
 		  (cond
 		   ((= (logand (char->integer (string-ref response 1)) 1) 1)
-		    (rad-log L_DEBUG "Using NT-Password for MS-CHAPv1")
+		    (rad-log GRAD_LOG_DEBUG "Using NT-Password for MS-CHAPv1")
 		    (ms-chap-1 nt-pass challenge response 26))
 		   (else
-		    (rad-log L_DEBUG "Using LM-Password for MS-CHAPv1")
+		    (rad-log GRAD_LOG_DEBUG "Using LM-Password for MS-CHAPv1")
 		    (ms-chap-1 lm-pass challenge response 26)))))
 
 	       ((get-attr "MS-CHAP2-Response" req) =>

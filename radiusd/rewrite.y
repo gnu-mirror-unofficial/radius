@@ -5441,7 +5441,7 @@ bi_gsub()
 	subst_destroy(subst);
 	regfree(&rx);
 
-	pushn(temp_space_fix(base));
+	pushn((RWSTYPE)temp_space_fix(base));
 }
 
 static void
@@ -5481,7 +5481,7 @@ bi_sub()
 	subst_destroy(subst);
 	regfree(&rx);
 
-	pushn(temp_space_fix(base));
+	pushn((RWSTYPE)temp_space_fix(base));
 }
 
 #define ISPRINT(c) (((unsigned char)c) < 128 && (isalnum(c) || c == '-'))

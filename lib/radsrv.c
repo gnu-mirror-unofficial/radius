@@ -70,7 +70,7 @@ grad_server_send_reply(int fd, grad_request_t *radreq,
 			 grad_ip_iptostr(radreq->ipaddr, NULL),
 			 grad_nas_request_to_name(radreq, buf, sizeof buf));
 #else		
-                GRAD_DEBUG4(1, "Sending %s of id %d to %s (nas %s",
+                GRAD_DEBUG4(1, "Sending %s of id %d to %s (nas %s)",
                           grad_request_code_to_name(reply_code), 
                           radreq->id,
 			  grad_ip_iptostr(radreq->ipaddr, NULL),

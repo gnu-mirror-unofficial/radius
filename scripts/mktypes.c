@@ -1,6 +1,6 @@
 char header_text[] = "\
 /* This file is part of GNU Radius.\n\
-   Copyright (C) 2004, 2007 Free Software Foundation, Inc.\n\
+   Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.\n\
 \n\
    GNU Radius is free software; you can redistribute it and/or modify\n\
    it under the terms of the GNU General Public License as published by\n\
@@ -22,6 +22,7 @@ char header_text[] = "\
 # include <config.h>
 #endif
 #include <sys/types.h>
+#include <ctype.h>
 #ifdef HAVE_STDINT_H
 # include <stdint.h>
 #endif
@@ -33,9 +34,23 @@ char header_text[] = "\
 # define DEF_ACCT_PORT  1813
 #endif
 
+char *
+print_number(char *prefix, char *p)
+{
+	if (isdigit(*p)) {
+		printf("#define %s ", prefix);
+		for (; isdigit(*p); p++) 
+			putchar(*p);
+		putchar('\n');
+	}
+	return p;
+}
+
 int
 main()
 {
+	char *p;
+	
 	printf("%s\n\n", header_text);
 	printf("#ifndef _gnu_radius_types_h\n");
 	printf("#define _gnu_radius_types_h\n");
@@ -44,6 +59,20 @@ main()
 	printf("#include <stdint.h>\n");
 #endif
 	printf("\n");
+	printf("#define GRAD_VERSION_STRING \"%s\"\n", PACKAGE_VERSION);
+	p = PACKAGE_VERSION;
+	p = print_number("GRAD_VERSION_MAJOR", p);
+	if (*p == '.') {
+		p++;
+		p = print_number("GRAD_VERSION_MINOR", p);
+		if (*p == '.') {
+			p++;
+			p = print_number("GRAD_VERSION_PATCH", p);
+		}
+	}
+	if (*p)
+		printf("#define GRAD_VERSION_EXTRA \"%s\"\n");
+	
 	printf("typedef %s grad_uint32_t;\n",
 #if SIZEOF_UINT32_T == 4
 	       "uint32_t"

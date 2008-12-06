@@ -1,5 +1,8 @@
 2008-12-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* scripts/radius.m4: New file.
+	* NEWS: Mention AM_GNU_RADIUS.
+
 	Namespace normalization.
 	
 	* include/radius/list.h: Rename struct list/iterator to grad_list/

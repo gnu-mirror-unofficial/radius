@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2003,2004,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -106,7 +106,7 @@ forward_data(grad_server_t *srv, int type, void *data, size_t size)
 	if (rc < 0) {
 		char buffer[GRAD_IPV4_STRING_LENGTH];
 
-		grad_log(L_ERR|L_PERROR,
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 		         _("Can't forward to %s:%d"),
 		         grad_ip_iptostr(srv->addr, buffer),
 		         srv->port[type]);
@@ -176,7 +176,7 @@ fixup_forward_server(void *item, void *data)
 	CLIENT *cl = client_lookup_ip(srv->addr);
 	if (!cl) {
 		char buffer[GRAD_IPV4_STRING_LENGTH];
-		grad_log(L_NOTICE,
+		grad_log(GRAD_LOG_NOTICE,
 		         _("Forwarding host %s not listed in clients"),
 		         grad_ip_iptostr(srv->addr, buffer));
 	} else
@@ -195,7 +195,7 @@ forward_after_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 	forward_fd = socket(PF_INET, SOCK_DGRAM, 0);
 
 	if (forward_fd == -1) {
-		grad_log(L_ERR|L_PERROR,
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 		         _("Can't open forwarding socket"));
 		return;
 	}
@@ -205,7 +205,8 @@ forward_after_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
         s.sin_addr.s_addr = htonl(ref_ip);
 	s.sin_port = 0;
 	if (bind(forward_fd, (struct sockaddr*)&s, sizeof (s)) < 0) 
-		grad_log(L_ERR|L_PERROR, _("Can't bind forwarding socket"));
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+		         _("Can't bind forwarding socket"));
 	
 	grad_list_iterate(forward_list, fixup_forward_server, NULL);
 }

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001,2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003,2004,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -78,7 +78,7 @@ mark_profile(struct check_datum *datum, User_symbol *sym, char *target_name)
         User_symbol *target = (User_symbol*)grad_sym_lookup(datum->symtab, target_name);
 
         if (!target) {
-                grad_log_loc(L_ERR, &sym->loc,
+                grad_log_loc(GRAD_LOG_ERR, &sym->loc,
 			     _("Match-Profile refers to non-existing profile (%s)"),
 			     target_name);
                 return;
@@ -122,7 +122,7 @@ pass2(void *closure, grad_symbol_t *symbol)
 	User_symbol *sym = (User_symbol *) symbol;
 
         if (radck_bitisset(datum->r, datum->rlen, sym->ordnum, sym->ordnum)) {
-                grad_log_loc(L_ERR, &sym->loc,
+                grad_log_loc(GRAD_LOG_ERR, &sym->loc,
 			     _("circular dependency for %s"),
 			     sym->name);
                 grad_symtab_delete(datum->symtab, (grad_symbol_t *)sym);
@@ -149,7 +149,7 @@ radck()
 		size = (user_count + BITS_PER_WORD - 1) / BITS_PER_WORD;
 		r = grad_malloc(user_count*size*sizeof(unsigned));
 		if (!r) {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("not enough memory for transitivity check"));
 			return;
 		}
@@ -175,14 +175,14 @@ radck()
 	}
 	
         if (user_count == 0) 
-                grad_log(L_ERR, _("USER LIST IS EMPTY"));
+                grad_log(GRAD_LOG_ERR, _("USER LIST IS EMPTY"));
 }
 
 static void
 check_dup_attr(grad_avp_t **prev, grad_avp_t *ptr, grad_locus_t *loc)
 {
         if (*prev) {
-                grad_log_loc(L_WARN, loc,
+                grad_log_loc(GRAD_LOG_WARN, loc,
 			     _("duplicate %s attribute"), ptr->name);
         } else
                 *prev = ptr;
@@ -223,7 +223,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                 dict = grad_attr_number_to_dict(p->attribute);
                 if (dict) {
                         if (!(dict->prop & GRAD_AF_LHS(cf_file))) {
-                                grad_log_loc(L_ERR, loc,
+                                grad_log_loc(GRAD_LOG_ERR, loc,
 					 _("attribute %s not allowed in LHS"),
 					     dict->name);
                                 errcnt++;
@@ -257,7 +257,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
 			if (p->avp_lvalue == DV_PASSWORD_LOCATION_SQL) {
 				const char *msg;
 				if (!sql_auth_avail_p(&msg)) {
-					grad_log_loc(L_ERR, loc, "%s", msg);
+					grad_log_loc(GRAD_LOG_ERR, loc, "%s", msg);
 					errcnt++;
 				}
 			}
@@ -271,7 +271,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                 case DA_MATCH_PROFILE:
                         if (strncmp(p->avp_strvalue, "DEFAULT", 7) == 0 ||
                             strncmp(p->avp_strvalue, "BEGIN", 5) == 0) {
-                                grad_log_loc(L_ERR, loc,
+                                grad_log_loc(GRAD_LOG_ERR, loc,
 					     "%s",
 				  _("Match-Profile refers to a DEFAULT entry"));
                                 errcnt++;
@@ -280,7 +280,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
 
 		case DA_SIMULTANEOUS_USE:
 			if (!radius_mlc_enabled_p()) {
-				grad_log_loc(L_ERR, loc,
+				grad_log_loc(GRAD_LOG_ERR, loc,
 					     "%s",
 					     _("Simultaneous-Use is used, but multiple login checking is not enabled"));
 				errcnt++;
@@ -320,7 +320,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
         switch (auth_type->avp_lvalue) {
         case DV_AUTH_TYPE_LOCAL:
                 if (!password && !chap_password && !pass_loc) {
-                        grad_log_loc(L_ERR, loc,
+                        grad_log_loc(GRAD_LOG_ERR, loc,
 				     "%s",
 				     _("No User-Password attribute in LHS"));
                         errcnt++;
@@ -329,7 +329,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                 
         case DV_AUTH_TYPE_SYSTEM:
 		if (radiusd_user.username) {
-			grad_log_loc(L_ERR, loc,
+			grad_log_loc(GRAD_LOG_ERR, loc,
 				     _("Auth-Type = System can only be used when running with root privileges"));
 			errcnt++;
 		}
@@ -338,12 +338,12 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
         case DV_AUTH_TYPE_REJECT:
         case DV_AUTH_TYPE_ACCEPT:
                 if (password) {
-                        grad_log_loc(L_WARN, loc,
+                        grad_log_loc(GRAD_LOG_WARN, loc,
 				     "%s",
 			       _("User-Password attribute ignored for this Auth-Type"));
                 }
                 if (pass_loc) {
-                        grad_log_loc(L_WARN, loc,
+                        grad_log_loc(GRAD_LOG_WARN, loc,
 				     "%s",
 			       _("Password-Location attribute ignored for this Auth-Type"));
                 }
@@ -351,7 +351,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                 
         case DV_AUTH_TYPE_CRYPT_LOCAL:
                 if (!password && !crypt_password && !pass_loc) {
-                        grad_log_loc(L_ERR, loc,
+                        grad_log_loc(GRAD_LOG_ERR, loc,
 				     "%s",
 			       _("No User-Password attribute in LHS"));
                         errcnt++;
@@ -359,7 +359,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                 break;
 
         case DV_AUTH_TYPE_SECURID:
-                grad_log_loc(L_ERR, loc,
+                grad_log_loc(GRAD_LOG_ERR, loc,
 			     "%s",
 			   _("Authentication type not supported"));
                 errcnt++;
@@ -369,13 +369,13 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
 	{
 		const char *msg;
 		if (!sql_auth_avail_p(&msg)) {
-			grad_log_loc(L_ERR, loc, "%s", msg);
+			grad_log_loc(GRAD_LOG_ERR, loc, "%s", msg);
 			errcnt++;
 			break;
 		}
 		
                 if (password || crypt_password) {
-                        grad_log_loc(L_WARN, loc,
+                        grad_log_loc(GRAD_LOG_WARN, loc,
 				     "%s",
 			       _("User-Password attribute ignored for this Auth-Type"));
                 }
@@ -394,7 +394,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
 	
         case DV_AUTH_TYPE_PAM:
                 if (pam_auth && auth_data) {
-                        grad_log_loc(L_WARN, loc,
+                        grad_log_loc(GRAD_LOG_WARN, loc,
 			             "%s",
 			       _("Both Auth-Data and PAM-Auth attributes present"));
                         auth_data = NULL;
@@ -418,7 +418,7 @@ fix_reply_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                 dict = grad_attr_number_to_dict(p->attribute);
                 if (dict) {
                         if (!(dict->prop & GRAD_AF_RHS(cf_file))) {
-                                grad_log_loc(L_ERR, loc,
+                                grad_log_loc(GRAD_LOG_ERR, loc,
 					  _("attribute %s not allowed in RHS"),
 					     dict->name);
                                 errcnt++;
@@ -433,7 +433,7 @@ fix_reply_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                         break;
 
 		case DA_ADD_PORT_TO_IP_ADDRESS:
-			grad_log_loc(L_ERR, loc,
+			grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("Use of Add-Port-To-IP-Address is deprecated"));
 			errcnt++;
                 }
@@ -443,7 +443,7 @@ fix_reply_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
         }
 
         if (strncmp(name, "BEGIN", 5) == 0 && fall_through == 0) {
-                grad_log_loc(L_WARN, loc, "%s", _("BEGIN without Fall-Through"));
+                grad_log_loc(GRAD_LOG_WARN, loc, "%s", _("BEGIN without Fall-Through"));
         }
         return errcnt;
 }

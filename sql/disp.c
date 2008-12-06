@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -135,7 +136,7 @@ disp_sql_query(struct sql_connection *conn, const char *query, int *report_cnt)
 		return -1;
 	rc = disp_sql_entry(conn->interface)->query(conn, query, report_cnt);
 	if (rc) 
-		grad_log(L_ERR, "%s: %s", _("Failed query was"), query);
+		grad_log(GRAD_LOG_ERR, "%s: %s", _("Failed query was"), query);
 	return rc;
 }
 

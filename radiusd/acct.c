@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -195,7 +195,7 @@ rad_acct_system(radiusd_request_t *radreq, int dowtmp)
         /* A packet should have Acct-Status-Type attribute */
         if ((vp = grad_avl_find(radreq->request->avlist, DA_ACCT_STATUS_TYPE))
 	        == NULL) {
-                grad_log_req(L_ERR, radreq->request,
+                grad_log_req(GRAD_LOG_ERR, radreq->request,
                              _("no Acct-Status-Type attribute"));
                 return -1;
         }
@@ -296,7 +296,7 @@ rad_acct_system(radiusd_request_t *radreq, int dowtmp)
 
         /* Process Accounting-On/Off records */
         if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_ON && nas_address) {
-                grad_log(L_NOTICE, 
+                grad_log(GRAD_LOG_NOTICE, 
                          _("NAS %s started (Accounting-On packet seen)"),
                          grad_nas_ip_to_name(nas_address, buf, sizeof buf));
                 radzap(nas_address, -1, NULL, ut.time);
@@ -304,7 +304,7 @@ rad_acct_system(radiusd_request_t *radreq, int dowtmp)
                 return 0;
         }
         if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF && nas_address) {
-                grad_log(L_NOTICE, 
+                grad_log(GRAD_LOG_NOTICE, 
                          _("NAS %s shut down (Accounting-Off packet seen)"),
                          grad_nas_ip_to_name(nas_address, buf, sizeof buf));
                 radzap(nas_address, -1, NULL, ut.time);
@@ -316,7 +316,7 @@ rad_acct_system(radiusd_request_t *radreq, int dowtmp)
         if (status != DV_ACCT_STATUS_TYPE_START &&
             status != DV_ACCT_STATUS_TYPE_STOP &&
             status != DV_ACCT_STATUS_TYPE_ALIVE) {
-                grad_log_req(L_NOTICE, 
+                grad_log_req(GRAD_LOG_NOTICE, 
                              radreq->request, _("unknown packet type (%d)"),
                              status);
                 return 0;
@@ -370,7 +370,7 @@ rad_acct_system(radiusd_request_t *radreq, int dowtmp)
         } else {
                 ret = -1;
                 stat_inc(acct, radreq->request->ipaddr, num_norecords);
-                grad_log_req(L_NOTICE, radreq->request,
+                grad_log_req(GRAD_LOG_NOTICE, radreq->request,
 			     _("NOT writing wtmp record"));
         }
         return ret;
@@ -419,7 +419,7 @@ disable_system_acct()
 		grad_ut_putent(file, &ut);
 	}
 	grad_ut_endent(file);
-	grad_log(L_INFO, _("System accounting is disabled"));
+	grad_log(GRAD_LOG_INFO, _("System accounting is disabled"));
 }
 
 static void
@@ -461,7 +461,7 @@ mkdir_path(char *path, int perms)
 		char *p;
 		
 		if (errno != ENOENT) {
-			grad_log(L_ERR|L_PERROR,
+			grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 				 _("Cannot stat path component: %s"),
 				 path);
 			return 1;
@@ -478,13 +478,13 @@ mkdir_path(char *path, int perms)
 		}
 
 		if (mkdir(path, perms)) {
-			grad_log(L_ERR|L_PERROR,
+			grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 				 _("Cannot create directory %s"),
 				 path);
 			return 1;
 		}
 	} else if (!S_ISDIR(st.st_mode)) {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 			 _("Path component is not a directory: %s"),
 			 path);
 		return 1;
@@ -500,14 +500,14 @@ check_acct_dir()
 	if (stat(grad_acct_dir, &st) == 0) {
 		if (S_ISDIR(st.st_mode)) {
 			if (access(grad_acct_dir, W_OK)) {
-				grad_log(L_ERR,
+				grad_log(GRAD_LOG_ERR,
 					 _("%s: directory not writable"),
 					 grad_acct_dir);
 				return 1;
 			}
 			return 0;
 		} else {
-			grad_log(L_ERR, _("%s: not a directory"),
+			grad_log(GRAD_LOG_ERR, _("%s: not a directory"),
 				 grad_acct_dir);
 			return 1;
 		}
@@ -526,7 +526,7 @@ acct_after_config_hook(void *arg ARG_UNUSED, void *data ARG_UNUSED)
 	if (auth_detail || acct_detail) {
 		acct_dir_status = check_acct_dir();
 		if (acct_dir_status) {
-			grad_log(L_NOTICE,
+			grad_log(GRAD_LOG_NOTICE,
 			         _("Detailed accounting is disabled"));
 			auth_detail = acct_detail = 0;
 		}
@@ -590,7 +590,7 @@ make_detail_filename(radiusd_request_t *req, char *template,
 		if (rewrite_interpret(template+1, req->request, &val)) 
 			return NULL;
 		if (val.type != String) {
-			grad_log(L_ERR, "%s: %s",
+			grad_log(GRAD_LOG_ERR, "%s: %s",
 			         template+1, _("wrong return type"));
 			/* Nothing to free in val */
 			return NULL;
@@ -670,7 +670,8 @@ write_detail(radiusd_request_t *radreq, int authtype, int rtype)
 
         /* Write Detail file. */
         if ((outfd = fopen(filename, "a")) == NULL) {
-                grad_log(L_ERR|L_PERROR, _("can't open %s"), filename);
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+                         _("can't open %s"), filename);
                 ret = 1;
         } else {
 
@@ -786,7 +787,7 @@ rad_acct_ext(radiusd_request_t *radreq)
 int
 rad_accounting(radiusd_request_t *radreq, int activefd, int verified)
 {
-	log_open(L_ACCT);
+	log_open(GRAD_LOG_ACCT);
 
         huntgroup_access(radreq, NULL);
 

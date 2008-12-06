@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2006,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -221,7 +222,7 @@ _request_iterator(void *item, void *clos)
 			request_free(req);
 		} else if (req->timestamp + request_class[req->type].ttl
 			   <= rp->curtime) {
-			grad_log(L_NOTICE,
+			grad_log(GRAD_LOG_NOTICE,
 			         _("Proxy %s request expired in queue"),
 			         request_class[req->type].name);
 			grad_list_remove(request_list, req, NULL);
@@ -240,12 +241,12 @@ _request_iterator(void *item, void *clos)
 				pid_t pid = rpp_check_pid(req->child_id);
 				if (pid == req->child_id) {
 					if (rpp_kill(req->child_id, SIGKILL) == 0) { 
-						grad_log(L_NOTICE,
+						grad_log(GRAD_LOG_NOTICE,
 							 _("Killing unresponsive %s child %lu"),
 							 request_class[req->type].name,
 							 (unsigned long) req->child_id);
 					} else {
-						grad_log(L_CRIT,
+						grad_log(GRAD_LOG_CRIT,
 							 _("Cannot terminate child %lu. Attempting to kill inexisting process?"),
 							 (unsigned long) req->child_id);
 					}
@@ -255,7 +256,7 @@ _request_iterator(void *item, void *clos)
 			} else {
 				int rc = rpp_kill(req->child_id, SIGTERM);
 
-				grad_log(L_NOTICE,
+				grad_log(GRAD_LOG_NOTICE,
 					 _("Terminating unresponsive %s child %lu, status: %s"),
 					 request_class[req->type].name,
 					 (unsigned long) req->child_id,

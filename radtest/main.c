@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -222,7 +222,7 @@ main(int argc, char **argv)
 	srand(time(NULL)+getpid());
 	
         if (grad_dict_init()) {
-                grad_log(L_ERR, _("error reading dictionary file"));
+                grad_log(GRAD_LOG_ERR, _("error reading dictionary file"));
                 return 1;
         }
         srv_queue = grad_client_create_queue(!quick, 0, 0);
@@ -243,12 +243,12 @@ main(int argc, char **argv)
                 char **argv;
 
                 if (grad_argcv_get(server, ":", NULL, &argc, &argv)) {
-                        grad_log(L_ERR, _("can't parse server definition"));
+                        grad_log(GRAD_LOG_ERR, _("can't parse server definition"));
                         exit(1);
                 }
 
                 if (argc < 3) {
-                        grad_log(L_ERR, _("no shared secret for the server"));
+                        grad_log(GRAD_LOG_ERR, _("no shared secret for the server"));
                         exit(1);
                 }
 
@@ -259,7 +259,7 @@ main(int argc, char **argv)
                         case 0:
                                 serv.addr = grad_ip_gethostaddr(argv[i]);
                                 if (!serv.addr) {
-                                        grad_log(L_ERR,
+                                        grad_log(GRAD_LOG_ERR,
                                                  _("bad IP address or host name: %s"),
                                                  argv[i]);
                                         exit(1);
@@ -273,7 +273,7 @@ main(int argc, char **argv)
                         case 4:
                                 serv.port[0] = strtol(argv[i], &p, 0);
                                 if (*p) {
-                                        grad_log(L_ERR,
+                                        grad_log(GRAD_LOG_ERR,
                                                  _("bad port number %s"),
                                                  argv[i]);
                                         break;
@@ -283,7 +283,7 @@ main(int argc, char **argv)
                         case 6:
                                 serv.port[1] = strtol(argv[i], &p, 0);
                                 if (*p) {
-                                        grad_log(L_ERR,
+                                        grad_log(GRAD_LOG_ERR,
                                                  _("bad port number %s"),
                                                  argv[i]);
                                         break;
@@ -292,7 +292,7 @@ main(int argc, char **argv)
 				
                         default:
                                 if (argv[i][0] != ':') {
-                                        grad_log(L_ERR,
+                                        grad_log(GRAD_LOG_ERR,
                                                  _("bad separator near %s"),
                                                  argv[i]);
                                         exit(1);
@@ -311,7 +311,7 @@ main(int argc, char **argv)
         }
 
         if (grad_list_count(srv_queue->servers) == 0) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("No servers specfied. Use -s option.\n"));
                 exit(1);
         }

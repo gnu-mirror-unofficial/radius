@@ -214,7 +214,7 @@ grad_string_copy(char *d, char *s, int len)
         int slen = strlen(s);
         
         if (slen > len) 
-                grad_log(L_ERR, _("string too long: %s"), s);
+                grad_log(GRAD_LOG_ERR, _("string too long: %s"), s);
         strncpy(d, s, len);
         d[len] = 0;
 }
@@ -388,7 +388,7 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
                         int len = grad_format_vendor_pair(NULL, pair);
                         buf2ptr = malloc(len+1);
                         if (!buf2ptr) {
-                                grad_log(L_ERR,
+                                grad_log(GRAD_LOG_ERR,
                                          "%s:%d: can't alloc %d bytes",
                                          __FILE__, __LINE__, len+1);
                                 buf2[0] = 0;

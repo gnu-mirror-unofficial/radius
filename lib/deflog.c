@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -49,7 +49,7 @@ grad_default_logger(int level,
 		    const char *fmt, va_list ap)
 {
         fprintf(stderr, "%s: %s: ", program_invocation_short_name,
-		priname[level & L_PRIMASK]);
+		priname[level & GRAD_LOG_PRIMASK]);
         if (loc) {
                 fprintf(stderr, "%s:%lu:", loc->file, (unsigned long) loc->line);
 		if (func_name)

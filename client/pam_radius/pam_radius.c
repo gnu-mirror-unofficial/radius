@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001,2002,2003,2004,2005,2007 Free Software Foundation, Inc.
+   Copyright (C) 2001,2002,2003,2004,2005,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -154,9 +155,9 @@ vlog(int level,
      const char *fmt, va_list ap)
 {
         openlog("pam_radius", LOG_CONS|LOG_PID, LOG_AUTH);
-        vsyslog(priority[level & L_PRIMASK], fmt, ap);
+        vsyslog(priority[level & GRAD_LOG_PRIMASK], fmt, ap);
         if (en)
-                syslog(priority[level & L_PRIMASK], "syserr: %s (%d)",
+                syslog(priority[level & GRAD_LOG_PRIMASK], "syserr: %s (%d)",
                        strerror(en), en);
         closelog();
 }

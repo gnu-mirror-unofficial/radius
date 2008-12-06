@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -50,7 +50,7 @@ grad_ut_setent(const char *name, int append)
                 fd = open(name, O_RDONLY);
         }
         if (fd == -1) {
-                grad_log(L_ERR|L_PERROR, 
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
                          _("grad_ut_setent(): cannot open `%s'"), name);
                 return NULL;
         }
@@ -97,7 +97,7 @@ int
 grad_ut_putent(radut_file_t file, struct radutmp *ent)
 {
         if (file->readonly) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
 			 "grad_ut_putent(%s): file opened readonly",
 			 file->name);
                 return -1;
@@ -108,14 +108,14 @@ grad_ut_putent(radut_file_t file, struct radutmp *ent)
 		grad_lock_file(file->fd, sizeof(*ent), 0, SEEK_END);
 		size = lseek(file->fd, 0, SEEK_END);
 		if (size < 0) {
-			grad_log(L_ERR|L_PERROR, 
+			grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
 				 "grad_ut_putent(%s): lseek",
 				 file->name);
 			grad_unlock_file(file->fd, sizeof(*ent), 0, SEEK_END);
 			return -1;
 		}
 		if (size % sizeof (*ent)) {
-			grad_log(L_CRIT,
+			grad_log(GRAD_LOG_CRIT,
 				 "grad_ut_putent(%s): File size is not a multiple of radutmp entry size",
 				 file->name);
 			grad_unlock_file(file->fd, sizeof(*ent), 0, SEEK_END);
@@ -125,7 +125,7 @@ grad_ut_putent(radut_file_t file, struct radutmp *ent)
 		/* Step back one record unless we have reached eof */
 		if (!file->eof &&
 		    lseek(file->fd, -(off_t)sizeof(file->ut), SEEK_CUR) < 0) {
-			grad_log(L_ERR|L_PERROR, 
+			grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
 				 "grad_ut_putent(%s): lseek",
 				 file->name);
 			lseek(file->fd, (off_t)0, SEEK_SET);
@@ -136,7 +136,7 @@ grad_ut_putent(radut_file_t file, struct radutmp *ent)
 	}
 	
         if (write(file->fd, ent, sizeof(*ent)) != sizeof(*ent)) {
-                grad_log(L_ERR|L_PERROR, 
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
                          "grad_ut_putent(%s): write",
 			 file->name);
 		grad_lock_file(file->fd, sizeof(*ent), 0, SEEK_CUR);
@@ -188,13 +188,13 @@ grad_utmp_putent(const char *filename, struct radutmp *ut, int status)
                         if (ent->time < ut->time)
                                 break;
                         if (ent->type == P_LOGIN) {
-                                grad_log(L_INFO,
+                                grad_log(GRAD_LOG_INFO,
                 _("login: entry for NAS %s port %d duplicate"),
                                        grad_ip_iptostr(ntohl(ent->nas_address),
 						       ipbuf),
                                        ent->nas_port);
                         } else {
-                                grad_log(L_INFO,
+                                grad_log(GRAD_LOG_INFO,
                 _("login: entry for NAS %s port %d wrong order"),
                                        grad_ip_iptostr(ntohl(ent->nas_address),
 						       ipbuf),
@@ -206,7 +206,7 @@ grad_utmp_putent(const char *filename, struct radutmp *ut, int status)
                         
                 if (status == DV_ACCT_STATUS_TYPE_STOP) {
                         if (ent->type == P_LOGIN) {
-                                grad_log(L_ERR,
+                                grad_log(GRAD_LOG_ERR,
    _("logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"),
                                          grad_ip_iptostr(ntohl(ut->nas_address),
 					 	         ipbuf),
@@ -230,7 +230,7 @@ grad_utmp_putent(const char *filename, struct radutmp *ut, int status)
         case DV_ACCT_STATUS_TYPE_STOP:
                 ut->type = P_IDLE;
                 if (!ent) {
-                        grad_log(L_ERR,
+                        grad_log(GRAD_LOG_ERR,
                          _("logout: login entry for NAS %s port %d not found"),
                                grad_ip_iptostr(ntohl(ut->nas_address), ipbuf), 
                                ut->nas_port);
@@ -249,7 +249,8 @@ grad_radwtmp_putent(const char *filename, struct radutmp *ut)
                 
         file = grad_ut_setent(filename, 1);
         if (file == NULL) {
-                grad_log(L_ERR|L_PERROR, _("can't open %s"), grad_wtmp_file);
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+                         _("can't open %s"), grad_wtmp_file);
                 return 1;
         }
         grad_ut_putent(file, ut);

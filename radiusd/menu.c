@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -42,7 +42,7 @@ menu_pairs(char *menu_name, char *menu_selection)
         
         menu_path = grad_mkfilename3(grad_config_dir, "menus", menu_name);
         if ((fp = fopen(menu_path, "r")) == NULL) {
-                grad_log(L_NOTICE|L_PERROR, _("can't open menu `%s'"),
+                grad_log(GRAD_LOG_NOTICE|GRAD_LOG_PERROR, _("can't open menu `%s'"),
 		         menu_name);
                 grad_free(menu_path);
                 return NULL;
@@ -92,7 +92,7 @@ menu_pairs(char *menu_name, char *menu_selection)
                                          */
                                         if (userparse(buffer, &reply_first,
                                                       &errp)) {
-                                                grad_log(L_ERR,
+                                                grad_log(GRAD_LOG_ERR,
                                                          _("menu %s:%d: %s"),
                                                          menu_name,
                                                          line_num,
@@ -200,7 +200,8 @@ menu_read_text(char *menu_name)
                 
         menu_path = grad_mkfilename3(grad_config_dir, "menus", menu_name);
         if ((fp = fopen(menu_path, "r")) == NULL) {
-                grad_log(L_NOTICE|L_PERROR, _("can't open menu `%s'"),
+                grad_log(GRAD_LOG_NOTICE|GRAD_LOG_PERROR, 
+                         _("can't open menu `%s'"),
 		         menu_name);
                 grad_free(menu_path);
                 return grad_estrdup(_("\n*** User Menu is Not Available ***\n"));

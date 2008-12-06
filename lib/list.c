@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003,2004,2007 Free Software Foundation
+   Copyright (C) 2003,2004,2007,2008 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,44 +24,44 @@
 #include <radius/radius.h>
 #include <radius/list.h>
 
-struct list_entry {
-	struct list_entry *next;
+struct grad_list_entry {
+	struct grad_list_entry *next;
 	void *data;
 };
 
-struct list {
+struct grad_list {
 	size_t count;
-	struct list_entry *head, *tail;
-	struct iterator *itr;
+	struct grad_list_entry *head, *tail;
+	struct grad_iterator *itr;
 };
 
-struct iterator {
-	struct iterator *next;
+struct grad_iterator {
+	struct grad_iterator *next;
 	grad_list_t *list;
-	struct list_entry *cur;
+	struct grad_list_entry *cur;
 	int advanced;
 };
 
-struct list *
+struct grad_list *
 grad_list_create()
 {
-	struct list *p = grad_emalloc(sizeof(*p));
+	struct grad_list *p = grad_emalloc(sizeof(*p));
 	p->head = p->tail = NULL;
 	p->itr = NULL;
 	return p;
 }
 
 void
-grad_list_destroy(struct list **plist, list_iterator_t user_free, void *data)
+grad_list_destroy(struct grad_list **plist, list_iterator_t user_free, void *data)
 {
-	struct list_entry *p;
+	struct grad_list_entry *p;
 
 	if (!*plist)
 		return;
 	
 	p = (*plist)->head;
 	while (p) {
-		struct list_entry *next = p->next;
+		struct grad_list_entry *next = p->next;
 		if (user_free)
 			user_free(p->data, data);
 		grad_free(p);
@@ -156,7 +156,7 @@ grad_iterator_next(grad_iterator_t *ip)
 }	
 
 static void
-_iterator_advance(grad_iterator_t *ip, struct list_entry *e)
+_iterator_advance(grad_iterator_t *ip, struct grad_list_entry *e)
 {
 	for (; ip; ip = ip->next) {
 		if (ip->cur == e) {
@@ -167,9 +167,9 @@ _iterator_advance(grad_iterator_t *ip, struct list_entry *e)
 }
 
 void *
-grad_list_item(struct list *list, size_t n)
+grad_list_item(struct grad_list *list, size_t n)
 {
-	struct list_entry *p;
+	struct grad_list_entry *p;
 	if (!list || n >= list->count)
 		return NULL;
 	for (p = list->head; n > 0 && p; p = p->next, n--)
@@ -178,7 +178,7 @@ grad_list_item(struct list *list, size_t n)
 }
 
 size_t
-grad_list_count(struct list *list)
+grad_list_count(struct grad_list *list)
 {
 	if (!list)
 		return 0;
@@ -186,9 +186,9 @@ grad_list_count(struct list *list)
 }
 
 void
-grad_list_append(struct list *list, void *data)
+grad_list_append(struct grad_list *list, void *data)
 {
-	struct list_entry *ep;
+	struct grad_list_entry *ep;
 
 	if (!list)
 		return;
@@ -204,9 +204,9 @@ grad_list_append(struct list *list, void *data)
 }
 
 void
-grad_list_prepend(struct list *list, void *data)
+grad_list_prepend(struct grad_list *list, void *data)
 {
-	struct list_entry *ep;
+	struct grad_list_entry *ep;
 
 	if (!list)
 		return;
@@ -226,9 +226,9 @@ cmp_ptr(const void *a, const void *b)
 }
 
 void *
-grad_list_remove(struct list *list, void *data, list_comp_t cmp)
+grad_list_remove(struct grad_list *list, void *data, list_comp_t cmp)
 {
-	struct list_entry *p, *prev;
+	struct grad_list_entry *p, *prev;
 
 	if (!list)
 		return NULL;
@@ -262,7 +262,7 @@ grad_list_remove(struct list *list, void *data, list_comp_t cmp)
 /* Note: if modifying this function, make sure it does not allocate any
    memory! */
 void
-grad_list_iterate(struct list *list, list_iterator_t func, void *data)
+grad_list_iterate(struct grad_list *list, list_iterator_t func, void *data)
 {
 	grad_iterator_t itr;
 	void *p;
@@ -278,9 +278,9 @@ grad_list_iterate(struct list *list, list_iterator_t func, void *data)
 }
 
 void *
-grad_list_locate(struct list *list, void *data, list_comp_t cmp)
+grad_list_locate(struct grad_list *list, void *data, list_comp_t cmp)
 {
-	struct list_entry *cur;
+	struct grad_list_entry *cur;
 	if (!list)
 		return NULL;
 	if (!cmp)
@@ -292,9 +292,9 @@ grad_list_locate(struct list *list, void *data, list_comp_t cmp)
 }
 	
 int
-grad_list_insert_sorted(struct list *list, void *data, list_comp_t cmp)
+grad_list_insert_sorted(struct grad_list *list, void *data, list_comp_t cmp)
 {
-	struct list_entry *cur, *prev;
+	struct grad_list_entry *cur, *prev;
 	
 	if (!list)
 		return -1;
@@ -310,7 +310,7 @@ grad_list_insert_sorted(struct list *list, void *data, list_comp_t cmp)
 	} else if (!cur) {
 		grad_list_append(list, data);
 	} else {
-		struct list_entry *ep = grad_emalloc(sizeof(*ep));
+		struct grad_list_entry *ep = grad_emalloc(sizeof(*ep));
 		ep->data = data;
 		ep->next = cur;
 		list->count++;

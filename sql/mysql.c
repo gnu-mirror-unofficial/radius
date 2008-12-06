@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -69,7 +69,7 @@ do_mysql_query(struct sql_connection *conn, const char *query)
                 if (!ret) 
                         return ret;
                 
-		grad_log(L_ERR, "[MYSQL] %s", mysql_error(mysql));
+		grad_log(GRAD_LOG_ERR, "[MYSQL] %s", mysql_error(mysql));
 
 		if (mysql_errno(mysql) != CR_SERVER_GONE_ERROR) {
 			rad_mysql_disconnect(conn, 0);
@@ -77,7 +77,7 @@ do_mysql_query(struct sql_connection *conn, const char *query)
 		}
         }
         GRAD_DEBUG(1, "FAILURE");
-        grad_log(L_ERR, "[MYSQL] %s", _("gave up on connect"));
+        grad_log(GRAD_LOG_ERR, "[MYSQL] %s", _("gave up on connect"));
         return ret;
 }
 
@@ -104,7 +104,7 @@ rad_mysql_reconnect(int type, struct sql_connection *conn)
 				conn->cfg->server, conn->cfg->login,
 				conn->cfg->password, dbname, conn->cfg->port,
 				NULL, 0)) {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("[MYSQL] cannot connect to %s as %s: %s"),
 		         conn->cfg->server,
 		         conn->cfg->login,
@@ -161,7 +161,7 @@ rad_mysql_getpwd(struct sql_connection *conn, const char *query)
                 return NULL;
 
         if (!(result = mysql_store_result((MYSQL*)conn->data))) {
-                grad_log(L_ERR, _("[MYSQL]: can't get result"));
+                grad_log(GRAD_LOG_ERR, _("[MYSQL]: can't get result"));
                 return NULL;
         }
         if (mysql_num_rows(result) != 1) {

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -22,7 +22,7 @@
 
 #ifdef HAVE_LIBLTDL
 # define DECL_SQL_DISPATCH_TAB(mod) \
-  SQL_DISPATCH_TAB RDL_EXPORT(mod,dispatch_tab)
+  SQL_DISPATCH_TAB GRAD_DL_EXPORT(mod,dispatch_tab)
 #else
 # define __s_cat2__(a,b) a ## b 
 # define DECL_SQL_DISPATCH_TAB(mod) \

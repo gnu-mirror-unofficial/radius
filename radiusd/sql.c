@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -315,7 +315,7 @@ radiusd_sql_config()
         sqlfile = grad_mkfilename(grad_config_dir, "sqlserver");
         /* Open source file */
         if ((sqlfd = fopen(sqlfile, "r")) == (FILE *) NULL) {
-                grad_log(L_ERR, _("could not read sqlserver file %s"), sqlfile);
+                grad_log(GRAD_LOG_ERR, _("could not read sqlserver file %s"), sqlfile);
                 grad_free(sqlfile);
                 return -1;
         }
@@ -324,7 +324,7 @@ radiusd_sql_config()
         obstack_init(&parse_stack);
         while (get_conf_line()) {
                 if (stmt_type == -1) {
-                        grad_log(L_ERR,
+                        grad_log(GRAD_LOG_ERR,
                                  "%s:%d: %s",
                                  sqlfile, line_no,
 			         _("unrecognized keyword"));
@@ -332,7 +332,7 @@ radiusd_sql_config()
                 }
                 /* Each keyword should have an argument */
                 if (cur_ptr == NULL) {
-                        grad_log(L_ERR,
+                        grad_log(GRAD_LOG_ERR,
                                  "%s:%d: %s",
                                  sqlfile, line_no,
 			         _("required argument missing"));
@@ -343,7 +343,7 @@ radiusd_sql_config()
                 case STMT_SERVER:
                        	if (cur_ptr[0] != '/'
 			    && !grad_ip_gethostaddr(cur_ptr)) {
-                                grad_log(L_ERR,
+                                grad_log(GRAD_LOG_ERR,
                                          _("%s:%d: unknown host: %s"),
                                          sqlfile, line_no,
                                          cur_ptr);
@@ -357,7 +357,7 @@ radiusd_sql_config()
                 case STMT_PORT:
                         new_cfg.port = strtol(cur_ptr, &ptr, 0);
                         if (*ptr != 0 && !isspace(*ptr)) {
-                                grad_log(L_ERR,
+                                grad_log(GRAD_LOG_ERR,
 				         "%s:%d: %s",
                                          sqlfile, line_no,
 				         _("number parse error"));
@@ -376,7 +376,7 @@ radiusd_sql_config()
                         
                 case STMT_KEEPOPEN:
                         if (get_boolean(cur_ptr, &new_cfg.keepopen))
-                                grad_log(L_ERR,
+                                grad_log(GRAD_LOG_ERR,
                                          "%s:%d: %s",
                                          sqlfile, line_no,
 				         _("expected boolean value"));
@@ -385,7 +385,7 @@ radiusd_sql_config()
                 case STMT_IDLE_TIMEOUT:
                         timeout = strtol(cur_ptr, &ptr, 0);
                         if ((*ptr != 0 && !isspace(*ptr)) || timeout <= 0) {
-                                grad_log(L_ERR, "%s:%d: %s",
+                                grad_log(GRAD_LOG_ERR, "%s:%d: %s",
                                          sqlfile, line_no,
 				         _("number parse error"));
                         } else 
@@ -394,7 +394,7 @@ radiusd_sql_config()
                         
                 case STMT_DOAUTH:       
                         if (get_boolean(cur_ptr, &new_cfg.active[SQL_AUTH]))
-                                grad_log(L_ERR,
+                                grad_log(GRAD_LOG_ERR,
                                          "%s:%d: %s",
                                          sqlfile, line_no,
 				         _("expected boolean value"));
@@ -402,7 +402,7 @@ radiusd_sql_config()
                         
                 case STMT_DOACCT:
                         if (get_boolean(cur_ptr, &new_cfg.active[SQL_ACCT]))
-                                grad_log(L_ERR,
+                                grad_log(GRAD_LOG_ERR,
                                          "%s:%d: %s", 
                                          sqlfile, line_no,
 				         _("expected boolean value"));
@@ -417,21 +417,21 @@ radiusd_sql_config()
                         break;
                         
                 case STMT_MAX_AUTH_CONNECTIONS:
-                        grad_log(L_WARN,
+                        grad_log(GRAD_LOG_WARN,
                                  "%s:%d: %s",
                                  sqlfile, line_no,
 			         _("auth_max_connections is obsolete"));
                         break;
                         
                 case STMT_MAX_ACCT_CONNECTIONS:
-                        grad_log(L_WARN,
+                        grad_log(GRAD_LOG_WARN,
                                  "%s:%d: %s",
                                  sqlfile, line_no,
 			         _("acct_max_connections is obsolete"));
                         break;
                         
                 case STMT_QUERY_BUFFER_SIZE:
-                        grad_log(L_WARN,
+                        grad_log(GRAD_LOG_WARN,
 			         "%s:%d: %s",
 			         sqlfile, line_no,
 			         _("query_buffer_size is obsolete"));
@@ -440,7 +440,7 @@ radiusd_sql_config()
                 case STMT_INTERFACE:
                         new_cfg.interface = disp_sql_interface_index(cur_ptr);
                         if (!new_cfg.interface) {
-                                grad_log(L_WARN, "%s:%d: %s",
+                                grad_log(GRAD_LOG_WARN, "%s:%d: %s",
                                          sqlfile, line_no,
 				         _("Unsupported SQL interface"));
                         }
@@ -515,23 +515,23 @@ sql_check_config(const char *filename, SQL_cfg *cfg)
 	/* Check general SQL setup */
 	if (cfg->active[SQL_AUTH] || cfg->active[SQL_ACCT]) {
 		if (disp_sql_interface_index(NULL) == 0) {
-			grad_log(L_ERR, _("%s: SQL interface not specified"),
+			grad_log(GRAD_LOG_ERR, _("%s: SQL interface not specified"),
 				 filename);
 			doacct = doauth = 0;
 		}
 
 		if (!cfg->server) {
-			missing_statement(L_ERR, filename, "server");
+			missing_statement(GRAD_LOG_ERR, filename, "server");
 			doacct = doauth = 0;
 		}
 
 		if (!cfg->login) {
-			missing_statement(L_ERR, filename, "login");
+			missing_statement(GRAD_LOG_ERR, filename, "login");
 			doacct = doauth = 0;
 		}
 
 		if (!cfg->password) {
-			missing_statement(L_ERR, filename, "password");
+			missing_statement(GRAD_LOG_ERR, filename, "password");
 			doacct = doauth = 0;
 		}
 	}
@@ -539,60 +539,60 @@ sql_check_config(const char *filename, SQL_cfg *cfg)
 	/* Check SQL authentication setup */
         if (cfg->active[SQL_AUTH]) {
 		if (!cfg->auth_db) {
-			missing_statement(L_ERR, filename, "auth_db");
+			missing_statement(GRAD_LOG_ERR, filename, "auth_db");
 			doauth = 0;
 		}
 
 		FREE_IF_EMPTY(cfg->query[auth_query]);
 		if (!cfg->query[auth_query]) {
-			missing_statement(L_ERR, filename, "auth_query");
+			missing_statement(GRAD_LOG_ERR, filename, "auth_query");
 			doauth = 0;
 		}
 			 
 		if (!cfg->query[group_query]) 
-			missing_statement(L_WARN, filename, "group_query");
+			missing_statement(GRAD_LOG_WARN, filename, "group_query");
                 FREE_IF_EMPTY(cfg->query[group_query]);
         }
 
 	/* Check SQL accounting setup */
         if (cfg->active[SQL_ACCT]) {
 		if (!cfg->acct_db) {
-			missing_statement(L_ERR, filename, "acct_db");
+			missing_statement(GRAD_LOG_ERR, filename, "acct_db");
 			doacct = 0;
 		}
                 if (!cfg->query[acct_start_query]) 
-			missing_statement(L_WARN, filename,
+			missing_statement(GRAD_LOG_WARN, filename,
 					  "acct_start_query");
                 FREE_IF_EMPTY(cfg->query[acct_start_query]);
 
 		if (!cfg->query[acct_stop_query]) {
-			missing_statement(L_ERR, filename, "acct_stop_query");
+			missing_statement(GRAD_LOG_ERR, filename, "acct_stop_query");
 			doacct = 0;
 		}
 		FREE_IF_EMPTY(cfg->query[acct_stop_query]);
 
                 if (!cfg->query[acct_nasdown_query]) 
-			missing_statement(L_WARN, filename,
+			missing_statement(GRAD_LOG_WARN, filename,
 					  "acct_nasdown_query");
                 FREE_IF_EMPTY(cfg->query[acct_nasdown_query]);
 
                 if (!cfg->query[acct_nasup_query])
-			missing_statement(L_WARN, filename,
+			missing_statement(GRAD_LOG_WARN, filename,
 					  "acct_nasup_query");
                 FREE_IF_EMPTY(cfg->query[acct_nasup_query]);
         }
 
 	/* Inform the user */
 	if (cfg->active[SQL_AUTH] != doauth)
-		grad_log(L_NOTICE, _("disabling SQL authentication"));
+		grad_log(GRAD_LOG_NOTICE, _("disabling SQL authentication"));
 	if (cfg->active[SQL_ACCT] != doacct)
-		grad_log(L_NOTICE, _("disabling SQL accounting"));
+		grad_log(GRAD_LOG_NOTICE, _("disabling SQL accounting"));
 }
 
 void
 sql_flush()
 {
-        grad_log(L_NOTICE,
+        grad_log(GRAD_LOG_NOTICE,
                  _("SQL configuration changed: closing existing connections"));
         radiusd_flush_queue();
 	radiusd_sql_shutdown();
@@ -813,7 +813,7 @@ radiusd_sql_acct(radiusd_request_t *radreq)
         if (!(pair = grad_avl_find(radreq->request->avlist,
 				   DA_ACCT_STATUS_TYPE))) {
                 /* should never happen!! */
-                grad_log_req(L_ERR, radreq->request,
+                grad_log_req(GRAD_LOG_ERR, radreq->request,
                              _("no Acct-Status-Type attribute in rad_sql_acct()"));
                 return;
         }
@@ -845,7 +845,7 @@ radiusd_sql_acct(radiusd_request_t *radreq)
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
                 if (rc == 0 && count != 1) 
-			log_facility = L_WARN;
+			log_facility = GRAD_LOG_WARN;
                 break;
 
         case DV_ACCT_STATUS_TYPE_ACCOUNTING_ON:
@@ -858,7 +858,7 @@ radiusd_sql_acct(radiusd_request_t *radreq)
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
 		if (rc == 0)
-			log_facility = L_INFO;
+			log_facility = GRAD_LOG_INFO;
                 break;
 
         case DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF:
@@ -871,7 +871,7 @@ radiusd_sql_acct(radiusd_request_t *radreq)
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
 		if (rc == 0)
-			log_facility = L_INFO;
+			log_facility = GRAD_LOG_INFO;
                 break;
 
         case DV_ACCT_STATUS_TYPE_ALIVE:
@@ -884,7 +884,7 @@ radiusd_sql_acct(radiusd_request_t *radreq)
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
                 if (rc == 0 && count != 1) 
-			log_facility = L_WARN;
+			log_facility = GRAD_LOG_WARN;
                 break;
                 
         }
@@ -911,7 +911,7 @@ radiusd_sql_pass(radiusd_request_t *req, char *authdata)
         struct obstack stack;
         
         if (sql_cfg.active[SQL_AUTH] == 0) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("SQL Auth specified in users file, but not in sqlserver file"));
                 return NULL;
         }
@@ -1010,7 +1010,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 			char *opstr = res->tuple[i][2];
                         op = grad_str_to_op(opstr);
                         if (op == grad_operator_invalid) {
-                                grad_log(L_NOTICE,
+                                grad_log(GRAD_LOG_NOTICE,
                                          _("SQL: invalid operator: %s"), opstr);
                                 continue;
                         }
@@ -1232,7 +1232,7 @@ rad_sql_mlc_close(struct radutmp *up)
 	rc = disp_sql_query(conn, query, &count);
 	sqllog(rc, query);
 	if (rc == 0 && count != 1) {
-		grad_log(L_WARN,
+		grad_log(GRAD_LOG_WARN,
 			 ngettext("%s updated %d record",
 				  "%s updated %d records",
 				  count),

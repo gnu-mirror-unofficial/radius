@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
-   Copyright (C) 2002,2004,2007 Sergey Poznyakoff
+   Copyright (C) 2002,2004,2007,2008 Sergey Poznyakoff
   
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -141,7 +141,7 @@ converse(type, sp, pdu, closure)
         char ipbuf[GRAD_IPV4_STRING_LENGTH];
         
         if (type == SNMP_CONV_TIMEOUT) {
-                grad_log(L_ERR, "timed out in waiting SNMP response from %s\n",
+                grad_log(GRAD_LOG_ERR, "timed out in waiting SNMP response from %s\n",
                          grad_ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
                 /*FIXME: inform main that the timeout has occured */
                 return 1;
@@ -205,27 +205,27 @@ run_query(tab)
         
         session = snmp_session_create(community, hostname, port, converse, tab);
         if (!session) {
-                grad_log(L_CRIT, "(session) snmp err %d\n", snmp_errno);
+                grad_log(GRAD_LOG_CRIT, "(session) snmp err %d\n", snmp_errno);
                 exit(1);
         }
 
         pdu = snmp_pdu_create(SNMP_PDU_GET);
         if (!pdu) {
-                grad_log(L_ERR, "(pdu) snmp err %d\n", snmp_errno);
+                grad_log(GRAD_LOG_ERR, "(pdu) snmp err %d\n", snmp_errno);
                 return;
         }
         
         for (; tab->oid; tab++) {
                 var = snmp_var_create(tab->oid);
                 if (!var) {
-                        grad_log(L_ERR, "(var) snmp err %d\n", snmp_errno);
+                        grad_log(GRAD_LOG_ERR, "(var) snmp err %d\n", snmp_errno);
                         continue;
                 }
                 snmp_pdu_add_var(pdu, var);
         }
 
         if (snmp_query(session, pdu)) {
-                grad_log(L_ERR, "(snmp_query) snmp err %d\n", snmp_errno);
+                grad_log(GRAD_LOG_ERR, "(snmp_query) snmp err %d\n", snmp_errno);
                 return;
         }
         snmp_session_close(session);
@@ -256,7 +256,7 @@ walk_converse(type, sp, pdu, closure)
         data->varlist = NULL;
 
         if (type == SNMP_CONV_TIMEOUT) {
-                grad_log(L_ERR, "timed out in waiting SNMP response from %s\n",
+                grad_log(GRAD_LOG_ERR, "timed out in waiting SNMP response from %s\n",
                          grad_ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
                 /*FIXME: inform main that the timeout has occured */
                 return 1;
@@ -319,7 +319,7 @@ run_walk(tab, elsize, insert, app_data)
         session = snmp_session_create(community, hostname, port,
                                       walk_converse, &data);
         if (!session) {
-                grad_log(L_CRIT, "(session) snmp err %d\n", snmp_errno);
+                grad_log(GRAD_LOG_CRIT, "(session) snmp err %d\n", snmp_errno);
                 exit(1);
         }
 
@@ -330,7 +330,7 @@ run_walk(tab, elsize, insert, app_data)
                 var = snmp_var_create(oid);
                 grad_free(oid);
                 if (!var) {
-                        grad_log(L_ERR, "(var) snmp err %d\n", snmp_errno);
+                        grad_log(GRAD_LOG_ERR, "(var) snmp err %d\n", snmp_errno);
                         continue;
                 }
                 var->next = data.varlist;
@@ -340,7 +340,7 @@ run_walk(tab, elsize, insert, app_data)
         do  {
                 pdu = snmp_pdu_create(SNMP_PDU_GETNEXT);
                 if (!pdu) {
-                        grad_log(L_ERR, "(pdu) snmp err %d\n", snmp_errno);
+                        grad_log(GRAD_LOG_ERR, "(pdu) snmp err %d\n", snmp_errno);
                         return;
                 }
                 for (var = data.varlist; var; ) {
@@ -352,7 +352,7 @@ run_walk(tab, elsize, insert, app_data)
                 data.count = 0;
                 memset(data.instance, 0, elsize);
                 if (snmp_query(session, pdu)) {
-                        grad_log(L_ERR,
+                        grad_log(GRAD_LOG_ERR,
                                  "(snmp_query) snmp err %d\n", snmp_errno);
                         break;
                 }

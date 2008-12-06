@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -133,7 +133,7 @@ lex_set_buffer(FILE *fp)
                 if (buf = grad_malloc(size))
                         break;
         if (!buf) {
-                grad_log(L_CRIT, _("not enough memory"));
+                grad_log(GRAD_LOG_CRIT, _("not enough memory"));
                 abort();
         }
 
@@ -229,7 +229,7 @@ push_source(char *name)
         struct stat st;
         
         if (stat(name, &st)) {
-                grad_log(L_ERR|L_PERROR,
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 		         _("can't stat `%s'"), name);
                 yyerror("can't include file");
                 return 1;
@@ -242,18 +242,20 @@ push_source(char *name)
         if (ctx = ctx_lookup(st.st_ino)) {
                 yyerror("recursive inclusion");
                 if (ctx->prev)
-                        grad_log_loc(L_ERR, &ctx->prev->loc,
+                        grad_log_loc(GRAD_LOG_ERR, &ctx->prev->loc,
 				     _("`%s' already included here"),
 				     name);
                 else
-                        grad_log(L_ERR, _("`%s' already included at top level"),
+                        grad_log(GRAD_LOG_ERR, 
+                                 _("`%s' already included at top level"),
                                  name);
                 return 1;
         }
                 
         fp = fopen(name, "r");
         if (!fp) {
-                grad_log(L_ERR|L_PERROR, _("can't open `%s'"),  name);
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
+                         _("can't open `%s'"),  name);
                 yyerror("can't include file");
                 return 1;
         }

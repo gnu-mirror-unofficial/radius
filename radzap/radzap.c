@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -97,7 +97,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
         case ARGP_KEY_FINI:
                 if (!args->user && !args->nas && args->port == -1) {
-                        grad_log(L_ERR,
+                        grad_log(GRAD_LOG_ERR,
                                  _("at least one port, nas or user must be specified"));
                         exit(1);
                 }
@@ -132,7 +132,8 @@ radzap(grad_netdef_t *netdef, int port, char *user, time_t t)
                 time(&t);
 
         if ((file = grad_ut_setent(grad_utmp_file, 0)) == NULL) {
-                grad_log(L_ERR|L_PERROR, "can't open %s", grad_utmp_file);
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+                         _("can't open file %s"), grad_utmp_file);
                 exit(1);
         }       
         /*

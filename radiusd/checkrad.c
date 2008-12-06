@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -88,7 +88,7 @@ create_instance(struct check_instance *cptr, grad_nas_t *nas, struct radutmp *up
         RADCK_TYPE *radck_type;
                 
         if ((radck_type = find_radck_type(nas->nastype)) == NULL) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("unknown NAS type: %s (nas %s)"),
                          nas->nastype,
                          nas->shortname);
@@ -243,7 +243,7 @@ converse(int type, struct snmp_session *sp, struct snmp_pdu *pdu, void *closure)
         char buf[64];
 
         if (type == SNMP_CONV_TIMEOUT) {
-                grad_log(L_NOTICE,
+                grad_log(GRAD_LOG_NOTICE,
                          _("timed out in waiting SNMP response from NAS %s"),
                          checkp->nasname);
                 checkp->timeout++;
@@ -294,7 +294,7 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
         char *snmp_oid;
         
         if ((snmp_oid = slookup(checkp, "oid", NULL)) == NULL) {
-                grad_log(L_ERR, _("no snmp_oid"));
+                grad_log(GRAD_LOG_ERR, _("no snmp_oid"));
                 return -1;
         }
         snmp_oid = checkrad_xlat(checkp, snmp_oid);
@@ -302,7 +302,7 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
 		return -1;
         oid = oid_create_from_string(snmp_oid);
         if (!oid) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("invalid OID: %s"), snmp_oid);
                 return -1;
         }
@@ -319,7 +319,7 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
         sp = snmp_session_create(community, peername, remote_port, 
                                  converse, checkp);
         if (!sp) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("can't create snmp session: %s"),
                          snmp_strerror(snmp_errno));
                 snmp_free(oid);
@@ -327,7 +327,7 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
         }
         
         if (snmp_session_open(sp, myip, 0, timeout, retries)) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("can't open snmp session: %s"),
                          snmp_strerror(snmp_errno));
                 snmp_free(oid);
@@ -335,7 +335,7 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
         }
 
         if ((pdu = snmp_pdu_create(SNMP_PDU_GET)) == NULL) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("can't create SNMP PDU: %s"),
                          snmp_strerror(snmp_errno));
                 snmp_free(oid);
@@ -344,7 +344,7 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
         }
                 
         if ((var = snmp_var_create(oid)) == NULL) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("can't create SNMP PDU: %s"),
                          snmp_strerror(snmp_errno));
                 snmp_free(oid);
@@ -417,7 +417,7 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
         
         peername = slookup(checkp, "host", nas->longname);
         if (!(hp = gethostbyname(peername))) {
-                grad_log(L_ERR, _("unknown host: %s"), peername);
+                grad_log(GRAD_LOG_ERR, _("unknown host: %s"), peername);
                 return -1;
         }
 
@@ -436,7 +436,7 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
                MIN(hp->h_length,sizeof(sin.sin_addr)));
         sin.sin_port = port;
         if ((s = socket(hp->h_addrtype, SOCK_STREAM, 0)) < 0) {
-                grad_log(L_ERR|L_PERROR, "socket");
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "socket");
                 return -1;
         }
 
@@ -461,12 +461,12 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
          */
         if (ilookup(checkp, "tcp", 1) &&
             connect(s, (struct sockaddr *)&sin, sizeof (sin))) {
-                grad_log(L_ERR|L_PERROR, "connect");
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "connect");
                 return -1;
         }
 
         if (sendmsg(s, &msg, 0) < 0) {
-                grad_log(L_ERR|L_PERROR, "sendmsg");
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "sendmsg");
                 close(s);
                 return -1;
         }
@@ -480,7 +480,7 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
         lastc = 0;
         if ((fp = fdopen(s, "r")) != NULL) {
 		if (setjmp(to_env)) {
-			grad_log(L_NOTICE,
+			grad_log(GRAD_LOG_NOTICE,
 			       _("timed out in waiting for finger response from NAS %s"),
 			       checkp->nasname);
 			fclose(fp);
@@ -548,7 +548,7 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
                 }
                 
                 if (ferror(fp)) {
-                        grad_log(L_ERR|L_PERROR, "finger");
+                        grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "finger");
                 }
                 fclose(fp);
         }
@@ -570,7 +570,7 @@ ext_check(struct check_instance *checkp, grad_nas_t *nas)
 	
 	s = slookup(checkp, "path", NULL);
 	if (!s) {
-                grad_log(L_ERR, _("path variable not set"));
+                grad_log(GRAD_LOG_ERR, _("path variable not set"));
                 return -1;
 	}
 	path = checkrad_xlat_new(checkp, s);
@@ -596,7 +596,7 @@ guile_check(struct check_instance *checkp, grad_nas_t *nas)
 	
 	s = slookup(checkp, "expr", NULL);
 	if (!s) {
-                grad_log(L_ERR, _("expr variable not set"));
+                grad_log(GRAD_LOG_ERR, _("expr variable not set"));
                 return -1;
 	}
 	expr = checkrad_xlat_new(checkp, s);

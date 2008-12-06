@@ -530,32 +530,32 @@ void grad_app_setup();
    in <syslog.h> */
    
 /* log categories */
-#define L_MKCAT(n)       ((n)<<3)
-#define L_MAIN           L_MKCAT(1)  /* Main server process */
-#define L_AUTH           L_MKCAT(2)  /* Authentication process */
-#define L_ACCT           L_MKCAT(3)  /* Accounting process */
-#define L_PROXY          L_MKCAT(4)  /* Proxy */
-#define L_SNMP           L_MKCAT(5)  /* SNMP process */
-#define L_NCAT           8           /* Number of categories */
-#define L_CATMASK        0x38        /* Mask to extract category part */
+#define GRAD_LOG_MKCAT(n)       ((n)<<3)
+#define GRAD_LOG_MAIN           GRAD_LOG_MKCAT(1)  /* Main server process */
+#define GRAD_LOG_AUTH           GRAD_LOG_MKCAT(2)  /* Authentication process */
+#define GRAD_LOG_ACCT           GRAD_LOG_MKCAT(3)  /* Accounting process */
+#define GRAD_LOG_PROXY          GRAD_LOG_MKCAT(4)  /* Proxy */
+#define GRAD_LOG_SNMP           GRAD_LOG_MKCAT(5)  /* SNMP process */
+#define GRAD_LOG_NCAT           8           /* Number of categories */
+#define GRAD_LOG_CATMASK        0x38        /* Mask to extract category part */
 
 /* log priorities */
-#define L_EMERG    0    /* system is unusable */
-#define L_ALERT    1    /* action must be taken immediately */
-#define L_CRIT     2    /* critical conditions */
-#define L_ERR      3    /* error conditions */
-#define L_WARN     4    /* warning conditions */
-#define L_NOTICE   5    /* normal but signification condition */
-#define L_INFO     6    /* informational */
-#define L_DEBUG    7    /* debug-level messages */
-#define L_PRIMASK  0x0007  /* mask to extract priority part */
+#define GRAD_LOG_EMERG    0    /* system is unusable */
+#define GRAD_LOG_ALERT    1    /* action must be taken immediately */
+#define GRAD_LOG_CRIT     2    /* critical conditions */
+#define GRAD_LOG_ERR      3    /* error conditions */
+#define GRAD_LOG_WARN     4    /* warning conditions */
+#define GRAD_LOG_NOTICE   5    /* normal but signification condition */
+#define GRAD_LOG_INFO     6    /* informational */
+#define GRAD_LOG_DEBUG    7    /* debug-level messages */
+#define GRAD_LOG_PRIMASK  0x0007  /* mask to extract priority part */
 
-#define L_CAT(v)   (((v)&L_CATMASK)>>3)
-#define L_PRI(v)   ((v)&L_PRIMASK)
-#define L_MASK(pri) (1<<(pri))
-#define L_UPTO(pri) ((1<<((pri)+1))-1)
+#define GRAD_LOG_CAT(v)   (((v)&GRAD_LOG_CATMASK)>>3)
+#define GRAD_LOG_PRI(v)   ((v)&GRAD_LOG_PRIMASK)
+#define GRAD_LOG_MASK(pri) (1<<(pri))
+#define GRAD_LOG_UPTO(pri) ((1<<((pri)+1))-1)
 /* Additional flags */
-#define L_PERROR  0x8000
+#define GRAD_LOG_PERROR  0x8000
 
 #define GRAD_MKSTRING(x) #x 
 #define grad_insist(cond) \
@@ -590,10 +590,10 @@ grad_uint32_t grad_first_ip();
 
 /* Loadable Modules Suppert */
 #define __s_cat3__(a,b,c) a ## b ## c
-#define RDL_EXPORT(module,name) __s_cat3__(module,_LTX_,name)
+#define GRAD_DL_EXPORT(module,name) __s_cat3__(module,_LTX_,name)
 
-typedef int (*rdl_init_t) (void);
-typedef void (*rdl_done_t) (void);
+typedef int (*grad_dl_init_t) (void);
+typedef void (*grad_dl_done_t) (void);
 
 /* slist.c */
 #define GRAD_SLIST_BUCKET_SIZE 1024

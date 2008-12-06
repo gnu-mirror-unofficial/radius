@@ -224,18 +224,18 @@ rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 	pid_t pid;
 	
 	if (pipe(inp)) {
-		grad_log(L_ERR, "pipe(inp): %s", strerror(errno));
+		grad_log(GRAD_LOG_ERR, "pipe(inp): %s", strerror(errno));
 		return -1;
 	}
 	
 	if (pipe(outp)) {
-		grad_log (L_ERR, "pipe(outp): %s", strerror(errno));
+		grad_log (GRAD_LOG_ERR, "pipe(outp): %s", strerror(errno));
 		return -1;
 	}
 
 	pid = fork();
 	if (pid == -1) {
-		grad_log (L_ERR, "fork: %s", strerror(errno));
+		grad_log (GRAD_LOG_ERR, "fork: %s", strerror(errno));
 		return -1;
 	}
 	if (pid == 0) {
@@ -352,7 +352,7 @@ rpp_remove(rpp_proc_t *p)
 {
 	char buffer[128];
 	format_exit_status(buffer, sizeof buffer, p->exit_status);
-	grad_log(L_NOTICE, _("child %lu %s"),
+	grad_log(GRAD_LOG_NOTICE, _("child %lu %s"),
 		 (unsigned long) p->pid, buffer);
 	_rpp_remove(p);
 }
@@ -495,7 +495,7 @@ rpp_check_pid(pid_t pid)
 static void
 _rpp_slay(rpp_proc_t *p, char *msg)
 {
-	grad_log(L_NOTICE, _("Killing process %lu: %s"), 
+	grad_log(GRAD_LOG_NOTICE, _("Killing process %lu: %s"), 
                  (u_long) p->pid, msg);
 	kill(p->pid, SIGKILL);
 	_rpp_remove(p);
@@ -597,7 +597,7 @@ sig_handler(int sig)
 		break;
 		
 	case SIGALRM:
-		grad_log(L_INFO, _("Child exiting on timeout."));
+		grad_log(GRAD_LOG_INFO, _("Child exiting on timeout."));
 		/*FALLTHRU*/
 		
 	case SIGTERM:
@@ -643,7 +643,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		if (len != sizeof frq) {
 			if (errno == EINTR)
 				continue;
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("Child received malformed header (len = %d, error = %s)"),
 			         len, strerror(errno));
 			radiusd_exit0();
@@ -655,7 +655,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		}
 		
 		if (rpp_fd_read(rpp_stdin, data, frq.size, NULL) != frq.size) {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("Child received malformed data"));
 			radiusd_exit0();
 		}

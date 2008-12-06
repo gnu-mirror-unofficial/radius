@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation
+   Copyright (C) 2002, 2003, 2004, 2005, 2007,
+   2008 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -53,7 +54,7 @@ _parse_server(int argc, char **argv, struct _parse_data *pd, int *np,
 		srv->port[GRAD_PORT_ACCT] = pd->ports[GRAD_PORT_ACCT];
 	}
 	if (pd->fun && pd->fun(srv)) {
-		grad_log_loc(L_ERR, pd->loc,
+		grad_log_loc(GRAD_LOG_ERR, pd->loc,
 			     _("can't find secret for %s"),
 			     srv->name);
 		return 1; 
@@ -77,7 +78,7 @@ _parse_server_list(grad_server_queue_t *qp, char *str, struct _parse_data *pd)
 					      grad_client_alloc_server(&srv));
 
 		if (i < argc && argv[i][0] != ',') {
-			grad_log_loc(L_ERR, pd->loc,
+			grad_log_loc(GRAD_LOG_ERR, pd->loc,
 				     _("expected , but found %s"),
 				     argv[i]);
 			grad_argcv_free(argc, argv);
@@ -99,7 +100,7 @@ read_realms_entry(void *closure, int fc, char **fv, grad_locus_t *loc)
 	int i;
 	
         if (fc < 2) {
-                grad_log_loc(L_ERR, loc, _("too few fields (%d)"), fc);
+                grad_log_loc(GRAD_LOG_ERR, loc, _("too few fields (%d)"), fc);
                 return -1;
         }
 
@@ -121,7 +122,7 @@ read_realms_entry(void *closure, int fc, char **fv, grad_locus_t *loc)
 		i++;
 		
 		if (grad_list_count(rp->queue->servers) == 0) {
-			grad_log_loc(L_NOTICE, loc, _("discarding entry"));
+			grad_log_loc(GRAD_LOG_NOTICE, loc, _("discarding entry"));
 			grad_client_destroy_queue(rp->queue);
 			grad_free(rp);
 			return 0;

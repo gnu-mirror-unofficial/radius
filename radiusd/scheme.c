@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001,2002,2003,2004,2005,2007 Free Software Foundation, Inc.
+   Copyright (C) 2001,2002,2003,2004,2005,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -199,7 +200,7 @@ scheme_redirect_output()
 						   scheme_outfile);
 		fd = open(filename, O_RDWR|O_CREAT|O_APPEND, 0600);
 		if (fd == -1) {
-			grad_log(L_ERR|L_PERROR,
+			grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 			         _("can't open file `%s'"),
 			         filename);
 			fd = 2;
@@ -226,12 +227,12 @@ scheme_call_proc(SCM *result, char *procname, SCM arglist)
 	/* Evaluate the procedure */
 	procsym = RAD_SCM_SYMBOL_VALUE(procname);
 	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("%s is not a procedure object"), procname);
 		return 1;
 	}
 	if (setjmp(jmp_env)) {
-		grad_log(L_NOTICE,
+		grad_log(GRAD_LOG_NOTICE,
 		         _("Procedure `%s' failed: see error output for details"),
 		         procname);
 		return 1;
@@ -346,7 +347,7 @@ scheme_try_auth(int auth_type, radiusd_request_t *req,
 		grad_avl_free(list);
 		return code == SCM_BOOL_F;
 	}
-	grad_log(L_ERR,
+	grad_log(GRAD_LOG_ERR,
 	         _("Unexpected return value from Guile authentication function `%s'"),
 	         try_auth);
 	return 1;
@@ -384,7 +385,7 @@ scheme_auth(char *procname, radiusd_request_t *req,
 		grad_avl_free(list);
 		return code == SCM_BOOL_F;
 	}
-	grad_log(L_ERR,
+	grad_log(GRAD_LOG_ERR,
 	         _("Unexpected return value from Guile authentication function `%s'"),
 	         procname);
 	return 1;
@@ -404,7 +405,7 @@ scheme_acct(char *procname, radiusd_request_t *req)
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;
 	else
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("Unexpected return value from Guile accounting function `%s'"),
 		         procname);
 
@@ -497,7 +498,7 @@ arglist_to_scm(int argc, cfg_value_t *argv)
 				case 'x':
 					num = strtoul(p+1, &p, 16);
 					if (*p) {
-						grad_log(L_ERR,
+						grad_log(GRAD_LOG_ERR,
 							 _("Invalid hex number: %s"),
 							 argv[i].v.string);
 						return SCM_BOOL_F;
@@ -684,7 +685,7 @@ scheme_eval_avl (radiusd_request_t *request,
         grad_avp_t *p;
         
         if (!use_guile) {
-                grad_log_req(L_ERR, request->request,
+                grad_log_req(GRAD_LOG_ERR, request->request,
                              _("Guile authentication disabled in config"));
                 return -1;
         }
@@ -703,7 +704,7 @@ scheme_eval_avl (radiusd_request_t *request,
 
 	return rc;
 #else
-        grad_log_req(L_ERR, request->request,
+        grad_log_req(GRAD_LOG_ERR, request->request,
                      _("Guile authentication not available"));
         return -1;
 #endif

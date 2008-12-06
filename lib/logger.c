@@ -51,7 +51,7 @@ grad_log(int lvl, const char *msg, ...)
         va_list ap;
         int ec = 0;
 
-        if (lvl & L_PERROR)
+        if (lvl & GRAD_LOG_PERROR)
                 ec = errno;
         va_start(ap, msg);
 	if (_grad_logger)
@@ -65,7 +65,7 @@ grad_log_req(int lvl, grad_request_t *req, const char *msg, ...)
         va_list ap;
         int ec = 0;
 
-        if (lvl & L_PERROR)
+        if (lvl & GRAD_LOG_PERROR)
                 ec = errno;
         va_start(ap, msg);
 	if (_grad_logger)
@@ -79,7 +79,7 @@ grad_log_loc(int lvl, grad_locus_t *loc, const char *msg, ...)
 	va_list ap;
 	int ec = 0;
 
-	if (lvl & L_PERROR)
+	if (lvl & GRAD_LOG_PERROR)
 		ec = errno;
 
 	va_start(ap, msg);

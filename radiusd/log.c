@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -33,7 +33,7 @@
 #include <radiusd.h>
 #include <rewrite.h>
 
-static int logging_category = L_CAT(L_MAIN);
+static int logging_category = GRAD_LOG_CAT(GRAD_LOG_MAIN);
 static grad_list_t /* of Channel*/ *chanlist;   /* List of defined channels */
 static char *log_prefix_hook;             /* Name of the global prefix hook */
 static char *log_suffix_hook;             /* Name of the global suffix hook */
@@ -135,7 +135,7 @@ log_get_category()
 static void
 log_set_category(int cat)
 {
-        logging_category = L_CAT(cat);
+        logging_category = GRAD_LOG_CAT(cat);
 }
 
 void
@@ -147,7 +147,7 @@ log_open(int cat)
 void
 log_close()
 {
-        log_set_category(L_MAIN);
+        log_set_category(GRAD_LOG_MAIN);
 }
 
 static char *catname[] = { /* category names */
@@ -247,7 +247,7 @@ log_to_channel(void *item, void *pdata)
         int spri;
         FILE *fp;
 
-	if (!(chan->pmask[data->cat] & L_MASK(data->pri)))
+	if (!(chan->pmask[data->cat] & GRAD_LOG_MASK(data->pri)))
 		return 0;
 	
         if (chan->options & LO_CAT) {
@@ -367,10 +367,10 @@ radiusd_logger(int level,
 	
         char *errstr = NULL;
 
-        cat = L_CAT(level);
+        cat = GRAD_LOG_CAT(level);
         if (cat == 0)
                 cat = log_get_category();
-        pri = L_PRI(level);
+        pri = GRAD_LOG_PRI(level);
         
         if (loc && loc->file) {
 		logbuf_append(&buf1, loc->file);
@@ -411,7 +411,7 @@ sqllog(int status, char *query)
         filename = status ? "sql-lost" : "sql.log";
         path = grad_mkfilename(grad_acct_dir, filename);
         if ((fp = fopen(path, "a")) == NULL) {
-                grad_log(L_ERR|L_PERROR,  
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,  
                          _("could not append to file %s"), path);
                 grad_free(path);
                 return;
@@ -461,18 +461,18 @@ log_release(Channel *chan)
         }
 
         /* Make sure we have at least a channel for categories below
-           L_CRIT */
-        emerg = L_EMERG;
-        alert = L_ALERT;
-        crit  = L_CRIT;
+           GRAD_LOG_CRIT */
+        emerg = GRAD_LOG_EMERG;
+        alert = GRAD_LOG_ALERT;
+        crit  = GRAD_LOG_CRIT;
 	for (cp = grad_iterator_first(itr); cp; cp = grad_iterator_next(itr)) {
                 int i;
-                for (i = 1; i < L_NCAT; i++) {
-                        if (emerg && (cp->pmask[i] & L_MASK(emerg)))
+                for (i = 1; i < GRAD_LOG_NCAT; i++) {
+                        if (emerg && (cp->pmask[i] & GRAD_LOG_MASK(emerg)))
                                 emerg = 0;
-                        if (alert && (cp->pmask[i] & L_MASK(alert)))
+                        if (alert && (cp->pmask[i] & GRAD_LOG_MASK(alert)))
                                 alert = 0;
-                        if (crit && (cp->pmask[i] & L_MASK(crit)))
+                        if (crit && (cp->pmask[i] & GRAD_LOG_MASK(crit)))
                                 crit = 0;
                 }
         }
@@ -490,7 +490,7 @@ log_change_owner(RADIUS_USER *usr)
 	for (cp = grad_iterator_first(itr); cp; cp = grad_iterator_next(itr)) {
 		if (cp->mode == LM_FILE
 		    && chown(cp->id.file, usr->uid, usr->gid)) {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("%s: cannot change owner to %d:%d"),
 			         cp->id.file, usr->uid, usr->gid);
 			errcnt++;
@@ -530,7 +530,7 @@ register_channel(Channel *chan)
                         /* check the accessibility of the file */
                         fp = fopen(filename, "a");
                         if (!fp) {
-                                grad_log(L_CRIT|L_PERROR,
+                                grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR,
                                          _("can't access log file `%s'"),
                                          filename);
                                 grad_free(filename);
@@ -567,10 +567,10 @@ register_category0(int cat, int pri, Channel *chan)
 {
 	if (cat == -1) {
 		int i;
-		for (i = 0; i < L_NCAT; i++)
+		for (i = 0; i < GRAD_LOG_NCAT; i++)
 			chan->pmask[i] |= pri;
 	} else
-		chan->pmask[L_CAT(cat)] |= pri;
+		chan->pmask[GRAD_LOG_CAT(cat)] |= pri;
 }
 
 struct category_closure {
@@ -593,7 +593,7 @@ register_category(int cat, int pri, grad_list_t *clist)
 	struct category_closure clos;
 
         if (pri == -1)
-                pri = L_UPTO(L_DEBUG);
+                pri = GRAD_LOG_UPTO(GRAD_LOG_DEBUG);
 
 	clos.cat = cat;
 	clos.pri = pri;
@@ -693,23 +693,23 @@ static grad_keyword_t syslog_priority[] = {
 };
 
 static grad_keyword_t log_categories[] = {
-	{ "main",       L_MAIN },
-	{ "auth",       L_AUTH },
-	{ "acct",       L_ACCT },
-	{ "snmp",       L_SNMP },
-	{ "proxy",      L_PROXY },
+	{ "main",       GRAD_LOG_MAIN },
+	{ "auth",       GRAD_LOG_AUTH },
+	{ "acct",       GRAD_LOG_ACCT },
+	{ "snmp",       GRAD_LOG_SNMP },
+	{ "proxy",      GRAD_LOG_PROXY },
 	{ 0 }
 };
 
 static grad_keyword_t log_priorities[] = {
-	{ "emerg",      L_EMERG },
-	{ "alert",      L_ALERT },
-	{ "crit",       L_CRIT },
-	{ "err",        L_ERR },
-	{ "warning",    L_WARN },
-	{ "notice",     L_NOTICE },
-	{ "info",       L_INFO },
-	{ "debug",      L_DEBUG },
+	{ "emerg",      GRAD_LOG_EMERG },
+	{ "alert",      GRAD_LOG_ALERT },
+	{ "crit",       GRAD_LOG_CRIT },
+	{ "err",        GRAD_LOG_ERR },
+	{ "warning",    GRAD_LOG_WARN },
+	{ "notice",     GRAD_LOG_NOTICE },
+	{ "info",       GRAD_LOG_INFO },
+	{ "debug",      GRAD_LOG_DEBUG },
 	{ 0 }
 };
 
@@ -763,7 +763,7 @@ static int
 channel_stmt_end(void *block_data, void *handler_data)
 {
 	if (channel.mode == LM_UNKNOWN) {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("%s:%d: no channel mode for `%s'"), 
 		         cfg_filename, cfg_line_num, channel.name);
 	} else 
@@ -784,11 +784,11 @@ get_priority(cfg_value_t *argv)
 
 	switch (argv[0].v.ch) {
 	case '!':
-		cat_def.pri = L_UPTO(L_DEBUG) & ~L_MASK(cat_def.pri);
+		cat_def.pri = GRAD_LOG_UPTO(GRAD_LOG_DEBUG) & ~GRAD_LOG_MASK(cat_def.pri);
 		break;
 
 	case '=':
-		cat_def.pri = L_MASK(cat_def.pri);
+		cat_def.pri = GRAD_LOG_MASK(cat_def.pri);
 		break;
 
 	default:
@@ -824,7 +824,7 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 								-1);
 				if (cat_def.pri == -1)
 					return 1;
-				cat_def.pri = L_UPTO(cat_def.pri);
+				cat_def.pri = GRAD_LOG_UPTO(cat_def.pri);
 			}
 		}
 		break;
@@ -870,7 +870,7 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 							argv[3].v.string, -1);
 			if (cat_def.pri == -1) 
 				return 1;
-			cat_def.pri = L_UPTO(cat_def.pri);
+			cat_def.pri = GRAD_LOG_UPTO(cat_def.pri);
 			break;
 
 		default:
@@ -919,12 +919,12 @@ category_stmt_end(void *block_data, void *handler_data)
 {
 	if (cat_def.init) {
 		switch (cat_def.cat) {
-		case L_AUTH:
+		case GRAD_LOG_AUTH:
 			log_mode = cat_def.level;
 			break;
 		default:
 			if (cat_def.level)
-				grad_log(L_WARN,
+				grad_log(GRAD_LOG_WARN,
 				         "%s:%d: %s",
 				         cfg_filename, cfg_line_num,
 				_("no levels applicable for this category"));
@@ -952,7 +952,7 @@ category_set_channel(int argc, cfg_value_t *argv,
 	channel = channel_lookup(argv[1].v.string);
 
 	if (!channel) {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("%s:%d: channel `%s' not defined"),
 		         cfg_filename, cfg_line_num, argv[1].v.string);
 	} else {
@@ -996,7 +996,7 @@ category_set_level(int argc, cfg_value_t *argv,
 		int level;
 		
 		if (argv[i].type != CFG_STRING) {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("%s:%d: list item %d has wrong datatype"),
 			         cfg_filename, cfg_line_num,
 			         i);
@@ -1012,7 +1012,7 @@ category_set_level(int argc, cfg_value_t *argv,
 			level = argv[i++].v.number;
 		}
 		if (grad_set_module_debug_level(modname, level)) {
-			grad_log(L_WARN,
+			grad_log(GRAD_LOG_WARN,
 			         _("%s:%d: no such module name: %s"),
 			         cfg_filename, cfg_line_num, modname);
 		}

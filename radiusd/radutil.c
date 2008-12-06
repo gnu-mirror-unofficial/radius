@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2000,2002,2003,2004,2005,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2002,2003,2004,2005,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -93,7 +94,7 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
         char *str;
 	
         if (!attr) {
-                grad_log_req(L_ERR, req, "attribute not found");
+                grad_log_req(GRAD_LOG_ERR, req, "attribute not found");
                 return;
         }
         
@@ -115,7 +116,7 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
                 case '?':
                         if (*defval == 0)
                                 defval = "Attribute is not present";
-                        grad_log_req(L_ERR, req, "%s: %s",
+                        grad_log_req(GRAD_LOG_ERR, req, "%s: %s",
 				     attr->name, defval);
                         break;
                 case '=':
@@ -133,10 +134,10 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
                         break;
                 default:
                         if (defval)
-                                grad_log(L_ERR, "invalid : substitution: %s",
+                                grad_log(GRAD_LOG_ERR, "invalid : substitution: %s",
                                          defval);
                         else
-                                grad_log(L_ERR, "null : substitution");
+                                grad_log(GRAD_LOG_ERR, "null : substitution");
                         break;
                 }
                 
@@ -201,7 +202,7 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
                 break;
 		
         default:
-                grad_log(L_CRIT,
+                grad_log(GRAD_LOG_CRIT,
                          _("INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"),
                          __FILE__, __LINE__,
                          attr->value, attr->type);
@@ -483,7 +484,7 @@ util_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq)
 		if (rewrite_interpret(fmt+1, radreq, &val)) 
 			return NULL;
 		if (val.type != String) {
-			grad_log(L_ERR, "%s: %s",
+			grad_log(GRAD_LOG_ERR, "%s: %s",
 			         fmt+1, _("wrong return type"));
 			/* Nothing to free in val */
 			return NULL;
@@ -532,7 +533,7 @@ pair_set_value(grad_avp_t *p, grad_value_t *val)
 		case GRAD_TYPE_DATE:
 			p->avp_lvalue = strtoul(val->datum.sval.data, &endp, 0);
 			if (*endp)
-				grad_log(L_ERR,
+				grad_log(GRAD_LOG_ERR,
 					 _("cannot convert \"%s\" to integer"),
 					 val->datum.sval);
 			break;

@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2002,2003,2004,2005,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2002,2003,2004,2005,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -156,7 +157,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 				i = state->next;
                         maxrec = strtoul(state->argv[i]+1, &p, 0);
                         if (!maxrec) {
-                                grad_log(L_ERR,
+                                grad_log(GRAD_LOG_ERR,
                                          "invalid number (near %s)",
                                          p);
                                 exit(1);
@@ -166,7 +167,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
         case 'c':
                 maxrec = atol(arg);
                 if (!maxrec) {
-                        grad_log(L_ERR, "invalid number of records");
+                        grad_log(GRAD_LOG_ERR, "invalid number of records");
                         exit(1);
                 }
                 break;
@@ -204,7 +205,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
         case ARGP_KEY_FINI:
                 if (show_seconds && width == 8) {
-                        grad_log(L_ERR,
+                        grad_log(GRAD_LOG_ERR,
                                  _("--width is incompatible with --show-seconds"));
                         exit (1);
                 }
@@ -250,7 +251,7 @@ main(int argc, char **argv)
 		grad_nas_t *nas = grad_nas_lookup_name(nas_name);
 		if (!nas) {
 			if (grad_ip_getnetaddr(nas_name, &nas_ip)) {
-                                grad_log(L_ERR, "unknown nas: %s", nas_name);
+                                grad_log(GRAD_LOG_ERR, "unknown nas: %s", nas_name);
                                 return 1;
                         }
                 }       
@@ -281,7 +282,8 @@ rawread()
         char ip_str[GRAD_IPV4_STRING_LENGTH];
         
         if ((wfd = open(file, O_RDONLY, 0)) < 0) {
-                grad_log(L_ERR|L_PERROR, "can't open %s", file);
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+                         _("can't open file %s"), file);
                 exit(1);
         }
         while (read(wfd, &ut, sizeof ut) == sizeof ut) {
@@ -344,7 +346,8 @@ radwtmp()
 	int acct_enabled = 0;
 		
         if ((wfd = open(file, O_RDONLY, 0)) < 0 || fstat(wfd, &stb) == -1) {
-                grad_log(L_ERR|L_PERROR, "can't open %s", file);
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+                         _("can't open file %s"), file);
                 exit(1);
         }
         bl = (stb.st_size + sizeof(buf) - 1) / sizeof(buf);
@@ -357,7 +360,7 @@ radwtmp()
         while (!stop && --bl >= 0) {
                 if (lseek(wfd, (off_t)(bl * sizeof(buf)), SEEK_SET) == -1 ||
                     (bytes = read(wfd, buf, sizeof(buf))) == -1)
-                        grad_log(L_ERR, "%s", file);
+                        grad_log(GRAD_LOG_ERR, "%s", file);
                 for (bp = &buf[bytes / sizeof(buf[0]) - 1]; !stop && bp >= buf;
 		     --bp) {
                         switch (bp->type) {

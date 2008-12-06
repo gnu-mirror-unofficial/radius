@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2001 Vlad Lungu
-   Copyright (C) 2000,2001,2004,2006,2007 Sergey Pozniakoff  
+   Copyright (C) 2000,2001,2004,2006,2007,2008 Sergey Pozniakoff  
 
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ rad_odbc_diag(SQLSMALLINT handle_type, SQLHANDLE handle, char *what)
                       state,
                       &nerror,
                       message, sizeof message, &msglen);
-        grad_log(L_ERR,
+        grad_log(GRAD_LOG_ERR,
                  "%s: %s %d %s",
                  what, state, nerror, message);
 }
@@ -226,7 +226,7 @@ rad_odbc_getpwd(struct sql_connection *conn, const char *query)
         result = SQLFetch(stmt);
 
         if (result == SQL_SUCCESS) {
-                grad_log(L_NOTICE,
+                grad_log(GRAD_LOG_NOTICE,
                          _("query returned more tuples: %s"),
                          query);
                 SQLFreeHandle(SQL_HANDLE_STMT, stmt);
@@ -338,7 +338,7 @@ rad_odbc_column(void *data, size_t ncol)
         if (!data)
                 return NULL;
         if (ncol >= edata->nfields) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("too few columns returned (%d req'd)"), ncol);
                 return NULL;
         }

@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -51,7 +52,7 @@ read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, grad_locus_t *loc
         grad_nas_t nas, *nasp;
 
         if (fc < 2) {
-                grad_log_loc(L_ERR, loc, "%s", _("too few fields"));
+                grad_log_loc(GRAD_LOG_ERR, loc, "%s", _("too few fields"));
                 return -1;
         }
 

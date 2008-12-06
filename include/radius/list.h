@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2003,2004,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -20,8 +20,8 @@
 #ifndef _gnu_radius_list_h
 #define _gnu_radius_list_h
 
-typedef struct list grad_list_t;
-typedef struct iterator grad_iterator_t;
+typedef struct grad_list grad_list_t;
+typedef struct grad_iterator grad_iterator_t;
 
 typedef int (*list_iterator_t)(void *item, void *data);
 typedef int (*list_comp_t)(const void *, const void *);
@@ -33,7 +33,7 @@ void *grad_list_item(grad_list_t *list, size_t n);
 size_t grad_list_count(grad_list_t *list);
 void grad_list_append(grad_list_t *list, void *data);
 void grad_list_prepend(grad_list_t *list, void *data);
-int grad_list_insert_sorted(struct list *list, void *data, list_comp_t cmp);
+int grad_list_insert_sorted(grad_list_t *list, void *data, list_comp_t cmp);
 void *grad_list_locate(grad_list_t *list, void *data, list_comp_t cmp);
 void *grad_list_remove(grad_list_t *list, void *data, list_comp_t cmp);
 

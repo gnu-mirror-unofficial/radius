@@ -1,6 +1,7 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -166,7 +167,7 @@ block_open  : keyword tag '{'
 			      _cfg_push_block($1->block, $1->end, $1->data);
 		      } else {
 			      if (block->stmt) {
-				      grad_log(L_ERR,
+				      grad_log(GRAD_LOG_ERR,
 					       "%s:%d: %s",
 					       cfg_filename, cfg_line_num,
 					       _("unknown block statement"));
@@ -207,7 +208,7 @@ simple_stmt : keyword value_list T_EOL
 					      yyerror("syntax error");
 			      }
 		      } else if (block->stmt)
-			      grad_log(L_ERR,
+			      grad_log(GRAD_LOG_ERR,
 				       "%s:%d: %s",
 				       cfg_filename, cfg_line_num,
 				       _("unknown keyword"));
@@ -297,7 +298,7 @@ netmask     : T_IPADDR
             | T_NUMBER
               {
 		      if ($1 > 32) {
-			      grad_log(L_ERR,
+			      grad_log(GRAD_LOG_ERR,
 				       _("invalid netmask length: %d"), $1);
 			      YYERROR;
 		      }
@@ -424,7 +425,7 @@ again:
                 do {
                         while (*curp != '*') {
                                 if (*curp == 0) {
-                                        grad_log(L_ERR, 
+                                        grad_log(GRAD_LOG_ERR, 
                        _("%s:%d: unexpected EOF in comment started at line %d"),
                                                  cfg_filename, 
                                                  cfg_line_num, 
@@ -484,7 +485,7 @@ again:
 static int
 yyerror(char *s)
 {
-        grad_log(L_ERR, "%s:%d: %s", cfg_filename, cfg_line_num, s);
+        grad_log(GRAD_LOG_ERR, "%s:%d: %s", cfg_filename, cfg_line_num, s);
 }
                 
 /* ************************************************************************* */
@@ -642,7 +643,7 @@ _get_value(cfg_value_t *arg, int type, void *base)
                           if (s) 
                                   value.v.number = ntohs(s->s_port);
                           else {
-                                  grad_log(L_ERR, 
+                                  grad_log(GRAD_LOG_ERR, 
                                            _("%s:%d: no such service: %s"),
                                            cfg_filename, cfg_line_num,
                                            value.v.string);
@@ -668,7 +669,7 @@ _get_value(cfg_value_t *arg, int type, void *base)
                 case CFG_STRING:
                         ipaddr = grad_ip_gethostaddr(value.v.string);
                         if (ipaddr == 0) {
-                                grad_log(L_ERR, 
+                                grad_log(GRAD_LOG_ERR, 
                                          _("%s:%d: unknown host: %s"),
                                          cfg_filename, cfg_line_num,
                                          value.v.string);
@@ -736,7 +737,7 @@ _get_value(cfg_value_t *arg, int type, void *base)
 		break;
 		
         default:
-                grad_log(L_CRIT,
+                grad_log(GRAD_LOG_CRIT,
                          _("INTERNAL ERROR at %s:%d: unknown datatype %d"),
                          __FILE__, __LINE__, type);
         }
@@ -762,7 +763,7 @@ cfg_malloc(size_t size,	void (*destructor)(void *))
 void
 cfg_type_error(int type)
 {
-	grad_log(L_ERR, 
+	grad_log(GRAD_LOG_ERR, 
 	         _("%s:%d: wrong datatype (should be %s)"),
 	         cfg_filename, cfg_line_num, typestr[type]);
 }
@@ -770,7 +771,7 @@ cfg_type_error(int type)
 void
 cfg_argc_error(int few)
 {
-	grad_log(L_ERR,
+	grad_log(GRAD_LOG_ERR,
 	         "%s:%d: %s",
 	         cfg_filename, cfg_line_num,
 	         few ? _("too few arguments") : _("too many arguments"));
@@ -778,7 +779,7 @@ cfg_argc_error(int few)
 
 #define _check_argc(argc, max) \
  if (argc-1 > max) {\
-     grad_log(L_ERR, "%s:%d: %s", \
+     grad_log(GRAD_LOG_ERR, "%s:%d: %s", \
               cfg_filename, cfg_line_num, _("too many arguments"));\
      return 0;\
  }		
@@ -794,7 +795,7 @@ int
 cfg_obsolete(int argc ARG_UNUSED, cfg_value_t *argv ARG_UNUSED,
 	     void *block_data ARG_UNUSED, void *handler_data ARG_UNUSED)
 {
-	grad_log(L_WARN, _("%s:%d: obsolete statement"),
+	grad_log(GRAD_LOG_WARN, _("%s:%d: obsolete statement"),
 	       cfg_filename, cfg_line_num);
 	return 0;
 }
@@ -907,13 +908,14 @@ cfg_read(char *fname, struct cfg_stmt *syntax, void *data)
         cfg_filename = fname;
 	_cfg_push_block(syntax, NULL, data);
         if (stat(cfg_filename, &st)) {
-                grad_log(L_ERR|L_PERROR, _("can't stat `%s'"), cfg_filename);
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+                         _("can't stat `%s'"), cfg_filename);
                 return -1;
         }
         fd = open(cfg_filename, O_RDONLY);
         if (fd == -1) {
                 if (errno != ENOENT)
-                        grad_log(L_ERR|L_PERROR, 
+                        grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
                                 _("can't open config file `%s'"), cfg_filename);
                 return -1;
         }
@@ -924,7 +926,7 @@ cfg_read(char *fname, struct cfg_stmt *syntax, void *data)
         close(fd);
         curp = buffer;
 
-        grad_log(L_INFO, _("reading %s"), cfg_filename);
+        grad_log(GRAD_LOG_INFO, _("reading %s"), cfg_filename);
         cfg_line_num = 1;
 
         if (strncmp(curp, "#debug", 6) == 0) {

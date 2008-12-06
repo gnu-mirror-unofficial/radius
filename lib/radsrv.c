@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -63,7 +63,7 @@ grad_server_send_reply(int fd, grad_request_t *radreq,
                 sin->sin_addr.s_addr = htonl(radreq->ipaddr);
                 sin->sin_port = htons(radreq->udp_port);
 #ifdef DEBUG_ONLY
-		grad_log(L_DEBUG,
+		grad_log(GRAD_LOG_DEBUG,
 			 "DEBUG_ONLY version: not sending %s of id %d to %s (nas %s)",
 			 grad_request_code_to_name(reply_code), 
 			 radreq->id,
@@ -120,7 +120,7 @@ grad_server_send_challenge(int fd, grad_request_t *radreq,
                 sin->sin_port = htons(radreq->udp_port);
 
 #ifdef DEBUG_ONLY
-		grad_log(L_DEBUG,
+		grad_log(GRAD_LOG_DEBUG,
 			 "DEBUG_ONLY version: not sending challenge of id %d to %s (nas %s)",
 			 radreq->id, grad_ip_iptostr(radreq->ipaddr, NULL),
 			 grad_nas_request_to_name(radreq, buf, sizeof buf)));

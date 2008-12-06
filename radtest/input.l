@@ -2,7 +2,7 @@
 %{
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -461,7 +461,7 @@ open_input(char *name)
                 source_locus.file = name;
                 fp = fopen(name, "r");
                 if (!fp) {
-                        grad_log(L_ERR|L_PERROR,
+                        grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
                                  _("can't open input file `%s'"), name);
                         return 1;
                 }

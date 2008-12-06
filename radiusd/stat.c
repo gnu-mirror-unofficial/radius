@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -69,20 +69,20 @@ shmem_alloc(size_t size)
 					      statfile_perms);
 			
 			if (tempfd == -1) {
-				grad_log(L_ERR|L_PERROR, 
+				grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
 					 _("can't open file `%s'"),
 				         grad_stat_file);
 				return -1;
 			}
 		}
 		if (fstat(tempfd, &sb)) {
-			grad_log(L_ERR|L_PERROR, _("can't stat `%s'"),
+			grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, _("can't stat `%s'"),
 			         grad_stat_file);
 			close(tempfd);
 			return -1;
 		}
 		if ((sb.st_mode & statfile_perms) != statfile_perms) {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("SNMP system disabled: file `%s' has incorrect permissions"),
 			       grad_stat_file);
 			close(tempfd);
@@ -102,7 +102,7 @@ shmem_alloc(size_t size)
 			  tempfd, 0);
 	
 	if (shmem_base == MAP_FAILED) {
-		grad_log(L_ERR|L_PERROR, _("mmap failed"));
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, _("mmap failed"));
 		return -1;
 	} else {
 		shmem_size = size;
@@ -129,7 +129,7 @@ shmem_get(size_t size, int zero)
 	if (!shmem_base && shmem_alloc(size))
 		return NULL;
 	if (shmem_size - offset < size) {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         ngettext("shmem_get(): can't allocate %d byte",
 			  	  "shmem_get(): can't allocate %d bytes",
 				  size),
@@ -166,7 +166,7 @@ stat_init()
 	if (shmem_alloc(stat_port_count * sizeof(PORT_STAT) +
 			sizeof(*server_stat) +
 			stat_nas_count * sizeof(struct nas_stat))) {
-		grad_log(L_NOTICE, _("stat_init failed"));
+		grad_log(GRAD_LOG_NOTICE, _("stat_init failed"));
 		return;
 	}
 
@@ -228,7 +228,7 @@ stat_find_port(grad_nas_t *nas, int port_no)
 
 	/* Port not found */
 	if ((port = stat_alloc_port()) == NULL) {
-		grad_log(L_WARN,
+		grad_log(GRAD_LOG_WARN,
 		         _("reached SNMP storage limit for the number of monitored ports: increase max-port-count"));
 		return NULL;
 	}
@@ -288,7 +288,7 @@ stat_update(struct radutmp *ut, int status)
 		return;
 	nas = grad_nas_lookup_ip(ntohl(ut->nas_address));
 	if (!nas) {
-		grad_log(L_WARN,
+		grad_log(GRAD_LOG_WARN,
 		         _("stat_update(): portno %d: can't find nas for IP %s"),
 		         ut->nas_port,
 		         grad_ip_iptostr(ntohl(ut->nas_address), ipbuf));
@@ -299,7 +299,7 @@ stat_update(struct radutmp *ut, int status)
 	
 	port = stat_find_port(nas, ut->nas_port);
 	if (!port) {
-		grad_log(L_WARN,
+		grad_log(GRAD_LOG_WARN,
 		         _("stat_update(): port %d not found on NAS %s"),
 		         ut->nas_port,
 		         grad_ip_iptostr(ntohl(ut->nas_address), ipbuf));
@@ -311,7 +311,7 @@ stat_update(struct radutmp *ut, int status)
 		if (port->start) {
 			dt = ut->time - port->start;
 			if (dt < 0) {
-                                grad_log(L_NOTICE,
+                                grad_log(GRAD_LOG_NOTICE,
 				         "stat_update(START,%s,%s,%d): %s",
 				         ut->login, nas->shortname, ut->nas_port,
 				         _("negative port idle time"));
@@ -335,7 +335,7 @@ stat_update(struct radutmp *ut, int status)
 		if (port->start) {
 			dt = ut->time - port->start;
 			if (dt < 0) {
-                                grad_log(L_NOTICE,
+                                grad_log(GRAD_LOG_NOTICE,
 				       "stat_update(STOP,%s,%s,%d): %s",
 				       ut->login, nas->shortname, ut->nas_port,
 				       _("negative port session time"));
@@ -469,7 +469,7 @@ snmp_attach_nas_stat(grad_nas_t *nas)
         np = find_nas_stat(nas->netdef.ipaddr); 
         if (!np) {
 		if (server_stat->nas_index >= server_stat->nas_count) {
-			grad_log(L_WARN,
+			grad_log(GRAD_LOG_WARN,
 			         _("reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"));
 			return;
 		}

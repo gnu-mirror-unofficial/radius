@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -699,7 +699,7 @@ typedef struct channel Channel;
 
 struct channel {
         char *name;
-        int  pmask[L_NCAT]; 
+        int  pmask[GRAD_LOG_NCAT]; 
         int mode;   /* LM_ constant */
         union {
 		struct {

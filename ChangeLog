@@ -1,3 +1,12 @@
+2008-12-06  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Namespace normalization.
+	
+	* include/radius/list.h: Rename struct list/iterator to grad_list/
+	grad_iterator
+	* include/radius/radius.h: Rename L_ log macros to GRAD_LOG_
+	All uses updated.
+
 2008-12-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Replace with the gnulib version.

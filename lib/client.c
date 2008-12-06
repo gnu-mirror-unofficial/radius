@@ -124,7 +124,7 @@ grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret,
         totallen = ntohs(auth->length);
 
         if (totallen != length) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
            _("Actual request length does not match reported length (%d, %d)"),
                          totallen, length);
                 return NULL;
@@ -139,7 +139,7 @@ grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret,
         
 	GRAD_DEBUG1(1, "received %s", grad_request_code_to_name(auth->code));
         if (memcmp(reply_digest, calc_digest, GRAD_AUTHENTICATOR_LENGTH) != 0) {
-                grad_log(L_WARN, _("Received invalid reply digest from server"));
+                grad_log(GRAD_LOG_WARN, _("Received invalid reply digest from server"));
         }
 
         req = grad_decode_pdu(host, udp_port, buffer, length);
@@ -219,7 +219,7 @@ wait_for_reply(int fd, unsigned timeout)
 					   "select interrupted. retrying.");
 				continue;
 			}
-			grad_log(L_NOTICE, _("select() interrupted"));
+			grad_log(GRAD_LOG_NOTICE, _("select() interrupted"));
 			break;
 		}
 
@@ -248,12 +248,12 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 	int id;
 	
         if (port_type < 0 || port_type > 2) {
-                grad_log(L_ERR, _("invalid port type"));
+                grad_log(GRAD_LOG_ERR, _("invalid port type"));
                 return NULL;
         }
         sockfd = socket(PF_INET, SOCK_DGRAM, 0);
         if (sockfd < 0) {
-                grad_log(L_ERR|L_PERROR, "socket");
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "socket");
                 return NULL;
         }
 
@@ -264,7 +264,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                                    htonl(config->source_ip) : INADDR_ANY;
         sin->sin_port = 0;
         if (bind(sockfd, &salocal, sizeof (struct sockaddr_in))) {
-                grad_log(L_ERR|L_PERROR, "bind");
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "bind");
                 close(sockfd);
                 return NULL;
         }
@@ -332,7 +332,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 			if (sendto(sockfd, pdu, size, 0,
                                    &saremote,
                                    sizeof(struct sockaddr_in)) == -1) {
-                                grad_log(L_ERR|L_PERROR, "sendto");
+                                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "sendto");
                         }
 
                         salen = sizeof (saremote);
@@ -352,7 +352,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                                                 recv_buf,
                                                 result);
                                 else 
-                                        grad_log(L_ERR|L_PERROR,
+                                        grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
                                         _("error receiving data from %s:%d"),
                                                  grad_ip_iptostr(server->addr, ipbuf),
                                                  server->port[port_type]);
@@ -413,7 +413,7 @@ parse_client_config(void *closure, int argc, char **argv, grad_locus_t *loc)
 	
         switch (grad_xlat_keyword(kwd, argv[0], TOK_INVALID)) {
         case TOK_INVALID:
-                grad_log_loc(L_ERR, loc, _("unknown keyword"));
+                grad_log_loc(GRAD_LOG_ERR, loc, _("unknown keyword"));
                 break;
                 
         case TOK_SOURCE_IP:
@@ -422,7 +422,7 @@ parse_client_config(void *closure, int argc, char **argv, grad_locus_t *loc)
                 
         case TOK_SERVER:
                 if (argc != 6) {
-                        grad_log_loc(L_ERR, loc, _("wrong number of fields"));
+                        grad_log_loc(GRAD_LOG_ERR, loc, _("wrong number of fields"));
                         break;
                 }
                 memset(&serv, 0, sizeof serv);
@@ -430,7 +430,7 @@ parse_client_config(void *closure, int argc, char **argv, grad_locus_t *loc)
                 serv.name = argv[1];
                 serv.addr = grad_ip_gethostaddr(argv[2]);
                 if (!serv.addr) {
-                        grad_log_loc(L_ERR, loc,
+                        grad_log_loc(GRAD_LOG_ERR, loc,
 				     _("bad IP address or host name"));
                         break;
                 }
@@ -439,14 +439,14 @@ parse_client_config(void *closure, int argc, char **argv, grad_locus_t *loc)
 
                 serv.port[0] = strtol(argv[4], &p, 0);
                 if (*p) {
-                        grad_log_loc(L_ERR, loc, _("bad port number %s"),
+                        grad_log_loc(GRAD_LOG_ERR, loc, _("bad port number %s"),
 				     argv[4]);
                         break;
                 }
 
                 serv.port[1] = strtol(argv[5], &p, 0);
                 if (*p) {
-                        grad_log_loc(L_ERR, loc, _("bad port number %s"),
+                        grad_log_loc(GRAD_LOG_ERR, loc, _("bad port number %s"),
 				     argv[4]);
                         break;
                 }
@@ -458,13 +458,13 @@ parse_client_config(void *closure, int argc, char **argv, grad_locus_t *loc)
         case TOK_TIMEOUT:
                 client->timeout = strtol(argv[1], &p, 0);
                 if (*p) 
-                        grad_log_loc(L_ERR, loc,  _("bad timeout value"));
+                        grad_log_loc(GRAD_LOG_ERR, loc,  _("bad timeout value"));
                 break;
                 
         case TOK_RETRY:
                 client->retries = strtol(argv[1], &p, 0);
                 if (*p) 
-                        grad_log_loc(L_ERR, loc, _("bad retry value"));
+                        grad_log_loc(GRAD_LOG_ERR, loc, _("bad retry value"));
                 break;
 
 	case TOK_DEBUG:

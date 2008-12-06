@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -73,17 +73,20 @@ grad_read_raddb_file(char *filename, int vital, char *delim,
 	size_t rdsize;
 	
 	if (stat(filename, &st)) {
-                grad_log(L_ERR|L_PERROR, _("can't stat `%s'"), filename);
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+                         _("can't stat `%s'"), filename);
                 return -1;
         }
 	fd = open(filename, O_RDONLY);
         if (fd == -1) {
                 if (vital) {
-                        grad_log(L_ERR|L_PERROR, _("can't open file `%s'"),
+                        grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+                                 _("can't open file `%s'"),
                                  filename);
                         return -1;
                 } else {
-                        grad_log(L_NOTICE|L_PERROR, _("can't open file `%s'"),
+                        grad_log(GRAD_LOG_NOTICE|GRAD_LOG_PERROR, 
+                                 _("can't open file `%s'"),
                                  filename);
                         return 0;
                 }
@@ -94,10 +97,11 @@ grad_read_raddb_file(char *filename, int vital, char *delim,
 		ssize_t s = read(fd, lineptr, rdsize);
 		if (s <= 0) {
 			if (s == -1) {
-				grad_log(L_ERR|L_PERROR, _("%s: read error"),
+				grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+				         _("%s: read error"),
 					 filename);
 			} else if (s == 0) 
-				grad_log(L_WARN, _("%s: short read"),
+				grad_log(GRAD_LOG_WARN, _("%s: short read"),
 					  filename);
 			grad_free(buffer);
 			close(fd);

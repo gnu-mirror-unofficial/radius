@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -31,10 +31,11 @@
 #define __grad_debug(text)                                                    \
  do {                                                                         \
    if (grad_source_info_option)                                               \
-     grad_log(L_DEBUG, "%s:%lu:%s: %s", __FILE__, __LINE__, __FUNCTION__,     \
+     grad_log(GRAD_LOG_DEBUG, "%s:%lu:%s: %s",                                \
+              __FILE__, __LINE__, __FUNCTION__,                               \
               text);                                                          \
    else                                                                       \
-     grad_log(L_DEBUG, "%s", text);                                           \
+     grad_log(GRAD_LOG_DEBUG, "%s", text);                                    \
  } while (0)
 
 #define GRAD_DEBUG(lev,text)                                                  \

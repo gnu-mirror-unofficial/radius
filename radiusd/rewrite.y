@@ -1,7 +1,7 @@
 %{
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -837,9 +837,9 @@ fundecl : TYPE IDENT dclparm
           }
         | TYPE FUN dclparm
           {
-		  grad_log_loc(L_ERR, &locus,
+		  grad_log_loc(GRAD_LOG_ERR, &locus,
 			       _("redefinition of function `%s'"), $2->name);
-		  grad_log_loc(L_ERR, &$2->loc,
+		  grad_log_loc(GRAD_LOG_ERR, &$2->loc,
 			       _("previously defined here"));
 		  errcnt++;
 		  YYERROR;
@@ -1024,7 +1024,7 @@ stmt    : begin list end
         | BREAK ';'
           {
                   if (!loop_last) {
-                          grad_log_loc(L_ERR, &locus,
+                          grad_log_loc(GRAD_LOG_ERR, &locus,
 				       "%s",
 				       _("nothing to break from"));
                           errcnt++;
@@ -1038,7 +1038,7 @@ stmt    : begin list end
         | CONTINUE ';'
           {
                   if (!loop_last) {
-                          grad_log_loc(L_ERR, &locus,
+                          grad_log_loc(GRAD_LOG_ERR, &locus,
 				       "%s",
 				       _("nothing to continue"));
                           errcnt++;
@@ -1116,7 +1116,7 @@ expr    : NUMBER
           }
         | IDENT
           {
-                  grad_log_loc(L_ERR, &locus, _("undefined variable: %s"), $1);
+                  grad_log_loc(GRAD_LOG_ERR, &locus, _("undefined variable: %s"), $1);
                   errcnt++;
                   YYERROR;
           }
@@ -1273,7 +1273,7 @@ expr    : NUMBER
 int
 yyerror(char *s)
 {
-        grad_log_loc(L_ERR, &locus, "%s", s);
+        grad_log_loc(GRAD_LOG_ERR, &locus, "%s", s);
         errcnt++;
 	return 0;
 }
@@ -1289,7 +1289,7 @@ parse_rewrite(char *path)
         infile = fopen(locus.file, "r");
         if (!infile) {
                 if (errno != ENOENT) {
-                        grad_log(L_ERR|L_PERROR,
+                        grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
                                  _("can't open file `%s'"),
                                  locus.file);
 			return -1;
@@ -1606,7 +1606,7 @@ c_comment()
                 do {
                         while (input() != '*') {
                                 if (yychar == 0) {
-                                        grad_log_loc(L_ERR, &locus,
+                                        grad_log_loc(GRAD_LOG_ERR, &locus,
 		       _("unexpected EOF in comment started at line %lu"),
 						     (unsigned long) keep_line);
                                         return 0;
@@ -1668,7 +1668,7 @@ regex_pragma (enum pragma_handler_phase phase)
 		break;
 	}
 	if (!isword(yychar)) {
-		grad_log_loc(L_ERR, &locus, _("Malformed pragma"));
+		grad_log_loc(GRAD_LOG_ERR, &locus, _("Malformed pragma"));
 		return 1;
 	}
 	
@@ -1681,7 +1681,7 @@ regex_pragma (enum pragma_handler_phase phase)
 	else if (strcmp (s, "newline") == 0)
 		bit = REG_NEWLINE;
 	else {
-		grad_log_loc(L_ERR, &locus,
+		grad_log_loc(GRAD_LOG_ERR, &locus,
 			     _("Unknown regexp flag: %s"), s);
 		return 1;
 	}
@@ -1817,7 +1817,7 @@ yylex()
                 else
                         c = yychar;
                 if (input() != '\'') {
-                        grad_log_loc(L_ERR, &locus,
+                        grad_log_loc(GRAD_LOG_ERR, &locus,
 				     "%s",
 				     _("unterminated character constant"));
                         errcnt++;
@@ -1862,7 +1862,7 @@ yylex()
                         return '%';
                 }
                 if (!attr) {
-                        grad_log_loc(L_ERR, &locus,
+                        grad_log_loc(GRAD_LOG_ERR, &locus,
 				     _("unknown attribute `%s'"),
 				     attr_name);
                         errcnt++;
@@ -2550,7 +2550,7 @@ mtx_attr_check(grad_dict_attr_t *attr,	MTX *index)
 void
 rw_coercion_warning(grad_data_type_t from, grad_data_type_t to, char *pref)
 {
-	grad_log_loc(L_WARN, &locus,
+	grad_log_loc(GRAD_LOG_WARN, &locus,
 		     _("%s implicit coercion %s %s"),
 		     pref ? pref : "",
 		     datatype_str_abl(from),
@@ -2614,7 +2614,7 @@ mtx_bin(Bopcode opcode, MTX *arg1, MTX *arg2)
                         mtx->datatype = Integer;
                         break;
                 default:
-                        grad_log_loc(L_ERR, &locus,
+                        grad_log_loc(GRAD_LOG_ERR, &locus,
 				     "%s",
 				     _("operation not applicable to strings"));
                         errcnt++;
@@ -2734,12 +2734,12 @@ mtx_call(FUNCTION *fun, MTX *args)
          * Note that the argument count mismatch is not an error!
          */
         if (argp) {
-                grad_log_loc(L_ERR, &locus,
+                grad_log_loc(GRAD_LOG_ERR, &locus,
 			     _("too many arguments in call to %s"),
 			     fun->name);
 		errcnt++;
         } else if (parmp) {
-                grad_log_loc(L_ERR, &locus,
+                grad_log_loc(GRAD_LOG_ERR, &locus,
 			     _("too few arguments in call to %s"),
 			     fun->name);
 		errcnt++;
@@ -2796,12 +2796,12 @@ mtx_builtin(builtin_t *bin, MTX *args)
         }
 
         if (argp) {
-                grad_log_loc(L_ERR, &locus,
+                grad_log_loc(GRAD_LOG_ERR, &locus,
 			     _("too many arguments in call to %s"),
 			     bin->name);
                 errcnt++;
         } else if (*parmp) {
-                grad_log_loc(L_ERR, &locus,
+                grad_log_loc(GRAD_LOG_ERR, &locus,
 			     _("too few arguments in call to %s"),
 			     bin->name);
                 errcnt++;
@@ -2876,7 +2876,7 @@ debug_open_file()
         
         path = grad_mkfilename(grad_log_dir, "radius.mtx");
         if ((fp = fopen(path, "a")) == NULL) {
-                grad_log(L_ERR|L_PERROR,
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
                          _("can't open file `%s'"),
                          path);
         }
@@ -3185,7 +3185,7 @@ pass1()
          */
         if (mtx_last->gen.type != Return) {
                 grad_value_t val;
-                grad_log_loc(L_WARN, &mtx_last->gen.loc,
+                grad_log_loc(GRAD_LOG_WARN, &mtx_last->gen.loc,
 			     _("missing return statement"));
 
 		val.type = function->rettype;
@@ -3336,7 +3336,7 @@ pass2_binary(MTX *mtx)
 		
         case Div:
                 if (arg1->cnst.datum.ival == 0) {
-                        grad_log_loc(L_ERR, &arg1->cnst.loc,
+                        grad_log_loc(GRAD_LOG_ERR, &arg1->cnst.loc,
 				     _("divide by zero"));
                         errcnt++;
                 } else
@@ -3346,7 +3346,7 @@ pass2_binary(MTX *mtx)
 		
         case Rem:
                 if (arg1->cnst.datum.ival == 0) {
-                        grad_log_loc(L_ERR, &arg1->cnst.loc,
+                        grad_log_loc(GRAD_LOG_ERR, &arg1->cnst.loc,
 				     _("divide by zero"));
                         errcnt++;
                 } else
@@ -3693,7 +3693,7 @@ codegen()
                 case Generic:
                 case Return:
                 default:
-                        grad_log(L_CRIT,
+                        grad_log(GRAD_LOG_CRIT,
                                  "INTERNAL ERROR: codegen stumbled accross generic matrix!");
                         errcnt++;
                         return 0;
@@ -3970,7 +3970,7 @@ compile_regexp(char *str)
         if (rc) {
                 char errbuf[512];
                 regerror(rc, &regex, errbuf, sizeof(errbuf));
-                grad_log_loc(L_ERR, &locus,
+                grad_log_loc(GRAD_LOG_ERR, &locus,
 			     _("regexp error: %s"),
 			     errbuf);
                 return NULL;
@@ -4214,7 +4214,7 @@ getarg(int num)
 static int
 rw_error(const char *msg)
 {
-        grad_log(L_ERR,
+        grad_log(GRAD_LOG_ERR,
 	         "%s: %s",
                  _("rewrite runtime error"), msg);
         longjmp(mach.jmp, 1);
@@ -4224,7 +4224,7 @@ rw_error(const char *msg)
 static int
 rw_error_free(char *msg)
 {
-        grad_log(L_ERR,
+        grad_log(GRAD_LOG_ERR,
 	         "%s: %s",
                  _("rewrite runtime error"), msg);
 	free(msg);
@@ -4877,7 +4877,7 @@ rw_match()
                 char errbuf[512];
                 regerror(rc, &rx->regex,
                          errbuf, sizeof(errbuf));
-                grad_log(L_DEBUG,
+                grad_log(GRAD_LOG_DEBUG,
 		         _("rewrite regex failure: %s. Input: %s"),
                          errbuf, (char*)mach.rA);
         }
@@ -5054,7 +5054,7 @@ bi_logit()
 {
         grad_string_t msg;
 	mem2string(&msg, (RWSTYPE*) getarg(1));
-        grad_log(L_INFO, "%s", msg.data);
+        grad_log(GRAD_LOG_INFO, "%s", msg.data);
         pushn(0);
 }
 
@@ -5707,9 +5707,9 @@ function_install(FUNCTION *fun)
         FUNCTION *fp;
 
         if (fp = (FUNCTION *)grad_sym_lookup(rewrite_tab, fun->name)) {
-                grad_log_loc(L_ERR, &fun->loc,
+                grad_log_loc(GRAD_LOG_ERR, &fun->loc,
 			     _("redefinition of function %s"));
-                grad_log_loc(L_ERR, &fp->loc,
+                grad_log_loc(GRAD_LOG_ERR, &fp->loc,
 			     _("previously defined here"));
                 errcnt++;
                 return fp;
@@ -5764,25 +5764,25 @@ rewrite_check_function(const char *name, grad_data_type_t rettype, char *typestr
 	
 	FUNCTION *fun = (FUNCTION*) grad_sym_lookup(rewrite_tab, name);
         if (!fun) {
-                grad_log(L_ERR, _("function %s not defined"), name);
+                grad_log(GRAD_LOG_ERR, _("function %s not defined"), name);
                 return NULL;
         }
 	if (fun->rettype != rettype) {
-		grad_log(L_ERR, _("function %s returns wrong data type"), name);
+		grad_log(GRAD_LOG_ERR, _("function %s returns wrong data type"), name);
 		return NULL;
 	}
 
 	for (i = 0, p = fun->parm; i < fun->nparm; i++, p = p->next) {
                 switch (typestr[i]) {
 		case 0:
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("function %s takes too many arguments"),
 			         name);
 			return NULL;
 			
                 case 'i':
                         if (p->datatype != Integer) {
-				grad_log(L_ERR,
+				grad_log(GRAD_LOG_ERR,
 				         _("function %s: argument %d must be integer"),
 				         name, i+1);
 				return NULL;
@@ -5791,7 +5791,7 @@ rewrite_check_function(const char *name, grad_data_type_t rettype, char *typestr
 			
                 case 's':
                         if (p->datatype != String) {
-				grad_log(L_ERR,
+				grad_log(GRAD_LOG_ERR,
 				         _("function %s: argument %d must be string"),
 				         name, i+1);
 				return NULL;
@@ -5804,7 +5804,7 @@ rewrite_check_function(const char *name, grad_data_type_t rettype, char *typestr
         }
 
 	if (typestr[i]) {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("function %s takes too few arguments"),
 		         name);
 		return NULL;
@@ -5991,7 +5991,7 @@ rewrite_eval(char *symname, grad_request_t *req, grad_value_t *val)
 		return -1;
 	
 	if (fun->nparm) {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         ngettext("function %s() requires %d parameter",
 				  "function %s() requires %d parameters",
 				  fun->nparm),
@@ -6149,7 +6149,7 @@ static int
 _load_module(void *item, void *data ARG_UNUSED)
 {
 	if (rewrite_load_module(item) == -2)
-		grad_log(L_ERR, _("file not found: %s"), item);
+		grad_log(GRAD_LOG_ERR, _("file not found: %s"), item);
 	return 0;
 }
 

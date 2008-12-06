@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2006,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -104,7 +104,7 @@ validate_client(grad_request_t *radreq)
         CLIENT  *cl;
         
         if ((cl = client_lookup_ip(radreq->ipaddr)) == NULL) {
-                grad_log_req(L_ERR, radreq,
+                grad_log_req(GRAD_LOG_ERR, radreq,
 			     _("request from unknown client"));
                 return -1;
         }
@@ -174,7 +174,7 @@ radius_auth_req_decode(const struct sockaddr_in *srv_sa,
 	grad_request_t *greq;
         radiusd_request_t *radreq;
 
-	log_open(L_AUTH);
+	log_open(GRAD_LOG_AUTH);
 
         if (suspend_flag) {
 		stat_inc(auth, ntohl(clt_sa->sin_addr.s_addr), num_dropped);
@@ -223,7 +223,7 @@ radius_acct_req_decode(const struct sockaddr_in *srv_sa,
 {
 	grad_request_t *greq;
 
-	log_open(L_ACCT);
+	log_open(GRAD_LOG_ACCT);
 	
         if (suspend_flag) {
 		stat_inc(acct, ntohl(clt_sa->sin_addr.s_addr), num_dropped);
@@ -425,7 +425,7 @@ radius_req_drop(int type, void *data, void *orig_data,
 {
 	radiusd_request_t *radreq = data ? data : orig_data;
 
-        grad_log_req(L_NOTICE, radreq->request,
+        grad_log_req(GRAD_LOG_NOTICE, radreq->request,
 		     "%s: %s", _("Dropping packet"),  status_str);
 
         switch (type) {
@@ -448,7 +448,7 @@ radius_req_xmit(REQUEST *request)
 		} else {
 			radius_send_reply(0, req,
 					  NULL, NULL, request->fd);
-			grad_log_req(L_NOTICE, req->request,
+			grad_log_req(GRAD_LOG_NOTICE, req->request,
 				     _("Retransmitting %s reply"),
 				     request_class[request->type].name);
 		} 
@@ -520,7 +520,8 @@ radius_respond(REQUEST *req)
 	case RT_ACCESS_CHALLENGE:
 		if (!req->orig) {
 			char buf[GRAD_MAX_SHORTNAME];
-			grad_log_req(L_PROXY|L_ERR, radreq->request,
+			grad_log_req(GRAD_LOG_PROXY|GRAD_LOG_ERR, 
+			             radreq->request,
 				     _("Unrecognized proxy reply from server %s, proxy ID %d"),
 				     client_lookup_name(radreq->request->ipaddr,
 						        buf, sizeof buf), 
@@ -554,7 +555,7 @@ radius_respond(REQUEST *req)
 
         default:
                 stat_inc(acct, radreq->request->ipaddr, num_unknowntypes);
-                grad_log_req(L_NOTICE, radreq->request,
+                grad_log_req(GRAD_LOG_NOTICE, radreq->request,
 			     _("unknown request code %d"), 
                              radreq->request->code); 
                 return -1;
@@ -655,6 +656,6 @@ radius_trace_path(radiusd_request_t *req)
 	td.file = NULL;
 	grad_list_iterate(req->locus_list, _trace_path_compose, &td);
 	p = obstack_finish(&td.stk);
-	grad_log_req(L_INFO, req->request, _("rule trace: %s"), p);
+	grad_log_req(GRAD_LOG_INFO, req->request, _("rule trace: %s"), p);
 	obstack_free(&td.stk, NULL);
 }

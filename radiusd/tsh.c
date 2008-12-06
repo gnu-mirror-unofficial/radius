@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003,2004,2005,2007 Free Software Foundation
+   Copyright (C) 2003,2004,2005,2007,2008 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -345,7 +345,7 @@ tsh_req_define(int argc, char **argv, char *cmd)
 			cmd++;
 
 		if (userparse(cmd, &vp, &errp)) {
-                        grad_log(L_ERR, "%s", errp);
+                        grad_log(GRAD_LOG_ERR, "%s", errp);
 			return;
 		}
 	} else {
@@ -354,7 +354,7 @@ tsh_req_define(int argc, char **argv, char *cmd)
 		while ((cmd = grad_readline(tsh_ps2)) != NULL
 		       && cmd[0]) {
 			if (userparse(cmd, &vp, &errp)) {
-				grad_log(L_ERR, "%s", errp);
+				grad_log(GRAD_LOG_ERR, "%s", errp);
 				free(cmd);
 				grad_avl_free(vp);
 				return;

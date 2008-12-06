@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2006,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -100,7 +100,7 @@ check_ts(struct radutmp *ut)
 
         /* Find NAS type. */
         if ((nas = grad_nas_lookup_ip(ntohl(ut->nas_address))) == NULL) {
-                grad_log(L_NOTICE, _("check_ts(): unknown NAS"));
+                grad_log(GRAD_LOG_NOTICE, _("check_ts(): unknown NAS"));
                 return -1; 
         }
 
@@ -132,10 +132,10 @@ rad_check_ts(struct radutmp *ut)
                    It is defined in /etc/raddb/config */
         default:
                 if (checkrad_assume_logged) 
-                        grad_log(L_NOTICE, _("assuming `%s' is logged in"),
+                        grad_log(GRAD_LOG_NOTICE, _("assuming `%s' is logged in"),
                                  ut->login);
                 else
-                        grad_log(L_NOTICE, _("assuming `%s' is NOT logged in"),
+                        grad_log(GRAD_LOG_NOTICE, _("assuming `%s' is NOT logged in"),
                                  ut->login);
                 return checkrad_assume_logged;
         }

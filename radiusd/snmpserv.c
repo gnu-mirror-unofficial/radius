@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2006,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -277,7 +277,7 @@ snmp_cfg_community(int argc, cfg_value_t *argv,
 		return 1;
 		
 	if (snmp_find_community(argv[1].v.string)) {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("%s:%d: community %s already declared"),
 		         cfg_filename, cfg_line_num, argv[1].v.string);
 		return 0;
@@ -342,7 +342,7 @@ snmp_cfg_network(int argc, cfg_value_t *argv,
 	np->netlist = grad_list_create();
 	for (i = 2; i < argc; i++) {
 		if (argv[i].type != CFG_NETWORK) {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("%s:%d: list item %d has wrong datatype"),
 			         cfg_filename, cfg_line_num,
 			         i);
@@ -374,14 +374,14 @@ snmp_cfg_allow(int argc, cfg_value_t *argv,
 	}
 
 	if ((nn = netname_find(argv[1].v.string)) == NULL) {
-		grad_log(L_ERR, _("%s:%d: no such network: %s"),
+		grad_log(GRAD_LOG_ERR, _("%s:%d: no such network: %s"),
 		         cfg_filename, cfg_line_num, argv[1].v.string);
 		return 0;
 	}
 
 	comm = snmp_find_community(argv[2].v.string);
 	if (!comm) {
-		grad_log(L_ERR, 
+		grad_log(GRAD_LOG_ERR, 
 		         _("%s:%d: undefined community %s"),
 		         cfg_filename, cfg_line_num, argv[2].v.string);
 		return 0;
@@ -408,7 +408,7 @@ snmp_cfg_deny(int argc, cfg_value_t *argv,
 	}
 
 	if ((nn = netname_find(argv[1].v.string)) == NULL) {
-		grad_log(L_ERR, _("%s:%d: no such network: %s"),
+		grad_log(GRAD_LOG_ERR, _("%s:%d: no such network: %s"),
 		         cfg_filename, cfg_line_num, argv[1].v.string);
 		return 0;
 	}
@@ -1327,7 +1327,7 @@ snmp_auth_var_set(subid_t subid, struct snmp_var **vp, int *errp)
                         
                 case MIB_KEY_AccServConfigReset:
                         server_stat->auth.status = serv_init;
-                        grad_log(L_INFO,
+                        grad_log(GRAD_LOG_INFO,
                                  _("acct server re-initializing on SNMP request"));
                         break;
 
@@ -1679,7 +1679,7 @@ snmp_acct_var_set(subid_t subid, struct snmp_var **vp, int *errp)
 
                 case MIB_KEY_AuthServConfigReset:
                         server_stat->auth.status = serv_init;
-                        grad_log(L_INFO,
+                        grad_log(GRAD_LOG_INFO,
                                  _("auth server re-initializing on SNMP request"));
                         break;
 
@@ -1959,23 +1959,23 @@ snmp_serv_var_set(subid_t subid, struct snmp_var **vp, int *errp)
                         server_stat->auth.status = (*vp)->var_int;
                         switch ((*vp)->var_int) {
                         case serv_reset:
-                                grad_log(L_NOTICE,
+                                grad_log(GRAD_LOG_NOTICE,
                                          _("server re-initializing on SNMP request"));
                                 break;
                         case serv_init:
-                                grad_log(L_NOTICE,
+                                grad_log(GRAD_LOG_NOTICE,
                                          _("server restart on SNMP request"));
                                 break;
                         case serv_running:
-                                grad_log(L_NOTICE,
+                                grad_log(GRAD_LOG_NOTICE,
                                          _("server continuing on SNMP request"));
                                 break;
                         case serv_suspended:
-                                grad_log(L_NOTICE,
+                                grad_log(GRAD_LOG_NOTICE,
                                          _("server suspending on SNMP request"));
                                 break;
                         case serv_shutdown:
-                                grad_log(L_NOTICE,
+                                grad_log(GRAD_LOG_NOTICE,
                                          _("server shutting down on SNMP request"));
                                 break;
                         }
@@ -2677,17 +2677,17 @@ snmp_decode(SNMP_REQ *req, u_char *buf, size_t len)
         int comm_len;
         char ipbuf[GRAD_IPV4_STRING_LENGTH];
         
-        log_open(L_SNMP);
+        log_open(GRAD_LOG_SNMP);
 	
         if ((pdu = snmp_pdu_create(0)) == NULL) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("can't create SNMP PDU: %s"),
                          snmp_strerror(snmp_errno));
                 return -1;
         }
         comm_len = sizeof(comm);
         if (snmp_decode_request(&sess, pdu, buf, len, comm, &comm_len)) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("can't decode SNMP packet from %s: %s"),
 		         grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr),
 				         ipbuf),
@@ -2697,7 +2697,7 @@ snmp_decode(SNMP_REQ *req, u_char *buf, size_t len)
 
         access = check_acl(req->addr.sin_addr.s_addr, comm);
         if (!access) {
-                grad_log(L_NOTICE,
+                grad_log(GRAD_LOG_NOTICE,
                          _("DENIED attempt to access community %s from %s"),
                          comm,
                          grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr), 
@@ -2752,7 +2752,7 @@ snmp_req_drop(int type, void *data, void *orig_data,
         SNMP_REQ *req = data ? data : orig_data;
         char ipbuf[GRAD_IPV4_STRING_LENGTH];
 
-        grad_log(L_NOTICE,
+        grad_log(GRAD_LOG_NOTICE,
                  _("Dropping SNMP request from client %s: %s"),
                  grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf),
                  status_str);

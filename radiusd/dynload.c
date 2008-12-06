@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2004,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -47,9 +47,9 @@ static int
 _free_loaded_module (void *item, void *data)
 {
 	lt_dlhandle handle = (lt_dlhandle) item;
-	rdl_done_t fp = (rdl_done_t) lt_dlsym(handle, "done");
+	grad_dl_done_t fp = (grad_dl_done_t) lt_dlsym(handle, "done");
 
-	GRAD_DEBUG2(1,"Freeing handle %p, rdl_done %p", handle, fp);
+	GRAD_DEBUG2(1,"Freeing handle %p, grad_dl_done %p", handle, fp);
 	if (fp)
 		fp();
 	lt_dlclose(handle);
@@ -79,11 +79,11 @@ radiusd_load_ext(const char *name, const char *ident, void **symbol)
 	if (handle) {
 		*symbol = lt_dlsym(handle, ident);
 		if (*symbol) {
-			rdl_init_t initf =
-				(rdl_init_t) lt_dlsym(handle, "init");
+			grad_dl_init_t initf =
+				(grad_dl_init_t) lt_dlsym(handle, "init");
 			if (initf) {
 				if (initf()) {
-					grad_log(L_ERR,
+					grad_log(GRAD_LOG_ERR,
 						 _("Cannot load module %s: init function failed"),
 						 name);
 					lt_dlclose(handle);
@@ -92,14 +92,14 @@ radiusd_load_ext(const char *name, const char *ident, void **symbol)
 			}
 
 		} else {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 				 _("Cannot load module %s: symbol %s not found"),
 				 name, ident);
 			lt_dlclose(handle);
 			handle = NULL;
 		}
 	} else
-		grad_log(L_NOTICE, _("Cannot load module %s: %s"),
+		grad_log(GRAD_LOG_NOTICE, _("Cannot load module %s: %s"),
 			 name, lt_dlerror());
 
 	GRAD_DEBUG1(1,"Handle %p", handle);

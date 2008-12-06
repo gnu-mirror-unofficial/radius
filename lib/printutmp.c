@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -487,7 +487,7 @@ parse_quote(char **fmtp, format_data_t *form)
 	char *p;
 	p = parse_string0(*fmtp + 1, form, _is_closing_quote, *fmtp);	
 	if (!*p) {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("missing closing quote in string started near `%s'"),
 		         *fmtp);
 		return 1;
@@ -563,7 +563,7 @@ parse_form(char **fmtp, format_data_t *form)
 		
 		fh = _lookup(formname);
 		if (!fh) {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("error in format spec: unknown format %s"),
 			         formname);
 			return 1;
@@ -585,7 +585,7 @@ parse_form(char **fmtp, format_data_t *form)
 				form->v.fh.header = grad_estrdup(p);
 				break;
 			default:
-				grad_log(L_ERR,
+				grad_log(GRAD_LOG_ERR,
 				     _("wrong number of arguments to form %s"),
 				         formname);
 				return 1;
@@ -614,7 +614,7 @@ parse_form(char **fmtp, format_data_t *form)
 	}
 	
 	if (p[0] != ')') {
-		grad_log(L_ERR, _("form `%s' not closed"), formname);
+		grad_log(GRAD_LOG_ERR, _("form `%s' not closed"), formname);
 		return 1;
 	}
 	return 0;

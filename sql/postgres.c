@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -67,7 +67,7 @@ rad_postgres_reconnect(int type, struct sql_connection *conn)
                               conn->cfg->login, conn->cfg->password);
         
         if (PQstatus(pgconn) == CONNECTION_BAD) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("PQconnectStart failed: %s"), 
                          PQerrorMessage(pgconn));
                 PQfinish(pgconn);
@@ -105,7 +105,7 @@ rad_postgres_query(struct sql_connection *conn, const char *query,
         
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          "PQexec: %s",
                          PQerrorMessage((PGconn*)conn->data));
 		if (PQstatus((PGconn*)conn->data) == CONNECTION_BAD)
@@ -149,7 +149,7 @@ rad_postgres_query(struct sql_connection *conn, const char *query,
 		break;
 
 	default:
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("PQexec returned %s"),
                          PQresStatus(stat));
                 if (stat == PGRES_FATAL_ERROR 
@@ -175,7 +175,7 @@ rad_postgres_getpwd(struct sql_connection *conn, const char *query)
         
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          "PQexec: %s",
                          PQerrorMessage((PGconn*)conn->data));
 		if (PQstatus((PGconn*)conn->data) == CONNECTION_BAD)
@@ -190,7 +190,7 @@ rad_postgres_getpwd(struct sql_connection *conn, const char *query)
         if (stat == PGRES_TUPLES_OK) {
                 int ntuples = PQntuples(res);
                 if (ntuples > 1 && PQnfields(res)) {
-                        grad_log(L_NOTICE,
+                        grad_log(GRAD_LOG_NOTICE,
 			         ngettext("query returned %d tuple: %s",
 				  	  "query returned %d tuples: %s",
 					  ntuples),
@@ -199,7 +199,7 @@ rad_postgres_getpwd(struct sql_connection *conn, const char *query)
                         return_passwd = grad_estrdup(PQgetvalue(res, 0, 0));
                 }
         } else {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("PQexec returned %s"),
                          PQresStatus(stat));
                 if (stat == PGRES_FATAL_ERROR
@@ -251,7 +251,7 @@ rad_postgres_exec(struct sql_connection *conn, const char *query)
         
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          "PQexec: %s",
                          PQerrorMessage((PGconn*)conn->data));
 		if (PQstatus((PGconn*)conn->data) == CONNECTION_BAD)
@@ -266,7 +266,7 @@ rad_postgres_exec(struct sql_connection *conn, const char *query)
         if (stat != PGRES_TUPLES_OK) {
                 PQclear(res);
                 if (stat == PGRES_FATAL_ERROR) {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("PQexec returned %s"),
 			         PQresStatus(stat));
 			if (PQstatus((PGconn*)conn->data) == CONNECTION_BAD)

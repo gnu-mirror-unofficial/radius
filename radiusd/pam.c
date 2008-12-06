@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001,2003,2004,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003,2004,2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -59,7 +59,7 @@ rad_pam_conv(int num_msg, const struct pam_message **msg,
         int rc;
 
         if (!data) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("rad_pam_conv(): no application-specific data passed"));
                 return PAM_CONV_ERR;
         }

@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -120,10 +120,10 @@ static int
 nfields(int fc, int minf, int maxf, grad_locus_t *loc)
 {
         if (fc < minf) {
-                grad_log_loc(L_ERR, loc, "%s", _("too few fields"));
+                grad_log_loc(GRAD_LOG_ERR, loc, "%s", _("too few fields"));
                 return -1;
         } else if (maxf != -1 && fc > maxf) {
-                grad_log_loc(L_ERR, loc, "%s", _("too many fields"));
+                grad_log_loc(GRAD_LOG_ERR, loc, "%s", _("too many fields"));
                 return -1;
         }
         return 0;
@@ -254,7 +254,7 @@ parse_flags(char **ptr, int *flags, grad_locus_t *loc)
         
         for (p = *ptr+1, i = 0; i < GRAD_CF_MAX; i++) {
                 if (*p == 0) {
-                        grad_log_loc(L_ERR, loc, _("missing ]"), *p);
+                        grad_log_loc(GRAD_LOG_ERR, loc, _("missing ]"), *p);
                         return 1;
                 }
                 switch (*p++) {
@@ -269,7 +269,7 @@ parse_flags(char **ptr, int *flags, grad_locus_t *loc)
                         p--;
                         goto stop;
                 default:
-                        grad_log_loc(L_ERR, loc,
+                        grad_log_loc(GRAD_LOG_ERR, loc,
 				     _("invalid syntax flag %c"),
 				     p[-1]);
                         return 1;
@@ -282,7 +282,7 @@ parse_flags(char **ptr, int *flags, grad_locus_t *loc)
                         *flags &= ~GRAD_AF_RHS(i);
                         break;
                 default:
-                        grad_log_loc(L_ERR, loc,
+                        grad_log_loc(GRAD_LOG_ERR, loc,
 				     _("invalid syntax flag %c"),
 				     p[-1]);
                         return 1;
@@ -360,7 +360,7 @@ parse_attr_properties(grad_locus_t *loc, char *str, int *flags, int *prop)
 			/* Retained for compatibility */
 			break;
 		default:
-			grad_log_loc(L_ERR, loc,
+			grad_log_loc(GRAD_LOG_ERR, loc,
 				     _("invalid flag %c"),
 				     *p);
 			errcnt++;
@@ -416,7 +416,7 @@ _dict_attribute(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
         
         value = strtol(ATTR_VALUE, &p, 0);
         if (*p) {
-                grad_log_loc(L_ERR, loc,
+                grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("value not a number (near %s)"),
 			     p);
                 pd->errcnt++;
@@ -427,7 +427,7 @@ _dict_attribute(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 		type = GRAD_TYPE_STRING;
 		fp = dict_find_parser(value);
 		if (!fp) {
-			grad_log_loc(L_WARN, loc,
+			grad_log_loc(GRAD_LOG_WARN, loc,
 			      _("no parser registered for this attribute"));
 			return 0;
 		}
@@ -435,7 +435,7 @@ _dict_attribute(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 		type = grad_xlat_keyword(type_kw, ATTR_TYPE, GRAD_TYPE_INVALID);
 	
         if (type == GRAD_TYPE_INVALID) {
-                grad_log_loc(L_ERR, loc,
+                grad_log_loc(GRAD_LOG_ERR, loc,
 			     "%s",
 			     _("invalid type"));
                 pd->errcnt++;
@@ -444,7 +444,7 @@ _dict_attribute(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 
         if (HAS_VENDOR(fc, fv)) {
                 if ((vendor = grad_vendor_name_to_id(ATTR_VENDOR)) == 0) {
-                        grad_log_loc(L_ERR, loc, _("unknown vendor"));
+                        grad_log_loc(GRAD_LOG_ERR, loc, _("unknown vendor"));
 			pd->errcnt++;
                         return 0;
                 }
@@ -471,14 +471,14 @@ _dict_attribute(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 		break;
 
 	case dict_symbol_attribute:
-		grad_log_loc(L_WARN, loc,
+		grad_log_loc(GRAD_LOG_WARN, loc,
 			     _("Redefining attribute %s"),
 			     ATTR_NAME);
 		attr = &sym->v.attr;
 		break;
 		
 	case dict_symbol_alias:
-		grad_log_loc(L_WARN, loc,
+		grad_log_loc(GRAD_LOG_WARN, loc,
 			     _("Redefining alias %s"),
 			     ATTR_NAME);
 		attr = sym->v.alias;
@@ -508,7 +508,7 @@ _dict_alias(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 
         attr = dict_attr_lookup(fv[1]);
 	if (!attr) {
-		grad_log_loc(L_ERR, loc,
+		grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("Attribute %s is not defined"),
 			     fv[1]);
 		return 0;
@@ -516,7 +516,7 @@ _dict_alias(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 		
 	sym = grad_sym_lookup_or_install(dict_attr_tab, fv[2], 1);
 	if (sym->type != dict_symbol_uninitialized) {
-		grad_log_loc(L_ERR, loc,
+		grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("Symbol %s already declared"),
 			     fv[2]);
 		/*FIXME: location of the previous declaration*/
@@ -544,7 +544,7 @@ _dict_property(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 
         attr = dict_attr_lookup(fv[1]);
 	if (!attr) {
-		grad_log_loc(L_ERR, loc,
+		grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("Attribute %s is not defined"),
 			     fv[1]);
 		return 0;
@@ -574,7 +574,7 @@ _dict_property(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 			
 		default:
 			if (i > 2) {
-				grad_log_loc(L_ERR, loc,
+				grad_log_loc(GRAD_LOG_ERR, loc,
 					     _("PROPERTY syntax error"));
 				pd->errcnt++;
 			} else {
@@ -605,7 +605,7 @@ _dict_value(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 
         value = strtol(VALUE_NUM, &p, 0);
         if (*p) {
-                grad_log_loc(L_ERR, loc,
+                grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("value not a number (near %s)"),
 			     p);
                 pd->errcnt++;
@@ -614,7 +614,7 @@ _dict_value(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 
         attr = dict_attr_lookup(VALUE_ATTR);
 	if (!attr) {
-		grad_log_loc(L_ERR, loc,
+		grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("Attribute %s is not defined"),
 			     VALUE_ATTR);
                 pd->errcnt++;
@@ -649,7 +649,7 @@ _dict_vendor(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 
         value = strtol(VENDOR_VALUE, &p, 0);
         if (*p) {
-                grad_log_loc(L_ERR, loc,
+                grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("value not a number (near %s)"),
 			     p);
                 pd->errcnt++;
@@ -669,8 +669,8 @@ static void
 _dict_begin(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 {
 	if (pd->vendor) {
-		grad_log_loc(L_ERR, loc, _("blocks cannot be nested"));
-		grad_log_loc(L_ERR, &pd->begin_locus,
+		grad_log_loc(GRAD_LOG_ERR, loc, _("blocks cannot be nested"));
+		grad_log_loc(GRAD_LOG_ERR, &pd->begin_locus,
 			     _("block opened here"));
 		pd->errcnt++;
 		return;
@@ -682,7 +682,7 @@ _dict_begin(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 	}
 	
 	if (strcmp (fv[1], "VENDOR")) {
-		grad_log_loc(L_ERR, loc,
+		grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("block syntax: expected `VENDOR' but found `%s'"),
 			     fv[1]);
 		pd->errcnt++;
@@ -693,7 +693,7 @@ _dict_begin(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 		return;
 			
 	if ((pd->vendor = grad_vendor_name_to_id(fv[2])) == 0) {
-		grad_log_loc(L_ERR, loc, _("unknown vendor"));
+		grad_log_loc(GRAD_LOG_ERR, loc, _("unknown vendor"));
 		pd->errcnt++;
 		return;
 	}
@@ -706,7 +706,7 @@ static void
 _dict_end(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 {
 	if (!pd->vendor) {
-		grad_log_loc(L_ERR, loc, _("unexpected END"));
+		grad_log_loc(GRAD_LOG_ERR, loc, _("unexpected END"));
 		pd->errcnt++;
 	}
 	GRAD_DEBUG1(1, "END VENDOR %d", pd->vendor);
@@ -809,7 +809,7 @@ parse_dict_entry(void *closure, int fc, char **fv, grad_locus_t *loc)
 		break;
 		
         default:
-                grad_log_loc(L_ERR, loc, "%s", _("unknown keyword"));
+                grad_log_loc(GRAD_LOG_ERR, loc, "%s", _("unknown keyword"));
                 break;
         }
         return 0;
@@ -832,12 +832,12 @@ parse_dict(char *name)
 	GRAD_DEBUG1(1,"parsing %s", path);
         rc = grad_read_raddb_file(path, 1, NULL, parse_dict_entry, &pd);
 	if (pd.vendor) {
-		grad_log_loc(L_ERR, &pd.begin_locus, _("BEGIN without END"));
+		grad_log_loc(GRAD_LOG_ERR, &pd.begin_locus, _("BEGIN without END"));
 		pd.vendor = 0;
 		pd.errcnt++;
 	}
         if (pd.errcnt)
-                grad_log(L_NOTICE,
+                grad_log(GRAD_LOG_NOTICE,
 		         dngettext(PACKAGE,
 				   "%s: %d error", "%s: %d errors",
 				   pd.errcnt), path, pd.errcnt);

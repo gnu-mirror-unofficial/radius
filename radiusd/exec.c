@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2005,2006,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -50,7 +51,7 @@ radius_get_user_ids(RADIUS_USER *usr, const char *name)
 	struct passwd *pwd = getpwnam(name);
 
 	if (!pwd) {
-		grad_log(L_ERR, _("no such user: %s"), name);
+		grad_log(GRAD_LOG_ERR, _("no such user: %s"), name);
 		return 1;
 	}
 	grad_string_replace(&usr->username, name);
@@ -71,7 +72,7 @@ radius_switch_to_user(RADIUS_USER *usr)
 	/* Reset group permissions */
 	emptygidset[0] = usr->gid ? usr->gid : getegid();
 	if (geteuid() == 0 && setgroups(1, emptygidset)) {
-		grad_log(L_ERR|L_PERROR,
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 		         _("setgroups(1, %lu) failed"),
 		         (u_long) emptygidset[0]);
 		rc = 1;
@@ -82,16 +83,16 @@ radius_switch_to_user(RADIUS_USER *usr)
 
 #if defined(HAVE_SETEGID)
 	if ((rc = setegid(usr->gid)) < 0)
-		grad_log(L_ERR|L_PERROR,
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 		         _("setegid(%lu) failed"), (u_long) usr->gid);
 #elif defined(HAVE_SETREGID)
 	if ((rc = setregid(usr->gid, usr->gid)) < 0)
-		grad_log(L_ERR|L_PERROR,
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 		         _("setregid(%lu,%lu) failed"),
 		         (u_long) usr->gid, (u_long) usr->gid);
 #elif defined(HAVE_SETRESGID)
 	if ((rc = setresgid(usr->gid, usr->gid, usr->gid)) < 0)
-		grad_log(L_ERR|L_PERROR,
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 		         _("setresgid(%lu,%lu,%lu) failed"),
 		         (u_long) usr->gid,
 		         (u_long) usr->gid,
@@ -100,10 +101,10 @@ radius_switch_to_user(RADIUS_USER *usr)
 
 	if (rc == 0 && usr->gid != 0) {
 		if ((rc = setgid(usr->gid)) < 0 && getegid() != usr->gid) 
-			grad_log(L_ERR|L_PERROR,
+			grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 			         _("setgid(%lu) failed"), (u_long) usr->gid);
 		if (rc == 0 && getegid() != usr->gid) {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("cannot set effective gid to %lu"),
 			         (u_long) usr->gid);
 			rc = 1;
@@ -122,13 +123,13 @@ radius_switch_to_user(RADIUS_USER *usr)
 #if defined(HAVE_SETREUID)
 			if (geteuid() != usr->uid) {
 				if (setreuid(usr->uid, -1) < 0) { 
-					grad_log(L_ERR|L_PERROR,
+					grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 					         _("setreuid(%lu,-1) failed"),
 					         (u_long) usr->uid);
 					rc = 1;
 				}
 				if (setuid(usr->uid) < 0) {
-					grad_log(L_ERR|L_PERROR,
+					grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 					         _("second setuid(%lu) failed"),
 					         (u_long) usr->uid);
 					rc = 1;
@@ -136,7 +137,7 @@ radius_switch_to_user(RADIUS_USER *usr)
 			} else
 #endif
 				{
-					grad_log(L_ERR|L_PERROR,
+					grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 					         _("setuid(%lu) failed"),
 					         (u_long) usr->uid);
 					rc = 1;
@@ -146,11 +147,11 @@ radius_switch_to_user(RADIUS_USER *usr)
 
 		euid = geteuid();
 		if (usr->uid != 0 && setuid(0) == 0) {
-			grad_log(L_ERR, 
+			grad_log(GRAD_LOG_ERR, 
                                  _("seteuid(0) succeeded when it should not"));
 			rc = 1;
 		} else if (usr->uid != euid && setuid(euid) == 0) {
-			grad_log(L_ERR, 
+			grad_log(GRAD_LOG_ERR, 
                                  _("cannot drop non-root setuid privileges"));
 			rc = 1;
 		}
@@ -170,14 +171,14 @@ radius_exec_command(char *cmd)
 	RETSIGTYPE (*oldsig)();
 	
         if (cmd[0] != '/') {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
    _("radius_exec_command(): won't execute, not an absolute pathname: %s"),
                          cmd);
                 return -1;
         }
 
 	if ((oldsig = grad_set_signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
-		grad_log(L_ERR|L_PERROR, _("can't reset SIGCHLD"));
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, _("can't reset SIGCHLD"));
 		return -1;
         } 
 
@@ -211,20 +212,20 @@ radius_exec_command(char *cmd)
 
         /* Parent branch */ 
         if (pid < 0) {
-                grad_log(L_ERR|L_PERROR, "fork");
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "fork");
                 return -1;
         }
 
 	waitpid(pid, &status, 0);
 	if (grad_set_signal(SIGCHLD, oldsig) == SIG_ERR)
-		grad_log(L_CRIT|L_PERROR,
+		grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR,
 			 _("can't restore SIGCHLD"));
 
         if (WIFEXITED(status)) {
                 status = WEXITSTATUS(status);
                 GRAD_DEBUG1(1, "returned: %d", status);
                 if (status == 2) {
-                        grad_log(L_ERR,
+                        grad_log(GRAD_LOG_ERR,
                                  _("can't run external program `%s' "
                                    "(reason reported via syslog channel "
                                    "user.err)"),
@@ -235,7 +236,7 @@ radius_exec_command(char *cmd)
 		
 		format_exit_status(buffer, sizeof buffer, status);
 		
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("external program `%s' %s"), cmd, buffer);
 	}
 	
@@ -261,7 +262,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
 	RETSIGTYPE (*oldsig)();
 	
         if (cmd[0] != '/') {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
    _("radius_exec_program(): won't execute, not an absolute pathname: %s"),
                          cmd);
                 return -1;
@@ -269,11 +270,11 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
 
         if (exec_wait) {
                 if (pipe(p) != 0) {
-                        grad_log(L_ERR|L_PERROR, _("couldn't open pipe"));
+                        grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, _("couldn't open pipe"));
                         return -1;
                 }
 		if ((oldsig = grad_set_signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
-			grad_log(L_ERR|L_PERROR, _("can't reset SIGCHLD"));
+			grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, _("can't reset SIGCHLD"));
 			return -1;
 		}
         } 
@@ -288,10 +289,10 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
                 
                 if (exec_wait) {
                         if (close(p[0]))
-                                grad_log(L_ERR|L_PERROR,
+                                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 					 _("can't close pipe"));
                         if (p[1] != 1 && dup2(p[1], 1) != 1)
-                                grad_log(L_ERR|L_PERROR,
+                                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 					 _("can't dup stdout"));
                 } else
 			close(1);
@@ -317,14 +318,14 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
 
         /* Parent branch */ 
         if (pid < 0) {
-                grad_log(L_ERR|L_PERROR, "fork");
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "fork");
                 return -1;
         }
         if (!exec_wait)
                 return 0;
 
         if (close(p[1]))
-                grad_log(L_ERR|L_PERROR, _("can't close pipe"));
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, _("can't close pipe"));
 
         fp = fdopen(p[0], "r");
 
@@ -335,7 +336,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
                 line_num++;
                 GRAD_DEBUG1(1, "got `%s'", buffer);
                 if (userparse(ptr, &vp, &errp)) {
-                        grad_log(L_ERR,
+                        grad_log(GRAD_LOG_ERR,
 			         _("<stdout of %s>:%d: %s"),
 			         cmd, line_num, errp);
                         grad_avl_free(vp);
@@ -347,14 +348,14 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
 
 	waitpid(pid, &status, 0);
 	if (grad_set_signal(SIGCHLD, oldsig) == SIG_ERR)
-		grad_log(L_CRIT|L_PERROR,
+		grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR,
 			 _("can't restore SIGCHLD"));
 
         if (WIFEXITED(status)) {
                 status = WEXITSTATUS(status);
                 GRAD_DEBUG1(1, "returned: %d", status);
                 if (status == 2) {
-                        grad_log(L_ERR,
+                        grad_log(GRAD_LOG_ERR,
                                  _("can't run external program `%s' "
                                    "(reason reported via syslog channel "
                                    "user.err)"),
@@ -363,7 +364,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
         } else {
 		format_exit_status(buffer, sizeof buffer, status);
 		
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("external program `%s' %s"), cmd, buffer);
 	}
 
@@ -496,7 +497,7 @@ filter_cleanup_proc(void *ptr, grad_symbol_t *sym)
 		static char buffer[512];
 		
 		format_exit_status(buffer, sizeof buffer, info->status);
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("filter %s (pid %d) %s (in: %u, out: %u)"),
 		         filter->name, filter->pid,
 		         buffer,
@@ -550,7 +551,7 @@ filter_open(char *name, radiusd_request_t *req, int type, int *errp)
 {
 	Filter *filter = grad_sym_lookup(filter_tab, name);
 	if (!filter) {
-		grad_log_req(L_ERR, req->request,
+		grad_log_req(GRAD_LOG_ERR, req->request,
 			     _("filter %s is not declared"),
 			     name);
 		*errp = -1;
@@ -567,7 +568,7 @@ filter_open(char *name, radiusd_request_t *req, int type, int *errp)
 						pipe);
 		
 		if (filter->pid <= 0) {
-			grad_log_req(L_ERR|L_PERROR, req->request,
+			grad_log_req(GRAD_LOG_ERR|GRAD_LOG_PERROR, req->request,
 				     _("cannot run filter %s"),
 				     name);
 			filter = NULL;
@@ -585,7 +586,7 @@ filter_open(char *name, radiusd_request_t *req, int type, int *errp)
 	}
 
 	if (filter && kill(filter->pid, 0)) {
-		grad_log_req(L_ERR|L_PERROR, req->request,
+		grad_log_req(GRAD_LOG_ERR|GRAD_LOG_PERROR, req->request,
 			     _("filter %s"), name);
 		filter_close(filter);
 		filter = NULL;
@@ -688,7 +689,7 @@ filter_auth(char *name, radiusd_request_t *req, grad_avp_t **reply_pairs)
 		status = filter_read(filter, R_AUTH, buffer, sizeof buffer);
 			
 		if (status <= 0) {
-			grad_log(L_ERR|L_PERROR,
+			grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 		       	         _("reading from filter %s"),
 		       	         filter->name);
 			filter_close(filter);
@@ -701,7 +702,7 @@ filter_auth(char *name, radiusd_request_t *req, grad_avp_t **reply_pairs)
 			GRAD_DEBUG2(1, "%s > \"%s\"", filter->name, buffer);
 			rc = strtoul(buffer, &ptr, 0);
 			if (userparse(ptr, &vp, &errp)) {
-				grad_log(L_ERR,
+				grad_log(GRAD_LOG_ERR,
 				         _("<stdout of %s>:%d: %s"),
 				         filter->name,
 				         filter->lines_output,
@@ -710,7 +711,7 @@ filter_auth(char *name, radiusd_request_t *req, grad_avp_t **reply_pairs)
 			} else 
 				grad_avl_merge(reply_pairs, &vp);
 		} else {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("filter %s (auth): bad output: %s"),
 			         filter->name, buffer);
 			rc = err;
@@ -743,7 +744,7 @@ filter_acct(char *name, radiusd_request_t *req)
 		status = filter_read(filter, R_ACCT, buffer, sizeof buffer);
 
 		if (status <= 0) {
-			grad_log(L_ERR|L_PERROR,
+			grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
 		       	         _("reading from filter %s"),
 		       	         filter->name);
 			rc = err;
@@ -754,13 +755,13 @@ filter_acct(char *name, radiusd_request_t *req)
 			GRAD_DEBUG2(1, "%s > \"%s\"", filter->name, buffer);
 			rc = strtoul(buffer, &ptr, 0);
 			if (!isspace(*ptr)) {
-				grad_log(L_ERR,
+				grad_log(GRAD_LOG_ERR,
 				         _("filter %s (acct): bad output: %s"),
 				         filter->name, buffer);
 				return -1;
 			}
 		} else {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("filter %s (acct): bad output: %s"),
 			         filter->name, buffer);
 			rc = err;
@@ -831,7 +832,7 @@ filter_stmt_end(void *block_data, void *handler_data)
 						         filter_symbol.name,
 						         1);
 		if (sym->argc) {
-			grad_log(L_ERR,
+			grad_log(GRAD_LOG_ERR,
 			         _("%s:%d: filter already declared at %s:%d"),
 			         cfg_filename, cfg_line_num,
 			         cfg_filename, sym->line_num);

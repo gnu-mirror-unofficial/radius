@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -320,7 +320,7 @@ local_who()
         struct radutmp rt;
         
         if ((fp = fopen(UTMP_FILE, "r")) == NULL) {
-                grad_log(L_ERR, _("can't open file: %s"),
+                grad_log(GRAD_LOG_ERR, _("can't open file: %s"),
                          UTMP_FILE);
                 return;
         }

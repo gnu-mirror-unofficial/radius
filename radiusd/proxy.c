@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2002,2003,2004,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2002,2003,2004,2006,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -193,7 +194,7 @@ proxy_send_request(int fd, radiusd_request_t *radreq)
 				radreq->server_no);
 
 	if (!server) {
-		grad_log_req(L_NOTICE, radreq->request,
+		grad_log_req(GRAD_LOG_NOTICE, radreq->request,
 		             _("couldn't send request to realm %s"),
 		             radreq->realm->realm);
 		return 0;

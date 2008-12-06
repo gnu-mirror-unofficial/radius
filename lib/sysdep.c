@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -55,11 +56,11 @@ grad_set_nonblocking(int fd)
         int flags;
 
         if ((flags = fcntl(fd, F_GETFL, 0)) < 0) {
-                grad_log(L_ERR|L_PERROR, "F_GETFL");
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "F_GETFL");
                 return -1;
         }
         if (fcntl(fd, F_SETFL, flags | FCNTL_NONBLOCK) < 0) {
-                grad_log(L_ERR|L_PERROR, "F_SETFL");
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, "F_SETFL");
                 return -1;
         }
         return 0;

@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2001,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003,2004,2005,2006,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -56,7 +57,7 @@ append_symbol(DBM_closure *closure, User_symbol *sym)
         reply_len = list_length(sym->reply);
 
         if (2 + check_len + reply_len > closure->pair_buffer_size) {
-                grad_log(L_ERR, "%s:%d: %s",
+                grad_log(GRAD_LOG_ERR, "%s:%d: %s",
                          closure->filename, sym->lineno,
 		         _("too many attributes"));
                 return -1;
@@ -98,7 +99,7 @@ append_symbol(DBM_closure *closure, User_symbol *sym)
         contentd.dptr = (char*)closure->pair_buffer;
         contentd.dsize = (2 + check_len + reply_len) * sizeof(int);
         if (grad_dbm_insert(closure->dbmfile, named, contentd)) {
-                grad_log(L_ERR, _("can't store datum for %s"), name);
+                grad_log(GRAD_LOG_ERR, _("can't store datum for %s"), name);
                 exit(1);
         }
         return 0;
@@ -138,7 +139,8 @@ builddbm(char *name)
         closure.pair_buffer = grad_emalloc(closure.pair_buffer_size*sizeof(int));
         closure.defno = closure.begno = 0;
         if (grad_dbm_create(db_file, &closure.dbmfile)) {
-                grad_log(L_ERR|L_PERROR, _("can't open `%s'"), db_file);
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+                         _("can't open `%s'"), db_file);
                 return 1;
         }
 
@@ -353,7 +355,7 @@ user_find_db(char *name, radiusd_request_t *req,
         
         path = grad_mkfilename(grad_config_dir, RADIUS_USERS);
         if (grad_dbm_open(path, &dbmfile)) {
-                grad_log(L_ERR, _("cannot open dbm file %s"), path);
+                grad_log(GRAD_LOG_ERR, _("cannot open dbm file %s"), path);
                 grad_free(path);
                 return 0;
         }

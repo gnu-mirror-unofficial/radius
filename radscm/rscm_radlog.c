@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -28,20 +29,20 @@
 static grad_keyword_t radlog_kw[] = {
 #define D(c) { #c, c }
         /* log categories */
-        D(L_MAIN),
-        D(L_AUTH),
-        D(L_ACCT),
-        D(L_PROXY),
-        D(L_SNMP),
+        D(GRAD_LOG_MAIN),
+        D(GRAD_LOG_AUTH),
+        D(GRAD_LOG_ACCT),
+        D(GRAD_LOG_PROXY),
+        D(GRAD_LOG_SNMP),
         /* log priorities */
-        D(L_EMERG),
-        D(L_ALERT),
-        D(L_CRIT),
-        D(L_ERR),
-        D(L_WARN),
-        D(L_NOTICE),
-        D(L_INFO),
-        D(L_DEBUG),
+        D(GRAD_LOG_EMERG),
+        D(GRAD_LOG_ALERT),
+        D(GRAD_LOG_CRIT),
+        D(GRAD_LOG_ERR),
+        D(GRAD_LOG_WARN),
+        D(GRAD_LOG_NOTICE),
+        D(GRAD_LOG_INFO),
+        D(GRAD_LOG_DEBUG),
         { NULL }
 #undef D
 };
@@ -98,7 +99,7 @@ SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
 {
         int prio;
         if (PRIO == SCM_BOOL_F) {
-                prio = L_INFO;
+                prio = GRAD_LOG_INFO;
         } else if (scm_is_integer(PRIO)) {
                 prio = scm_to_int(PRIO);
         } else if (SCM_BIGP(PRIO)) {

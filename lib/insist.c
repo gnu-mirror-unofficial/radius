@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2004 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2004,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -21,7 +21,7 @@
 int
 __grad_insist_failure(const char *str, const char *file, int line)
 {
-        grad_log(L_CRIT,
+        grad_log(GRAD_LOG_CRIT,
                  "INSIST FAILURE: %s at %s:%d", str, file, line);
         abort();
         /*NOTREACHED*/

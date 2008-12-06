@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003,2004,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -186,7 +186,7 @@ grad_encode_pair(struct radius_attr *ap, grad_avp_t *pair)
                 break;
 
         default:
-                grad_log(L_ERR, "Unknown pair type %d", pair->type);
+                grad_log(GRAD_LOG_ERR, "Unknown pair type %d", pair->type);
                 rc = 0;
         }
         return rc;
@@ -218,7 +218,7 @@ grad_create_pdu(void **rptr, int code, int id, u_char *authenticator,
                 
                 if (GRAD_DEBUG_LEVEL(10)) {
                         char *save;
-                        grad_log(L_DEBUG,
+                        grad_log(GRAD_LOG_DEBUG,
                                  "send: %s", grad_format_pair(pair, 1, &save));
                         free(save);
                 }
@@ -250,7 +250,7 @@ grad_create_pdu(void **rptr, int code, int id, u_char *authenticator,
 			attrlen = grad_encode_pair(&attr, pair);
 		}
                 if (attrlen < 0) {
-                        grad_log(L_ERR, "attrlen = %d", attrlen);
+                        grad_log(GRAD_LOG_ERR, "attrlen = %d", attrlen);
                         status = 1;
                         break;
                 }
@@ -331,7 +331,7 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
 
                 if (GRAD_DEBUG_LEVEL(10)) {
                         char *save;
-                        grad_log(L_DEBUG, "recv: %s",
+                        grad_log(GRAD_LOG_DEBUG, "recv: %s",
                                  grad_format_pair(pair, 1, &save));
                         free(save);
                 }
@@ -345,7 +345,7 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
 
                 if (GRAD_DEBUG_LEVEL(10)) {
                         char *save;
-                        grad_log(L_DEBUG, 
+                        grad_log(GRAD_LOG_DEBUG, 
                                  "recv: %s", 
                                  grad_format_pair(pair, 1, &save));
                         free(save);
@@ -368,7 +368,7 @@ decode_vsa(u_char *ptr, grad_uint32_t attrlen, grad_uint32_t *vendorpec, grad_ui
 	grad_uint32_t x;
 	
 	if (attrlen < 6) { /*FIXME*/
-		grad_log(L_NOTICE,
+		grad_log(GRAD_LOG_NOTICE,
 		    _("Received a vendor-specific attribute with length < 6"));
 		return 1;
 	}
@@ -402,7 +402,7 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
         auth = (grad_packet_header_t *)buffer;
         reported_len = ntohs(auth->length);
         if (length > reported_len) { /* FIXME: != ? */
-                grad_log(L_WARN,
+                grad_log(GRAD_LOG_WARN,
              _("Actual request length does not match reported length (%d, %d)"),
                          length, reported_len);
                 length = reported_len;

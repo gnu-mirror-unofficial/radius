@@ -1,6 +1,7 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -98,7 +99,7 @@ entry    : user descr
            }
          | user error
            {
-                   grad_log(L_ERR, _("discarding user `%s'"), $1);
+                   grad_log(GRAD_LOG_ERR, _("discarding user `%s'"), $1);
                    if (grad_parser_lex_sync() <= 0)
 			   yychar = 0; /* force end-of-file */
 		   else {
@@ -185,7 +186,7 @@ value    : STRING
 int
 yyerror(char *s)
 {
-	grad_log_loc(L_ERR, &grad_parser_source_locus, "%s", s);
+	grad_log_loc(GRAD_LOG_ERR, &grad_parser_source_locus, "%s", s);
 	return 0;
 }
 
@@ -208,7 +209,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
         struct tm *tm, tms;
         
         if ((attr = grad_attr_name_to_dict(name)) == NULL) {
-                grad_log_loc(L_ERR, loc, _("unknown attribute `%s'"),
+                grad_log_loc(GRAD_LOG_ERR, loc, _("unknown attribute `%s'"),
 			     name);
                 return NULL;
         }
@@ -236,7 +237,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
                 if (pair->attribute == DA_EXEC_PROGRAM ||
                     pair->attribute == DA_EXEC_PROGRAM_WAIT) {
                         if (valstr[0] != '/' && valstr[0] != '|') {
-                                grad_log_loc(L_ERR, loc,
+                                grad_log_loc(GRAD_LOG_ERR, loc,
 					     _("%s: not an absolute pathname"),
 					     name);
                                 grad_avp_free(pair);
@@ -248,7 +249,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
                 pair->avp_strlength = strlen(pair->avp_strvalue);
 		
 		if (attr->parser && attr->parser(pair, &s)) {
-			grad_log_loc(L_ERR, loc,
+			grad_log_loc(GRAD_LOG_ERR, loc,
 				     "%s %s: %s",
 				     _("attribute"),
 				     pair->name, s);
@@ -281,7 +282,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
 							    pair->attribute))
 			         == NULL) {
                         grad_avp_free(pair);
-                        grad_log_loc(L_ERR, loc,
+                        grad_log_loc(GRAD_LOG_ERR, loc,
 				_("value %s is not declared for attribute %s"),
 				     valstr, name);
                         return NULL;
@@ -329,7 +330,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
                 timeval = time(0);
                 tm = localtime_r(&timeval, &tms);
                 if (grad_parse_time_string(valstr, tm)) {
-                        grad_log_loc(L_ERR, loc, _("%s: can't parse date"),
+                        grad_log_loc(GRAD_LOG_ERR, loc, _("%s: can't parse date"),
 				     name);
                         grad_avp_free(pair);
                         return NULL;
@@ -342,7 +343,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
                 break;
 
         default:
-                grad_log_loc(L_ERR, loc,
+                grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("%s: unknown attribute type %d"),
 			     name, pair->type);
                 grad_avp_free(pair);
@@ -374,7 +375,7 @@ void
 grad_enable_rule_debug(int val)
 {
         yydebug = val;
-	grad_log_loc(L_NOTICE, &grad_parser_source_locus,
+	grad_log_loc(GRAD_LOG_NOTICE, &grad_parser_source_locus,
 		     yydebug ? _("enabled userfile parser debugging") :
              	 	       _("disabled userfile parser debugging"));
 }

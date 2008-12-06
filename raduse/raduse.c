@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
-   Copyright (C) 1999,2000,2001,2007 Sergey Poznyakoff
+   Copyright (C) 1999,2000,2001,2007,2008 Sergey Poznyakoff
   
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ int
 unimplemented(c)
         int c;
 {
-        grad_log(L_ERR, "option %c is not implemented", c);
+        grad_log(GRAD_LOG_ERR, "option %c is not implemented", c);
         exit(1);
 }
 

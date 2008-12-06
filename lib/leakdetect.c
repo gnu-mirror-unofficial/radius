@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -69,7 +69,7 @@ dump(time_t t)
 	size += strlen(grad_log_dir) + sizeof DUMPFILENAME;
 	fname = malloc(fname);
 	if (!fname) {
-		grad_log(L_ERR|L_PERROR, _("not enough memory"));
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, _("not enough memory"));
 		return;
 	}
 	strcpy(fname, grad_log_dir);
@@ -79,7 +79,8 @@ dump(time_t t)
 
 	fp = fopen(fname, "w");
 	if (!fp) 
-		grad_log(L_ERR|L_PERROR, "cannot open file %s", fname);
+		grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR, 
+		         "cannot open file %s", fname);
 	else {
 		size_t i;
 				
@@ -247,7 +248,7 @@ grad_emalloc(size_t size)
 
         p = grad_malloc(size);
         if (!p) {
-                grad_log(L_CRIT, _("low core: aborting"));
+                grad_log(GRAD_LOG_CRIT, _("low core: aborting"));
                 abort();
         } 
         return p;
@@ -258,7 +259,7 @@ grad_erealloc(void *ptr, size_t size)
 {
         ptr = grad_realloc(ptr, size);
         if (!ptr) {
-                grad_log(L_CRIT, _("low core: aborting"));
+                grad_log(GRAD_LOG_CRIT, _("low core: aborting"));
                 abort();
         } 
         return ptr;

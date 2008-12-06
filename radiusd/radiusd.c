@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2005,2007 Free Software Foundation
+   Copyright (C) 2000,2001,2002,2003,2004,2005,2007,
+   2008 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -254,7 +255,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 
 	case 'q':
-		console_logging_priority = L_ERR;
+		console_logging_priority = GRAD_LOG_ERR;
 		break;
 		
         case 'S':
@@ -356,7 +357,7 @@ terminate_subprocesses()
 	request_init_queue();
 	
 	/* Terminate all subprocesses */
-	grad_log(L_INFO, _("Terminating the subprocesses"));
+	grad_log(GRAD_LOG_INFO, _("Terminating the subprocesses"));
 	rpp_kill(-1, SIGTERM);
 	
 	max_ttl(&t);
@@ -367,7 +368,7 @@ terminate_subprocesses()
 		if (time(NULL) >= t) {
 			if (kill_sent) {
 				int n = rpp_count();
-				grad_log(L_CRIT,
+				grad_log(GRAD_LOG_CRIT,
 				         ngettext("%d process left!",
 					 	  "%d processes left!",
 						  n),
@@ -393,11 +394,11 @@ radiusd_postconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 {
 	if (radius_mode == MODE_DAEMON && radius_count_channels() == 0) {
 		if (foreground) {
-			grad_log(L_ALERT,
+			grad_log(GRAD_LOG_ALERT,
 			         _("Radiusd is not listening on any port."));
 			exit(1);
 		} else
-			grad_log(L_ALERT,
+			grad_log(GRAD_LOG_ALERT,
 			         _("Radiusd is not listening on any port. Trying to continue anyway..."));
 	}
 }
@@ -454,7 +455,7 @@ radiusd_setup()
 void
 common_init()
 {
-	grad_log(L_INFO, _("Starting"));
+	grad_log(GRAD_LOG_INFO, _("Starting"));
 
 	radiusd_pid = getpid();
 	radius_input = input_create();
@@ -476,7 +477,7 @@ common_init()
 #endif
 	acct_init();
 	radiusd_reconfigure();
-	grad_log(L_INFO, _("Ready"));
+	grad_log(GRAD_LOG_INFO, _("Ready"));
 }
 
 
@@ -490,7 +491,7 @@ radiusd_daemon()
         
         switch (pid = fork()) {
         case -1:
-                grad_log(L_CRIT|L_PERROR, "fork");
+                grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR, "fork");
                 exit(1);
         case 0: /* Child */
                 break;
@@ -512,7 +513,7 @@ radiusd_daemon()
         case 0:
                 break;
         case -1:
-                grad_log(L_CRIT|L_PERROR, "fork");
+                grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR, "fork");
                 exit(1);
         default:
                 exit(0);
@@ -569,7 +570,7 @@ radiusd_main()
 		else
 			ref_ip = grad_first_ip();
 		if (ref_ip == INADDR_ANY)
-		    grad_log(L_ALERT, _("can't find out my own IP address"));
+		    grad_log(GRAD_LOG_ALERT, _("can't find out my own IP address"));
 		
 		chdir("/");
 		umask(022);
@@ -676,7 +677,7 @@ radiusd_suspend()
 {
 	if (suspend_flag == 0) {
 		terminate_subprocesses();
-		grad_log(L_NOTICE, _("RADIUSD SUSPENDED"));
+		grad_log(GRAD_LOG_NOTICE, _("RADIUSD SUSPENDED"));
 		suspend_flag = 1;
 	}
 }
@@ -706,7 +707,7 @@ check_reload()
 		break;
 		
         case CMD_RELOAD:
-                grad_log(L_INFO, _("Reloading configuration now"));
+                grad_log(GRAD_LOG_INFO, _("Reloading configuration now"));
                 radiusd_reconfigure();
                 break;
 		
@@ -718,7 +719,7 @@ check_reload()
                 break;
 		
         case CMD_DUMPDB:
-                grad_log(L_INFO, _("Dumping users db to `%s'"),
+                grad_log(GRAD_LOG_INFO, _("Dumping users db to `%s'"),
 		       RADIUS_DUMPDB_NAME);
                 dump_users_db();
                 break;
@@ -775,9 +776,9 @@ radiusd_restart()
 {
 	pid_t pid;
 	
-	grad_log(L_NOTICE, _("restart initiated"));
+	grad_log(GRAD_LOG_NOTICE, _("restart initiated"));
 	if (xargv[0][0] != '/') {
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("can't restart: not started as absolute pathname"));
 		return;
 	}
@@ -789,7 +790,7 @@ radiusd_restart()
 	else 
 		pid = fork();
 	if (pid < 0) {
-		grad_log(L_CRIT|L_PERROR,
+		grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR,
 		         _("radiusd_restart: cannot fork"));
 		return;
 	}
@@ -805,9 +806,10 @@ radiusd_restart()
 	sleep(10);
 
 	/* Child */
-	grad_log(L_NOTICE, _("restarting radius"));
+	grad_log(GRAD_LOG_NOTICE, _("restarting radius"));
 	execvp(xargv[0], xargv);
-	grad_log(L_CRIT|L_PERROR, _("RADIUS NOT RESTARTED: exec failed"));
+	grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR, 
+	         _("RADIUS NOT RESTARTED: exec failed"));
 	exit(1);
 	/*NOTREACHED*/
 }
@@ -844,7 +846,7 @@ radiusd_exit()
 	radiusd_pidfile_remove(RADIUSD_PID_FILE);
 	
 	radiusd_flush_queue();
-	grad_log(L_CRIT, _("Normal shutdown."));
+	grad_log(GRAD_LOG_CRIT, _("Normal shutdown."));
 
 	rpp_kill(-1, SIGTERM);
 	radiusd_exit0();
@@ -860,10 +862,10 @@ radiusd_exit0()
 void
 radiusd_main_loop()
 {
-        grad_log(L_INFO, _("Ready to process requests."));
+        grad_log(GRAD_LOG_INFO, _("Ready to process requests."));
 
         for (;;) {
-		log_open(L_MAIN);
+		log_open(GRAD_LOG_MAIN);
 		check_reload();
 		input_select(radius_input, NULL);
 	}
@@ -949,7 +951,7 @@ radiusd_reconfigure()
 
 	radiusd_run_preconfig_hooks(NULL);
 	
-	grad_log(L_INFO, _("Loading configuration files."));
+	grad_log(GRAD_LOG_INFO, _("Loading configuration files."));
 	/* Read main configuration file */
         filename = grad_mkfilename(grad_config_dir, RADIUS_CONFIG);
         cfg_read(filename, config_syntax, NULL);
@@ -959,7 +961,7 @@ radiusd_reconfigure()
         rc = reload_config_file(reload_all);
         
         if (rc) {
-                grad_log(L_CRIT, _("Errors reading config file - EXITING"));
+                grad_log(GRAD_LOG_CRIT, _("Errors reading config file - EXITING"));
                 exit(1);
         }
 
@@ -1130,7 +1132,7 @@ udp_open(int type, grad_uint32_t ipaddr, int port, int nonblock)
         s.sin_port = htons(port);
 	if (p = input_find_channel(radius_input, "udp", &s)) {
 		char buffer[GRAD_IPV4_STRING_LENGTH];
-		grad_log(L_ERR,
+		grad_log(GRAD_LOG_ERR,
 		         _("socket %s:%d is already assigned for %s"),
 		         grad_ip_iptostr(ipaddr, buffer),
 		         port,
@@ -1142,12 +1144,13 @@ udp_open(int type, grad_uint32_t ipaddr, int port, int nonblock)
 	if (nonblock) 
 		grad_set_nonblocking(fd);
         if (fd < 0) {
-                grad_log(L_CRIT|L_PERROR, "%s socket",
+                grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR, "%s socket",
 		         request_class[type].name);
 		return 1;
         }
         if (bind(fd, (struct sockaddr*) &s, sizeof(s)) < 0) {
-                grad_log(L_CRIT|L_PERROR, "%s bind", request_class[type].name);
+                grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR, 
+                         "%s bind", request_class[type].name);
 		close(fd);
 		return 1;
 	}
@@ -1308,7 +1311,7 @@ int
 option_stmt_end(void *block_data, void *handler_data)
 {
 	if (exec_user.username && radiusd_user.uid != 0) {
-		grad_log(L_WARN, _("Ignoring exec-program-user"));
+		grad_log(GRAD_LOG_WARN, _("Ignoring exec-program-user"));
 		grad_free(exec_user.username);
 		exec_user.username = NULL;
 	} else if (exec_user.username == NULL)

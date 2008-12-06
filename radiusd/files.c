@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2006, 2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -180,7 +180,7 @@ add_user_entry(void *closure, grad_locus_t *loc,
         if ((check == NULL && reply == NULL)
             || fix_check_pairs(GRAD_CF_USERS, loc, name, &check)
             || fix_reply_pairs(GRAD_CF_USERS, loc, name, &reply)) {
-                grad_log_loc(L_ERR, loc,
+                grad_log_loc(GRAD_LOG_ERR, loc,
 			     _("discarding user `%s'"),
 			     name);
                 grad_avl_free(check);
@@ -220,7 +220,7 @@ add_pairlist(void *closure, grad_locus_t *loc,
         if ((lhs == NULL && rhs == NULL)
             || fix_check_pairs(data->cf_file, loc, name, &lhs)
             || fix_reply_pairs(data->cf_file, loc, name, &rhs)) {
-                grad_log_loc(L_ERR, loc, _("discarding entry `%s'"), name);
+                grad_log_loc(GRAD_LOG_ERR, loc, _("discarding entry `%s'"), name);
                 grad_avl_free(lhs);
                 grad_avl_free(rhs);
                 return 0;
@@ -417,7 +417,7 @@ user_find(char *name, radiusd_request_t *req,
          *      Check for valid input, zero length names not permitted 
          */
         if (name[0] == 0) {
-                grad_log(L_ERR, _("zero length username not permitted"));
+                grad_log(GRAD_LOG_ERR, _("zero length username not permitted"));
                 return -1;
         }
 
@@ -609,7 +609,7 @@ avl_eval_rewrite (radiusd_request_t *req, grad_matching_rule_t *rule,
 	for (; p; p = p->next) {
 		if (p->attribute == DA_REWRITE_FUNCTION
 		    && rewrite_eval(p->avp_strvalue, req->request, NULL)) {
-			grad_log_loc(L_ERR, &rule->loc, "%s(): %s",
+			grad_log_loc(GRAD_LOG_ERR, &rule->loc, "%s(): %s",
 				     p->avp_strvalue,
 				     _("not defined"));
 		}
@@ -648,7 +648,7 @@ exec_program_wait (radiusd_request_t *request, grad_avp_t *rhs,
 				break;
 
 			default:
-				grad_log_req(L_ERR, request->request,
+				grad_log_req(GRAD_LOG_ERR, request->request,
 					     _("cannot execute `%s'"),
 					     p->avp_strvalue);
 				rc = 1;
@@ -936,7 +936,7 @@ read_clients_entry(void *u ARG_UNUSED, int fc, char **fv, grad_locus_t *loc)
         CLIENT *cp;
         
         if (fc != 2) {
-                grad_log_loc(L_ERR, loc, "%s", _("wrong number of fields"));
+                grad_log_loc(GRAD_LOG_ERR, loc, "%s", _("wrong number of fields"));
                 return -1;
         }
 
@@ -1039,7 +1039,7 @@ read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv, grad_locus_t *loc)
 	int i;
 	
         if (fc < 2) {
-                grad_log_loc(L_ERR, loc, "%s", _("too few fields"));
+                grad_log_loc(GRAD_LOG_ERR, loc, "%s", _("too few fields"));
                 return -1;
         }
 
@@ -1052,7 +1052,7 @@ read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv, grad_locus_t *loc)
 	else if (strcmp(fv[1], "guile") == 0)
 		method = METHOD_GUILE;
         else {
-                grad_log_loc(L_ERR, loc, "%s", _("unknown method"));
+                grad_log_loc(GRAD_LOG_ERR, loc, "%s", _("unknown method"));
                 return -1;
         }
                         
@@ -1131,12 +1131,12 @@ read_denylist_entry(void *closure, int fc, char **fv, grad_locus_t *loc)
 {
 	int *denycnt = closure;
 	if (fc != 1) {
-                grad_log_loc(L_ERR, loc, "%s", _("wrong number of fields"));
+                grad_log_loc(GRAD_LOG_ERR, loc, "%s", _("wrong number of fields"));
                 return -1;
         }
 
         if (get_deny(fv[0]))
-                grad_log_loc(L_ERR, loc, _("user `%s' already found in %s"),
+                grad_log_loc(GRAD_LOG_ERR, loc, _("user `%s' already found in %s"),
 			   fv[0], RADIUS_DENY);
         else {
                 add_deny(fv[0]);
@@ -1161,7 +1161,7 @@ read_deny_file()
         grad_read_raddb_file(name, 0, NULL, read_denylist_entry, &denycnt);
         grad_free(name);
         if (denycnt)
-                grad_log(L_INFO,
+                grad_log(GRAD_LOG_INFO,
 		         ngettext ("%d user disabled",
 			  	   "%d users disabled", denycnt), denycnt);
 }
@@ -1369,7 +1369,7 @@ paircmp(radiusd_request_t *request, grad_avp_t *check, char *pusername)
                 }
 
                 if (GRAD_DEBUG_LEVEL(20)) {
-                        grad_log(L_DEBUG, 
+                        grad_log(GRAD_LOG_DEBUG, 
                                  "check_item: %s", 
                                  grad_format_pair(check_item, 1, &save));
                         free(save);
@@ -1416,7 +1416,7 @@ paircmp(radiusd_request_t *request, grad_avp_t *check, char *pusername)
                 }
 
                 if (GRAD_DEBUG_LEVEL(20)) {
-                        grad_log(L_DEBUG,
+                        grad_log(GRAD_LOG_DEBUG,
                                  "auth_item: %s",
                                  grad_format_pair(auth_item, 1, &save));
                         free(save);
@@ -1716,7 +1716,7 @@ reload_data(enum reload_what what, int *do_radck)
 #if USE_DBM
                 if (use_dbm && radius_mode != MODE_BUILDDBM) {
                         if (access(path, 0) == 0) {
-                                grad_log(L_WARN,
+                                grad_log(GRAD_LOG_WARN,
                                          _("using only dbm: USERS NOT LOADED"));
                         }
                         *do_radck = 0;
@@ -1724,15 +1724,15 @@ reload_data(enum reload_what what, int *do_radck)
                         if (radius_mode != MODE_BUILDDBM
                             && (checkdbm(path, ".dir") == 0
                                 || checkdbm(path, ".db") == 0))
-                                grad_log(L_WARN,
+                                grad_log(GRAD_LOG_WARN,
                     _("DBM files found but no -b flag given - NOT using DBM"));
                 
 #endif
                 if (read_users(path)) {
-                        grad_log(L_CRIT, _("can't load %s: exited"), path);
+                        grad_log(GRAD_LOG_CRIT, _("can't load %s: exited"), path);
                         exit(1);
                 } else
-                        grad_log(L_INFO, _("%s reloaded."), path);
+                        grad_log(GRAD_LOG_INFO, _("%s reloaded."), path);
                 *do_radck = 1;
 #if USE_DBM
                 }
@@ -1802,7 +1802,7 @@ reload_data(enum reload_what what, int *do_radck)
 
         case reload_sql:
                 if (radiusd_sql_config() != 0) {
-                        grad_log(L_CRIT,
+                        grad_log(GRAD_LOG_CRIT,
                            _("SQL Error: SQL client could not be initialized"));
                         rc = 1;
                 } 
@@ -1819,7 +1819,7 @@ reload_data(enum reload_what what, int *do_radck)
                 break;
                 
         default:
-                grad_log(L_CRIT, _("INTERNAL ERROR: unknown reload code: %d"),
+                grad_log(GRAD_LOG_CRIT, _("INTERNAL ERROR: unknown reload code: %d"),
                          what);
         }
                 
@@ -1889,7 +1889,7 @@ dump_users_db()
         
         fp = fopen(name, "w");
         if (!fp) {
-                grad_log(L_ERR|L_PERROR,
+                grad_log(GRAD_LOG_ERR|GRAD_LOG_PERROR,
                          _("can't create parser output file `%s'"),
                          RADIUS_DUMPDB_NAME);
                 grad_free(name);
@@ -1904,7 +1904,7 @@ dump_users_db()
 
         dump_matching_rules(fp, "huntgroups", huntgroups);
         dump_matching_rules(fp, "hints", hints);
-        grad_log(L_INFO, _("dumped users database to %s"), RADIUS_DUMPDB_NAME);
+        grad_log(GRAD_LOG_INFO, _("dumped users database to %s"), RADIUS_DUMPDB_NAME);
         fclose(fp);
         grad_free(name);
 }

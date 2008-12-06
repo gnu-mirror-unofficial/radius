@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius
    Copyright (C) 2000,2001,2002,2003,2004,
-   2006,2007 Free Software Foundation, Inc.
+   2006,2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -196,7 +196,7 @@ unix_expiration(char *name, time_t *exp)
 						+ now % SECS_IN_WEEK;
 					status = auth_valid;
 				} else { /* Invalid password data? */
-					grad_log(L_NOTICE,
+					grad_log(GRAD_LOG_NOTICE,
 						 _("Invalid password aging information for user '%s'"), name);
 					status = auth_fail;
 				}
@@ -230,7 +230,7 @@ unix_pass(char *name, char *passwd)
 	if (encrypted_pass) {
 		/* Check if the account is locked. */
 		if (SHADOW_PASSWD_LOCK(spwd) != 1) {
-			grad_log(L_NOTICE,
+			grad_log(GRAD_LOG_NOTICE,
 			         "unix_pass: [%s]: %s",
 			         name, _("account locked"));
 			encrypted_pass = NULL;
@@ -280,12 +280,12 @@ rad_auth_check_username(radiusd_request_t *radreq, int activefd)
         grad_avp_t *namepair = grad_avl_find(radreq->request->avlist,
 					     DA_USER_NAME);
 
-	log_open(L_AUTH);
+	log_open(GRAD_LOG_AUTH);
 
         if (grad_avp_null_string_p(namepair)) 
-                grad_log_req(L_ERR, radreq->request, _("No username"));
+                grad_log_req(GRAD_LOG_ERR, radreq->request, _("No username"));
 	else if (check_user_name(namepair->avp_strvalue)) 
-                grad_log_req(L_ERR, radreq->request, _("Malformed username"));
+                grad_log_req(GRAD_LOG_ERR, radreq->request, _("Malformed username"));
 	else
 		return 0;
 
@@ -306,7 +306,7 @@ rad_auth_init(radiusd_request_t *radreq, int activefd)
 {
 	grad_locus_t loc;
 	
-	log_open(L_AUTH);
+	log_open(GRAD_LOG_AUTH);
                 
         if (auth_detail)
                 write_detail(radreq, REQ_AUTH_ZERO, R_AUTH);
@@ -315,7 +315,7 @@ rad_auth_init(radiusd_request_t *radreq, int activefd)
          * See if the user has access to this huntgroup.
          */
         if (!huntgroup_access(radreq, &loc)) {
-                grad_log_req(L_NOTICE, radreq->request,
+                grad_log_req(GRAD_LOG_NOTICE, radreq->request,
 			     _("Access denied by huntgroup %s:%d"),
 			     loc.file, loc.line);
                 radius_send_reply(RT_ACCESS_REJECT, radreq,
@@ -458,7 +458,7 @@ auth_log(AUTH_MACH *m, const char *diag, const char *pass,
 	 const char *reason, const char *addstr)
 {
         if (reason)
-                grad_log_req(L_NOTICE, m->req->request,
+                grad_log_req(GRAD_LOG_NOTICE, m->req->request,
 			     "%s [%s%s%s]: %s%s",
 			     diag,
 			     m->namepair->avp_strvalue,
@@ -467,7 +467,7 @@ auth_log(AUTH_MACH *m, const char *diag, const char *pass,
 			     reason,
 			     addstr ? addstr : "");
         else
-                grad_log_req(L_NOTICE, m->req->request,
+                grad_log_req(GRAD_LOG_NOTICE, m->req->request,
 			     "%s [%s%s%s]",
 			     diag,
 			     m->namepair->avp_strvalue,
@@ -587,7 +587,7 @@ rad_check_password(radiusd_request_t *radreq, AUTH_MACH *m, time_t *exp)
 #endif
                 /* NOTE: add any new location types here */
                 default:
-                        grad_log(L_ERR,
+                        grad_log(GRAD_LOG_ERR,
                                  _("unknown Password-Location value: %ld"),
                                  tmp->avp_lvalue);
                         return auth_fail;
@@ -622,7 +622,7 @@ rad_check_password(radiusd_request_t *radreq, AUTH_MACH *m, time_t *exp)
                 if (pam_pass(name, m->userpass, authdata, &m->user_msg) != 0)
                         result = auth_fail;
 #else
-                grad_log_req(L_ERR, radreq->request,
+                grad_log_req(GRAD_LOG_ERR, radreq->request,
                              _("PAM authentication not available"));
                 result = auth_nouser;
 #endif
@@ -747,7 +747,7 @@ rad_authenticate(radiusd_request_t *radreq, int activefd)
         struct auth_state_s *sp;
         struct auth_mach m;
 
-	log_open(L_AUTH);
+	log_open(GRAD_LOG_AUTH);
         m.req = radreq;
         m.activefd = activefd;
         m.user_check = NULL;
@@ -929,11 +929,11 @@ auth_failure(AUTH_MACH *m)
 		break;
 
 	default:
-		grad_log_req(L_ERR,
+		grad_log_req(GRAD_LOG_ERR,
 			     m->req->request,
 			     _("Invalid Auth-Failure-Trigger value: %s"),
 			     cmd);
-		grad_log(L_INFO,
+		grad_log(GRAD_LOG_INFO,
 			 _("The value of Auth-Failure-Trigger attribute must begin with '/' or '('."));
 	}
 }
@@ -1076,7 +1076,7 @@ sfn_simuse(AUTH_MACH *m)
                         (m->check_pair->avp_lvalue > 1) ?
                         MSG_MULTIPLE_LOGIN : MSG_SECOND_LOGIN);
 
-        grad_log_req(L_WARN, m->req->request,
+        grad_log_req(GRAD_LOG_WARN, m->req->request,
 		     _("Multiple logins: [%s] max. %ld%s"),
 		     m->namepair->avp_strvalue,
 		     m->check_pair->avp_lvalue,
@@ -1111,7 +1111,7 @@ sfn_time(AUTH_MACH *m)
                  * User called outside allowed time interval.
                  */
                 auth_format_msg(m, MSG_TIMESPAN_VIOLATION);
-                grad_log_req(L_ERR,
+                grad_log_req(GRAD_LOG_ERR,
 			     m->req->request,
 			     _("Outside allowed timespan (%s)"),
 			     m->check_pair->avp_strvalue);

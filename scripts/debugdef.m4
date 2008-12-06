@@ -31,10 +31,10 @@ define([<MKDEBUG>],[<
 #define __grad_debug>]$1[<(fmt, >]__arglist(1,$1))  \[<
  do {                                                                         \
    if (grad_source_info_option)                                               \
-    grad_log(L_DEBUG, "%s:%lu:%s: " fmt, __FILE__, __LINE__, __FUNCTION__, >]dnl
+    grad_log(GRAD_LOG_DEBUG, "%s:%lu:%s: " fmt, __FILE__, __LINE__, __FUNCTION__, >]dnl
 __arglist(1,$1)[<); \
    else                                                                       \
-    grad_log(L_DEBUG, fmt,>]dnl
+    grad_log(GRAD_LOG_DEBUG, fmt,>]dnl
 __arglist(1,$1)[<);\
  } while (0)                                                                  
 #define GRAD_DEBUG>]$1[<(lev, fmt, >]__arglist(1,$1)[<) \

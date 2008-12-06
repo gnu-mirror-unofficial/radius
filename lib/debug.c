@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -207,14 +208,14 @@ grad_debug_p(char *name, int level)
 int
 grad_set_module_debug_level(char *name, int level)
 {
-        grad_log(L_ERR, _("compiled without debugging support"));
+        grad_log(GRAD_LOG_ERR, _("compiled without debugging support"));
 }
 
 /*ARGSUSED*/
 void
 grad_set_debug_levels(char *str)
 {
-        grad_log(L_ERR, _("compiled without debugging support"));
+        grad_log(GRAD_LOG_ERR, _("compiled without debugging support"));
 }
 
 void

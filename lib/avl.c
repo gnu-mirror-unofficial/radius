@@ -1,5 +1,6 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003,2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004,2007,
+   2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -88,7 +89,7 @@ grad_avp_create(int attr)
 
         dict = grad_attr_number_to_dict(attr);
         if (!dict) {
-                grad_log(L_ERR,
+                grad_log(GRAD_LOG_ERR,
                          _("make_pair(): attribute %d not found in dictionary"),
                          attr);
                 return NULL;

@@ -1,6 +1,6 @@
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004,2005,
-   2007 Free Software Foundation, Inc.
+   2007,2008 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -38,7 +38,7 @@ static grad_server_t *scheme_to_server(SCM g_list, const char *func);
 static void
 die(char *msg)
 {
-        grad_log(L_ERR, "%s", msg);
+        grad_log(GRAD_LOG_ERR, "%s", msg);
 }
 
 #if SCM_MAJOR_VERSION == 1 && SCM_MINOR_VERSION == 6
@@ -312,7 +312,7 @@ radscm_init()
          */
         grad_path_init();
         if (grad_dict_init()) {
-                grad_log(L_ERR, _("error reading dictionary file"));
+                grad_log(GRAD_LOG_ERR, _("error reading dictionary file"));
                 exit(1);
         }
         srv_queue = grad_client_create_queue(1, 0, 0);

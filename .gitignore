@@ -7,18 +7,12 @@
 .bootstrap
 .deps
 .emacs*
+.libs
 ABOUT-NLS
 INSTALL
 Makefile
 Makefile.in
 aclocal.m4
-libtool
-m4
-stamp-h1
-ABOUT-NLS
-m4
-.deps
-.libs
 autom4te.cache
 build-aux
 config.h
@@ -27,3 +21,6 @@ config.log
 config.status
 configure
 gnu
+libtool
+m4
+stamp-h1

@@ -16,7 +16,7 @@ en@quot.header
 insert-header.sed
 insert-header.sin
 quot.sed
+radius.pot
 remove-potcdate.sed
 remove-potcdate.sin
 stamp-po
-radius.pot

@@ -13,8 +13,6 @@
 
 SUBDIRS=guile
 EXTRA_DIST=\
- config-conv\
- config-conv.awk\
  debugdef.m4\
  dict.awk\
  dot.emacs\
@@ -24,7 +22,6 @@ EXTRA_DIST=\
  radius-devel.el\
  request.list\
  sqlmod.sh\
- texi2html.diff\
  update-dict.awk
 
 noinst_PROGRAMS = mktypes

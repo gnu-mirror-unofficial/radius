@@ -1,2 +1,8 @@
 atconfig
 atlocal
+confdir
+findport
+package.m4
+testsuite
+testsuite.dir
+testsuite.log

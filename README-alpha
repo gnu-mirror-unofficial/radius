@@ -1,64 +1,43 @@
-This is the GNU Radius package.
+This is the GNU Radius package. This document describes the actions
+needed to build pre-release versions of the package. See end of file
+for copying conditions. 
 
 * Introduction
 
 This is a *pre-release* version, and not ready for production use yet.
-Please send comments and problem reports to <bug-gnu-radius@gnu.org>.
- 
-If you have taken the sources from CVS you will need the following
-packages (or later) to build GNU radius.  We don't make any extra effort
-to accommodate older versions of these packages, so please make sure
-that you have the latest stable version.
-
-- Automake <http://www.gnu.org/software/automake/>
-- Autoconf <http://www.gnu.org/software/autoconf/>
-- Gettext <http://www.gnu.org/software/gettext/>
-- Gnulib <http://www.gnu.org/software/gnulib/>
-- Libtool <http://www.gnu.org/software/libtool/>
-- M4 <http://www.gnu.org/software/m4/>
-- Texinfo <http://www.gnu.org/software/texinfo>
-
-You will also need bison (or yacc) and flex. The grammar sources
-were written so that any version of yacc or bison should be able to
-handle them, however using recent bison is anyway recommended.  The lex
-sources could theoretically be compiled with AT&T lex.  However, it's been
-quite some time since I testes it, so using flex is higly recommended.
-I use flex 2.5.4.
+If you are taking source from Git, you will need to have several
+special tools to help contribute. See the file README-hacking for more
+information, See chapter `Building' for the detailed instructions on
+how to build the package.
 
 Please, note that the accompanying documentation may be inaccurate or
-incomplete.  Take a look at ChangeLog to see the latest changes. ChangeLog
-entries marked with an asterisk in column zero document user-visible changes
-which are not otherwise documented.  Thus, the following command will print
-a list of latest user-visible changes:
+incomplete.  For alpha releases, the authoritative source of information 
+about recent changes is ChangeLog file.
 
-	grep '^\*' ChangeLog
+Report bugs and send comments to <bug-gnu-radius@gnu.org>.
 
 * Checking Out the Sources
 
 The following instructions apply if you wish to obtain sources from
-the CVS repository:
+the Git repository:
 
-To checkout the source tree from CVS issue the following command:
+To clone the source tree, issue the following command:
 
- cvs -d :pserver:anoncvs@cvs.savannah.gnu.org:/cvsroot/radius checkout radius
+ git clone git://git.savannah.gnu.org/radius.git
 
 This will give you read-only access.  If you think you need write access,
-contact <gray@mirddin.farlep.net>
+contact <gray@gnu.org.ua>
 
 * Building
 
-After checking out the sources, you will need to _bootstrap_ them.  To do
-so, first make sure you have the recent version of gnulib checked out.
-Then, make sure gnulib-tool can be found using your PATH variable and
-run './bootstrap', e.g.:
+Usual procedures apply:
 
-  $ PATH=~/gnulib:$PATH ./bootstrap
+ ./configure
+  make
+  make install
 
-After bootstrap finishes, run make.
-
-Notice, that you only have to do it once.  Packaged alpha versions do not
-need bootstrapping. 
-
+See INSTALL and README for the detailed instructions.
+   
 * Debugging
 
 Unless you compile Radius statically, use the following command to debug it

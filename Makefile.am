@@ -18,7 +18,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 -I am
 
 SUBDIRS= scripts include lib gnu sql snmplib radscm radiusd radwho \
          radzap radlast radscripts elisp raddb db client radtest \
@@ -36,7 +36,36 @@ update-dictionary:
 distuninstallcheck_listfiles = \
  find $(prefix) -type f -not -path '$(sysconfdir)/raddb/*'
 
-if MAINTAINER_MODE
+.PHONY: make-ChangeLog
+make-ChangeLog: 
+	if test -d .git; then                                           \
+	  $(top_srcdir)/scripts/gitlog-to-changelog |                   \
+            sed '/<unknown>$$/d' | fmt -s > $(distdir)/cl-t;            \
+	  echo "" >> $(distdir)/cl-t;                                 \
+	  echo "Local Variables:" >> $(distdir)/cl-t;                   \
+	  echo "mode: change-log" >> $(distdir)/cl-t;                   \
+	  echo "version-control: never"  >> $(distdir)/cl-t;            \
+	  echo "buffer-read-only: t" >> $(distdir)/cl-t;                \
+	  echo "End:" >> $(distdir)/cl-t;                               \
+	  rm -f $(distdir)/ChangeLog;                                   \
+	  mv $(distdir)/cl-t $(distdir)/ChangeLog;                      \
+	fi
+
+dist-hook: make-ChangeLog
+
+.PHONY: ChangeLog
+ChangeLog: 
+	if test -d .git; then                                           \
+	  $(top_srcdir)/scripts/gitlog-to-changelog |                   \
+            sed '/<unknown>$$/d' | fmt -s > ChangeLog;                  \
+	  echo "" >> ChangeLog;                                       \
+	  echo "Local Variables:" >> ChangeLog;                         \
+	  echo "mode: change-log" >> ChangeLog;                         \
+	  echo "version-control: never"  >> ChangeLog;                  \
+	  echo "buffer-read-only: t" >> ChangeLog;                      \
+	  echo "End:" >> ChangeLog;                                     \
+        fi
+
 MAINTAINERCLEANFILES=core *~ err out
 
 webdoc:;   $(MAKE) -C doc/texinfo webdoc
@@ -47,7 +76,6 @@ alpha:
 alphacheck: 
 	$(MAKE) distcheck distdir=$(PACKAGE)-$(VERSION)-`date +'%Y%m%d'`
 
-endif
 
  
 

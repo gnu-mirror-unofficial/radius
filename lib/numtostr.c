@@ -32,8 +32,6 @@ numtostr (inttype i, char *buf, size_t size)
 	char *p = ibuf + sizeof ibuf;
 	size_t s;
 	
-	*p = 0;
-
 	if (i < 0) {
 		do
 			*--p = '0' - i % 10;

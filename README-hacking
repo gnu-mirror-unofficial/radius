@@ -33,7 +33,7 @@ about recent changes is the git log. Run `git log' to view it.
 Run `make ChangeLog' to convert it to ChangeLog format.
 
 For more information, including a description of some debugging
-techniques, see the file RADIUS-alpha.
+techniques, see the file README-alpha.
 
 * Bootstrapping
 

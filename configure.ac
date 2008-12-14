@@ -280,6 +280,42 @@ AC_FUNC_MMAP
 
 gl_INIT
 
+# Radius uses code that conflicts with gcc understanding of C aliasing:
+#
+#   http://gcc.gnu.org/bugzilla/show_bug.cgi?id=38527
+#
+# In particular, when compiling radiusd/rewrite.y gcc >= 4.3.0 generates
+# code containing explicit dead loops. According to gcc folks, such code
+# generation is correct. I can hardly agree with that. And not only me.
+# Quoting Linus Torvalds:
+#   The gcc people are more interested in trying to find out what can be
+#   allowed by the c99 specs than about making things actually _work_. The
+#   aliasing code in particular is not even worth enabling, it's just not
+#   possible to sanely tell gcc when some things can alias.
+# (see http://lkml.org/lkml/2003/2/26/158, for details)
+#
+# (The code below is borrowed from Python's configure.in)
+AC_SUBST(OPTFLAGS)
+case $GCC in
+yes)
+    AC_MSG_CHECKING(whether $CC accepts -fno-strict-aliasing)
+     ac_save_cc="$CC"
+     CC="$CC -fno-strict-aliasing"
+     AC_TRY_RUN([int main() { return 0; }],
+     ac_cv_no_strict_aliasing_ok=yes,
+     ac_cv_no_strict_aliasing_ok=no,
+     ac_cv_no_strict_aliasing_ok=no)
+     CC="$ac_save_cc"
+    AC_MSG_RESULT($ac_cv_no_strict_aliasing_ok)
+    if test $ac_cv_no_strict_aliasing_ok = yes
+    then
+      OPTFLAGS="$OPTFLAGS -fno-strict-aliasing"
+    fi
+    ;;
+*)  # FIXME
+    ;;
+esac
+
 ## * Check for national language support
 AM_GNU_GETTEXT([external], [need-ngettext])
 AM_GNU_GETTEXT_VERSION(0.15)

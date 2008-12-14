@@ -661,6 +661,8 @@ static int rw_error_free(char *msg);
 #define rw_code_unlock()
 
 #define AVPLIST(m) ((m)->req ? (m)->req->avlist : NULL)
+
+static FUNCTION fmain;
 %}
 
 
@@ -729,8 +731,6 @@ input   : dcllist
 	  }
         | expr
           {
-		  FUNCTION fmain;
-
                   if (errcnt) {
                           YYERROR;
                   }

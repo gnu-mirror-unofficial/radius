@@ -55,11 +55,14 @@ void
 grad_list_destroy(struct grad_list **plist, list_iterator_t user_free, void *data)
 {
 	struct grad_list_entry *p;
-
+	struct grad_list *list;
+	
 	if (!*plist)
 		return;
-	
-	p = (*plist)->head;
+
+	list = *plist;
+	*plist = NULL;
+	p = list->head;
 	while (p) {
 		struct grad_list_entry *next = p->next;
 		if (user_free)
@@ -67,8 +70,7 @@ grad_list_destroy(struct grad_list **plist, list_iterator_t user_free, void *dat
 		grad_free(p);
 		p = next;
 	}
-	grad_free(*plist);
-	*plist = NULL;
+	grad_free(list);
 }
 
 void *

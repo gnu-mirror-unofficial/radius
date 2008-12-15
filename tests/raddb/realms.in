@@ -1,4 +1,4 @@
 # Realm                 Remote server [:port:[port]]	flags
 #----------------	---------------------		--------
 local			LOCAL				strip
-remote			127.0.0.2:@PROXY_AUTH_PORT@:@PROXY_ACCT_PORT@
+remote			127.0.0.2:{PROXY_AUTH}:{PROXY_ACCT}

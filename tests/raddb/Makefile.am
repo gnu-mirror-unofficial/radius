@@ -43,7 +43,7 @@ nastypes: $(RADDB)/nastypes
 	rm -f $@
 	$(LN_S) $? $@
 
-CLEANFILES=$(ALLTARGETS) config dictionary client.conf users hints acct.bin acct.scm realms 
+CLEANFILES=$(ALLTARGETS) config dictionary client.conf users hints acct.bin acct.scm realms ports
 
 distclean-local:; -rm -rf radiusd.pid log acct dict
 

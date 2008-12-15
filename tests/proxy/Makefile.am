@@ -39,6 +39,6 @@ naslist: ../raddb/naslist
 	rm -f $@
 	$(LN_S) $? $@
 
-CLEANFILES=$(ALLTARGETS) dictionary client.conf config realms
+CLEANFILES=$(ALLTARGETS) dictionary client.conf config realms ports
 
 distclean-local:; -rm -rf radiusd.pid log acct

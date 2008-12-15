@@ -20,7 +20,6 @@
 
 option {
 	max-requests 1024;
-	exec-program-user "@USER@";	
 };
 
 logging {
@@ -52,7 +51,6 @@ logging {
 };
 
 auth {
-	port @PROXY_AUTH_PORT@;
 	max-requests 127;
 	request-cleanup-delay 2;
 	detail yes;
@@ -61,7 +59,6 @@ auth {
 };
 
 acct {
-	port @PROXY_ACCT_PORT@;
 	max-requests 127;
 	request-cleanup-delay 2;
 };

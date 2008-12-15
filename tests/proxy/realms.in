@@ -1,5 +1,5 @@
 # Realm                 Remote server [:port]		flags		
 #----------------	---------------------		--------	
-remote			127.0.0.1:@TEST_AUTH_PORT@:@TEST_ACCT_PORT@ quota=5
-NOREALM			127.0.0.1:@TEST_AUTH_PORT@:@TEST_ACCT_PORT@ quota=5
-ignorecase		127.0.0.1:@TEST_AUTH_PORT@:@TEST_ACCT_PORT@  ignorecase
+remote			127.0.0.1:{AUTH}:{ACCT}         quota=5
+NOREALM			127.0.0.1:{AUTH}:{ACCT}         quota=5
+ignorecase		127.0.0.1:{AUTH}:{ACCT}         ignorecase

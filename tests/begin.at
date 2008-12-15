@@ -19,7 +19,7 @@
 # 02110-1301 USA.
 
 AT_SETUP([Starting radius server])
-AT_KEYWORDS(begin RA_ALL_KEYWORDS)
+AT_KEYWORDS(start-server begin RA_ALL_KEYWORDS)
 
 AT_CHECK([begin_server],
          [0],

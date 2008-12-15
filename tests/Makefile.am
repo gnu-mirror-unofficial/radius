@@ -102,12 +102,6 @@ installcheck-local:
 	$(SHELL) $(TESTSUITE) AUTOTEST_PATH=$(exec_prefix)/bin
 
 
-## ------------ ##
-## findport     ##
-## ------------ ##
-
-check_PROGRAMS = findport
-
 ## --------------- ##
 ## distclean rules ##
 ## --------------- ##

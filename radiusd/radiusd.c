@@ -44,6 +44,7 @@ const char *argp_program_version = "radiusd (" PACKAGE ") " VERSION;
 static char doc[] = N_("GNU radius daemon");
 
 #define SHOW_DEFAULTS_OPTION 256
+#define SELECT_PORTS_OPTION 257
 
 static struct argp_option options[] = {
 #define GRP 100	
@@ -61,6 +62,8 @@ static struct argp_option options[] = {
 	 N_("Show compilation defaults"), GRP+1},
 	{"quiet", 'q', NULL, 0,
 	 N_("Quiet mode (valid only with --mode)"), GRP+1},
+	{"select-free-ports", SELECT_PORTS_OPTION, N_("FILE"), 0,
+	 N_("Select port numbers from available UDP ports"), GRP+1 },
 #undef GRP
 #define GRP 200
 	{NULL, 0, NULL, 0,
@@ -121,6 +124,9 @@ int suspend_flag;         /* Suspend processing of RADIUS requests */
 int auth_reject_malformed_names = 0; /* Respond with Access-Reject packets
 					for requests with malformed user
 					names */
+
+char *select_free_ports;
+FILE *port_file;
 
 RADIUS_USER radiusd_user; /* Run the daemon with this user privileges */
 RADIUS_USER exec_user;    /* Run the user programs with this user privileges */
@@ -265,6 +271,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
         case 's':       /* Single process mode */
                 spawn_flag = 0;
                 break;
+
+	case SELECT_PORTS_OPTION:
+		select_free_ports = arg;
+		break;
 		
         case 'x':
                 x_debug_spec = arg;
@@ -476,7 +486,24 @@ common_init()
         snmpserv_init(&saved_status);
 #endif
 	acct_init();
+	if (select_free_ports) {
+		port_file = fopen(select_free_ports, "w");
+		if (!port_file) {
+			grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR,
+				 _("Cannot open output file %s"),
+				 select_free_ports);
+			exit(1);
+		}
+	}
+				   
 	radiusd_reconfigure();
+
+	if (port_file) {
+		fclose(port_file);
+		port_file = NULL;
+		select_free_ports = NULL;
+	}
+	
 	grad_log(GRAD_LOG_INFO, _("Ready"));
 }
 
@@ -1126,11 +1153,14 @@ udp_open(int type, grad_uint32_t ipaddr, int port, int nonblock)
 	int fd;
 	struct sockaddr_in s;
 	struct udp_data *p;
-	
+
+	if (select_free_ports)
+		port = 0;
         s.sin_family = AF_INET;
         s.sin_addr.s_addr = htonl(ipaddr);
         s.sin_port = htons(port);
-	if (p = input_find_channel(radius_input, "udp", &s)) {
+	
+	if (port && (p = input_find_channel(radius_input, "udp", &s))) {
 		char buffer[GRAD_IPV4_STRING_LENGTH];
 		grad_log(GRAD_LOG_ERR,
 		         _("socket %s:%d is already assigned for %s"),
@@ -1155,6 +1185,36 @@ udp_open(int type, grad_uint32_t ipaddr, int port, int nonblock)
 		return 1;
 	}
 
+	if (port == 0) {
+		socklen_t len = sizeof(s);
+		if (getsockname(fd, &s, &len)) {
+			grad_log(GRAD_LOG_CRIT|GRAD_LOG_PERROR, 
+				 "%s getsockname", request_class[type].name);
+			close(fd);
+			return 1;
+		}
+		port = ntohs(s.sin_port);
+		grad_log(GRAD_LOG_INFO, "%s=%u",
+			 request_class[type].name, port); 
+		fprintf(port_file, "%s=%u\n",
+			request_class[type].name, port);
+		switch (type) {
+		case R_AUTH:
+			auth_port = port;
+			break;
+
+		case R_ACCT:
+			acct_port = port;
+			break;
+
+#ifdef USE_SNMP
+		case R_SNMP:
+			snmp_port = port;
+			break;
+#endif
+		}
+	}
+		
 	p = grad_emalloc(sizeof(*p));
 	p->type = type;
 	p->addr = s;
@@ -1314,7 +1374,8 @@ option_stmt_end(void *block_data, void *handler_data)
 		grad_log(GRAD_LOG_WARN, _("Ignoring exec-program-user"));
 		grad_free(exec_user.username);
 		exec_user.username = NULL;
-	} else if (exec_user.username == NULL)
+	} else if (exec_user.username == NULL
+		   && radiusd_user.uid == 0 && getuid() == 0)
 		radius_get_user_ids(&exec_user, "daemon");
 	return 0;
 }

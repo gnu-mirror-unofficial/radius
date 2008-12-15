@@ -20,24 +20,19 @@ make_raddb() {
        chmod -R u+w $ABS_NAME
     fi
 
-    EXPR=`@abs_builddir@/findport -c5 -s1644 "-fs^@TEST_AUTH_PORT@^%d^;\
-s^@TEST_ACCT_PORT@^%d^;\
-s^@TEST_SNMP_PORT@^%d^;\
-s^@PROXY_AUTH_PORT@^%d^;\
-s^@PROXY_ACCT_PORT@^%d^;\
-s^@USER@^%u^;\
-s^@BUILDDIR@^$BUILDDIR^;\
+    EXPR="s^@BUILDDIR@^$BUILDDIR^;\
 s^@SOURCEDIR@^$SOURCEDIR^;\
-s^@GUILE@^$GUILE_CONFIG^;\
-s^@SNMP@^$SNMP_CONFIG^;"`
+s^@GUILE@^@GUILE_CONFIG@^;\
+s^@SNMP@^@SNMP_CONFIG@^;"
 
     for file in $*
     do
-        sed $EXPR $ABS_NAME/${file}.in > $ABS_NAME/$file
+        sed "$EXPR" $ABS_NAME/${file}.in > $ABS_NAME/$file
 	case $file in
 	*.bin) chmod +x $ABS_NAME/$file
 	esac
     done
+    cat /dev/null > $ABS_NAME/realms
     [ -d $ABS_NAME/log ] || mkdir $ABS_NAME/log
     [ -d $ABS_NAME/acct ] || mkdir $ABS_NAME/acct
     if [ x"$ZERO_LOGS" != x ]; then
@@ -49,12 +44,17 @@ s^@SNMP@^$SNMP_CONFIG^;"`
 }
 
 start_server() {
-    @abs_top_builddir@/radiusd/radiusd -d $1 \
-             -l $1/log \
-	     -a $1/acct \
-	     -P $1
+    DIR=$1
+    shift
+    
+    rm -rf $DIR/ports
+    @abs_top_builddir@/radiusd/radiusd -d $DIR \
+             -l $DIR/log \
+	     -a $DIR/acct \
+	     -P $DIR \
+	     --select-free-ports=$DIR/ports
     N=1	     
-    while [ ! -r $1/radiusd.pid ]
+    while [ ! -r $DIR/radiusd.pid ]
     do
         sleep 1
 	N=`expr $N + 1`
@@ -62,6 +62,11 @@ start_server() {
 		exit 1
 	fi	  
     done
+
+    while read expr
+    do
+      eval ${1}$expr
+    done < $DIR/ports
 }
 
 stop_server() {
@@ -90,11 +95,24 @@ begin_server() {
   if [ -r $RADIUSD_CONFDIR/radiusd.pid ]; then
      :
   else
-     make_raddb raddb dictionary config client.conf hints users acct.bin acct.scm realms
-     make_raddb proxy dictionary client.conf config realms
+     make_raddb raddb dictionary config hints users acct.bin acct.scm
+     make_raddb proxy dictionary config 
+     test "$1" = "proxy" && start_server $PROXY_CONF PROXY_
      start_server $LOCAL_CONF
-     test "$1" = "proxy" && start_server $PROXY_CONF
      trap "stop_server $LOCAL_CONF $PROXY_CONF" 1 3 15
+
+     for dir in $LOCAL_CONF $PROXY_CONF
+     do
+       for file in realms client.conf
+       do
+          sed "s/{AUTH}/$AUTH/;s/{ACCT}/$ACCT/;\
+	       s/{PROXY_AUTH}/$PROXY_AUTH/;s/{PROXY_ACCT}/$PROXY_ACCT/" \
+             $dir/$file.in > $dir/$file
+       done
+     done
+     if [ "$1" = "proxy" ]; then
+       kill -1 `cat $LOCAL_CONF/radiusd.pid $PROXY_CONF/radiusd.pid`
+     fi
   fi
   echo $RADIUSD_CONFDIR > $BUILDDIR/confdir
 }

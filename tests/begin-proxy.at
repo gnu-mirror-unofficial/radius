@@ -1,7 +1,7 @@
 # Start radius server. -*- Autotest -*-
 
 # Test suite for GNU Radius.
-# Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA.
 
-AT_SETUP([Starting radius server])
+AT_SETUP([Starting radius server (proxy)])
 AT_KEYWORDS(begin-proxy RA_PROXY_KEYWORDS)
 
 AT_CHECK([begin_server proxy],

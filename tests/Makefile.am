@@ -1,10 +1,10 @@
 # Makefile for GNU tar regression tests.
 
-# Copyright (C) 1996, 1997, 1999, 2000, 2001, 2003, 2004, 2007 Free Software
-# Foundation, Inc.
+# Copyright (C) 1996, 1997, 1999, 2000, 2001, 2003, 2004, 2007,
+# 2008 Free Software Foundation, Inc.
 
 # François Pinard <pinard@iro.umontreal.ca>, 1988.
-# Sergey Poznyakoff <gray@mirddin.farlep.net>, 2004.
+# Sergey Poznyakoff <gray@gnu.org.ua>, 2004.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by

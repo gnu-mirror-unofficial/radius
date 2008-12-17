@@ -489,7 +489,7 @@ void
 close_input()
 {
 #ifdef FLEX_SCANNER     
-        yy_delete_buffer(yy_current_buffer); 
+        yy_delete_buffer(YY_CURRENT_BUFFER); 
 #endif  
         fclose(yyin);
         yyin = NULL;

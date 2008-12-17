@@ -18,7 +18,7 @@
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.61)
 
 AC_REVISION($Revision$)
 AC_INIT([GNU Radius], [1.6.1], [bug-gnu-radius@gnu.org])
@@ -244,15 +244,9 @@ case $LEAK_DETECTOR in
 esac
 
 AH_BOTTOM([
-/*FIXME*/
-#if defined(sun) && !defined(__EXTENSIONS__)
-# define __EXTENSIONS__
-#endif
-
 #ifdef MAINTAINER_MODE
 # define LEAK_DETECTOR 1
 #endif
-
 ])
 
 ## * Checks for typedefs, structures, and compiler characteristics.
@@ -371,7 +365,7 @@ esac],[usereadline=yes])
 dnl Check for GNU Readline
 AC_SUBST(READLINE_LIBS)
 
-if test x"$usereadline" = x"yes"; then
+if test "$usereadline" = "yes"; then
 
 	dnl FIXME This should only link in the curses libraries if it's
 	dnl really needed!
@@ -388,7 +382,7 @@ if test x"$usereadline" = x"yes"; then
 	AC_CHECK_LIB(readline, readline, ra_have_readline=yes)
 	LIBS=$saved_LIBS
 	
-	if test x"$ra_have_readline" = x"yes"; then
+	if test "$ra_have_readline" = "yes"; then
 		AC_CHECK_HEADERS(readline/readline.h,
 			AC_DEFINE(WITH_READLINE,1,[Enable use of readline]))
 			READLINE_LIBS="-lreadline $CURSES_LIBS"
@@ -433,8 +427,8 @@ AC_MSG_CHECKING(for log directory path)
 AC_ARG_WITH(log-dir,
 	AC_HELP_STRING([--with-log-dir=PATH],
 	[Use PATH instead of default log directory path]),
-	[case "x$withval" in
-	 x/*) RADLOG_DIR=$withval;;
+	[case "$withval" in
+	 /*) RADLOG_DIR=$withval;;
          *)  AC_MSG_ERROR(Argument must be an absolute pathname);;
          esac],
         [if test -d /var/log; then
@@ -453,8 +447,8 @@ AC_MSG_CHECKING(for pidfile directory path)
 AC_ARG_WITH(pid-dir,
 	AC_HELP_STRING([--with-pid-dir=PATH],
 	[Use PATH instead of default podfile location]),
-	[case "x$withval" in
-	 x/*) RADPID_DIR=$withval;;
+	[case "$withval" in
+	 /*) RADPID_DIR=$withval;;
          *)  AC_MSG_ERROR(Argument must be an absolute pathname);;
          esac],
         [if test -d /var/run; then
@@ -472,9 +466,9 @@ PATHFLAGS='-DSYSCONFDIR=\"$(sysconfdir)\" -DRADPID_DIR=\"$(RADPID_DIR)\" -DRADLO
 AC_DEFINE_UNQUOTED(BUILD_TARGET,
                    "$target", [Target the package is built for])
 
-## ***************
+## ******************
 ## server vs. client 
-## ***************
+## ******************
 AC_MSG_CHECKING(whether to build radius daemon)
 AC_ARG_ENABLE(server,
 	AC_HELP_STRING([--disable-server],
@@ -599,14 +593,13 @@ AC_ARG_ENABLE(pam,
 	AC_HELP_STRING([--enable-pam],
 	[enable pam support]),
 	[case $enableval in
-		yes)		USE_PAM=yes
-                                AC_DEFINE(USE_PAM,1,
-                                          [Enable PAM support]);;
-		no)		;;
-		*)		AC_MSG_ERROR(--enable-pam can't be used with an argument)
-				exit 1;;
+	 yes)	USE_PAM=yes
+                AC_DEFINE(USE_PAM,1,[Enable PAM support]);;
+ 	 no)    ;;
+	 *)	AC_MSG_ERROR([--enable-pam can't be used with an argument])
+		exit 1;;
 	esac])
-if test x$USE_PAM = xyes; then
+if test "$USE_PAM" = yes; then
 	AC_CHECK_LIB(pam, pam_start,
 			[ AC_DEFINE(HAVE_LIBPAM,1,[Define if you have libpam]) 
                		  RA_RADIUSD_LDADD(-lpam) ],
@@ -648,18 +641,18 @@ AC_ARG_ENABLE(dbm,
 	AC_HELP_STRING([--enable-dbm[={dbm|ndbm}]],
 	[include dbm support]),
 	[case $enableval in
-		yes)	    rad_lib_ndbm
-			    AC_DEFINE_UNQUOTED(USE_DBM,DBM_NDBM);;
+	 yes)	    rad_lib_ndbm
+	            AC_DEFINE_UNQUOTED(USE_DBM,DBM_NDBM);;
 
-		no)	    USE_DBM=no;;	
+	 no)	    USE_DBM=no;;	
 
-		DBM|dbm)    rad_lib_dbm
-                            AC_DEFINE_UNQUOTED(USE_DBM,DBM_DBM);;
+	 DBM|dbm)   rad_lib_dbm
+                    AC_DEFINE_UNQUOTED(USE_DBM,DBM_DBM);;
 
-		NDBM|ndbm)  rad_lib_ndbm
-			    AC_DEFINE_UNQUOTED(USE_DBM,DBM_NDBM);;
+	 NDBM|ndbm) rad_lib_ndbm
+		    AC_DEFINE_UNQUOTED(USE_DBM,DBM_NDBM);;
 
-		*)	    AC_MSG_ERROR(unsupported option value: $enableval)
+	 *)	    AC_MSG_ERROR(unsupported option value: $enableval)
 	esac])	
 
 
@@ -862,19 +855,19 @@ AC_ARG_ENABLE(snmp,
 	AC_HELP_STRING([--enable-snmp[={yes|no|compat}]],
 	[enable SNMP support]),
 	[case $enableval in
-		compat)		USE_SNMP=yes
-				AC_DEFINE(USE_SNMP)
-				AC_DEFINE(SNMP_COMPAT_0_96,1,
-                   [Enable support for MIBS used in 0.96 branch])
-				SNMP_CONFIG=""
-				;;
-		yes)		USE_SNMP=yes
-				AC_DEFINE(USE_SNMP)
-				SNMP_CONFIG=""
-				;;
-		no)		;;
-		*)		AC_MSG_ERROR(--enable-snmp can't be used with an argument)				
-				exit 1;;
+	 compat) USE_SNMP=yes
+		 AC_DEFINE(USE_SNMP)
+		 AC_DEFINE(SNMP_COMPAT_0_96,1,
+                           [Enable support for MIBS used in 0.96 branch])
+		 SNMP_CONFIG=""
+	  	 ;;
+	 yes)	 USE_SNMP=yes
+		 AC_DEFINE(USE_SNMP)
+		 SNMP_CONFIG=""
+		 ;;
+         no)	 ;;
+	 *)	 AC_MSG_ERROR(--enable-snmp can't be used with an argument)
+ 		 exit 1;;
 	esac])
 
 AH_BOTTOM([
@@ -901,10 +894,10 @@ AC_ARG_ENABLE(livingston-menus,
 	[enable Livingston-compatible menus]),
 	[USE_LIVINGSTON_MENUS=$enableval
          case $enableval in
-		yes)    AC_DEFINE(USE_LIVINGSTON_MENUS,1,
-                                  [Enable support for Livingstone menus]);;
-		*)	;;
-	esac])
+	 yes)    AC_DEFINE(USE_LIVINGSTON_MENUS,1,
+                           [Enable support for Livingstone menus]);;
+	 *)	;;
+	 esac])
 
 AH_TEMPLATE(DENY_SHELL,
             [When defined, users with the given shell will be always denied
@@ -914,11 +907,10 @@ AC_ARG_ENABLE(deny_shell,
 	[always reject users with given shell]),
 	[USE_DENY_SHELL=$enableval
          case $enableval in
-		yes|no)		AC_MSG_ERROR(--enable-deny-shell requires an argument)
-				exit 1;;
-		"*")		AC_DEFINE_UNQUOTED(DENY_SHELL, $enableval);;
-		*)		AC_DEFINE_UNQUOTED(DENY_SHELL, "$enableval");;
-	esac])
+         yes|no)  AC_MSG_ERROR([--enable-deny-shell requires an argument])
+		  exit 1;;
+	 *)	  AC_DEFINE_UNQUOTED(DENY_SHELL, "$enableval");;
+	 esac])
 
 ## ***********************************************************************
 ## *           Do some final checks and create Makefiles                 *

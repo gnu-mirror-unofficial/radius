@@ -457,7 +457,7 @@ grad_parser_lex_finish()
 {
         grad_slist_free(&slist);
 #ifdef FLEX_SCANNER     
-        yy_delete_buffer(yy_current_buffer); 
+        yy_delete_buffer(YY_CURRENT_BUFFER); 
 #endif
         yyin = NULL;
 }

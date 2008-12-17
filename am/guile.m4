@@ -1,5 +1,5 @@
 dnl This file is part of GNU Radius.
-dnl Copyright (C) 2001,2003,2007 Free Software Foundation, Inc.
+dnl Copyright (C) 2001,2003,2007,2008 Free Software Foundation, Inc.
 dnl
 dnl Written by Sergey Poznyakoff
 dnl
@@ -33,8 +33,8 @@ AC_DEFUN([RA_CHECK_GUILE],
    if test $GUILE_CONFIG != no; then
      AC_MSG_CHECKING(for guile version 1.8 or higher)
      GUILE_VERSION=`($GUILE_CONFIG --version 2>&1; echo '')|sed -n 's/guile-config - Guile version \([[0-9]][[0-9]]*\)\.\([[0-9]][[0-9]]*\).*/\1\2/p'`
-     case "x$GUILE_VERSION" in
-     x[[0-9]]*)
+     case "$GUILE_VERSION" in
+     [[0-9]]*)
        if test $GUILE_VERSION -lt 18; then
          AC_MSG_RESULT(Nope. Need at least version 1.8.0)
          ra_cv_lib_guile=no
@@ -65,25 +65,6 @@ AC_DEFUN([RA_CHECK_GUILE],
  AC_MSG_CHECKING(whether to build guile support)
  RA_RESULT_ACTIONS([ra_cv_lib_guile],[LIBGUILE],[$2],[$3])
  AC_MSG_RESULT(${cached}$ra_cv_lib_guile)
- if test $ra_cv_lib_guile = yes; then
-    if test $GUILE_VERSION -gt 14; then
-      LIBS="$LIBS $GUILE_LIBS"
-      CFLAGS="$CFLAGS $GUILE_INCLUDES"
-      AC_CHECK_FUNCS(scm_long2num scm_cell scm_list_1 scm_list_n scm_c_define\
-                     scm_c_lookup)
-      if test $ac_cv_func_scm_cell = no; then
-         AC_MSG_CHECKING(for inline scm_cell)
-         AC_TRY_LINK([#include <libguile.h>],
-                     [scm_cell(SCM_EOL, SCM_EOL)],
-                     [ac_cv_func_scm_cell=yes
-                     AC_DEFINE(HAVE_SCM_CELL,1,
-                               Define if you have scm_cell function)])
-         AC_MSG_RESULT($ac_cv_func_scm_cell)
-      fi
-      CFLAGS=$save_CFLAGS
-      LIBS=$save_LIBS
-    fi
- fi
 ])
  
 	

@@ -1,9 +1,0 @@
-Makefile
-Makefile.in
-gram.c
-gram.h
-input.c
-radtest
-y.output
-.deps
-.libs

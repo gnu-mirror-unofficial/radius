@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
    radius.php - a PHP script that imitates functionality of a NAS.
-   Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2010 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 

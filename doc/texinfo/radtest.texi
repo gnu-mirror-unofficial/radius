@@ -1,5 +1,5 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 2004 Free Software Foundation, Inc.
+@c Copyright (C) 2004, 2010 Free Software Foundation, Inc.
 @c Written by Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************

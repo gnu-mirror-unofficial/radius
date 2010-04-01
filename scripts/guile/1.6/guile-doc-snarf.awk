@@ -1,5 +1,5 @@
 # This is a snarfer for guile version 1.6
-# Copyright (C) 2002, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2007, 2010 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 # 

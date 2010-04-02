@@ -34,11 +34,13 @@ SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
         grad_avp_t *pairlist;
         int attr;
         SCM RETVAL;
-        SCM_ASSERT(SCM_NIMP(LIST) && SCM_CONSP(LIST),
-                   LIST, SCM_ARG1, FUNC_NAME);
+
+        SCM_ASSERT(scm_is_pair(LIST), LIST, SCM_ARG1, FUNC_NAME);
         pairlist = radscm_list_to_avl(LIST);
         if (scm_is_string(ATTR)) {
-                grad_dict_attr_t *da = grad_attr_name_to_dict(scm_i_string_chars(ATTR));
+		char *str = scm_to_locale_string(ATTR);
+                grad_dict_attr_t *da = grad_attr_name_to_dict(str);
+		free(str);
                 if (!da)
                         scm_misc_error(FUNC_NAME,
                                        "Unknown attribute: ~S",
@@ -63,12 +65,12 @@ SCM_DEFINE(rscm_avl_merge, "avl-merge", 2, 0, 0,
         grad_avp_t *dst, *src;
         SCM RETVAL;
         
-        SCM_ASSERT(DST == SCM_EOL || (SCM_NIMP(DST) && SCM_CONSP(DST)),
+        SCM_ASSERT(scm_is_null(DST) || scm_is_pair(DST),
                    DST, SCM_ARG1, FUNC_NAME);
-        SCM_ASSERT(SRC == SCM_EOL || (SCM_NIMP(SRC) && SCM_CONSP(SRC)),
+        SCM_ASSERT(scm_is_null(SRC) || scm_is_pair(SRC),
                    SRC, SCM_ARG2, FUNC_NAME);
-        dst =  radscm_list_to_avl(DST);
-        src =  radscm_list_to_avl(SRC);
+        dst = radscm_list_to_avl(DST);
+        src = radscm_list_to_avl(SRC);
         grad_avl_merge(&dst, &src);
         RETVAL = radscm_avl_to_list(dst);
         grad_avl_free(dst);
@@ -86,17 +88,15 @@ SCM_DEFINE(rscm_avl_match_p, "avl-match?", 2, 0, 0,
         grad_avp_t *list, *check_pair;
         int rc;
 
-        SCM_ASSERT((SCM_IMP(TARGET) && TARGET == SCM_EOL)
-                   || (SCM_NIMP(TARGET) && SCM_CONSP(TARGET)),
+        SCM_ASSERT(scm_is_null(TARGET) || scm_is_pair(TARGET),
                    TARGET, SCM_ARG1, FUNC_NAME);
-        SCM_ASSERT((SCM_IMP(LIST) && LIST == SCM_EOL)
-                   || (SCM_NIMP(LIST) && SCM_CONSP(LIST)),
+        SCM_ASSERT(scm_is_null(LIST) || scm_is_pair(LIST),
                    LIST, SCM_ARG2, FUNC_NAME);
-        if (TARGET == SCM_EOL)
+        if (scm_is_null(TARGET))
                 target = NULL;
         else
                 target =  radscm_list_to_avl(TARGET);
-        if (LIST == SCM_EOL)
+        if (scm_is_null(LIST))
                 list = NULL;
         else
                 list =  radscm_list_to_avl(LIST);

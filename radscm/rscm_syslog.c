@@ -60,58 +60,53 @@ parse_facility(SCM list)
 {
         int accval = 0;
         
-        for (; list != SCM_EOL; list = SCM_CDR(list)) {
+        for (; !scm_is_null(list); list = SCM_CDR(list)) {
                 SCM car = SCM_CAR(list);
                 int val = 0;
                 
                 if (scm_is_integer(car)) 
                         val = scm_to_int(car);
-                else if (scm_is_string(car))
-                        val = grad_xlat_keyword(syslog_kw,
-						scm_i_string_chars(car), 0);
-                else
-                        continue;
+                else if (scm_is_string(car)) {
+			char *s = scm_to_locale_string(car);
+                        val = grad_xlat_keyword(syslog_kw, s, 0);
+			free(s);
+		} else
+                        continue; /* FIXME: warning message */
                 accval |= val;
         } 
         return accval;
 }
+
+static char *log_tag;
 
 SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
            (SCM IDENT, SCM OPTION, SCM FACILITY),
 "Scheme interface to the system openlog() call.")          
 #define FUNC_NAME s_rad_openlog
 {
-        const char *ident;
         int option, facility;
 
-        if (IDENT == SCM_BOOL_F)
-                ident = "radius";
-        else {
-                SCM_ASSERT(scm_is_string(IDENT), IDENT, SCM_ARG1, FUNC_NAME);
-                ident = scm_i_string_chars(IDENT);
-        }
+	if (log_tag)
+		free(log_tag);
+	SCM_ASSERT(scm_is_string(IDENT), IDENT, SCM_ARG1, FUNC_NAME);
+	log_tag = scm_to_locale_string(IDENT);
         
         if (scm_is_integer(OPTION)) {
                 option = scm_to_int(OPTION);
-        } else if (SCM_BIGP(OPTION)) {
-                option = (grad_uint32_t) scm_i_big2dbl(OPTION);
         } else {
-                SCM_ASSERT(SCM_NIMP(OPTION) && SCM_CONSP(OPTION),
-                           OPTION, SCM_ARG2, FUNC_NAME);
+                SCM_ASSERT(scm_is_pair(OPTION), OPTION, SCM_ARG2, FUNC_NAME);
                 option = parse_facility(OPTION);
         }
 
         if (scm_is_integer(FACILITY)) {
                 facility = scm_to_int(FACILITY);
-        } else if (SCM_BIGP(FACILITY)) {
-                facility = (grad_uint32_t) scm_i_big2dbl(FACILITY);
         } else {
-                SCM_ASSERT(SCM_NIMP(FACILITY) && SCM_CONSP(FACILITY),
-                           FACILITY, SCM_ARG3, FUNC_NAME);
+                SCM_ASSERT(scm_is_pair(FACILITY),
+			   FACILITY, SCM_ARG3, FUNC_NAME);
                 facility = parse_facility(FACILITY);
         }
 
-        openlog(ident, option, facility);
+        openlog(log_tag, option, facility);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -122,21 +117,19 @@ SCM_DEFINE(rad_syslog, "rad-syslog", 2, 0, 0,
 #define FUNC_NAME s_rad_syslog
 {
         int prio;
-
-        if (PRIO == SCM_BOOL_F) {
-                prio = LOG_INFO;
-        } else if (scm_is_integer(PRIO)) {
+	char *s;
+	
+	if (scm_is_integer(PRIO)) {
                 prio = scm_to_int(PRIO);
-        } else if (SCM_BIGP(PRIO)) {
-                prio = (grad_uint32_t) scm_i_big2dbl(PRIO);
-        } else {
-                SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
-                           PRIO, SCM_ARG1, FUNC_NAME);
+	} else {
+		SCM_ASSERT(scm_is_pair(PRIO), PRIO, SCM_ARG1, FUNC_NAME);
                 prio = parse_facility(PRIO);
         }
 
         SCM_ASSERT(scm_is_string(TEXT), TEXT, SCM_ARG1, FUNC_NAME);
-        syslog(prio, "%s", scm_i_string_chars(TEXT));
+	s = scm_to_locale_string(TEXT);
+        syslog(prio, "%s", s);
+	free(s);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -147,6 +140,8 @@ SCM_DEFINE(rad_closelog, "rad-closelog", 0, 0, 0,
 #define FUNC_NAME s_rad_closelog
 {
         closelog();
+	free(log_tag);
+	log_tag = NULL;
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME

@@ -48,7 +48,9 @@ SCM_DEFINE(rad_dict_name_to_attr, "rad-dict-name->attr", 1, 0, 0,
         if (scm_is_integer(NAME)) {
                 attr = grad_attr_number_to_dict(scm_to_int(NAME));
         } else if (scm_is_string(NAME)) {
-                attr = grad_attr_name_to_dict(scm_i_string_chars(NAME));
+		char *str = scm_to_locale_string(NAME);
+                attr = grad_attr_name_to_dict(str);
+		free(str);
         } else {
                 SCM_ASSERT(0, NAME, SCM_ARG1, FUNC_NAME);
         }
@@ -57,7 +59,7 @@ SCM_DEFINE(rad_dict_name_to_attr, "rad-dict-name->attr", 1, 0, 0,
                 return SCM_BOOL_F;
 
         vendor = GRAD_VENDOR_CODE(attr->value);
-        return scm_list_4(scm_makfrom0str(attr->name),
+        return scm_list_4(scm_from_locale_string(attr->name),
                           scm_from_int(vendor ?
                                        attr->value - (vendor << 16) :
                                        attr->value),
@@ -80,7 +82,9 @@ SCM_DEFINE(rad_dict_value_to_name, "rad-dict-value->name", 2, 0, 0,
         if (scm_is_integer(ATTR)) {
                 attr = grad_attr_number_to_dict(scm_to_int(ATTR));
         } else if (scm_is_string(ATTR)) {
-                attr = grad_attr_name_to_dict(scm_i_string_chars(ATTR));
+		char *str = scm_to_locale_string(ATTR);
+                attr = grad_attr_name_to_dict(str);
+		free(str);
         }
 
         if (!attr) {
@@ -95,7 +99,7 @@ SCM_DEFINE(rad_dict_value_to_name, "rad-dict-value->name", 2, 0, 0,
 		scm_misc_error(FUNC_NAME,
                                "Value ~S not defined for attribute ~S",
                                scm_list_2(VALUE, ATTR));
-        return scm_makfrom0str(val->name);
+        return scm_from_locale_string(val->name);
 }
 #undef FUNC_NAME
 
@@ -106,11 +110,14 @@ SCM_DEFINE(rad_dict_name_to_value, "rad-dict-name->value", 2, 0, 0,
 {
         grad_dict_attr_t *attr;
         grad_dict_value_t *val;
-        
+	char *str;
+	
         if (scm_is_integer(ATTR)) {
                 attr = grad_attr_number_to_dict(scm_to_int(ATTR));
         } else if (scm_is_string(ATTR)) {
-                attr = grad_attr_name_to_dict(scm_i_string_chars(ATTR));
+		str = scm_to_locale_string(ATTR);
+                attr = grad_attr_name_to_dict(str);
+		free(str);
         }
         if (!attr) {
                 scm_misc_error(FUNC_NAME,
@@ -122,7 +129,9 @@ SCM_DEFINE(rad_dict_name_to_value, "rad-dict-name->value", 2, 0, 0,
         /*FIXME:
           val = grad_value_name_to_value_strict(attr->value, scm_i_string_chars(VALUE));
           */
-        val = grad_value_name_to_value(scm_i_string_chars(VALUE), attr->value);
+	str = scm_to_locale_string(VALUE);
+        val = grad_value_name_to_value(str, attr->value);
+	free(str);
         return val ? scm_from_long(val->value) : SCM_BOOL_F;
 }
 #undef FUNC_NAME
@@ -136,7 +145,7 @@ SCM_DEFINE(rad_dict_pec_to_vendor, "rad-dict-pec->vendor", 1, 0, 0,
         
         SCM_ASSERT(scm_is_integer(PEC), PEC, SCM_ARG1, FUNC_NAME);
         s = grad_vendor_pec_to_name(scm_to_int(PEC));
-        return s ? scm_makfrom0str(s) : SCM_BOOL_F;
+        return s ? scm_from_locale_string(s) : SCM_BOOL_F;
 }
 #undef FUNC_NAME
 

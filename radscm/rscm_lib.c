@@ -22,6 +22,7 @@
 # include <config.h>
 #endif
 
+#include <string.h>
 #include <libguile.h>
 #include <radius/radius.h>
 #include <radius/radscm.h>
@@ -74,13 +75,13 @@ radscm_avp_to_cons(grad_avp_t *pair)
         grad_dict_attr_t *dict;
         
         if (dict = grad_attr_number_to_dict(pair->attribute)) 
-                scm_attr = scm_makfrom0str(dict->name);
+                scm_attr = scm_from_locale_string(dict->name);
         else
                 scm_attr = scm_from_int(pair->attribute);
         switch (pair->type) {
         case GRAD_TYPE_STRING:
         case GRAD_TYPE_DATE:
-                scm_value = scm_makfrom0str(pair->avp_strvalue);
+                scm_value = scm_from_locale_string(pair->avp_strvalue);
                 break;
         case GRAD_TYPE_INTEGER:
                 scm_value = scm_from_long(pair->avp_lvalue);
@@ -106,8 +107,9 @@ radscm_cons_to_avp(SCM scm)
         grad_dict_attr_t *dict;
         grad_dict_value_t *val;
         grad_avp_t pair, *p;
-        
-        if (!(SCM_NIMP(scm) && SCM_CONSP(scm)))
+	char *str;
+	
+        if (!scm_is_pair(scm))
                 return NULL;
 
         car = SCM_CAR(scm);
@@ -120,11 +122,12 @@ radscm_cons_to_avp(SCM scm)
                         return NULL;
                 pair.name = dict->name;
         } else if (scm_is_string(car)) {
-                /* FIXME: this may fail in future Guile versions */
-                pair.name = scm_i_string_chars(car);
-                dict = grad_attr_name_to_dict(pair.name);
-                if (!dict) 
-                        return NULL;
+		char *str = scm_to_locale_string(car);
+		dict = grad_attr_name_to_dict(str);
+		free(str);
+		if (!dict)
+			return NULL;
+                pair.name = dict->name;
                 pair.attribute = dict->value;
         } else
                 return NULL;
@@ -138,19 +141,20 @@ radscm_cons_to_avp(SCM scm)
         case GRAD_TYPE_INTEGER:
                 if (scm_is_integer(cdr)) {
                         pair.avp_lvalue = scm_to_long(cdr);
-                } else if (SCM_BIGP(cdr)) {
-                        pair.avp_lvalue = (grad_uint32_t) scm_i_big2dbl(cdr);
                 } else if (scm_is_string(cdr)) {
-                        const char *name = scm_i_string_chars(cdr);
+			int rc = 0;
+                        char *name = scm_to_locale_string(cdr);
 			char *endp;
                         val = grad_value_name_to_value(name, pair.attribute);
                         if (val) {
                                 pair.avp_lvalue = val->value;
                         } else {
                                 pair.avp_lvalue = strtol(name, &endp, 0);
-                                if (*endp)
-                                        return NULL;
+                                rc = *endp != 0;
                         }
+			free(name);
+			if (rc)
+				return NULL;
                 } else
                         return NULL;
                 break;
@@ -158,11 +162,10 @@ radscm_cons_to_avp(SCM scm)
         case GRAD_TYPE_IPADDR:
                 if (scm_is_integer(cdr)) {
                         pair.avp_lvalue = scm_to_long(cdr);
-                } else if (SCM_BIGP(cdr)) {
-                        pair.avp_lvalue = (grad_uint32_t) scm_i_big2dbl(cdr);
                 } else if (scm_is_string(cdr)) {
-                        pair.avp_lvalue =
-				grad_ip_gethostaddr(scm_i_string_chars(cdr));
+			char *str = scm_to_locale_string(cdr);
+                        pair.avp_lvalue = grad_ip_gethostaddr(str);
+			free(str);
                 } else
                         return NULL;
                 break;
@@ -170,7 +173,9 @@ radscm_cons_to_avp(SCM scm)
         case GRAD_TYPE_DATE:
                 if (!scm_is_string(cdr))
                         return NULL;
-                pair.avp_strvalue = grad_estrdup(scm_i_string_chars(cdr));
+		str = scm_to_locale_string(cdr);
+                pair.avp_strvalue = grad_estrdup(str);
+		free(str);
                 pair.avp_strlength = strlen(pair.avp_strvalue);
                 break;
         default:
@@ -189,17 +194,21 @@ rscm_add_load_path(char *path)
         SCM scm, path_scm;
 	SCM *pscm;
 	
-        path_scm = RAD_SCM_SYMBOL_VALUE("%load-path");
-        for (scm = path_scm; scm != SCM_EOL; scm = SCM_CDR(scm)) {
+        path_scm = SCM_VARIABLE_REF(scm_c_lookup("%load-path"));
+        for (scm = path_scm; !scm_is_null(scm); scm = SCM_CDR(scm)) {
                 SCM val = SCM_CAR(scm);
-                if (scm_is_string(val))
-                        if (strcmp(scm_i_string_chars(val), path) == 0)
+                if (scm_is_string(val)) {
+			char *s = scm_to_locale_string(val);
+			int rc = strcmp(s, path);
+			free(s);
+                        if (rc == 0)
                                 return;
+		}
         }
 
 	pscm = SCM_VARIABLE_LOC(scm_c_lookup("%load-path"));
 	*pscm = scm_append(scm_list_3(path_scm,
-				      scm_list_1(scm_makfrom0str(path)),
+				      scm_list_1(scm_from_locale_string(path)),
 				      SCM_EOL));
 }
 

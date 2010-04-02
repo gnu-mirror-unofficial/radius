@@ -51,7 +51,8 @@ static void scheme_before_config_hook(void *a, void *b);
 static SCM
 eval_catch_body (void *list)
 {
-	return RAD_SCM_EVAL((SCM)list);
+        SCM pair = (SCM)list;
+	return scm_apply_0(SCM_CAR(pair), SCM_CDR(pair));
 }
 
 static SCM
@@ -67,10 +68,12 @@ eval_catch_handler (void *data, SCM tag, SCM throw_args)
 static void
 scheme_debug(int val)
 {
+#ifdef GUILE_DEBUG_MACROS
 	SCM_DEVAL_P = val;
 	SCM_BACKTRACE_P = val;
 	SCM_RECORD_POSITIONS_P = val;
 	SCM_RESET_DEBUG_MODE;
+#endif
 }
 		
 static void
@@ -121,7 +124,8 @@ load_path_handler(void *data)
 static int
 scheme_load(char *filename)
 {
-	return scheme_safe_exec(load_path_handler, scm_makfrom0str(filename),
+	return scheme_safe_exec(load_path_handler,
+				scm_from_locale_string(filename),
 				NULL);
 }
 
@@ -147,7 +151,8 @@ eval_expr(void *data)
 static int
 scheme_eval_expression(char *exp, SCM *result)
 {
-	return scheme_safe_exec(eval_expr, scm_makfrom0str(exp), result);
+	return scheme_safe_exec(eval_expr,
+				scm_from_locale_string(exp), result);
 }
 
 static void
@@ -161,11 +166,9 @@ scheme_read_eval_loop()
 {
         SCM list;
         int status;
-        SCM sym_top_repl = RAD_SCM_SYMBOL_VALUE("top-repl");
-        SCM sym_begin = RAD_SCM_SYMBOL_VALUE("begin");
+        SCM sym_top_repl = SCM_VARIABLE_REF(scm_c_lookup("top-repl"));
 
-        list = scm_cons(sym_begin, scm_list_1(scm_cons(sym_top_repl, SCM_EOL)));
-	status = scm_exit_status(RAD_SCM_EVAL_X(list));
+	status = scm_exit_status(scm_apply_0(sym_top_repl, SCM_EOL));
         printf("%d\n", status);
 }
 
@@ -209,11 +212,12 @@ scheme_redirect_output()
 	}
 
 	port = scheme_error_port;
-	scheme_error_port = scm_fdes_to_port(fd, mode,
-					     scm_makfrom0str("<standard error>"));
+	scheme_error_port =
+		scm_fdes_to_port(fd, mode,
+				 scm_from_locale_string("<standard error>"));
 	scm_set_current_output_port(scheme_error_port);
 	scm_set_current_error_port(scheme_error_port);
-	if (port != SCM_EOL) 
+	if (!scm_is_null (port)) 
 		silent_close_port(port);
 }
 
@@ -225,7 +229,7 @@ scheme_call_proc(SCM *result, char *procname, SCM arglist)
 	SCM cell;
 	
 	/* Evaluate the procedure */
-	procsym = RAD_SCM_SYMBOL_VALUE(procname);
+	procsym = SCM_VARIABLE_REF(scm_c_lookup(procname));
 	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
 		grad_log(GRAD_LOG_ERR,
 		         _("%s is not a procedure object"), procname);
@@ -270,7 +274,7 @@ catch_body(void *data)
         scheme_redirect_output();
 	scm_init_load_path();
 	grad_scm_init();
-	orig_load_path = RAD_SCM_SYMBOL_VALUE("%load-path");
+	orig_load_path = SCM_VARIABLE_REF(scm_c_lookup("%load-path"));
 	radiusd_set_preconfig_hook(scheme_before_config_hook, orig_load_path,
 				   0);
 	rscm_server_init();
@@ -332,15 +336,13 @@ scheme_try_auth(int auth_type, radiusd_request_t *req,
 
 	if (scheme_call_proc(&res,
 			     try_auth,
-			     scm_list_4(scm_cons(SCM_IM_QUOTE, auth_type),
-					scm_cons(SCM_IM_QUOTE, s_request),
-					scm_cons(SCM_IM_QUOTE, s_check),
-					scm_cons(SCM_IM_QUOTE, s_reply))))
+			     scm_list_4(scm_from_int(auth_type), s_request,
+					s_check, s_reply)))
 		return 1;
 	
-	if (SCM_IMP(res) && SCM_BOOLP(res)) 
-		return res == SCM_BOOL_F;
-	if (SCM_NIMP(res) && SCM_CONSP(res)) {
+	if (scm_is_bool(res)) 
+		return scm_to_bool(res);
+	if (scm_is_pair(res)) {
 		SCM code = SCM_CAR(res);
 		grad_avp_t *list = radscm_list_to_avl(SCM_CDR(res));
 		grad_avl_merge(user_reply_ptr, &list);
@@ -371,14 +373,12 @@ scheme_auth(char *procname, radiusd_request_t *req,
 
 	if (scheme_call_proc(&res,
 			     procname,
-			     scm_list_3(scm_cons(SCM_IM_QUOTE, s_request),
-					scm_cons(SCM_IM_QUOTE, s_check),
-					scm_cons(SCM_IM_QUOTE, s_reply))))
+			     scm_list_3(s_request, s_check, s_reply)))
 		return 1;
 	
-	if (SCM_IMP(res) && SCM_BOOLP(res)) 
-		return res == SCM_BOOL_F;
-	if (SCM_NIMP(res) && SCM_CONSP(res)) {
+	if (scm_is_bool(res)) 
+		return scm_to_bool(res);
+	if (scm_is_pair(res)) {
 		SCM code = SCM_CAR(res);
 		grad_avp_t *list = radscm_list_to_avl(SCM_CDR(res));
 		grad_avl_merge(user_reply_ptr, &list);
@@ -399,11 +399,11 @@ scheme_acct(char *procname, radiusd_request_t *req)
 
 	if (scheme_call_proc(&res,
 			     procname,
-			     scm_list_1(scm_cons(SCM_IM_QUOTE, s_request))))
+			     scm_list_1(s_request)))
 		return 1;
 	
-	if (SCM_IMP(res) && SCM_BOOLP(res)) 
-		return res == SCM_BOOL_F;
+	if (scm_is_bool(res)) 
+		return scm_to_bool(res);
 	else
 		grad_log(GRAD_LOG_ERR,
 		         _("Unexpected return value from Guile accounting function `%s'"),
@@ -505,12 +505,12 @@ arglist_to_scm(int argc, cfg_value_t *argv)
 					}
 					val = scm_from_long(num);
 				default:
-					val = scm_makfrom0str(p);
+					val = scm_from_locale_string(p);
 				}
 			} else if (p[0] == '-') 
 				val = scm_c_make_keyword(p + 1);
 			else
-				val = scm_makfrom0str(p);
+				val = scm_from_locale_string(p);
 		}
 		break;
 
@@ -533,7 +533,7 @@ arglist_to_scm(int argc, cfg_value_t *argv)
 			               scm_from_long(argv[i].v.host.port));
 		}
 
-		cell = scm_cons(scm_cons(SCM_IM_QUOTE, val), SCM_EOL);
+		cell = scm_cons(val, SCM_EOL);
 
 		if (head == SCM_EOL)
 			head = cell;
@@ -541,9 +541,6 @@ arglist_to_scm(int argc, cfg_value_t *argv)
 			SCM_SETCDR(tail, cell);
 		tail = cell;
 	}
-
-	if (head != SCM_EOL)
-		SCM_SETCDR(tail, SCM_EOL);
 	return head;
 }
 

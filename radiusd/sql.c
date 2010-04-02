@@ -1281,7 +1281,8 @@ sql_exec_query(int type, const char *query)
 		SCM head = SCM_EOL, tail;
 		
 		for (j = 0; tuple = disp_sql_column(conn, data, j); j++) {
-			SCM new_elt = scm_cons(scm_makfrom0str(tuple), SCM_EOL);
+			SCM new_elt = scm_cons(scm_from_locale_string(tuple),
+					       SCM_EOL);
 			if (head == SCM_EOL)
 				head = new_elt;
 			else

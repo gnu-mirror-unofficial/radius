@@ -41,24 +41,13 @@ die(char *msg)
         grad_log(GRAD_LOG_ERR, "%s", msg);
 }
 
-#if SCM_MAJOR_VERSION == 1 && SCM_MINOR_VERSION == 6
-SCM
-scm_i_make_string(size_t len, char **p)
-{
-  SCM ret = scm_allocate_string(len);
-  *p = SCM_STRING_CHARS(ret);
-  return ret;
-}
-#endif
-
 SCM_DEFINE(rad_directory, "rad-directory", 1, 0, 0,
            (SCM DIR),
            "Sets radius database directory to dir")
 #define FUNC_NAME s_rad_directory
 {
         SCM_ASSERT(scm_is_string(DIR), DIR, SCM_ARG1, FUNC_NAME);
-        /* FIXME: perhaps should allocate memory here */
-        grad_config_dir = scm_i_string_chars (DIR);
+        grad_config_dir = scm_to_locale_string(DIR);
         if (grad_dict_init())
                 return SCM_BOOL_F;
         return SCM_BOOL_T;
@@ -101,15 +90,13 @@ SCM_DEFINE(rad_send_internal, "rad-send-internal", 3, 0, 0,
         port = scm_to_int(PORT);
         SCM_ASSERT(scm_is_integer(CODE), CODE, SCM_ARG2, FUNC_NAME);
         code = scm_to_int(CODE);
-        SCM_ASSERT(((SCM_IMP(PAIRS) && SCM_EOL == PAIRS) ||
-                    (SCM_NIMP(PAIRS) && SCM_CONSP(PAIRS))),
-                   PAIRS, SCM_ARG3, FUNC_NAME);
-
-        if (SCM_IMP(PAIRS) && SCM_EOL == PAIRS)
-                pairlist = NULL;
-        else
+	if (scm_is_null(PAIRS))
+		pairlist = NULL;
+	else {
+		SCM_ASSERT(scm_is_pair(PAIRS), PAIRS, SCM_ARG3, FUNC_NAME);
                 pairlist = radscm_list_to_avl(PAIRS);
-
+	}
+	
         auth = grad_client_send(srv_queue, port, code, pairlist);
         if (!auth)
                 return SCM_EOL;
@@ -136,8 +123,8 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
 
         for (s = grad_iterator_first(itr); s; s = grad_iterator_next(itr)) {
                 grad_ip_iptostr(s->addr, p);
-                tail = scm_cons(scm_list_2(scm_makfrom0str(s->name),
-                                          scm_makfrom0str(p)),
+                tail = scm_cons(scm_list_2(scm_from_locale_string(s->name),
+					   scm_from_locale_string(p)),
                                 tail);
         }
         grad_iterator_destroy(&itr);
@@ -152,7 +139,7 @@ SCM_DEFINE(rad_get_server, "rad-get-server", 0, 0, 0,
 {
 	/*FIXME*/
 	grad_server_t *s = grad_list_item(srv_queue->servers, 0);
-	return s ? scm_makfrom0str(s->name) : SCM_BOOL_F;
+	return s ? scm_from_locale_string(s->name) : SCM_BOOL_F;
 }
 #undef FUNC_NAME
 
@@ -163,18 +150,19 @@ scheme_to_server(SRVLIST, func)
 {
         grad_server_t serv;
         SCM scm;
-        
-        SCM_ASSERT((SCM_NIMP(SRVLIST) && SCM_CONSP(SRVLIST)),
-                   SRVLIST, SCM_ARG1, func);
+        char *p;
+	
+        SCM_ASSERT(scm_is_pair(SRVLIST), SRVLIST, SCM_ARG1, func);
         
         scm = SCM_CAR(SRVLIST);
         SCM_ASSERT(scm_is_string(scm), scm, SCM_ARG1, func);
-        /* FIXME: alloc memory here */
-        serv.name = scm_i_string_chars(scm); 
+	serv.name = scm_to_locale_string(scm); 
 
         scm = SCM_CADR(SRVLIST);
         SCM_ASSERT(scm_is_string(scm), scm, SCM_ARG1, func);
-        serv.addr = grad_ip_gethostaddr(scm_i_string_chars(scm));
+	p = scm_to_locale_string(scm);
+        serv.addr = grad_ip_gethostaddr(p);
+	free(p);
         if (serv.addr == 0) 
                 scm_misc_error(func,
                                "Bad hostname or ip address ~S\n",
@@ -182,8 +170,7 @@ scheme_to_server(SRVLIST, func)
 
         scm = SCM_CADDR(SRVLIST);
         SCM_ASSERT(scm_is_string(scm), scm, SCM_ARG1, func);
-        /* FIXME: alloc memory here */
-        serv.secret = scm_i_string_chars(scm);
+        serv.secret = scm_to_locale_string(scm);
 
         scm = SCM_CADDDR(SRVLIST);
         SCM_ASSERT(scm_is_integer(scm), scm, SCM_ARG1, func);
@@ -201,7 +188,8 @@ SCM_DEFINE(rad_client_add_server, "rad-client-add-server", 1, 0, 0,
            "Add a server to the list of configured radius servers")
 #define FUNC_NAME s_rad_client_add_server
 {
-	grad_client_append_server(srv_queue, scheme_to_server(SRVLIST, FUNC_NAME));
+	grad_client_append_server(srv_queue,
+				  scheme_to_server(SRVLIST, FUNC_NAME));
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -233,9 +221,12 @@ SCM_DEFINE(rad_client_source_ip, "rad-client-source-ip", 1, 0, 0,
 #define FUNC_NAME s_rad_client_source_ip
 {
         grad_uint32_t ip;
-        
+        char *str;
+	
         SCM_ASSERT(scm_is_string(IP), IP, SCM_ARG1, FUNC_NAME);
-        ip = grad_ip_gethostaddr(scm_i_string_chars(IP));
+	str = scm_to_locale_string(IP);
+        ip = grad_ip_gethostaddr(str);
+	free(str);
         if (ip)
                 srv_queue->source_ip = ip;
         else {
@@ -279,10 +270,13 @@ SCM_DEFINE(rad_read_no_echo, "rad-read-no-echo", 1, 0, 0,
 #define FUNC_NAME s_rad_read_no_echo       
 {
         char *s;
-        
+        char *prompt;
+	
         SCM_ASSERT(scm_is_string(PROMPT), PROMPT, SCM_ARG1, FUNC_NAME);
-        s = getpass(scm_i_string_chars(PROMPT));
-        return scm_makfrom0str(s);
+	prompt = scm_to_locale_string(PROMPT);
+        s = getpass(prompt);
+	free(prompt);
+        return scm_from_locale_string(s);
 }
 #undef FUNC_NAME
 
@@ -298,13 +292,13 @@ radscm_init()
         char *bootpath;
         char *p;
         
-	_rad_scm_package = scm_makfrom0str (PACKAGE);
+	_rad_scm_package = scm_from_locale_string (PACKAGE);
 	scm_c_define("grad-package", _rad_scm_package);
 	
-	_rad_scm_version = scm_makfrom0str (VERSION);
+	_rad_scm_version = scm_from_locale_string (VERSION);
 	scm_c_define("grad-version", _rad_scm_version);
 	
-	_rad_scm_package_string = scm_makfrom0str (PACKAGE_STRING);
+	_rad_scm_package_string = scm_from_locale_string (PACKAGE_STRING);
 	scm_c_define("grad-package-string", _rad_scm_package_string);
 	
         /*
@@ -325,6 +319,6 @@ radscm_init()
         
 #include <radscm.x>
 
-        scm_c_define ("%raddb-path", scm_makfrom0str(grad_config_dir));
+        scm_c_define ("%raddb-path", scm_from_locale_string(grad_config_dir));
 }
 

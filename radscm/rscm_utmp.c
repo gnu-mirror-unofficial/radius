@@ -23,6 +23,7 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 
@@ -54,10 +55,10 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
 {
         int status;
         struct radutmp ut;
-        const char *file_name;
         SCM elt;
         int num;
-        
+	char *tmp;
+	
         /* status */
         SCM_ASSERT(scm_is_integer(STATUS), STATUS, SCM_ARG1, FUNC_NAME);
         status = scm_to_int(STATUS);
@@ -73,20 +74,14 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
         /* Delay */
         if (scm_is_integer(DELAY)) 
                 ut.delay = scm_to_int(DELAY);
-        else if (SCM_BIGP(DELAY)) 
-                ut.delay = (grad_uint32_t) scm_i_big2dbl(DELAY);
         else
-                SCM_ASSERT(0,
-                           DELAY, SCM_ARG2, FUNC_NAME);
+                SCM_ASSERT(0, DELAY, SCM_ARG2, FUNC_NAME);
 
         /* Rest of fields */
-        SCM_ASSERT((SCM_NIMP(LIST) && SCM_CONSP(LIST)),
-                   LIST, SCM_ARG3, FUNC_NAME);
+        SCM_ASSERT(scm_is_pair(LIST), LIST, SCM_ARG3, FUNC_NAME);
 
         num = 0;
-        while (num < RADUTMP_NUM_FIELDS &&
-                !(SCM_NIMP(LIST) && LIST == SCM_EOL)) {
-
+        while (num < RADUTMP_NUM_FIELDS && !scm_is_null(LIST)) {
                 elt = SCM_CAR(LIST);
                 LIST = SCM_CDR(LIST);
 
@@ -98,7 +93,9 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
                                                "~S: login name should be string",
                                                scm_list_1(elt));
                         }
-                        strncpy(ut.login, scm_i_string_chars(elt), sizeof(ut.login));
+			tmp = scm_to_locale_string(elt);
+                        strncpy(ut.login, tmp, sizeof(ut.login));
+			free(tmp);
                         ut.login[sizeof(ut.login)-1] = 0;
                         break;
                         
@@ -109,8 +106,9 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
                                                "~S: orig login name should be string",
                                                scm_list_1(elt));
                         }
-                        strncpy(ut.orig_login, scm_i_string_chars(elt),
-                                sizeof(ut.orig_login));
+			tmp = scm_to_locale_string(elt);
+                        strncpy(ut.orig_login, tmp, sizeof(ut.orig_login));
+			free(tmp);
                         ut.orig_login[sizeof(ut.orig_login)-1] = 0;
                         break;
 
@@ -131,23 +129,20 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
                                                "~S: session ID should be string",
                                                scm_list_1(elt));
                         }
-                        strncpy(ut.session_id, scm_i_string_chars(elt),
-                                sizeof(ut.session_id));
+			tmp = scm_to_locale_string(elt);
+                        strncpy(ut.session_id, tmp, sizeof(ut.session_id));
+			free(tmp);
                         ut.session_id[sizeof(ut.session_id)-1] = 0;
                         
                 case RADUTMP_FIELD_NAS_IP:
                         /* NAS IP address */
                         if (scm_is_integer(elt)) 
                                 ut.nas_address = scm_to_int(elt);
-                        else if (SCM_BIGP(elt)) 
-                                ut.nas_address = (grad_uint32_t) scm_i_big2dbl(elt);
-                        else if (scm_is_string(elt)) 
-                                ut.nas_address =
-				    grad_ip_gethostaddr(scm_i_string_chars(elt));
-                        else if (scm_is_string(elt))
-                                ut.nas_address =
-					grad_ip_strtoip(scm_i_string_chars(elt));
-                        else 
+                        else if (scm_is_string(elt)) {
+				tmp = scm_to_locale_string(elt);
+                                ut.nas_address = grad_ip_gethostaddr(tmp);
+				free(tmp);
+			} else 
                                 scm_misc_error(FUNC_NAME,
                                                "~S: NAS IP should be IP address",
                                                scm_list_1(elt));
@@ -158,15 +153,11 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
                         /* Framed IP address */
                         if (scm_is_integer(elt)) 
                                 ut.framed_address = scm_to_int(elt);
-                        else if (SCM_BIGP(elt)) 
-                                ut.framed_address = (grad_uint32_t) scm_i_big2dbl(elt);
-                        else if (scm_is_string(elt)) 
-                                ut.framed_address =
-				   grad_ip_gethostaddr(scm_i_string_chars(elt));
-                        else if (scm_is_string(elt))
-                                ut.framed_address =
-				      grad_ip_strtoip(scm_i_string_chars(elt));
-                        else 
+                        else if (scm_is_string(elt)) {
+				tmp = scm_to_locale_string(elt);
+                                ut.framed_address = grad_ip_gethostaddr(tmp);
+				free(tmp);
+			} else 
                                 scm_misc_error(FUNC_NAME,
                                                "~S: Framed IP should be IP address",
                                                scm_list_1(elt));
@@ -177,13 +168,12 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
                         /* Protocol */
                         if (scm_is_integer(elt)) 
                                 ut.proto = scm_to_int(elt);
-                        else if (SCM_IMP(elt) && SCM_CHARP(elt)) {
+                        else if (scm_is_string(elt)) {
                                 grad_dict_value_t *dv;
-
-                                dv = grad_value_name_to_value(
-					                scm_i_string_chars(elt),
-                                                        DA_FRAMED_PROTOCOL);
-
+				tmp = scm_to_locale_string(elt);
+                                dv = grad_value_name_to_value(tmp,
+							   DA_FRAMED_PROTOCOL);
+				free(tmp);
                                 if (dv)
                                         scm_misc_error(FUNC_NAME,
                                                        "~S: Unknown proto",
@@ -199,7 +189,7 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
                         /* Port type */
                         if (scm_is_integer(elt)) 
                                 ut.porttype = scm_to_int(elt);
-                        else if (SCM_IMP(elt) && SCM_CHARP(elt))
+                        else if (SCM_CHARP(elt))
                                 ut.porttype = SCM_CHAR(elt);
                         else
                                 scm_misc_error(FUNC_NAME,
@@ -214,8 +204,9 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
                                                "~S: CLID should be string",
                                                scm_list_1(elt));
                         }
-                        strncpy(ut.caller_id, scm_i_string_chars(elt),
-                                sizeof(ut.caller_id));
+			tmp = scm_to_locale_string(elt);
+                        strncpy(ut.caller_id, tmp, sizeof(ut.caller_id));
+			free(tmp);
                         ut.caller_id[sizeof(ut.caller_id)-1] = 0;
                         break;
                 }
@@ -227,18 +218,20 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
         /* Finally, put it into radutmp file */
 
         /* Obtain the file name */
-        SCM_ASSERT(scm_is_string(RADUTMP_FILE), 
-                   RADUTMP_FILE, SCM_ARG4, FUNC_NAME);
+        SCM_ASSERT(scm_is_string(RADUTMP_FILE),
+		   RADUTMP_FILE, SCM_ARG4, FUNC_NAME);
 
-        file_name = scm_i_string_chars(RADUTMP_FILE);
-        grad_utmp_putent(file_name, &ut, status);
-
+        tmp = scm_to_locale_string(RADUTMP_FILE);
+        grad_utmp_putent(tmp, &ut, status);
+	free(tmp);
+	
         /* Add to wtmp if necessary */
         if (!SCM_UNBNDP(RADWTMP_FILE)) {
                 SCM_ASSERT(scm_is_string(RADWTMP_FILE),
                            RADWTMP_FILE, SCM_ARG5, FUNC_NAME); 
-                file_name = scm_i_string_chars(RADWTMP_FILE);
-                grad_radwtmp_putent(file_name, &ut);
+                tmp = scm_to_locale_string(RADWTMP_FILE);
+                grad_radwtmp_putent(tmp, &ut);
+		free(tmp);
         }
 
         return scm_list_3(scm_from_long(ut.duration),

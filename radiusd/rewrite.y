@@ -6226,7 +6226,7 @@ radscm_datum_to_scm(grad_value_t *val)
 
         case String:
 		/* FIXME! */
-                return scm_makfrom0str(val->datum.sval.data);
+                return scm_from_locale_string(val->datum.sval.data);
 
 	default:
 		grad_insist_fail("Unknown data type");
@@ -6237,37 +6237,30 @@ radscm_datum_to_scm(grad_value_t *val)
 int
 radscm_scm_to_ival(SCM cell, int *val)
 {
-        if (SCM_IMP(cell)) {
-                if (SCM_INUMP(cell))  
-                        *val = SCM_INUM(cell);
-                else if (SCM_BIGP(cell)) 
-                        *val = (grad_uint32_t) scm_i_big2dbl(cell);
-                else if (SCM_CHARP(cell))
-                        *val = SCM_CHAR(cell);
-                else if (cell == SCM_BOOL_F)
-                        *val = 0;
-                else if (cell == SCM_BOOL_T)
-                        *val = 1;
-                else if (cell == SCM_EOL)
-                        *val =0;
-                else
-                        return -1;
-        } else {
-                if (scm_is_string(cell)) {
-                        char *p;
-                        *val = strtol(scm_i_string_chars(cell), &p, 0);
-                        if (*p)
-                                return -1;
-                } else
-                        return -1;
-        }
+	if (scm_is_number(cell))
+		*val = scm_to_int(cell);
+	else if (SCM_CHARP(cell))
+		*val = SCM_CHAR(cell);
+	else if (scm_is_bool(cell))
+		*val = scm_to_bool(cell);
+	else if (scm_is_null(cell))
+		*val = 0;
+	else if (scm_is_string(cell)) {
+		char *p, *str = scm_to_locale_string(cell);
+		int x = strtol(str, &p, 0);
+		int rc = *p ? -1 : 0;
+		free(str);
+		if (rc)
+			return rc;
+	} else
+		return -1;
         return 0;
 }
 
 SCM
 radscm_rewrite_execute(const char *func_name, SCM ARGS)
 {
-        const char *name;
+        char *name;
         FUNCTION *fun;
         PARAMETER *parm;
         int nargs;
@@ -6281,8 +6274,9 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
         ARGS  = SCM_CDR(ARGS);
         SCM_ASSERT(scm_is_string(FNAME), FNAME, SCM_ARG1, func_name);
 
-        name = scm_i_string_chars(FNAME);
+        name = scm_to_locale_string(FNAME);
         fun = (FUNCTION*) grad_sym_lookup(rewrite_tab, name);
+	free(name);
         if (!fun) 
                 scm_misc_error(func_name,
                                _("function ~S not defined"),
@@ -6294,7 +6288,7 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
         nargs = 0;
         parm = fun->parm;
         
-        for (cell = ARGS; cell != SCM_EOL;
+        for (cell = ARGS; !scm_is_null(cell);
 	     cell = SCM_CDR(cell), parm = parm->next) {
                 SCM car = SCM_CAR(cell);
 
@@ -6314,8 +6308,9 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
                         
                 case String:
                         if (scm_is_string(car)) {
-                                const char *p = scm_i_string_chars(car);
+                                char *p = scm_to_locale_string(car);
                                 pushstr(p, strlen(p));
+				free(p);
                                 rc = 0;
                         } else
                                 rc = 1;

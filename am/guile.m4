@@ -19,54 +19,69 @@ dnl along with GNU Radius; if not, write to the Free Software Foundation,
 dnl Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 dnl
 
+# IDEST_CHECK_GUILE(minversion, [act-if-found], [ac-if-not-found])
+#                      $1             $2                $3
 AC_DEFUN([RA_CHECK_GUILE],
 [
- if test "x$ra_cv_lib_guile" = x; then
-   cached=""
-   AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
-   if test $GUILE_CONFIG = no; then
-     ra_cv_lib_guile=no
-   else
-     GUILE_INCLUDES=`guile-config compile`
-     GUILE_LIBS=`guile-config link`
-   fi
+  AS_VAR_SET([ra_cv_guile], [no])
+  AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
+  if test "$GUILE_CONFIG" = no; then
+    m4_if([$3],,[AC_MSG_ERROR(cannot find Guile)], [$3])
+  else
+    AC_SUBST(GUILE_INCLUDES)
+    AC_SUBST(GUILE_LIBS)
+    AC_SUBST(GUILE_VERSION)
+    AC_SUBST(GUILE_VERSION_NUMBER)
+  
+    GUILE_INCLUDES=`$GUILE_CONFIG compile`
+    GUILE_LIBS=`$GUILE_CONFIG link`
+    GUILE_VERSION=`($GUILE_CONFIG --version 2>&1; echo '')|sed 's/guile-config [[^0-9]]* \([[0-9]][[0-9.]]*\)$/\1/'`
+    VEX=`echo $GUILE_VERSION | sed 's/\./ \\\\* 1000 + /;s/\./ \\\\* 100 + /'`
+    GUILE_VERSION_NUMBER=`eval expr "$VEX"`
 
-   if test $GUILE_CONFIG != no; then
-     AC_MSG_CHECKING(for guile version 1.8 or higher)
-     GUILE_VERSION=`($GUILE_CONFIG --version 2>&1; echo '')|sed -n 's/guile-config - Guile version \([[0-9]][[0-9]]*\)\.\([[0-9]][[0-9]]*\).*/\1\2/p'`
-     case "$GUILE_VERSION" in
-     [[0-9]]*)
-       if test $GUILE_VERSION -lt 18; then
-         AC_MSG_RESULT(Nope. Need at least version 1.8.0)
-         ra_cv_lib_guile=no
-       else
-         AC_DEFINE_UNQUOTED(GUILE_VERSION, $GUILE_VERSION,
-                            [Guile version number: MAX*10 + MIN])
-         AC_MSG_RESULT(OK)
-         save_LIBS=$LIBS
-         save_CFLAGS=$CFLAGS
-         LIBS="$LIBS $GUILE_LIBS"
-         CFLAGS="$CFLAGS $GUILE_INCLUDES"
-         AC_TRY_LINK([#include <libguile.h>],
-                     ifelse([$1], , scm_shell(0, NULL);, [$1]),
-                     [ra_cv_lib_guile=yes],
-                     [ra_cv_lib_guile=no])
-         LIBS=$save_LIBS
-         CFLAGS=$save_CFLAGS
-       fi ;;
-     *) AC_MSG_RESULT(Nope. Unknown version number)
-        ra_cv_lib_guile=no;;
-     esac
-   fi
- else
-   cached=" (cached) "
-   GUILE_INCLUDES=`guile-config compile`
-   GUILE_LIBS=`guile-config link`
- fi
- AC_MSG_CHECKING(whether to build guile support)
- RA_RESULT_ACTIONS([ra_cv_lib_guile],[LIBGUILE],[$2],[$3])
- AC_MSG_RESULT(${cached}$ra_cv_lib_guile)
-])
- 
-	
+    m4_if([$1],,,[
+      VEX=`echo $1 | sed 's/\./ \\\\* 1000 + /;s/\./ \\\\* 100 + /'`
+      min=`eval expr "$VEX"`
+      if test $GUILE_VERSION_NUMBER -lt $min; then
+        m4_if([$3],,
+	        [AC_MSG_ERROR([Guile version too old; required is at least ]$1)],
+	        [$3])
+      fi])
 
+    save_LIBS=$LIBS
+    save_CFLAGS=$CFLAGS
+    LIBS="$LIBS $GUILE_LIBS"
+    CFLAGS="$CFLAGS $GUILE_INCLUDES"
+    AC_TRY_LINK([#include <libguile.h>],
+                 m4_if([$1], , scm_shell(0, NULL);, [$1]),
+                [AS_VAR_SET([ra_cv_guile], $GUILE_VERSION)])
+    LIBS=$save_LIBS
+    CFLAGS=$save_CFLAGS
+  fi
+
+  if test $ra_cv_guile = no; then
+    GUILE_INCLUDES=
+    GUILE_LIBS=
+    GUILE_VERSION=
+    GUILE_VERSION_NUMBER=
+    m4_if([$3],,[AC_MSG_ERROR(required library libguile not found)], [$3])
+  else    
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <libguile.h>]],
+                      [SCM_DEVAL_P = 1;
+                       SCM_BACKTRACE_P = 1;
+                       SCM_RECORD_POSITIONS_P = 1;
+                       SCM_RESET_DEBUG_MODE;])],
+                      [ra_cv_guile_debug=yes],
+                      [ra_cv_guile_debug=no])
+    if test $ra_cv_guile_debug = yes; then
+      AC_DEFINE_UNQUOTED(GUILE_DEBUG_MACROS, 1,
+                         [Define to 1 if SCM_DEVAL_P, SCM_BACKTRACE_P, SCM_RECORD_POSITIONS_P and SCM_RESET_DEBUG_MODE are defined])
+    fi
+    AC_CHECK_TYPES([scm_t_off],[],[],[#include <libguile.h>])
+    AC_DEFINE_UNQUOTED(GUILE_VERSION, "$GUILE_VERSION",
+                       [Guile version number])
+    AC_DEFINE_UNQUOTED(GUILE_VERSION_NUMBER, $GUILE_VERSION_NUMBER,
+                       [Guile version number: MAX*10 + MIN])
+    m4_if([$2],,,[$2])
+  fi
+])     

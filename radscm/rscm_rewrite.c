@@ -38,9 +38,14 @@ SCM_DEFINE(rad_rewrite_execute_string, "rad-rewrite-execute-string", 1, 0, 0,
 {
 	grad_value_t val;
 	SCM retval;
+	char *str;
+	int rc;
 	
         SCM_ASSERT(scm_is_string(STRING), STRING, SCM_ARG1, FUNC_NAME);
-        if (rewrite_interpret(scm_i_string_chars(STRING), NULL, &val)) {
+	str = scm_to_locale_string(STRING);
+	rc = rewrite_interpret(str, NULL, &val);
+	free(str);
+        if (rc) {
                 scm_misc_error(FUNC_NAME,
                                "Error parsing expression: ~S",
                                scm_list_1(STRING));
@@ -61,8 +66,7 @@ SCM_DEFINE(rad_rewrite_execute, "rad-rewrite-execute", 1, 0, 0,
 "the Scheme data type.\n")         
 #define FUNC_NAME s_rad_rewrite_execute
 {
-        SCM_ASSERT((SCM_IMP(ARGLIST) && ARGLIST == SCM_EOL)
-                   || (SCM_NIMP(ARGLIST) && SCM_CONSP(ARGLIST)),
+        SCM_ASSERT(scm_is_null(ARGLIST) || scm_is_pair(ARGLIST),
                    ARGLIST, SCM_ARG2, FUNC_NAME);
         
         return radscm_rewrite_execute(FUNC_NAME, ARGLIST);

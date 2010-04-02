@@ -51,19 +51,18 @@ static int
 parse_facility(SCM list)
 {
         int accval = 0;
-        for (; list != SCM_EOL; list = SCM_CDR(list)) {
+        for (; !scm_is_null(list); list = SCM_CDR(list)) {
                 SCM car = SCM_CAR(list);
                 int val = 0;
                 
                 if (scm_is_integer(car)) 
                         val = scm_to_int(car);
-                else if (scm_is_string(car))
-                        val = grad_xlat_keyword(radlog_kw,
-						scm_i_string_chars(car), 0);
-                else if (SCM_BIGP(car)) 
-		  val = (grad_uint32_t) scm_i_big2dbl(car);
-                else
-                        continue;
+                else if (scm_is_string(car)) {
+			char *s = scm_to_locale_string(car);
+                        val = grad_xlat_keyword(radlog_kw, s, 0);
+			free(s);
+		} else
+                        continue; /* FIXME: warning message? */
                 accval |= val;
         } 
         return accval;
@@ -78,11 +77,8 @@ SCM_DEFINE(rad_log_open, "rad-log-open", 1, 0, 0,
 
         if (scm_is_integer(PRIO)) {
                 prio = scm_to_int(PRIO);
-        } else if (SCM_BIGP(PRIO)) {
-                prio = (grad_uint32_t) scm_i_big2dbl(PRIO);
         } else {
-                SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
-                           PRIO, SCM_ARG1, FUNC_NAME);
+                SCM_ASSERT(scm_is_pair(PRIO), PRIO, SCM_ARG1, FUNC_NAME);
                 prio = parse_facility(PRIO);
         }
 
@@ -98,20 +94,21 @@ SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
 #define FUNC_NAME s_rad_log
 {
         int prio;
+	char *s;
+	
         if (PRIO == SCM_BOOL_F) {
                 prio = GRAD_LOG_INFO;
         } else if (scm_is_integer(PRIO)) {
                 prio = scm_to_int(PRIO);
-        } else if (SCM_BIGP(PRIO)) {
-                prio = (grad_uint32_t) scm_i_big2dbl(PRIO);
         } else {
-                SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
-                           PRIO, SCM_ARG1, FUNC_NAME);
+                SCM_ASSERT(scm_is_pair(PRIO), PRIO, SCM_ARG1, FUNC_NAME);
                 prio = parse_facility(PRIO);
         }
 
         SCM_ASSERT(scm_is_string(TEXT), TEXT, SCM_ARG1, FUNC_NAME);
-        grad_log(prio, "%s", scm_i_string_chars(TEXT));
+	s = scm_to_locale_string(TEXT);
+        grad_log(prio, "%s", s);
+	free(s);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME

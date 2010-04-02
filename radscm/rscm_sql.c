@@ -36,9 +36,14 @@ SCM_DEFINE(radius_sql_query, "radius-sql-query", 2, 0, 0,
 "FIXME")
 #define FUNC_NAME s_radius_sql_query
 {
-        SCM_ASSERT(scm_is_integer(TYPE), TYPE, SCM_ARG1, FUNC_NAME);
+	SCM result;
+	char *query;
 	
-	return sql_exec_query(scm_to_int(TYPE), scm_i_string_chars(STRING));
+        SCM_ASSERT(scm_is_integer(TYPE), TYPE, SCM_ARG1, FUNC_NAME);
+	query = scm_to_locale_string(STRING);
+	result = sql_exec_query(scm_to_int(TYPE), query);
+	free(query);
+	return result;
 }
 #undef FUNC_NAME
 
@@ -47,9 +52,14 @@ SCM_DEFINE(radius_sql_run_query, "radius-sql-run-query", 2, 0, 0,
 "FIXME")
 #define FUNC_NAME s_radius_sql_run_query
 {
+	SCM result;
+	char *query;
+
         SCM_ASSERT(scm_is_integer(TYPE), TYPE, SCM_ARG1, FUNC_NAME);
-	
-	return sql_run_query(scm_to_int(TYPE), scm_i_string_chars(STRING));
+	query = scm_to_locale_string(STRING);
+	result = sql_run_query(scm_to_int(TYPE), query);
+	free(query);
+	return result;
 }
 #undef FUNC_NAME
 

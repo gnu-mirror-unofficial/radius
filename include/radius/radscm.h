@@ -39,10 +39,6 @@ void rscm_server_init();
 	
 char *rscm_load_path(char *);
 
-# define RAD_SCM_EVAL_X scm_primitive_eval_x
-# define RAD_SCM_EVAL scm_primitive_eval
-# define RAD_SCM_SYMBOL_VALUE(p) SCM_VARIABLE_REF(scm_c_lookup(p))
-
 #endif /* !_gnu_radius_radscm_h */
 
 

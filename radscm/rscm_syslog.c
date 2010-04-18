@@ -79,64 +79,67 @@ parse_facility(SCM list)
 
 static char *log_tag;
 
-SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
-           (SCM IDENT, SCM OPTION, SCM FACILITY),
-"Scheme interface to the system openlog() call.")          
+SCM_DEFINE_PUBLIC(rad_openlog, "rad-openlog", 3, 0, 0,
+		  (SCM ident, SCM option, SCM facility),
+"Opens a connection to the system logger. "
+"The arguments @var{ident}, @var{option} and @var{facility} have the same "
+"meaning as in openlog(3).\n")
 #define FUNC_NAME s_rad_openlog
 {
-        int option, facility;
+        int opt, facl;
 
 	if (log_tag)
 		free(log_tag);
-	SCM_ASSERT(scm_is_string(IDENT), IDENT, SCM_ARG1, FUNC_NAME);
-	log_tag = scm_to_locale_string(IDENT);
+	SCM_ASSERT(scm_is_string(ident), ident, SCM_ARG1, FUNC_NAME);
+	log_tag = scm_to_locale_string(ident);
         
-        if (scm_is_integer(OPTION)) {
-                option = scm_to_int(OPTION);
+        if (scm_is_integer(option)) {
+                opt = scm_to_int(option);
         } else {
-                SCM_ASSERT(scm_is_pair(OPTION), OPTION, SCM_ARG2, FUNC_NAME);
-                option = parse_facility(OPTION);
+                SCM_ASSERT(scm_is_pair(option), option, SCM_ARG2, FUNC_NAME);
+                opt = parse_facility(option);
         }
 
-        if (scm_is_integer(FACILITY)) {
-                facility = scm_to_int(FACILITY);
+        if (scm_is_integer(facility)) {
+                facl = scm_to_int(facility);
         } else {
-                SCM_ASSERT(scm_is_pair(FACILITY),
-			   FACILITY, SCM_ARG3, FUNC_NAME);
-                facility = parse_facility(FACILITY);
+                SCM_ASSERT(scm_is_pair(facility),
+			   facility, SCM_ARG3, FUNC_NAME);
+                facl = parse_facility(facility);
         }
 
-        openlog(log_tag, option, facility);
+        openlog(log_tag, opt, facl);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
 
-SCM_DEFINE(rad_syslog, "rad-syslog", 2, 0, 0,
-           (SCM PRIO, SCM TEXT),
-"Scheme interface to the system syslog() call.")           
+SCM_DEFINE_PUBLIC(rad_syslog, "rad-syslog", 2, 0, 0,
+		  (SCM prio, SCM text),
+"Distributes @var{text} via syslogd priority @var{prio}.\n")
 #define FUNC_NAME s_rad_syslog
 {
-        int prio;
+        int n_prio;
 	char *s;
 	
-	if (scm_is_integer(PRIO)) {
-                prio = scm_to_int(PRIO);
+	if (scm_is_integer(prio)) {
+                n_prio = scm_to_int(prio);
 	} else {
-		SCM_ASSERT(scm_is_pair(PRIO), PRIO, SCM_ARG1, FUNC_NAME);
-                prio = parse_facility(PRIO);
+		SCM_ASSERT(scm_is_pair(prio), prio, SCM_ARG1, FUNC_NAME);
+                n_prio = parse_facility(prio);
         }
 
-        SCM_ASSERT(scm_is_string(TEXT), TEXT, SCM_ARG1, FUNC_NAME);
-	s = scm_to_locale_string(TEXT);
-        syslog(prio, "%s", s);
+        SCM_ASSERT(scm_is_string(text), text, SCM_ARG2, FUNC_NAME);
+	s = scm_to_locale_string(text);
+        syslog(n_prio, "%s", s);
 	free(s);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
 
-SCM_DEFINE(rad_closelog, "rad-closelog", 0, 0, 0,
-           (),
-"Scheme interface to the system closelog() call.")         
+SCM_DEFINE_PUBLIC(rad_closelog, "rad-closelog", 0, 0, 0,
+		  (),
+"Closes the channel to the system logger opened by a previous call to "
+"@code{openlog}.\n")
 #define FUNC_NAME s_rad_closelog
 {
         closelog();

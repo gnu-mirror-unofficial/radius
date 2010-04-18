@@ -22,7 +22,7 @@ make_raddb() {
 
     EXPR="s^@BUILDDIR@^$BUILDDIR^;\
 s^@SOURCEDIR@^$SOURCEDIR^;\
-s^@GUILE@^@GUILE_CONFIG@^;\
+s^@GUILE@^@RA_GUILE_ENABLE@^;\
 s^@SNMP@^@SNMP_CONFIG@^;"
 
     for file in $*

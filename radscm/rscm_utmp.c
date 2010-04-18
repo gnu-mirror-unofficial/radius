@@ -43,25 +43,26 @@
 #define RADUTMP_FIELD_PROTO       8
 #define RADUTMP_NUM_FIELDS        9
 
-SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
-           (SCM STATUS,
-            SCM DELAY,
-            SCM LIST,
-            SCM RADUTMP_FILE,
-            SCM RADWTMP_FILE),
-"Write the supplied data into the radutmp file. If RADWTMP_FILE is not nil"
-"the constructed entry is also appended to WTMP_FILE.")
+SCM_DEFINE_PUBLIC(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
+		  (SCM status,
+		   SCM delay,
+		   SCM list,
+		   SCM radutmp_file,
+		   SCM radwtmp_file),
+"Writes the supplied data to the @file{radutmp} file @var{radutmp_file}. "
+"The @var{radwtmp_file} argument, if given, supplies the name of the "
+"@file{radwtmp} file to append the the constructed entry to.\n")
 #define FUNC_NAME s_rad_utmp_putent
 {
-        int status;
+        int status_val;
         struct radutmp ut;
         SCM elt;
         int num;
 	char *tmp;
 	
         /* status */
-        SCM_ASSERT(scm_is_integer(STATUS), STATUS, SCM_ARG1, FUNC_NAME);
-        status = scm_to_int(STATUS);
+        SCM_ASSERT(scm_is_integer(status), status, SCM_ARG1, FUNC_NAME);
+        status_val = scm_to_int(status);
 
         /* initialize the radutmp structure */
         memset(&ut, 0, sizeof(ut));
@@ -72,18 +73,18 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
         time(&ut.time);
 
         /* Delay */
-        if (scm_is_integer(DELAY)) 
-                ut.delay = scm_to_int(DELAY);
+        if (scm_is_integer(delay)) 
+                ut.delay = scm_to_int(delay);
         else
-                SCM_ASSERT(0, DELAY, SCM_ARG2, FUNC_NAME);
+                SCM_ASSERT(0, delay, SCM_ARG2, FUNC_NAME);
 
         /* Rest of fields */
-        SCM_ASSERT(scm_is_pair(LIST), LIST, SCM_ARG3, FUNC_NAME);
+        SCM_ASSERT(scm_is_pair(list), list, SCM_ARG3, FUNC_NAME);
 
         num = 0;
-        while (num < RADUTMP_NUM_FIELDS && !scm_is_null(LIST)) {
-                elt = SCM_CAR(LIST);
-                LIST = SCM_CDR(LIST);
+        while (num < RADUTMP_NUM_FIELDS && !scm_is_null(list)) {
+                elt = SCM_CAR(list);
+                list = SCM_CDR(list);
 
                 switch (num++) {
                 case RADUTMP_FIELD_LOGIN:
@@ -213,23 +214,23 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
         }
 
 
-        /* FIXME: IF (LIST == SCM_EOL) ? */
+        /* FIXME: if (list == SCM_EOL) ? */
 
         /* Finally, put it into radutmp file */
 
         /* Obtain the file name */
-        SCM_ASSERT(scm_is_string(RADUTMP_FILE),
-		   RADUTMP_FILE, SCM_ARG4, FUNC_NAME);
+        SCM_ASSERT(scm_is_string(radutmp_file),
+		   radutmp_file, SCM_ARG4, FUNC_NAME);
 
-        tmp = scm_to_locale_string(RADUTMP_FILE);
-        grad_utmp_putent(tmp, &ut, status);
+        tmp = scm_to_locale_string(radutmp_file);
+        grad_utmp_putent(tmp, &ut, status_val);
 	free(tmp);
 	
         /* Add to wtmp if necessary */
-        if (!SCM_UNBNDP(RADWTMP_FILE)) {
-                SCM_ASSERT(scm_is_string(RADWTMP_FILE),
-                           RADWTMP_FILE, SCM_ARG5, FUNC_NAME); 
-                tmp = scm_to_locale_string(RADWTMP_FILE);
+        if (!SCM_UNBNDP(radwtmp_file)) {
+                SCM_ASSERT(scm_is_string(radwtmp_file),
+                           radwtmp_file, SCM_ARG5, FUNC_NAME); 
+                tmp = scm_to_locale_string(radwtmp_file);
                 grad_radwtmp_putent(tmp, &ut);
 		free(tmp);
         }

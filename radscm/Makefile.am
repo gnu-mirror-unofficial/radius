@@ -11,11 +11,9 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-lib_LTLIBRARIES=@LIBRADSCM@
-EXTRA_LTLIBRARIES=libradscm.la
-EXTRA_LIBRARIES=libservscm.a
-bin_SCRIPTS=@RADSESSION@
-EXTRA_SCRIPTS=radsession
+lib_LTLIBRARIES=libradscm.la
+noinst_LIBRARIES=libservscm.a
+bin_SCRIPTS=radsession
 
 libradscm_la_SOURCES= \
  rscm_avl.c\
@@ -31,15 +29,15 @@ libservscm_a_SOURCES= \
  rscm_rewrite.c\
  rscm_sql.c
 
-schemedir=$(pkgdatadir)/$(VERSION)/scheme
-RADSCM_PKGDATA_FILES=\
- guile-procedures.txt\
+#sitedir = @GUILE_SITE@/$(PACKAGE)
+sitedir=$(pkgdatadir)/$(VERSION)/scheme
+
+site_DATA=\
  gnuradius.scm\
  radiusd.scm\
  ttl.scm\
  ipalloc.scm
 
-scheme_DATA=@RADSCM_PKGDATA@
 DOT_X_FILES=\
  rscm_avl.x\
  rscm_dict.x\
@@ -52,55 +50,25 @@ DOT_X_FILES=\
  rscm_lib.x\
  radscm.x
 DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
-RADSCM_BUILT_SOURCE_FILES=gnuradius.scm $(DOT_X_FILES) $(DOT_DOC_FILES)
-BUILT_SOURCES=@RADSCM_BUILT_SOURCES_LIST@
+BUILT_SOURCES=gnuradius.scm radiusd.scm
 EXTRA_DIST=ttl.scm ipalloc.scm radsession.in \
- gnuradius.scm gnuradius.scm4 radiusd.scm radiusd.scm4
-CLEANFILES = *.exp *.inc *.x *.doc radsession gnuradius.scm radiusd.scm guile-procedures.txt
-
+ gnuradius.scm4 radiusd.scm4
+CLEANFILES = radsession gnuradius.scm radiusd.scm
+DISTCLEANFILES=
+INCLUDES  = @RADIUS_INCLUDE_PATH@ -I$(srcdir) -I. @GUILE_INCLUDES@
+AM_CPPFLAGS=-DDATADIR=\"$(sitedir)\"
 radsession: $(srcdir)/radsession.in
-	sed 's,GUILE_BINDIR,$(GUILE_BINDIR),;s,SCHEMEDIR,$(schemedir),;s,PACKAGE_STRING,$(PACKAGE_STRING),' $? > $@
+	$(AM_V_GEN)sed 's,GUILE_BINDIR,$(GUILE_BINDIR),;s,SCHEMEDIR,$(sitedir),;s,PACKAGE_STRING,$(PACKAGE_STRING),' $? > $@
 
 libradscm_la_LIBADD=@LIBGNURADIUS@ @LIBINTL@ @GUILE_LIBS@
 libradscm_la_LDFLAGS = -rpath $(libdir) -version-info @VI_CURRENT@:@VI_REVISION@:@VI_AGE@
 
-INCLUDES  = @RADIUS_INCLUDE_PATH@ -I$(srcdir) -I. @GUILE_INCLUDES@
-AM_CPPFLAGS=-DDATADIR=\"$(schemedir)\"
-ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_LONG\).*\"\([^\"]\)*\"/\3/' \
-   --regex='/[ \t]*SCM_[G]?DEFINE1?[ \t]*(\([^,]*\),[^,]*/\1/'
-
-GUILE_DOC_SNARF=$(top_srcdir)/scripts/guile/$(GUILE_SNARF_VERSION)/guile-doc-snarf
-
-gnuradius.scm: $(libradscm_la_SOURCES:.c=.inc)
-radiusd.scm: $(libservscm_a_SOURCES:.c=.exp)
-
-SUFFIXES=.x .doc .inc .exp .scm4 .scm
-
-.c.x:
-	AWK=$(AWK) \
-	$(GUILE_DOC_SNARF) -o $@ \
-                           $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) 
-
-.c.doc:
-	AWK=$(AWK) \
-	$(GUILE_DOC_SNARF) -d -o $@ \
-                           $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) 
-
-.c.inc:
-	sed -n 's/SCM_DEFINE *(.[^,]*, *\"\([^"][^"]*\)\".*/[(export \1)]/p' $< > $@
-
-.c.exp:
-	sed -n 's/SCM_DEFINE *(.[^,]*, *\"\([^"][^"]*\)\".*/[ \1]dnl/p' $< > $@
+SUFFIXES=.scm4 .scm
 
 .scm4.scm:
-	m4 -DVERSION=$(VERSION) -DLIBDIR="$(libdir)" \
-	   -DBUILDDIR="`cd $(top_builddir)/radscm;pwd`" $< > $@
-
-guile-procedures.txt: $(DOT_DOC_FILES)
-	cat $(DOT_DOC_FILES) > $@
-
-## Add -MG to make the .x magic work with auto-dep code.
-MKDEP = $(CC) -M -MG $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+	$(AM_V_GEN)m4 -DVERSION=$(VERSION) -DLIBDIR="$(libdir)" \
+	   -DBUILDDIR="`cd $(top_builddir)/radscm;pwd`" \
+	   -DSITEDIR='$(sitedir)' $< > $@
 
 install-data-hook:
 	@here=`pwd`; \
@@ -110,4 +78,5 @@ install-data-hook:
 	 fi; \
 	 cd $$here
 
+include ../gint/gint.mk
 

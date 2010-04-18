@@ -26,91 +26,93 @@
 #include <radius/radius.h>
 #include <radius/radscm.h>
 
-SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
-           (SCM LIST, SCM ATTR),
-	   "Delete the pairs with the matching attribute")
+SCM_DEFINE_PUBLIC(rscm_avl_delete, "avl-delete", 2, 0, 0,
+		  (SCM list, SCM attr),
+"Deletes from @var{list} pairs with attributes matching @var{attr}. "
+"The latter is either a symbolic name of the attribute as defined in "
+"the dictionary, or its number.\n")
 #define FUNC_NAME s_rscm_avl_delete
 {
         grad_avp_t *pairlist;
-        int attr;
-        SCM RETVAL;
+        int attr_no;
+        SCM retval;
 
-        SCM_ASSERT(scm_is_pair(LIST), LIST, SCM_ARG1, FUNC_NAME);
-        pairlist = radscm_list_to_avl(LIST);
-        if (scm_is_string(ATTR)) {
-		char *str = scm_to_locale_string(ATTR);
+        SCM_ASSERT(scm_is_pair(list), list, SCM_ARG1, FUNC_NAME);
+        pairlist = radscm_list_to_avl(list);
+        if (scm_is_string(attr)) {
+		char *str = scm_to_locale_string(attr);
                 grad_dict_attr_t *da = grad_attr_name_to_dict(str);
 		free(str);
                 if (!da)
                         scm_misc_error(FUNC_NAME,
                                        "Unknown attribute: ~S",
-                                       scm_list_1(ATTR));
-                attr = da->value;
+                                       scm_list_1(attr));
+                attr_no = da->value;
         } else {
-                SCM_ASSERT(scm_is_integer(ATTR), ATTR, SCM_ARG2, FUNC_NAME);
-                attr = scm_to_int(ATTR);
+                SCM_ASSERT(scm_is_integer(attr), attr, SCM_ARG2, FUNC_NAME);
+                attr_no = scm_to_int(attr);
         }
-        grad_avl_delete(&pairlist, attr);
-        RETVAL = radscm_avl_to_list(pairlist);
+        grad_avl_delete(&pairlist, attr_no);
+        retval = radscm_avl_to_list(pairlist);
         grad_avl_free(pairlist);
-        return RETVAL;
+        return retval;
 }
 #undef FUNC_NAME
 
-SCM_DEFINE(rscm_avl_merge, "avl-merge", 2, 0, 0,
-           (SCM DST, SCM SRC),
-"Merge SRC into DST.")     
+SCM_DEFINE_PUBLIC(rscm_avl_merge, "avl-merge", 2, 0, 0,
+		  (SCM dstlist, SCM srclist),
+"Merge @var{srclist} into @var{dstlist}.")
 #define FUNC_NAME s_rscm_avl_merge
 {
         grad_avp_t *dst, *src;
-        SCM RETVAL;
+        SCM retval;
         
-        SCM_ASSERT(scm_is_null(DST) || scm_is_pair(DST),
-                   DST, SCM_ARG1, FUNC_NAME);
-        SCM_ASSERT(scm_is_null(SRC) || scm_is_pair(SRC),
-                   SRC, SCM_ARG2, FUNC_NAME);
-        dst = radscm_list_to_avl(DST);
-        src = radscm_list_to_avl(SRC);
+        SCM_ASSERT(scm_is_null(dstlist) || scm_is_pair(dstlist),
+                   dstlist, SCM_ARG1, FUNC_NAME);
+        SCM_ASSERT(scm_is_null(srclist) || scm_is_pair(srclist),
+                   srclist, SCM_ARG2, FUNC_NAME);
+        dst = radscm_list_to_avl(dstlist);
+        src = radscm_list_to_avl(srclist);
         grad_avl_merge(&dst, &src);
-        RETVAL = radscm_avl_to_list(dst);
+        retval = radscm_avl_to_list(dst);
         grad_avl_free(dst);
         grad_avl_free(src);
-        return RETVAL;
+        return retval;
 }
 #undef FUNC_NAME
 
-SCM_DEFINE(rscm_avl_match_p, "avl-match?", 2, 0, 0,
-           (SCM TARGET, SCM LIST),
-"Return #t if all pairs from LIST are present in TARGET")          
+SCM_DEFINE_PUBLIC(rscm_avl_match_p, "avl-match?", 2, 0, 0,
+		  (SCM target, SCM list),
+"Return @samp{#t} if all pairs from @var{list} are also present in @var{target}")
 #define FUNC_NAME s_rscm_avl_match_p
 {
-        grad_avp_t *target, *pair;
-        grad_avp_t *list, *check_pair;
+        grad_avp_t *target_pairs, *pair;
+        grad_avp_t *list_pairs, *check_pair;
         int rc;
 
-        SCM_ASSERT(scm_is_null(TARGET) || scm_is_pair(TARGET),
-                   TARGET, SCM_ARG1, FUNC_NAME);
-        SCM_ASSERT(scm_is_null(LIST) || scm_is_pair(LIST),
-                   LIST, SCM_ARG2, FUNC_NAME);
-        if (scm_is_null(TARGET))
-                target = NULL;
+        SCM_ASSERT(scm_is_null(target) || scm_is_pair(target),
+                   target, SCM_ARG1, FUNC_NAME);
+        SCM_ASSERT(scm_is_null(list) || scm_is_pair(list),
+                   list, SCM_ARG2, FUNC_NAME);
+        if (scm_is_null(target))
+                target_pairs = NULL;
         else
-                target =  radscm_list_to_avl(TARGET);
-        if (scm_is_null(LIST))
-                list = NULL;
+                target_pairs =  radscm_list_to_avl(target);
+        if (scm_is_null(list))
+                list_pairs = NULL;
         else
-                list =  radscm_list_to_avl(LIST);
+                list_pairs =  radscm_list_to_avl(list);
         rc = 0;
-        for (check_pair = list; !rc && check_pair;
+        for (check_pair = list_pairs; !rc && check_pair;
              check_pair = check_pair->next) {
-                for (pair = target;
-                     pair && pair->attribute != list->attribute;
+                for (pair = target_pairs;
+                     pair && pair->attribute != check_pair->attribute;
                      pair = pair->next)
                         ;
                 rc = !pair || grad_avp_cmp(check_pair, pair);
         }
-        grad_avl_free(target);
-        grad_avl_free(list);
+        grad_avl_free(target_pairs);
+        grad_avl_free(list_pairs);
         return rc == 0 ? SCM_BOOL_T : SCM_BOOL_F;
 }
 #undef FUNC_NAME

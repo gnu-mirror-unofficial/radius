@@ -85,15 +85,13 @@ scheme_add_load_path(char *path)
 struct scheme_exec_data {
 	SCM (*handler) (void *data);
 	void *data;
-	SCM result;
 };
 
 static SCM
 scheme_safe_exec_body (void *data)
 {
 	struct scheme_exec_data *ed = data;
-	ed->result = ed->handler (ed->data);
-	return SCM_BOOL_F;
+	return ed->handler (ed->data);
 }
 
 static int
@@ -101,16 +99,18 @@ scheme_safe_exec(SCM (*handler) (void *data), void *data, SCM *result)
 {
  	jmp_buf jmp_env;
 	struct scheme_exec_data ed;
+	SCM res;
 	
 	if (setjmp(jmp_env))
 		return 1;
 	ed.handler = handler;
 	ed.data = data;
-	scm_internal_lazy_catch(SCM_BOOL_T,
-				scheme_safe_exec_body, (void*)&ed,
-				eval_catch_handler, &jmp_env);
+	res = scm_c_catch(SCM_BOOL_T,
+			  scheme_safe_exec_body, (void*)&ed,
+			  eval_catch_handler, &jmp_env,
+			  NULL, NULL);
 	if (result)
-		*result = ed.result;
+		*result = res;
 	return 0;
 }
 
@@ -242,9 +242,10 @@ scheme_call_proc(SCM *result, char *procname, SCM arglist)
 		return 1;
 	}
 	cell = scm_cons(procsym, arglist);
-	*result = scm_internal_lazy_catch(SCM_BOOL_T,
-					  eval_catch_body, cell,
-					  eval_catch_handler, &jmp_env);
+	*result = scm_c_catch(SCM_BOOL_T,
+			      eval_catch_body, cell,
+			      eval_catch_handler, &jmp_env,
+			      NULL, NULL);
 	return 0;
 }
 
@@ -301,9 +302,10 @@ scheme_before_config_hook(void *data, void *b ARG_UNUSED)
 void
 scheme_boot(void *closure, int argc, char **argv)
 {
-	scm_internal_catch(SCM_BOOL_T,
-			   catch_body, closure,
-			   catch_handler, NULL);
+	scm_c_catch(SCM_BOOL_T,
+		    catch_body, closure,
+		    catch_handler, NULL,
+		    NULL, NULL);
 }
 
 

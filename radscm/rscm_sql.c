@@ -31,33 +31,40 @@
 
 #if defined(USE_SQL)
 
-SCM_DEFINE(radius_sql_query, "radius-sql-query", 2, 0, 0,
-           (SCM TYPE, SCM STRING),
-"FIXME")
+SCM_DEFINE_PUBLIC(radius_sql_query, "radius-sql-query", 2, 0, 0,
+		  (SCM type, SCM string),
+"Sends the query @var{string} to the SQL server identified by @var{type} "
+"and returns a list of the reply tuples.  Allowed values for @var{type} "
+"are: @samp{SQL-AUTH} for authentication database and @samp{SQL-ACCT}, for "
+"accounting database.  The @var{string} must be a @samp{SELECT}-like query.\n")
 #define FUNC_NAME s_radius_sql_query
 {
 	SCM result;
 	char *query;
 	
-        SCM_ASSERT(scm_is_integer(TYPE), TYPE, SCM_ARG1, FUNC_NAME);
-	query = scm_to_locale_string(STRING);
-	result = sql_exec_query(scm_to_int(TYPE), query);
+        SCM_ASSERT(scm_is_integer(type), type, SCM_ARG1, FUNC_NAME);
+	query = scm_to_locale_string(string);
+	result = sql_exec_query(scm_to_int(type), query);
 	free(query);
 	return result;
 }
 #undef FUNC_NAME
 
-SCM_DEFINE(radius_sql_run_query, "radius-sql-run-query", 2, 0, 0,
-           (SCM TYPE, SCM STRING),
-"FIXME")
+SCM_DEFINE_PUBLIC(radius_sql_run_query, "radius-sql-run-query", 2, 0, 0,
+		  (SCM type, SCM string),
+"Sends the query @var{string} to the SQL server identified by @var{type} "
+"and returns number of affected rows.  Allowed values for @var{type} "
+"are: @samp{SQL-AUTH} for authentication database and @samp{SQL-ACCT}, for "
+"accounting database.  The @var{string} must be a @samp{INSERT}-like "
+"query.\n")
 #define FUNC_NAME s_radius_sql_run_query
 {
 	SCM result;
 	char *query;
 
-        SCM_ASSERT(scm_is_integer(TYPE), TYPE, SCM_ARG1, FUNC_NAME);
-	query = scm_to_locale_string(STRING);
-	result = sql_run_query(scm_to_int(TYPE), query);
+        SCM_ASSERT(scm_is_integer(type), type, SCM_ARG1, FUNC_NAME);
+	query = scm_to_locale_string(string);
+	result = sql_run_query(scm_to_int(type), query);
 	free(query);
 	return result;
 }
@@ -65,7 +72,9 @@ SCM_DEFINE(radius_sql_run_query, "radius-sql-run-query", 2, 0, 0,
 
 static grad_keyword_t kw[] = {
 	{ "SQL_AUTH", SQL_AUTH },
+	{ "SQL-AUTH", SQL_AUTH },
 	{ "SQL_ACCT", SQL_ACCT },
+	{ "SQL-ACCT", SQL_ACCT },
 	{ NULL }
 };
 
@@ -73,8 +82,10 @@ void
 rscm_sql_init()
 {
         int i;
-        for (i = 0; kw[i].name; i++)
+        for (i = 0; kw[i].name; i++) {
                 scm_c_define(kw[i].name, scm_from_int(kw[i].tok));
+		scm_c_export(kw[i].name, NULL);
+	}
 #include <rscm_sql.x>
 }
 

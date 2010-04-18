@@ -19,9 +19,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2
-ACLOCAL_AMFLAGS = -I m4 -I am
+ACLOCAL_AMFLAGS = -I m4 -I am -I gint
 
-SUBDIRS= scripts include lib gnu sql snmplib radscm radiusd radwho \
+if RA_COND_GUILE
+  GINT_DIR = gint
+  RADSCM_DIR = radscm
+endif
+
+SUBDIRS= scripts include lib $(GINT_DIR) gnu sql snmplib $(RADSCM_DIR) \
+         radiusd radwho \
          radzap radlast radscripts elisp raddb db client radtest \
          examples tests doc po\
          mibs contrib 

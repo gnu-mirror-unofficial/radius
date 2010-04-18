@@ -20,40 +20,9 @@
 ;;;;
 changequote([,])dnl
 undefine([define])
-;;; Export symbols defined in the server module
-(export GRAD_LOG_MAIN GRAD_LOG_AUTH GRAD_LOG_ACCT GRAD_LOG_PROXY
-        GRAD_LOG_SNMP GRAD_LOG_EMERG GRAD_LOG_ALERT GRAD_LOG_CRIT
-        GRAD_LOG_ERR GRAD_LOG_WARN GRAD_LOG_NOTICE GRAD_LOG_INFO GRAD_LOG_DEBUG)
-(export SQL_AUTH SQL_ACCT)
 
-(export include(BUILDDIR/rscm_radlog.exp))
-(export include(BUILDDIR/rscm_rewrite.exp))
-(export include(BUILDDIR/rscm_sql.exp))
-
-;;; Export needed symbols from gnuradius module
-;;; We could have added :use-module (gnuradius) to the
-;;; module definition, but that would break the testsuite
-;;; (gnuradius won't load unless it is installed).
-;;;
-;;; FIXME: Possibly it will be worth while to give up .inc files
-;;; in the favor of .exp and to re-export all gnuradius symbols right here,
-;;; so that loadable modules will not have to explicitely load
-;;; gnuradius.scm
-
-(export rad-dict-value->name)
-
-;;; Define radiusd module. Make sure we re-export all useful symbols
-;;; from the server.
 (define-module (radiusd)
-  :use-module (guile-user)
-  :re-export (GRAD_LOG_MAIN GRAD_LOG_AUTH GRAD_LOG_ACCT GRAD_LOG_PROXY
-	      GRAD_LOG_SNMP GRAD_LOG_EMERG GRAD_LOG_ALERT GRAD_LOG_CRIT
-	      GRAD_LOG_ERR GRAD_LOG_WARN GRAD_LOG_NOTICE GRAD_LOG_INFO 
-	      GRAD_LOG_DEBUG
-	      SQL_AUTH SQL_ACCT
-              include(BUILDDIR/rscm_radlog.exp)
-              include(BUILDDIR/rscm_rewrite.exp)
-              include(BUILDDIR/rscm_sql.exp)))
+  :use-module (guile-user))
 
 (define auth-mod-list '())
 

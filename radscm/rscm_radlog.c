@@ -68,54 +68,53 @@ parse_facility(SCM list)
         return accval;
 }
 
-SCM_DEFINE(rad_log_open, "rad-log-open", 1, 0, 0,
-           (SCM PRIO),
-"Open radius logging to the severity level PRIO.")         
+SCM_DEFINE_PUBLIC(rad_log_open, "rad-log-open", 1, 0, 0,
+		  (SCM prio),
+"Opens logging to radius severity level @var{prio}.")         
 #define FUNC_NAME s_rad_log_open
 {
-        int prio;
+        int n_prio;
 
-        if (scm_is_integer(PRIO)) {
-                prio = scm_to_int(PRIO);
+        if (scm_is_integer(prio)) {
+                n_prio = scm_to_int(prio);
         } else {
-                SCM_ASSERT(scm_is_pair(PRIO), PRIO, SCM_ARG1, FUNC_NAME);
-                prio = parse_facility(PRIO);
+                SCM_ASSERT(scm_is_pair(prio), prio, SCM_ARG1, FUNC_NAME);
+                n_prio = parse_facility(prio);
         }
 
-        log_open(prio);
+        log_open(n_prio);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
 
-SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
-           (SCM PRIO, SCM TEXT),
-"Output TEXT to the radius logging channel corresponding to\n"
-"category/severity given by PRIO.\n")
+SCM_DEFINE_PUBLIC(rad_log, "rad-log", 2, 0, 0,
+		  (SCM prio, SCM text),
+"Outputs @var{text} to the radius logging channel corresponding to "
+"category/severity given by @var{prio}.\n")
 #define FUNC_NAME s_rad_log
 {
-        int prio;
+        int n_prio;
 	char *s;
 	
-        if (PRIO == SCM_BOOL_F) {
-                prio = GRAD_LOG_INFO;
-        } else if (scm_is_integer(PRIO)) {
-                prio = scm_to_int(PRIO);
+	if (scm_is_integer(prio)) {
+                n_prio = scm_to_int(prio);
         } else {
-                SCM_ASSERT(scm_is_pair(PRIO), PRIO, SCM_ARG1, FUNC_NAME);
-                prio = parse_facility(PRIO);
+                SCM_ASSERT(scm_is_pair(prio), prio, SCM_ARG1, FUNC_NAME);
+                n_prio = parse_facility(prio);
         }
 
-        SCM_ASSERT(scm_is_string(TEXT), TEXT, SCM_ARG1, FUNC_NAME);
-	s = scm_to_locale_string(TEXT);
-        grad_log(prio, "%s", s);
+        SCM_ASSERT(scm_is_string(text), text, SCM_ARG2, FUNC_NAME);
+	s = scm_to_locale_string(text);
+        grad_log(n_prio, "%s", s);
 	free(s);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
 
-SCM_DEFINE(rad_log_close, "rad-log-close", 0, 0, 0,
-           (),
-"Close radius logging channel open by a previous call to rad-log-open.\n")
+SCM_DEFINE_PUBLIC(rad_log_close, "rad-log-close", 0, 0, 0,
+		  (),
+"Closes a radius logging channel open by a previous call to "
+"@code{rad-log-open}.\n")
 #define FUNC_NAME s_rad_log_close
 {
         log_close();
@@ -127,8 +126,10 @@ void
 rscm_radlog_init()
 {
         int i;
-        for (i = 0; radlog_kw[i].name; i++)
+        for (i = 0; radlog_kw[i].name; i++) {
                 scm_c_define(radlog_kw[i].name,
                              scm_from_int(radlog_kw[i].tok));
+		scm_c_export (radlog_kw[i].name, NULL);
+	}
 #include <rscm_radlog.x>
 }

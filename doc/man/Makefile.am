@@ -31,29 +31,29 @@ dist-hook:
 	-(cd $(distdir); rm -f $(CLEANFILES))
 
 builddbm.8: $(srcdir)/builddbm.8.man
-	soelim $? > $@
+	$(AM_V_GEN)soelim $? > $@
 
 radctl.8: $(srcdir)/radctl.8.man
-	soelim $? > $@
+	$(AM_V_GEN)soelim $? > $@
 
 radgrep.1: $(srcdir)/radgrep.1.man
-	soelim $? > $@
+	$(AM_V_GEN)soelim $? > $@
 
 radiusd.8: $(srcdir)/radiusd.8.man
-	soelim $? > $@
+	$(AM_V_GEN)soelim $? > $@
 
 radlast.1: $(srcdir)/radlast.1.man
-	soelim $? > $@
+	$(AM_V_GEN)soelim $? > $@
 
 radping.8: $(srcdir)/radping.8.man
-	soelim $? > $@
+	$(AM_V_GEN)soelim $? > $@
 
 raduse.1: $(srcdir)/raduse.1.man
-	soelim $? > $@
+	$(AM_V_GEN)soelim $? > $@
 
 radwho.1: $(srcdir)/radwho.1.man
-	soelim $? > $@
+	$(AM_V_GEN)soelim $? > $@
 
 radzap.8: $(srcdir)/radzap.8.man
-	soelim $? > $@
+	$(AM_V_GEN)soelim $? > $@
 

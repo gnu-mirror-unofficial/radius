@@ -12,7 +12,6 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-SUBDIRS=guile
 EXTRA_DIST=\
  debugdef.m4\
  dict.awk\

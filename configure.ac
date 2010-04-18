@@ -27,8 +27,11 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([gnu])
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(no-exeext)
+AM_INIT_AUTOMAKE([1.11.1 gnits no-exeext dist-bzip2 dist-lzma dist-xz std-options silent-rules])
 AC_CONFIG_HEADERS([config.h])
+
+# Enable silent rules by default:
+AM_SILENT_RULES([yes])
 
 AC_SUBST(BUILD_TARGET)
 AC_SUBST(RADIUS_PID)
@@ -72,46 +75,24 @@ AC_ARG_WITH(server-guile,
 	[USE_SERVER_GUILE=yes])
 
 if test $USE_GUILE = yes; then
-	RA_CHECK_GUILE(,
-			[LIBRADSCM="libradscm.la libservscm.a"
-                         RADSCM=radscm
-			 RADSESSION=radsession
-			 RADSCM_BUILT_SOURCES_LIST='${RADSCM_BUILT_SOURCE_FILES}'
-			 RADSCM_PKGDATA='${RADSCM_PKGDATA_FILES}'
-                         GUILE_BINDIR=`guile-config info bindir`
-			 if test $USE_SERVER_GUILE = yes; then
-				AC_DEFINE(USE_SERVER_GUILE,1,
-                                    [Define this to enable Guile interface])
-				RA_RADIUSD_LDADD(../radscm/libradscm.la ../radscm/libservscm.a $GUILE_LIBS)
-			 fi],
-                        [USE_GUILE=no])
+	GINT_INIT([gint],[1.8],
+  		  [GUILE_BINDIR=`guile-config info bindir`
+	           if test $USE_SERVER_GUILE = yes; then
+		     AC_DEFINE(USE_SERVER_GUILE,1,
+                               [Define this to enable Guile interface])
+		     RA_RADIUSD_LDADD(../radscm/libradscm.la ../radscm/libservscm.a $GUILE_LIBS)
+		   fi],
+                   [USE_GUILE=no])
 fi
 
-AC_SUBST(GUILE_CONFIG, ["# "])
+AM_CONDITIONAL([RA_COND_GUILE],[test "$USE_GUILE" = "yes"])
+
+AC_SUBST(RA_GUILE_ENABLE, ["# "])
 if test "$USE_GUILE" = yes; then
-  GUILE_CONFIG=
+  RA_GUILE_ENABLE=
 fi
 
-# We used to have 'case' here that determined the Guile snarfer version
-# to use. Now that we don't support 1.4 any more, it is gone as well.
-# Hopefully, next versions of Guile will install the snarfer, so I
-# be able to get rid from scripts/guile once and for all. For the
-# time being, let's assume the shipped 1.6-compatible snarfer will
-# work for all future versions of Guile. If it does not, please report
-# to <bug-gnu-radius@gnu.org>. Make sure to include a copy of your config.log,
-# and any relevant error messages, produced when compiling/running.
-
-GUILE_SNARF_VERSION="1.6"
-
-AC_SUBST(GUILE_INCLUDES)
-AC_SUBST(GUILE_LIBS)
-AC_SUBST(GUILE_SNARF_VERSION)
 AC_SUBST(GUILE_BINDIR)
-AC_SUBST(LIBRADSCM)
-AC_SUBST(RADSCM)
-AC_SUBST(RADSESSION)
-AC_SUBST(RADSCM_BUILT_SOURCES_LIST)
-AC_SUBST(RADSCM_PKGDATA)
 
 ### Check for Emacs site-lisp directory
 AM_PATH_LISPDIR
@@ -440,7 +421,7 @@ AC_ARG_WITH(log-dir,
          fi])
 AC_MSG_RESULT($RADLOG_DIR)
 if test $RADLOG_DIR = NONE; then
-   AC_MSG_ERROR("Don't know where to place default logging directory")
+   AC_MSG_ERROR(Don't know where to place default logging directory)
 fi  
 
 AC_MSG_CHECKING(for pidfile directory path)
@@ -653,7 +634,8 @@ AC_ARG_ENABLE(dbm,
 		    AC_DEFINE_UNQUOTED(USE_DBM,DBM_NDBM);;
 
 	 *)	    AC_MSG_ERROR(unsupported option value: $enableval)
-	esac])	
+	esac],
+	[USE_DBM=no])	
 
 
 ## **************
@@ -868,7 +850,8 @@ AC_ARG_ENABLE(snmp,
          no)	 ;;
 	 *)	 AC_MSG_ERROR(--enable-snmp can't be used with an argument)
  		 exit 1;;
-	esac])
+	esac],
+	[USE_SNMP=no])
 
 AH_BOTTOM([
 #ifndef HAVE_MMAP
@@ -892,12 +875,13 @@ AC_SUBST(PAMDIR)
 AC_ARG_ENABLE(livingston-menus,
 	AC_HELP_STRING([--enable-livingston-menus],
 	[enable Livingston-compatible menus]),
-	[USE_LIVINGSTON_MENUS=$enableval
-         case $enableval in
-	 yes)    AC_DEFINE(USE_LIVINGSTON_MENUS,1,
-                           [Enable support for Livingstone menus]);;
-	 *)	;;
-	 esac])
+	[USE_LIVINGSTON_MENUS=$enableval],
+	[USE_LIVINGSTON_MENUS=yes])
+
+if test $USE_LIVINGSTON_MENUS = yes; then
+  AC_DEFINE(USE_LIVINGSTON_MENUS,1,
+            [Enable support for Livingstone menus])
+fi
 
 AH_TEMPLATE(DENY_SHELL,
             [When defined, users with the given shell will be always denied
@@ -1046,6 +1030,7 @@ AC_CONFIG_FILES(Makefile
           include/Makefile
 	  include/radius/Makefile
           include/snmp/Makefile
+	  gint/Makefile
           gnu/Makefile
           lib/Makefile
           sql/Makefile
@@ -1071,8 +1056,6 @@ AC_CONFIG_FILES(Makefile
           radtest/Makefile
           examples/Makefile 
           scripts/Makefile
-          scripts/guile/Makefile 
-          scripts/guile/1.6/Makefile 
           contrib/Makefile
           contrib/web-radact/Makefile
           contrib/passcvt/Makefile

@@ -64,7 +64,8 @@ RA_LD_VERSIONING
 
 ### Check if Guile is installed.
 GINT_INIT([gint],[1.8 with-guile],
-  [GUILE_BINDIR=`guile-config info bindir`
+  [USE_GUILE=yes
+   GUILE_BINDIR=`guile-config info bindir`
    AC_ARG_WITH([server-guile],
      AC_HELP_STRING([--with-server-guile], [compile server Guile support]),
      [USE_SERVER_GUILE=$withval],
@@ -73,8 +74,9 @@ GINT_INIT([gint],[1.8 with-guile],
      AC_DEFINE([USE_SERVER_GUILE],1,
                [Define this to enable Guile interface])
      RA_RADIUSD_LDADD(../radscm/libradscm.la ../radscm/libservscm.a $GUILE_LIBS)
-   fi])
-USE_GUILE=$gint_enable_guile
+   fi],
+  [USE_GUILE=no])
+
 AM_CONDITIONAL([RA_COND_GUILE],[test "$USE_GUILE" = "yes"])
 
 AC_SUBST(RA_GUILE_ENABLE, ["# "])

@@ -933,7 +933,7 @@ AH_BOTTOM([
 ])
 
 AC_SUBST(LIBGNURADIUS,'${top_builddir}/lib/libgnuradius.la')
-AC_SUBST(LIBRADEXTRA,'${top_builddir}/lib/libradextra.a ${top_builddir}/gnu/libgnu.la')
+AC_SUBST(LIBRADEXTRA,'${top_builddir}/lib/libradextra.a ${top_builddir}/gnu/libgnu.a')
 
 ### Display the status
 

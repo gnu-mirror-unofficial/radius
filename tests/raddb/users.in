@@ -58,7 +58,7 @@ expire  Auth-Type = Local,
 
 no-expire  Auth-Type = Local,
                User-Password = "expire",
-               Expiration = "Jan 01 2011"
+               Expiration = "Jan 01 2111"
        Service-Type = Framed-User
 
 		

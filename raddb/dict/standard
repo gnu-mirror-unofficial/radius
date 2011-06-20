@@ -92,7 +92,7 @@ ATTRIBUTE	Acct-Interim-Interval	85	integer	[]
 # Note: according to rfc2869, this attribute is named NAS-Port-Id
 # which conflicts with the name for attribute 5. The latter should
 # be called NAS-Port!
-ATTRIBUTE	NAS-Port-Id-String	87	integer []
+ATTRIBUTE	NAS-Port-Id-String	87	string  []
 ATTRIBUTE	Framed-Pool		88	string	[]
 
 ATTRIBUTE       User-UID                99      integer	[LRLRLR]

@@ -52,10 +52,10 @@ AC_DEFUN([AM_GNU_RADIUS],
                   [grad_cv_radius=no])
    fi
    if test $grad_cv_radius = yes; then
-     _AM_GRAD_PREPROC([
+     _AM_GRAD_PREPROC([AC_LANG_PROGRAM([
 #include <radius/types.h>
 version=GRAD_VERSION_MAJOR.GRAD_VERSION_MINOR.GRAD_VERSION_PATCH
-],
+],[])],
       [version=],
       [grad_version_string])          
   

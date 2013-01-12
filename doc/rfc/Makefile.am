@@ -18,23 +18,4 @@
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-EXTRA_DIST = \
- rfc1157.txt\
- rfc1448.txt\
- rfc1901.txt\
- rfc1905.txt\
- rfc2138.txt\
- rfc2433.txt\
- rfc2548.txt\
- rfc2618.txt\
- rfc2619.txt\
- rfc2620.txt\
- rfc2621.txt\
- rfc2759.txt\
- rfc2865.txt\
- rfc2866.txt\
- rfc2867.txt\
- rfc2868.txt\
- rfc2869.txt\
- rfc2882.txt\
- rfc3575.txt
+EXTRA_DIST = README

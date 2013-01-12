@@ -1,0 +1,24 @@
+This is a list of RFCs used when designing GNU Mailutils. To read any
+of them, visit http://tools.ietf.org/html/rfcNNNN, replacing NNNN with
+the actual RFC number.
+
+1157    A Simple Network Management Protocol (SNMP)
+1448    Protocol Operations for version 2 of the Simple Network Management Protocol (SNMPv2)
+1901    Introduction to Community-based SNMPv2
+1905    Protocol Operations for Version 2 of the Simple Network Management Protocol (SNMPv2)
+2138    Remote Authentication Dial In User Service (RADIUS)
+2433    Microsoft PPP CHAP Extensions
+2548    Microsoft Vendor-specific RADIUS Attributes
+2618    RADIUS Authentication Client MIB
+2619    RADIUS Authentication Server MIB
+2620    RADIUS Accounting Client MIB
+2621    RADIUS Accounting Server MIB
+2759    Microsoft PPP CHAP Extensions, Version 2
+2865    Remote Authentication Dial In User Service (RADIUS)
+2866    RADIUS Accounting
+2867    RADIUS Accounting Modifications for Tunnel Protocol Support
+2868    RADIUS Attributes for Tunnel Protocol Support
+2869    RADIUS Extensions
+2882    Network Access Servers Requirements: Extended RADIUS Practices
+3575    IANA Considerations for RADIUS
+

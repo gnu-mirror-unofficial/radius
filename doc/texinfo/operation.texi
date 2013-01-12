@@ -1,5 +1,5 @@
 @c This is part of the GNU Radius manual.
-@c Copyright (C) 2003 Free Software Foundation
+@c Copyright (C) 2003, 2013 Free Software Foundation
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Operation, Invocation, Naming Conventions, Top

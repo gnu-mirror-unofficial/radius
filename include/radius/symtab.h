@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2007, 2010 Free Software
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2007, 2010, 2013 Free Software
    Foundation, Inc.
 
    Written by Sergey Poznyakoff
@@ -15,8 +15,7 @@
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with GNU Radius; if not, write to the Free Software Foundation, 
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+   along with GNU Radius.  If not, see <http://www.gnu.org/licenses/>. */
 
 #ifndef _gnu_radius_symtab_h
 #define _gnu_radius_symtab_h

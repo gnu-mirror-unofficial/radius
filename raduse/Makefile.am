@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2003 Sergey Poznyakoff
+# Copyright (C) 2000,2001,2003,2013 Sergey Poznyakoff
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without

@@ -1,5 +1,5 @@
 ## This file is part of GNU Radius.
-## Copyright (C) 2001, 2010 Free Software Foundation, Inc.
+## Copyright (C) 2001, 2010, 2013 Free Software Foundation, Inc.
 ##
 ## Written by Sergey Poznyakoff
 ##
@@ -11,7 +11,6 @@
 ## WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 ## implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ##
-## $Id$
 
 ## This program converts the dictionary file of GNU Radius-1.1 or older
 ## to the new (v1.2) dictionary format, preserving any includes and new

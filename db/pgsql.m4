@@ -1,6 +1,6 @@
 divert(-1)dnl
 dnl This file is part of GNU Radius.
-dnl Copyright (C) 2001, 2003, 2007, 2010 Free Software Foundation, Inc.
+dnl Copyright (C) 2001, 2003, 2007, 2010, 2013 Free Software Foundation, Inc.
 dnl
 dnl Written by Sergey Poznyakoff
 dnl  
@@ -15,8 +15,7 @@ dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
 dnl  
 dnl You should have received a copy of the GNU General Public License
-dnl along with GNU Radius; if not, write to the Free Software Foundation,
-dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
+dnl along with GNU Radius.  If not, see <http://www.gnu.org/licenses/>.
 define({ARGS},{ifdef({server}, -h{}server){}ifdef({port}, -p{}port){}dnl
 ifdef({CREATOR},{ -U CREATOR}){}ifdef({CREATOR_PASSWORD},{ -W})})
 

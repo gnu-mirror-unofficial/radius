@@ -1,6 +1,6 @@
 Authors of GNU Radius.
 
-Sergey Poznyakoff	<gray@farlep.net>
+Sergey Poznyakoff	<gray@gnu.org>
 
 Poul-Henning Kamp 	<phk@login.dknet.dk> wrote radlib/md5crypt.c
 

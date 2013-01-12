@@ -1,6 +1,6 @@
 # -*- radius -*-
 # This file is part of GNU Radius test suite.
-# Copyright (C) 2000, 2001, 2003, 2007, 2010 Free Software Foundation,
+# Copyright (C) 2000, 2001, 2003, 2007, 2010, 2013 Free Software Foundation,
 # Inc.
 #
 # Written by Sergey Poznyakoff
@@ -16,8 +16,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with GNU Radius; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
+# along with GNU Radius.  If not, see <http://www.gnu.org/licenses/>.
 
 # Begin.exp: Check for BEGIN pattern
 BEGIN   NAS-IP-Address = 127.0.0.2

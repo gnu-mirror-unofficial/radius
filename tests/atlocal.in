@@ -1,6 +1,6 @@
 # @configure_input@                                     -*- shell-script -*-
 # Configurable variable values for tar test suite.
-# Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc
+# Copyright (C) 2004, 2007, 2008, 2013 Free Software Foundation, Inc
 
 SOURCEDIR=$abs_srcdir
 BUILDDIR=$abs_builddir

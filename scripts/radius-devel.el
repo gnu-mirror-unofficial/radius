@@ -1,5 +1,5 @@
 ;;;; This is a set of Emacs developer tools for GNU Radius.
-;;;; Copyright (C) 2004, 2007 Free Software Foundation
+;;;; Copyright (C) 2004, 2007, 2013 Free Software Foundation
 ;;;;
 ;;;; Written by Sergey Poznyakoff
 ;;;;
@@ -14,8 +14,7 @@
 ;;;; GNU General Public License for more details.
 ;;;; 
 ;;;; You should have received a copy of the GNU General Public License
-;;;; along with GNU Radius; if not, write to the Free Software Foundation,
-;;;; Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
+;;;; along with GNU Radius.  If not, see <http://www.gnu.org/licenses/>. 
 
 (defun grad-request-name-to-c (name)
   "Convert a request NAME to a valid C request type name"

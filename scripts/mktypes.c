@@ -1,6 +1,6 @@
 char header_text[] = "\
 /* This file is part of GNU Radius.\n\
-   Copyright (C) 2004, 2007, 2008, 2010 Free Software Foundation, Inc.\n\
+   Copyright (C) 2004, 2007, 2008, 2010, 2013 Free Software Foundation, Inc.\n\
 \n\
    GNU Radius is free software; you can redistribute it and/or modify\n\
    it under the terms of the GNU General Public License as published by\n\
@@ -11,10 +11,9 @@ char header_text[] = "\
    but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
    GNU General Public License for more details.\n\
-\n\
+\n\   
    You should have received a copy of the GNU General Public License\n\
-   along with GNU Radius; if not, write to the Free Software Foundation,\n\
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.\n\
+   along with GNU Radius.  If not, see <http://www.gnu.org/licenses/>.\n\
 \n\
    This file is generated automatically. Please do not edit.*/";
 

@@ -1,9 +1,10 @@
 include(SRCDIR/radscripts.m4)dnl
+changequote([[,]])dnl
 #! /bin/sh
 # NOEDIT
 #
 # This file is part of GNU Radius.
-# Copyright (C) 2001, 2003, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2010, 2013 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #

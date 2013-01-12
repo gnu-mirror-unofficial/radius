@@ -3,7 +3,7 @@ include(SRCDIR/radscripts.m4)dnl
 # NOEDIT
 #
 # This file is part of GNU Radius.
-# Copyright (C) 2001, 2004, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2004, 2010, 2013 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #

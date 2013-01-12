@@ -1,4 +1,4 @@
-dnl Copyright (C) 2008, 2010 Free Software Foundation, Inc.
+dnl Copyright (C) 2008, 2010, 2013 Free Software Foundation, Inc.
 dnl GNU Radius is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation; either version 3 of the License, or

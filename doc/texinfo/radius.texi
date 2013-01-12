@@ -39,7 +39,7 @@ This manual documents GNU Radius (version @value{VERSION}, @value{UPDATED}).
 @item Boston, MA 02110-1301 USA  @tab Fax: 617-542-2652
 @end multitable
 @sp 2
-Copyright @copyright{} 1999, 2000, 2001, 2002, 2003 Free Software
+Copyright @copyright{} 1999, 2000, 2001, 2002, 2003, 2013 Free Software
 Foundation
 @sp 1
 @quotation

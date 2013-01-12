@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
    radius.php - a PHP script that imitates functionality of a NAS.
-   Copyright (C) 2004, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2010, 2013 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -16,8 +16,7 @@
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with GNU Radius; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. -->
+   along with GNU Radius.  If not, see <http://www.gnu.org/licenses/>. -->
 
 <?php
 /* These are the only configurable values in this script:

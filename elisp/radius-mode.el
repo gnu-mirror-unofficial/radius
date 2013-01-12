@@ -1,12 +1,12 @@
 ;;; radius-mode.el --- major mode for editing GNU radius configuration files
 
-;; Authors: 2000,2003,2004,2007 Sergey Poznyakoff
+;; Authors: 2000,2003,2004,2007,2013 Sergey Poznyakoff
 ;; Version:  1.1
 ;; Keywords: radius
 ;; $Id$
 
 ;; This file is part of GNU Radius.
-;; Copyright (C) 2001, 2007, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2001, 2007, 2010, 2013 Free Software Foundation, Inc.
 
 ;; GNU Radius is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Radius; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; along with GNU Radius.  If not, see <http://www.gnu.org/licenses/>.
 
 ;; Installation.
 ;;  You may wish to use precompiled version of the module. To create it

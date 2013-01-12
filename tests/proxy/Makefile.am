@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000, 2001, 2003, 2008, 2010 Free Software Foundation,
+# Copyright (C) 2000, 2001, 2003, 2008, 2010, 2013 Free Software Foundation,
 # Inc.
 #
 # Written by Sergey Poznyakoff

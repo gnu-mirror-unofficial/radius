@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010 Free
+   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2013 Free
    Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
@@ -15,8 +15,7 @@
    GNU General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with GNU Radius; if not, write to the Free Software Foundation, 
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   along with GNU Radius.  If not, see <http://www.gnu.org/licenses/>. */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

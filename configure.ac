@@ -26,7 +26,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([gnu])
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE([1.11.1 gnits no-exeext dist-bzip2 dist-lzma dist-xz std-options silent-rules])
+AM_INIT_AUTOMAKE([1.11.1 gnits no-exeext dist-bzip2 dist-xz std-options silent-rules])
 AC_CONFIG_HEADERS([config.h])
 
 # Enable silent rules by default:
@@ -472,68 +472,6 @@ AC_ARG_ENABLE(client,
 AC_MSG_RESULT($BUILD_CLIENT)
 
 ## **************
-## Contributions
-## **************
-
-AC_ARG_WITH(php,
-            AC_HELP_STRING([--with-php=PATH],
-                           [Enable PHP module]),
-            [case $withval in
-             no)	PHP_PREFIX=
-			;;
-             yes)       PHP_PREFIX=
-			;;
-             /*)	PHP_PREFIX=$withval
-			;;
-	     *)		AC_MSG_ERROR([Invalid prefix in --with-php])
-	     esac],
-             [PHP_PREFIX=])
-
-if test "$PHP_PREFIX" != ""; then
-  AC_SUBST(PHP_INCLUDES)
-  PHP_INCLUDES="-I${PHP_PREFIX}/include/php/main -I${PHP_PREFIX}/include/php/Zend -I${PHP_PREFIX}/include/php -I${PHP_PREFIX}/include/php/TSRM"
-
-  php_save_CPPFLAGS=$CPPFLAGS
-  CPPFLAGS="$CPPFLAGS $PHP_INCLUDES"
-  AC_CHECK_HEADER([php.h],[:],AC_MSG_ERROR([php.h not found]))
-  CPPFLAGS=$php_save_CPPFLAGS
-
-  AC_SUBST(PHPMODDIR)
-  AC_ARG_WITH([php-moddir],
-              AC_HELP_STRING([--with-php-moddir=PATH],
-                             [Set install prefix for PHP extension modules]),
-              [case $withval in
-               /*)	PHPMODDIR=$withval;;
-	       *)	AC_MSG_ERROR([--with-php-moddir requires absolute file name as its argument]);;
-	       esac],
-               [PHPMODDIR='$(libdir)/php/extensions'])
-
-  AC_SUBST(BUILD_MOD_RADIUS_LA)
-  BUILD_MOD_RADIUS_LA=mod_radius.la
-fi
-
-AC_SUBST(APACHEMODDIR)
-AC_SUBST(APACHE_INCLUDES)
-AC_SUBST(BUILD_MOD_AUTH_RADIUS_LA)
-AC_ARG_WITH(apache,
-            AC_HELP_STRING([--with-apache],
-                           [Enable Apache modules]),
-            [case $withval in
-             no)  ;;	
-	     yes) AC_ARG_VAR([APXS],[Name of apxs program])
-                  AC_CHECK_PROG(APXS, [apxs], [apxs], [no])
-                  if test $APXS = no; then
-                    AC_MSG_ERROR([apxs not found])
-                  fi
-                  APACHEMODDIR=`$APXS -q LIBEXECDIR`
-	          APACHE_INCLUDES=`$APXS -q INCLUDEDIR`
-	          BUILD_MOD_AUTH_RADIUS_LA='mod_auth_radius.la'
-	          ;;
-	     *)	  AC_MSG_ERROR([Invalid option argument in --with-apache])
-	     esac])
-
-
-## **************
 ## auth port no
 ## **************
 AC_MSG_CHECKING(authentication port number)
@@ -971,14 +909,6 @@ SQL .............................. $status_sql_modules
 
 EOF
 fi
-
-cat <<EOF
-Modules
-
-PHP .............................. $status_mod_php
-Apache ........................... $status_mod_apache
-*******************************************************************
-EOF
 ],
 [status_nls=$USE_NLS
 if test $RADIUS_DEBUG -eq 1; then
@@ -1002,16 +932,6 @@ status_menus="$USE_LIVINGSTON_MENUS"
 status_deny_shell="${USE_DENY_SHELL:-no}"
 status_server_guile="$USE_SERVER_GUILE"
 status_sql_modules="${SQL_MODULES:-no}"
-if test "$PHP_PREFIX" != ""; then
-  status_mod_php=yes
-else
-  status_mod_php=no
-fi
-if test "$BUILD_MOD_AUTH_RADIUS_LA" != ""; then
-  status_mod_apache=yes
-else
-  status_mod_apache=no
-fi
 ])
 
 AC_CONFIG_FILES(Makefile 
@@ -1051,8 +971,7 @@ AC_CONFIG_FILES(Makefile
           contrib/web-radact/Makefile
           contrib/passcvt/Makefile
           contrib/passwd_to_db/Makefile
-          contrib/radsend/Makefile
-          contrib/php/Makefile)
+          contrib/radsend/Makefile)
 AC_OUTPUT
 
 # EOF

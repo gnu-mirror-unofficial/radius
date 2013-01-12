@@ -13,4 +13,4 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 EXTRA_DIST = README
-SUBDIRS = web-radact passcvt passwd_to_db radsend php
+SUBDIRS = web-radact passcvt passwd_to_db radsend 

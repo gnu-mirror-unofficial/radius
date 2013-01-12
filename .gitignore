@@ -10,6 +10,7 @@
 .libs
 ABOUT-NLS
 INSTALL
+ChangeLog
 Makefile
 Makefile.in
 aclocal.m4

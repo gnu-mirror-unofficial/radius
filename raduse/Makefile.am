@@ -12,5 +12,5 @@
 bin_PROGRAMS    = raduse
 raduse_SOURCES = raduse.c session.c stat.c raduse.h
 raduse_LDADD   = ../snmplib/libradsnmp.a ../lib/liblog.la ../lib/librad.la ../lib/libdebug.la @LIBINTL@
-INCLUDES       = @RADIUS_INCLUDE_PATH@
+AM_CPPFLAGS    = @RADIUS_INCLUDE_PATH@
 

@@ -55,8 +55,9 @@ EXTRA_DIST=ttl.scm ipalloc.scm radsession.in \
  gnuradius.scm4 radiusd.scm4
 CLEANFILES = radsession gnuradius.scm radiusd.scm
 DISTCLEANFILES=
-INCLUDES  = @RADIUS_INCLUDE_PATH@ -I$(srcdir) -I. @GUILE_INCLUDES@
-AM_CPPFLAGS=-DDATADIR=\"$(sitedir)\"
+AM_CPPFLAGS=\
+ @RADIUS_INCLUDE_PATH@ -I$(srcdir) -I. @GUILE_INCLUDES@\
+ -DDATADIR=\"$(sitedir)\"
 radsession: $(srcdir)/radsession.in
 	$(AM_V_GEN)sed 's,GUILE_BINDIR,$(GUILE_BINDIR),;s,SCHEMEDIR,$(sitedir),;s,PACKAGE_STRING,$(PACKAGE_STRING),' $? > $@
 
@@ -78,5 +79,6 @@ install-data-hook:
 	 fi; \
 	 cd $$here
 
+MAINTAINERCLEANFILES=
 include ../gint/gint.mk
 

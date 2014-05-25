@@ -22,8 +22,7 @@ pam_LTLIBRARIES = @BUILD_PAM_RADIUS_LA@
 EXTRA_LTLIBRARIES = pam_radius.la
 pam_radius_la_SOURCES = pam_radius.c
 pam_radius_la_LIBADD = -lpam @LIBGNURADIUS@ @LTLIBINTL@
-INCLUDES = @RADIUS_INCLUDE_PATH@ 
-AM_CPPFLAGS=@PATHFLAGS@
+AM_CPPFLAGS=@RADIUS_INCLUDE_PATH@ @PATHFLAGS@
 
 pam_radius_la_LDFLAGS = -module -avoid-version -no-undefined -rpath $(pamdir) \
  -Wl,-Bsymbolic

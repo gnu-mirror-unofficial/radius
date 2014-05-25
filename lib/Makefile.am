@@ -79,12 +79,11 @@ localedir = $(datadir)/locale
 VERSION_SCRIPT=$(srcdir)/gnuradius.vers
 libgnuradius_la_LDFLAGS = --version-info @VI_CURRENT@:@VI_REVISION@:@VI_AGE@ @VERSION_SCRIPT_OPTION@
 
-AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\" @PATHFLAGS@
+AM_CPPFLAGS=@RADIUS_INCLUDE_PATH@ -DLOCALEDIR=\"$(localedir)\" @PATHFLAGS@
 
 BUILT_SOURCES=users_gram.c users_lex.c
 MAINTAINERCLEANFILES=users_gram.c users_gram.h users_lex.c
 MOSTLYCLEANFILES=
-INCLUDES=@RADIUS_INCLUDE_PATH@ 
 EXTRA_DIST=users.y users.l gnuradius.vers numtostr.c intprops.h
 
 noinst_HEADERS=users_gram.h 

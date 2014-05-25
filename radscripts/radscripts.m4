@@ -17,6 +17,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with GNU Radius.  If not, see <http://www.gnu.org/licenses/>. 
 changecom(%%)
+changequote([,])
 define([SHIFT],[[shift]])
 define([TEST],[[ [ $1 ] ]])
 define([OPT_HELP],[-h|--h|--he|--hel|--help])

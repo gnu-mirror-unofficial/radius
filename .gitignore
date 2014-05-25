@@ -9,8 +9,8 @@
 .emacs*
 .libs
 ABOUT-NLS
-INSTALL
 ChangeLog
+INSTALL
 Makefile
 Makefile.in
 aclocal.m4

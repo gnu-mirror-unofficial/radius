@@ -16,6 +16,6 @@ bin_PROGRAMS    = radtest
 radtest_SOURCES = main.c gram.y input.l radtest.h runtime.c completion.c
 radtest_LDADD   = @LIBGNURADIUS@ @LIBRADEXTRA@ ../lib/libradextra.a @READLINE_LIBS@ @LIBINTL@
 noinst_HEADERS  = gram.h
-INCLUDES        = @RADIUS_INCLUDE_PATH@ -I$(srcdir) 
+AM_CPPFLAGS     = @RADIUS_INCLUDE_PATH@ -I$(srcdir) 
 AM_YFLAGS = -vdt 
 

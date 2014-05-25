@@ -169,6 +169,8 @@ AC_CHECK_TYPE(socklen_t, , AC_DEFINE(socklen_t, int, [Define to int if <sys/type
 
 AC_CHECK_MEMBERS([struct passwd.pw_expire, struct passwd.pw_change], , ,
                  [#include <pwd.h>])
+AC_CHECK_MEMBERS([struct tm.tm_gmtoff],,,
+                 [#include <time.h>])
 
 ## Check for shadow support
 AC_CHECK_HEADER([shadow.h],

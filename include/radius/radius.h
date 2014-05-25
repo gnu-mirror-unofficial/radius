@@ -435,6 +435,8 @@ typedef int (*register_rule_fp) (void *, grad_locus_t *, char *,
 				 grad_avp_t *, grad_avp_t *);
 int grad_parse_rule_file(char *file, void *c, register_rule_fp f);
 int grad_parse_time_string(char *valstr, struct tm *tm);
+unsigned long grad_julianday(int year, int month, int day);
+time_t grad_tm_to_epoch(struct tm *tm);
 grad_avp_t *grad_create_pair(grad_locus_t *loc, char *name,
 			     enum grad_operator op, char *valstr);
 

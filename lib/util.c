@@ -68,6 +68,8 @@ grad_parse_time_string(char *valstr, struct tm *tm)
 {
         int     i;
 
+	memset(tm, sizeof *tm, 0);
+	
         /* Get the month */
         for (i = 0; i < 12; i++) {
                 if (grad_c_strncasecmp(months[i], valstr, 3) == 0) {
@@ -99,6 +101,34 @@ grad_parse_time_string(char *valstr, struct tm *tm)
 
         return 0;
 }
+
+unsigned long
+grad_julianday(int year, int month, int day)
+{
+	int a = (14 - month) / 12;
+	int y = year + 4800 - a;
+	int m = month + 12*a - 3;
+
+	return day + (153*m + 2)/5 + 365*y + y/4 - y/100 + y/400 - 32045;
+}
+
+#define SECS_PER_DAY 86400
+#define JD_OF_EPOCH 2440588
+
+time_t
+grad_tm_to_epoch(struct tm *tm)
+{
+	unsigned long jd =
+		grad_julianday(tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+	return (jd - JD_OF_EPOCH) * SECS_PER_DAY
+		+ (tm->tm_hour * 60 + tm->tm_min) * 60 + tm->tm_sec
+#ifdef HAVE_STRUCT_TM_TM_GMTOFF		
+		- tm->tm_gmtoff
+#endif
+		;
+}
+
+
 
 /* Lock `size' bytes on the file descriptor `fd' starting from `offset'.
  * `whence' determines from where the offset is counted (seek-like)

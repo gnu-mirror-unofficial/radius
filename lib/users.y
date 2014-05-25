@@ -37,7 +37,6 @@
 #include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>
-
 #include <radlib.h>
 #include "intprops.h"
 	
@@ -333,11 +332,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
                         grad_avp_free(pair);
                         return NULL;
                 }
-#ifdef TIMELOCAL
-                pair->avp_lvalue = (grad_uint32_t)timelocal(tm);
-#else /* TIMELOCAL */
-                pair->avp_lvalue = (grad_uint32_t)mktime(tm);
-#endif /* TIMELOCAL */
+                pair->avp_lvalue = (grad_uint32_t)grad_tm_to_epoch(tm);
                 break;
 
         default:

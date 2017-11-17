@@ -1,6 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010,
-   2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -967,7 +966,7 @@ static int
 category_set_flag(int argc, cfg_value_t *argv, void *block_data,
 		  void *handler_data)
 {
-	int flag = (int) handler_data;
+	int flag = (int) (intptr_t) handler_data;
 	if (argc != 2) {
 		cfg_argc_error(argc < 2);
 		return 0;
@@ -1103,7 +1102,7 @@ static int
 channel_set_flag(int argc, cfg_value_t *argv,
 		 void *block_data, void *handler_data)
 {
-	int flag = (int) handler_data;
+	int flag = (int) (intptr_t) handler_data;
 	if (argc != 2) {
 		cfg_argc_error(argc < 2);
 		return 0;

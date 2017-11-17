@@ -1,7 +1,6 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2010, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -35,7 +34,6 @@
 # include <radius/radscm.h>	
 #endif
         
-typedef long RWSTYPE;
 #define RW_MIN(a,b) ((a)<(b)) ? (a) : (b)
  
 /*
@@ -77,6 +75,31 @@ typedef struct {
 
 typedef int stkoff_t;             /* Offset on stack */
 typedef unsigned int pctr_t;      /* Program counter */
+typedef void (*INSTR)();          /* program instruction */
+ 
+typedef union rw_code_cell {
+	void     *v_ptr;
+	char     *v_str;
+	int      v_int;
+	long     v_long;
+	u_int    v_u_int;
+	stkoff_t v_off;
+	pctr_t   v_pc;
+	struct comp_regex *v_rx;
+	size_t   v_size;
+} RWSTYPE;
+
+#define rw_cat(a,b) a ## b
+#define rw_c_val(x,t) ((x).rw_cat(v_,t))
+#define rw_c_cast(x,t) ((RWSTYPE)(t)(x))
+
+typedef union {
+	INSTR   c_instr;
+	RWSTYPE c_value;
+} RWCODE;
+
+#define rw_code_instr(p) ((p).c_instr)
+#define rw_code_value(p) ((p).c_value)
 
 #define RW_REG ('z'-'a'+1)
 
@@ -100,8 +123,6 @@ typedef struct {
         jmp_buf    jmp;
 } RWMACH;
 
-typedef void (*INSTR)();       /* program instruction */
- 
 /* Compiled regular expression
  */
 typedef struct comp_regex COMP_REGEX;
@@ -639,8 +660,7 @@ static void code_check();
 /*
  * Auxiliary and debugging functions
  */
-static void debug_dump_code();
-static const char * datatype_str_nom(grad_data_type_t type);
+/*static const char * datatype_str_nom(grad_data_type_t type);*/
 static const char * datatype_str_acc(grad_data_type_t type);
 static const char * datatype_str_abl(grad_data_type_t type);
 static grad_data_type_t attr_datatype(grad_dict_attr_t *);
@@ -1894,19 +1914,19 @@ yylex()
                         return c;
                 }
 
-                if (var = var_lookup(yylval.string)) {
+                if ((var = var_lookup(yylval.string))) {
                         DEBUG_LEX2("VARIABLE: %s", yylval.string);
                         yylval.var = var;
                         return VARIABLE;
                 }
                 
-                if (fun = (FUNCTION*) grad_sym_lookup(rewrite_tab, yylval.string)) {
+                if ((fun = (FUNCTION*) grad_sym_lookup(rewrite_tab, yylval.string))) {
                         DEBUG_LEX2("FUN %s", yylval.string);
                         yylval.fun = fun;
                         return FUN;
                 }
 
-                if (btin = builtin_lookup(yylval.string)) {
+                if ((btin = builtin_lookup(yylval.string))) {
                         DEBUG_LEX2("BUILTIN %s", yylval.string);
                         yylval.btin = btin;
                         return BUILTIN;
@@ -2056,7 +2076,7 @@ _list_insert(RWLIST **first, RWLIST **last, RWLIST *prev, RWLIST *obj,
         obj->prev = prev;
         obj->next = prev->next;
         
-        if (next = prev->next)
+        if ((next = prev->next))
                 next->prev = obj;
 
         prev->next = obj;
@@ -2072,12 +2092,12 @@ _list_remove(RWLIST **first, RWLIST **last, RWLIST *obj)
 {
         RWLIST *temp;
 
-        if (temp = obj->prev) 
+        if ((temp = obj->prev) )
                 temp->next = obj->next;
         else
                 *first = obj->next;
 
-        if (temp = obj->next)
+        if ((temp = obj->next))
                 temp->prev = obj->prev;
         else if (last)
                 *last = obj->prev;
@@ -2332,7 +2352,7 @@ mtx_insert(MTX *prev, MTX *mtx)
         MTX *up;
 
         rw_list_insert(&mtx_first, &mtx_last, prev, mtx, 0);
-        if (up = prev->gen.uplink) {
+        if ((up = prev->gen.uplink)) {
                 switch (up->gen.type) {
                 case Unary:
                         up->un.arg = mtx;
@@ -2762,7 +2782,7 @@ mtx_builtin(builtin_t *bin, MTX *args)
         BTIN_MTX     *call;
         int          argn;
         char         *parmp;
-        grad_data_type_t     type;
+        grad_data_type_t     type = Integer;
         /*
          * Test the number and types of arguments. Insert reasonable
          * typecasts.
@@ -2821,7 +2841,7 @@ mtx_builtin(builtin_t *bin, MTX *args)
 /* ****************************************************************************
  * Code optimizer (rudimentary)
  */
-
+#if 0
 const char *
 datatype_str_nom(grad_data_type_t type)
 {
@@ -2836,6 +2856,7 @@ datatype_str_nom(grad_data_type_t type)
                 return _("UNKNOWN");
         }
 }
+#endif
 
 const char *
 datatype_str_abl(grad_data_type_t type)
@@ -3493,7 +3514,7 @@ optimize()
  */
 
 
-static INSTR *rw_code;          /* Code segment */
+static RWCODE *rw_code;         /* Code segment */
 static pctr_t rw_pc;            /* PC when compiling the code */
 static size_t rw_codesize;      /* Length of code segment */ 
 
@@ -3511,7 +3532,7 @@ code_init()
 {
 	code_check();
         /* code cell #0 is the default return address */
-	rw_code[0] = 0;
+	rw_c_val(rw_code_value(rw_code[0]),pc) = 0;
 	rw_pc = 1;
 }
 
@@ -3532,7 +3553,7 @@ debug_dump_code()
         do {
                 fprintf(fp, "%4d:", pc);
                 for (i = 0; i < 8 && pc < rw_codesize; i++, pc++)
-                        fprintf(fp, " %8x", (u_int) rw_code[pc]);
+                        fprintf(fp, " %8x", rw_c_val(rw_code[pc], uint));
                 fprintf(fp, "\n");
         } while (pc < rw_codesize);
         
@@ -3542,14 +3563,17 @@ debug_dump_code()
 /*
  * Runtime function prototypes
  */
-static int pushn(RWSTYPE n);
+static void pushn(RWSTYPE n);
 static int cpopn(RWSTYPE *np);
 static RWSTYPE popn();
 static void checkpop(int cnt);
 static void pushref(char *str, int from, int to);
 static RWSTYPE *heap_reserve(int size);
 static void pushs(RWSTYPE *sptr, size_t size, int len);
-static void pushstr(const char *str, int len);
+static void pushstr(const char *str, size_t len);
+
+static void pushint(int);
+static int popint(void);
 
 static void rw_pushn();
 static void rw_pushs();
@@ -3656,9 +3680,12 @@ INSTR coerce_tab[Max_datatype][Max_datatype] = {
 };
 
 static void check_codesize(int delta);
-static int  code(INSTR instr);
-static int  data(int val);
-static int data_str(char *ptr);
+static pctr_t code_cell(RWCODE cell);
+static pctr_t code_cell(RWCODE cell);
+static pctr_t code_instr(INSTR instr);
+static pctr_t code_value(RWSTYPE val);
+static pctr_t data(int val);
+static pctr_t data_str(char *ptr);
 static void add_target(NOP_MTX *mtx, pctr_t pc);
 
 
@@ -3677,7 +3704,7 @@ fixup_target(NOP_MTX *mtx, pctr_t pc)
         TGT_MTX   *tgt;
         
         for (tgt = (TGT_MTX*)mtx->tgt; tgt; tgt = (TGT_MTX*)tgt->next) 
-                rw_code[tgt->pc] = (INSTR)pc;
+                rw_c_val(rw_code_value(rw_code[tgt->pc]), pc) = pc;
         mtx->tgt = NULL;
 }
 
@@ -3704,21 +3731,21 @@ codegen()
                 case Stop:
                         break;
                 case Enter:
-                        code(rw_enter);
+                        code_instr(rw_enter);
                         data(mtx->frame.stacksize);
                         break;
                 case Leave:
-                        code(rw_leave);
+                        code_instr(rw_leave);
                         break;
                 case Constant:
                         switch (mtx->cnst.datatype) {
                         case Integer:
-                                code(rw_pushn);
+                                code_instr(rw_pushn);
                                 data(mtx->cnst.datum.ival);
                                 break;
 				
                         case String:
-                                code(rw_pushs);
+                                code_instr(rw_pushs);
                                 data_str(mtx->cnst.datum.sval.data);
                                 break;
 
@@ -3727,23 +3754,23 @@ codegen()
                         }
                         break;
                 case Matchref:
-                        code(rw_pushref);
+                        code_instr(rw_pushref);
                         data(mtx->ref.num);
                         break;
                 case Variable:
                         /* Variable dereference.
                          */
-                        code(rw_pushv);
+                        code_instr(rw_pushv);
                         data(mtx->var.var->offset);
                         break;
                 case Unary:
                         switch (mtx->un.opcode) {
                         case Not:
-                                code(rw_not);
+                                code_instr(rw_not);
                                 break;
 				
                         case Neg:
-                                code(rw_neg);
+                                code_instr(rw_neg);
                                 break;
 
 			default:
@@ -3752,90 +3779,90 @@ codegen()
                         break;
                 case Binary:
                         if (mtx->bin.arg[0]->gen.datatype == String)
-                                code(bin_string_codetab[mtx->bin.opcode]);
+                                code_instr(bin_string_codetab[mtx->bin.opcode]);
                         else
-                                code(bin_codetab[mtx->bin.opcode]);
+                                code_instr(bin_codetab[mtx->bin.opcode]);
                         break;
                 case Cond:
                         /*FIXME: this needs optimization */
-                        code(rw_jne);
+                        code_instr(rw_jne);
                         add_target(&mtx->cond.if_true->nop, rw_pc);
-                        code(NULL);
+                        code_instr(NULL);
                         if (mtx->cond.if_false) {
-                                code(rw_jmp);
+                                code_instr(rw_jmp);
                                 add_target(&mtx->cond.if_false->nop, rw_pc);
-                                code(NULL);
+                                code_instr(NULL);
                         }
                         break;
                         
                 case Asgn:
-                        code(rw_asgn);
+                        code_instr(rw_asgn);
                         data(mtx->asgn.lval->offset);
                         break;
                         
                 case Match:
-                        code(rw_match);
-                        code((INSTR)mtx->match.rx);
+                        code_instr(rw_match);
+                        code_value((RWSTYPE)mtx->match.rx);
                         if (mtx->match.negated)
-                                code(rw_not);
+                                code_instr(rw_not);
                         break;
                         
                 case Coercion:
-                        code(coerce_tab[mtx->coerce.arg->gen.datatype][mtx->coerce.datatype]);
+                        code_instr(coerce_tab[mtx->coerce.arg->gen.datatype][mtx->coerce.datatype]);
                         break;
                         
                 case Jump:
-                        code(rw_jmp);
+                        code_instr(rw_jmp);
                         add_target(&mtx->jump.dest->nop, rw_pc);
-                        code(NULL);
+                        code_instr(NULL);
                         break;
 
                 case Branch:
-                        code(mtx->branch.cond ? rw_jne : rw_je);
+                        code_instr(mtx->branch.cond ? rw_jne : rw_je);
                         add_target(&mtx->branch.dest->nop, rw_pc);
-                        code(NULL);
+                        code_instr(NULL);
                         break;
                         
                 case Call:
-                        code(rw_call);
-                        code((INSTR) mtx->call.fun->entry);
-                        code(rw_adjstk);
+                        code_instr(rw_call);
+                        code_value((RWSTYPE) mtx->call.fun->entry);
+                        code_instr(rw_adjstk);
                         data(mtx->call.nargs);
                         break;
 
                 case Builtin:
-                        code(rw_builtin);
-                        code(mtx->btin.fun);
-                        code(rw_adjstk);
+                        code_instr(rw_builtin);
+                        code_instr(mtx->btin.fun);
+                        code_instr(rw_adjstk);
                         data(mtx->btin.nargs);
                         break;
 
                 case Pop:
-                        code(rw_popn);
+                        code_instr(rw_popn);
                         break;
 
                 case Popa:
-                        code(rw_popa);
+                        code_instr(rw_popa);
                         break;
                         
                 case Pusha:
-                        code(rw_pusha);
+                        code_instr(rw_pusha);
                         break;
                         
                 case Attr:
                         switch (mtx->attr.datatype) {
                         case Integer:
 				if (mtx->attr.index)
-					code(rw_attrn);
+					code_instr(rw_attrn);
 				else
-					code(rw_attrn0);
+					code_instr(rw_attrn0);
                                 break;
 				
                         case String:
 				if (mtx->attr.index)
-					code(rw_attrs);
+					code_instr(rw_attrs);
 				else
-					code(rw_attrs0);
+					code_instr(rw_attrs0);
                                 break;
 
 			default:
@@ -3846,25 +3873,25 @@ codegen()
 
                 case Attr_check:
 			if (mtx->attr.index) 
-				code(rw_attrcheck);
+				code_instr(rw_attrcheck);
 			else
-				code(rw_attrcheck0);
+				code_instr(rw_attrcheck0);
                         data(mtx->attr.attrno);
                         break;
                         
                 case Attr_asgn:
 			if (mtx->attr.index)
-				code(rw_attrasgn);
+				code_instr(rw_attrasgn);
 			else
-				code(rw_attrasgn0);
+				code_instr(rw_attrasgn0);
                         data(mtx->attr.attrno);
                         break;
                                 
 		case Attr_delete:
 			if (mtx->attr.index)
-				code(rw_attr_delete);
+				code_instr(rw_attr_delete);
 			else
-				code(rw_attr_delete0);
+				code_instr(rw_attr_delete0);
 			data(mtx->attr.attrno);
 			break;
                 }
@@ -3893,7 +3920,7 @@ void
 check_codesize(int delta)
 {
         if (rw_pc + delta >= rw_codesize) {
-                INSTR *p = grad_emalloc((rw_codesize + 4096) * sizeof(rw_code[0]));
+                RWCODE *p = grad_emalloc((rw_codesize + 4096) * sizeof(rw_code[0]));
                 memcpy(p, rw_code, rw_codesize * sizeof(rw_code[0]));
                 grad_free(rw_code);
                 rw_code = p;
@@ -3901,28 +3928,45 @@ check_codesize(int delta)
         }
 }
 
-int
-code(INSTR instr)
+pctr_t
+code_cell(RWCODE cell)
 {
         check_codesize(1);
-        rw_code[rw_pc] = instr;
+        rw_code[rw_pc] = cell;
         return rw_pc++;
 }
 
-int
-data(int val)
+pctr_t
+code_instr(INSTR instr)
 {
-        return code((INSTR)(RWSTYPE)val);
+	RWCODE c;
+	rw_code_instr(c) = instr;
+	return code_cell(c);
 }
 
-int
+pctr_t
+code_value(RWSTYPE val)
+{
+	RWCODE c;
+	rw_code_value(c) = val;
+	return code_cell(c);
+}
+
+pctr_t
+data(int val)
+{
+        return code_value((RWSTYPE)val);
+}
+
+pctr_t
 data_str(char *ptr)
 {
         int  len   = strlen(ptr) + 1;
-        RWSTYPE delta = (len + sizeof(rw_code[0])) / sizeof(rw_code[0]);
+        u_int delta = (len + sizeof(rw_code[0])) / sizeof(rw_code[0]);
         
         check_codesize(delta+1);
-        rw_code[rw_pc++] = (INSTR)delta;
+        rw_c_val(rw_code_value(rw_code[rw_pc]), u_int) = delta;
+	rw_pc++;
         memcpy(rw_code + rw_pc, ptr, len);
         rw_pc += delta;
         return rw_pc;
@@ -4012,7 +4056,7 @@ function_cleanup()
 /*
  * Push a number on stack
  */
-int
+void
 pushn(RWSTYPE n)
 {
         if (mach.st >= mach.ht) {
@@ -4021,7 +4065,6 @@ pushn(RWSTYPE n)
                 rw_error(_("out of pushdown space"));
         }
         mach.stack[mach.st++] = n;
-        return 0;
 }
 
 /*
@@ -4038,19 +4081,19 @@ pushs(RWSTYPE *sptr, size_t size, int len)
 
         while (len)
                 mach.stack[mach.ht--] = sptr[--len];
-	mach.stack[mach.ht--] = size;
-        pushn((RWSTYPE) (mach.stack + mach.ht + 1));
+	rw_c_val(mach.stack[mach.ht--], size) = size;
+        pushn(rw_c_cast(mach.stack + mach.ht + 1, void*));
 }
 
 void
-pushstr(const char *str, int len)
+pushstr(const char *str, size_t len)
 {
         RWSTYPE *p = heap_reserve(sizeof(RWSTYPE) + len + 1);
 	char *s = (char*)(p + 1);
         memcpy(s, str, len);
         s[len] = 0;
-	p[0] = len;
-        pushn((RWSTYPE)p);
+	rw_c_val(p[0], size) = len;
+        pushn(rw_c_cast(p,void*));
 }
 
 #define B2RW(s) (s + sizeof(mach.stack[0]) - 1) / sizeof(mach.stack[0])
@@ -4105,7 +4148,7 @@ temp_space_fix(char *end)
 	len = B2RW(size);
         mach.ht -= len;
 	memmove(mach.stack + mach.ht, base, size);
-	mach.stack[--mach.ht] = strlen(base);
+	rw_c_val(mach.stack[--mach.ht], size) = strlen(base);
         return mach.stack + mach.ht--;
 }
 
@@ -4136,14 +4179,15 @@ popn()
 void
 mem2string(grad_string_t *p, RWSTYPE *loc)
 {
-	p->size = loc[0];
-	p->data = (unsigned char*) (loc + 1);
+	p->size = rw_c_val(loc[0], size);
+	p->data = (char*) (loc + 1);
 }
 
 void
 poparr(grad_string_t *p)
 {
-	mem2string(p, (RWSTYPE*) popn());
+	RWSTYPE v = popn();
+	mem2string(p, (RWSTYPE*) rw_c_val(v, ptr));
 }
 
 RWSTYPE
@@ -4174,13 +4218,26 @@ pushref(char *str, int from, int to)
 	pushstr(str + from, to - from);
 }
 
+static void
+pushint(int v)
+{
+	pushn((RWSTYPE)v);
+}
+
+static int
+popint(void)
+{
+	RWSTYPE t = popn();
+	return rw_c_val(t, int);
+}
+
 /*
  * Create a stack frame and enter the function
  */
 void
 enter(int n)
 {
-        pushn(mach.sb);
+        pushn((RWSTYPE)mach.sb);
         mach.sb = mach.st;
         mach.st += n;
 }
@@ -4195,8 +4252,8 @@ leave()
         mach.rA = popn();
         /* Restore stack frame */
         mach.st = mach.sb;
-        mach.sb = popn();
-        mach.pc = (pctr_t) popn();
+        mach.sb = rw_c_val(popn(), int);
+        mach.pc = rw_c_val(popn(), pc);
 }
 
 RWSTYPE
@@ -4234,15 +4291,16 @@ rw_error_free(char *msg)
 void
 rw_call()
 {
-        pctr_t  pc = (pctr_t) rw_code[mach.pc++];
-        pushn(mach.pc); /* save return address */
+        pctr_t  pc = rw_c_val(rw_code_value(rw_code[mach.pc]), pc);
+        pushn((RWSTYPE)(mach.pc + 1)); /* save return address */
         mach.pc = pc;
 }
 
 void
 rw_adjstk()
 {
-        int delta = (int) rw_code[mach.pc++];
+        u_int delta = rw_c_val(rw_code_value(rw_code[mach.pc]), u_int);
+	mach.pc++;
         mach.st -= delta;
         pushn(mach.rA);   /* Push the return back on stack */
 }
@@ -4251,7 +4309,7 @@ void
 rw_enter()
 {
         /*FIXME: runtime checking */
-        int n = (int) rw_code[mach.pc++];
+        int n = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
         enter(n);
 }
 
@@ -4267,7 +4325,7 @@ rw_leave()
 void
 rw_pushn()
 {
-        RWSTYPE n = (RWSTYPE) rw_code[mach.pc++];
+        RWSTYPE n = rw_code_value(rw_code[mach.pc++]);
         pushn(n);
 }
 
@@ -4277,8 +4335,8 @@ rw_pushn()
 void
 rw_pushref()
 {
-        int i = (int) rw_code[mach.pc++];
-
+        int i = rw_c_val(rw_code_value(rw_code[mach.pc]), int);
+	mach.pc++;
         pushref(mach.sA, mach.pmatch[i].rm_so, mach.pmatch[i].rm_eo);
 }
 
@@ -4288,15 +4346,15 @@ rw_pushref()
 void
 rw_pushv()
 {
-        stkoff_t n = (stkoff_t) rw_code[mach.pc++];
-
+        stkoff_t n = rw_c_val(rw_code_value(rw_code[mach.pc]), off);
+	mach.pc++;
         pushn(mach.stack[mach.sb + n]);
 }
 
 void
 rw_pushs()
 {
-        int   len = (int) rw_code[mach.pc++];
+        int   len = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
         RWSTYPE *sptr = (RWSTYPE*) (rw_code + mach.pc);
 
         mach.pc += len;
@@ -4309,7 +4367,7 @@ rw_pushs()
 void
 rw_asgn()
 {
-        stkoff_t off = (stkoff_t) rw_code[mach.pc++];
+        stkoff_t off = rw_c_val(rw_code_value(rw_code[mach.pc++]), off);
         RWSTYPE n;
 
         cpopn(&n);
@@ -4330,19 +4388,21 @@ assert_request_presence()
 void
 rw_attrcheck0()
 {
-        int attr = (int) rw_code[mach.pc++];
+        int attr = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
 
-	pushn(grad_avl_find(AVPLIST(&mach), attr) != NULL);
+	pushn(rw_c_cast(grad_avl_find(AVPLIST(&mach), attr) != NULL, int));
 }
 
 void
 rw_attrcheck()
 {
-        int attr = (int) rw_code[mach.pc++];
+        int attr = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
 	RWSTYPE index;
- 
+	int res;
+	
 	cpopn(&index);
-	pushn(grad_avl_find_n(AVPLIST(&mach), attr, index) != NULL);
+	res = grad_avl_find_n(AVPLIST(&mach), attr, rw_c_val(index, int)) != NULL;
+	pushn((RWSTYPE)res);
 }
 
 /*
@@ -4364,7 +4424,7 @@ attrasgn_internal(int attr, grad_avp_t *pair, RWSTYPE val)
 	switch (pair->type) {
 	case GRAD_TYPE_STRING:
 	case GRAD_TYPE_DATE:
-		mem2string(&str, (RWSTYPE*)val);
+		mem2string(&str, (RWSTYPE*)rw_c_val(val, ptr));
 		grad_free(pair->avp_strvalue);
 		pair->avp_strvalue = grad_malloc(str.size+1);
 		memcpy(pair->avp_strvalue, str.data, str.size);
@@ -4374,7 +4434,7 @@ attrasgn_internal(int attr, grad_avp_t *pair, RWSTYPE val)
 		
 	case GRAD_TYPE_INTEGER:
 	case GRAD_TYPE_IPADDR:
-		pair->avp_lvalue = val;
+		pair->avp_lvalue = rw_c_val(val, u_int);
 		break;
 	}
 	
@@ -4384,7 +4444,7 @@ attrasgn_internal(int attr, grad_avp_t *pair, RWSTYPE val)
 void
 rw_attrasgn0()
 {
-        int attr = (int) rw_code[mach.pc++];
+        int attr = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
         RWSTYPE val;
         
         cpopn(&val);
@@ -4394,20 +4454,22 @@ rw_attrasgn0()
 void
 rw_attrasgn()
 {
-        int attr = (int) rw_code[mach.pc++];
+        int attr = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
         RWSTYPE val;
 	RWSTYPE index;
  
         cpopn(&val);
 	cpopn(&index);
-	attrasgn_internal(attr, grad_avl_find_n(AVPLIST(&mach), attr, index),
+	attrasgn_internal(attr,
+			  grad_avl_find_n(AVPLIST(&mach), attr,
+					  rw_c_val(index, int)),
 			  val);
 }
 
 void
 rw_attrs0()
 {
-        int attr = (int) rw_code[mach.pc++];
+        int attr = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
         grad_avp_t *pair;
         
         if ((pair = grad_avl_find(AVPLIST(&mach), attr)) == NULL) 
@@ -4425,24 +4487,25 @@ rw_attrs0()
 void
 rw_attrn0()
 {
-        int attr = (int) rw_code[mach.pc++];
+        int attr = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
         grad_avp_t *pair;
 
         if ((pair = grad_avl_find(AVPLIST(&mach), attr)) == NULL)
-                pushn(0);
+                pushn(rw_c_cast(0, int));
         else
-                pushn(pair->avp_lvalue);
+                pushn(rw_c_cast(pair->avp_lvalue, u_int));
 }
 
 void
 rw_attrs()
 {
-        int attr = (int) rw_code[mach.pc++];
+        int attr = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
         grad_avp_t *pair;
 	RWSTYPE index;
 
 	cpopn(&index);
-        if ((pair = grad_avl_find_n(AVPLIST(&mach), attr, index)) == NULL) 
+	pair = grad_avl_find_n(AVPLIST(&mach), attr, rw_c_val(index, int));
+        if (pair == NULL) 
                 pushstr("", 0);
         else
                 pushstr(pair->avp_strvalue, pair->avp_strlength);
@@ -4451,33 +4514,34 @@ rw_attrs()
 void
 rw_attrn()
 {
-        int attr = (int) rw_code[mach.pc++];
+        int attr = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
         grad_avp_t *pair;
 	RWSTYPE index;
 
 	cpopn(&index);
-        if ((pair = grad_avl_find_n(AVPLIST(&mach), attr, index)) == NULL)
-                pushn(0);
+	pair = grad_avl_find_n(AVPLIST(&mach), attr, rw_c_val(index, int));
+        if (pair == NULL)
+                pushn(rw_c_cast(0, int));
         else
-                pushn(pair->avp_lvalue);
+                pushn(rw_c_cast(pair->avp_lvalue, u_int));
 }
 
 void
 rw_attr_delete0()
 {
-        int attr = (int) rw_code[mach.pc++];
+        int attr = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
 	grad_avl_delete(&mach.req->avlist, attr);
 }
 
 void
 rw_attr_delete()
 {
-        int attr = (int) rw_code[mach.pc++];
+        int attr = rw_c_val(rw_code_value(rw_code[mach.pc++]), int);
 	RWSTYPE index;
 
 	assert_request_presence();
 	cpopn(&index);
-	grad_avl_delete_n(&mach.req->avlist, attr, index);
+	grad_avl_delete_n(&mach.req->avlist, attr, rw_c_val(index, int));
 }
 
 /*
@@ -4528,8 +4592,8 @@ rw_adds()
 	memcpy(s, s2.data, s2.size);
 	s += s2.size;
 	*s = 0;
-	p[0] = s1.size + s2.size;
-        pushn((RWSTYPE)p);
+	rw_c_val(p[0], size) = s1.size + s2.size;
+        pushn(rw_c_cast(p, void*));
 }
 
 /*
@@ -4539,7 +4603,7 @@ void
 rw_neg()
 {
         checkpop(1);
-        pushn(-popn());
+        pushint(-popint());
 }
 
 /*
@@ -4551,9 +4615,9 @@ rw_b_and()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 & n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 & n2);
 }
 
 void
@@ -4562,9 +4626,9 @@ rw_b_or()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 | n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 | n2);
 }
 
 void
@@ -4573,9 +4637,9 @@ rw_b_xor()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 ^ n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 ^ n2);
 }
 
 void
@@ -4584,9 +4648,9 @@ rw_shl()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 << n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 << n2);
 }
 
 void
@@ -4595,9 +4659,9 @@ rw_shr()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 >> n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 >> n2);
 }
 
 /*
@@ -4609,9 +4673,9 @@ rw_add()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1+n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1+n2);
 }
 
 /*
@@ -4623,9 +4687,9 @@ rw_sub()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1-n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1-n2);
 }
 
 /*
@@ -4637,9 +4701,9 @@ rw_mul()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1*n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1*n2);
 }
 
 /*
@@ -4651,11 +4715,11 @@ rw_div()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
+        n2 = popint();
+        n1 = popint();
         if (n2 == 0) 
                 rw_error(_("division by zero!"));
-        pushn(n1/n2);
+        pushint(n1/n2);
 }
 
 /*
@@ -4667,11 +4731,11 @@ rw_rem()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
+        n2 = popint();
+        n1 = popint();
         if (n2 == 0) 
                 rw_error(_("division by zero!"));
-        pushn(n1%n2);
+        pushint(n1%n2);
 }
 
 
@@ -4679,7 +4743,7 @@ rw_rem()
 void
 rw_i2s()
 {
-        int n = popn();
+        int n = popint();
         char buf[64];
         
         snprintf(buf, sizeof(buf), "%d", n);
@@ -4690,8 +4754,8 @@ void
 rw_s2i()
 {
 	grad_string_t s;
-	mem2string(&s, (RWSTYPE *)popn());
-        pushn(strtol(s.data, NULL, 0));
+	mem2string(&s, (RWSTYPE *)rw_c_val(popn(), ptr));
+        pushint(strtol(s.data, NULL, 0));
 }
 
 
@@ -4702,9 +4766,9 @@ rw_eq()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 == n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 == n2);
 }
 
 void
@@ -4713,9 +4777,9 @@ rw_ne()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 != n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 != n2);
 }
 
 void
@@ -4724,9 +4788,9 @@ rw_lt()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 < n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 < n2);
 }
 
 void
@@ -4735,9 +4799,9 @@ rw_le()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 <= n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 <= n2);
 }
 
 void
@@ -4746,9 +4810,9 @@ rw_gt()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 > n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 > n2);
 }
 
 void
@@ -4757,9 +4821,9 @@ rw_ge()
         int n1, n2;
 
         checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 >= n2);
+        n2 = popint();
+        n1 = popint();
+        pushint(n1 >= n2);
 }
 
 void
@@ -4771,7 +4835,7 @@ rw_eqs()
 	poparr(&s2);
 	poparr(&s1);
 	
-        pushn(s1.size == s2.size && memcmp(s1.data, s2.data, s1.size) == 0);
+        pushint(s1.size == s2.size && memcmp(s1.data, s2.data, s1.size) == 0);
 }
 
 void
@@ -4783,7 +4847,7 @@ rw_nes()
 	poparr(&s2);
 	poparr(&s1);
 	
-        pushn(!(s1.size == s2.size && memcmp(s1.data, s2.data, s1.size) == 0));
+        pushint(!(s1.size == s2.size && memcmp(s1.data, s2.data, s1.size) == 0));
 }
 
 void
@@ -4796,7 +4860,7 @@ rw_lts()
 	poparr(&s2);
 	poparr(&s1);
 	size = RW_MIN(s1.size, s2.size);
-	pushn(memcmp(s1.data, s2.data, size < 0) || s1.size < s2.size); 
+	pushint(memcmp(s1.data, s2.data, size < 0) || s1.size < s2.size); 
 }
 
 void
@@ -4809,7 +4873,7 @@ rw_les()
 	poparr(&s2);
 	poparr(&s1);
 	size = RW_MIN(s1.size, s2.size);
-	pushn(memcmp(s1.data, s2.data, size <= 0) || s1.size <= s2.size); 
+	pushint(memcmp(s1.data, s2.data, size <= 0) || s1.size <= s2.size); 
 }
 
 void
@@ -4822,7 +4886,7 @@ rw_gts()
 	poparr(&s2);
 	poparr(&s1);
 	size = RW_MIN(s1.size, s2.size);
-	pushn(memcmp(s1.data, s2.data, size > 0) || s1.size > s2.size); 
+	pushint(memcmp(s1.data, s2.data, size > 0) || s1.size > s2.size); 
 }
 
 void
@@ -4835,7 +4899,7 @@ rw_ges()
 	poparr(&s2);
 	poparr(&s1);
 	size = RW_MIN(s1.size, s2.size);
-	pushn(memcmp(s1.data, s2.data, size >= 0) || s1.size >= s2.size); 
+	pushint(memcmp(s1.data, s2.data, size >= 0) || s1.size >= s2.size); 
 }
 
 void
@@ -4844,8 +4908,8 @@ rw_not()
         int n;
 
         checkpop(1);
-        n = popn();
-        pushn(!n);
+        n = popint();
+        pushint(!n);
 }
 
 static void
@@ -4862,7 +4926,7 @@ need_pmatch(size_t n)
 void
 rw_match()
 {
-        COMP_REGEX *rx = (COMP_REGEX *)rw_code[mach.pc++];
+        COMP_REGEX *rx = rw_c_val(rw_code_value(rw_code[mach.pc++]), rx);
         grad_string_t s;
         int rc;
 
@@ -4878,15 +4942,15 @@ rw_match()
                          errbuf, sizeof(errbuf));
                 grad_log(GRAD_LOG_DEBUG,
 		         _("rewrite regex failure: %s. Input: %s"),
-                         errbuf, (char*)mach.rA);
+                         errbuf, (char*)rw_c_val(mach.rA, ptr));
         }
-        pushn(rc == 0);
+        pushint(rc == 0);
 }
 
 void
 rw_jmp()
 {
-        pctr_t pc = (pctr_t) rw_code[mach.pc++];
+        pctr_t pc = rw_c_val(rw_code_value(rw_code[mach.pc++]), pc);
         mach.pc = pc;
 } 
 
@@ -4894,9 +4958,9 @@ void
 rw_jne()
 {
         int n;
-        pctr_t pc = (pctr_t) rw_code[mach.pc++];
+        pctr_t pc = rw_c_val(rw_code_value(rw_code[mach.pc++]), pc);
         
-        n = popn();
+        n = popint();
         if (n != 0)
                 mach.pc = pc;
 }
@@ -4905,9 +4969,9 @@ void
 rw_je()
 {
         int n;
-        pctr_t pc = (pctr_t) rw_code[mach.pc++];
+        pctr_t pc = rw_c_val(rw_code_value(rw_code[mach.pc++]), pc);
         
-        n = popn();
+        n = popint();
         if (n == 0)
                 mach.pc = pc;
 }
@@ -4915,8 +4979,8 @@ rw_je()
 void
 rw_builtin()
 {
-        INSTR fun = (INSTR) rw_code[mach.pc++];
-        pushn(mach.pc);
+        INSTR fun = rw_code_instr(rw_code[mach.pc++]);
+        pushn((RWSTYPE)mach.pc);
         enter(0);
         fun();
         leave();
@@ -4925,11 +4989,15 @@ rw_builtin()
 void
 run(pctr_t pc)
 {
+	INSTR ip;
+	
         mach.pc = pc;
-        while (rw_code[mach.pc]) {
+        while ((ip = rw_code_instr(rw_code[mach.pc]))) {
                 if (mach.pc >= rw_codesize)
                         rw_error(_("pc out of range"));
-                (*(rw_code[mach.pc++]))();
+//                (*(rw_code[mach.pc++]))();
+		mach.pc++;
+		(*ip)();
         }
 }
 
@@ -4955,8 +5023,8 @@ static void
 bi_length()
 {
 	grad_string_t s;
-	mem2string(&s, (RWSTYPE*)getarg(1));
-        pushn(s.size);
+	mem2string(&s, (RWSTYPE*)rw_c_val(getarg(1), ptr));
+        pushn((RWSTYPE)s.size);
 }
 
 /*
@@ -4969,10 +5037,10 @@ bi_index()
 	char *p;
         int   c;
 
-        mem2string(&s, (RWSTYPE*) getarg(2));
-        c = (int) getarg(1);
+        mem2string(&s, (RWSTYPE*) rw_c_val(getarg(2), ptr));
+        c = rw_c_val(getarg(1), int);
         p = memchr(s.data, c, s.size);
-        pushn(p ? p - s.data : -1);
+        pushint(p ? p - s.data : -1);
 }
 
 /*
@@ -4985,11 +5053,12 @@ bi_rindex()
 	int i;
         int c;
 
-	mem2string(&s, (RWSTYPE*) getarg(2));
+	mem2string(&s, (RWSTYPE*)rw_c_val(getarg(2), ptr));
+	c = rw_c_val(getarg(1), int);
 	for (i = s.size - 1; i >= 0; i--)
 		if (s.data[i] == c)
 			break;
-        pushn(i);
+        pushint(i);
 }
 
 /*
@@ -5003,9 +5072,9 @@ bi_substr()
 	char *dest;
         int   start, length;
 
-        mem2string(&src, (RWSTYPE*)getarg(3));
-        start  = getarg(2);
-        length = getarg(1);
+        mem2string(&src, (RWSTYPE*)rw_c_val(getarg(3), ptr));
+        start  = rw_c_val(getarg(2), int);
+        length = rw_c_val(getarg(1), int);
         if (length < 0)
                 length = src.size - start;
         
@@ -5014,8 +5083,8 @@ bi_substr()
         if (length > 0) 
                 memcpy(dest, src.data + start, length);
         dest[length] = 0;
-	p[0] = length;
-        pushn((RWSTYPE)p);
+	rw_c_val(p[0], size) = length;
+        pushn(rw_c_cast(p, void*));
 }
 
 static void
@@ -5023,11 +5092,11 @@ bi_field()
 {
         grad_string_t str;
 	char *p, *endp;
-        int fn = getarg(1);
+        int fn = rw_c_val(getarg(1), int);
         char *s = "";
         int len = 1;
 	
-	mem2string(&str, (RWSTYPE*) getarg(2));
+	mem2string(&str, (RWSTYPE*) rw_c_val(getarg(2), ptr));
 	endp = str.data + str.size;
 	for (p = str.data; p < endp && fn--; ) {
                 /* skip initial whitespace */
@@ -5052,40 +5121,44 @@ static void
 bi_logit()
 {
         grad_string_t msg;
-	mem2string(&msg, (RWSTYPE*) getarg(1));
+	mem2string(&msg, (RWSTYPE*) rw_c_val(getarg(1), ptr));
         grad_log(GRAD_LOG_INFO, "%s", msg.data);
-        pushn(0);
+        pushint(0);
 }
 
 static void
 bi_htonl()
 {
-	pushn(htonl(getarg(1)));
+	uint32_t val = rw_c_val(getarg(1), u_int);
+	pushn(rw_c_cast(htonl(val), u_int));
 }
 
 static void
 bi_ntohl()
 {
-	pushn(ntohl(getarg(1)));
+	uint32_t val = rw_c_val(getarg(1), u_int);
+	pushn(rw_c_cast(ntohl(val), u_int));
 }
 
 static void
 bi_htons()
 {
-	pushn(htons(getarg(1) & 0xffff));
+	uint16_t val = rw_c_val(getarg(1), u_int); /* FIXME: range checking */
+	pushn(rw_c_cast(htons(val), u_int));
 }
 
 static void
 bi_ntohs()
 {
-	pushn(ntohs(getarg(1) & 0xffff));
+	uint16_t val = rw_c_val(getarg(1), u_int); /* FIXME: range checking */
+	pushn(rw_c_cast(ntohs(val & 0xffff), u_int));
 }
 
 static void
 bi_inet_ntoa()
 {
 	char buffer[GRAD_IPV4_STRING_LENGTH];
-	char *s = grad_ip_iptostr(getarg(1), buffer);
+	char *s = grad_ip_iptostr(rw_c_val(getarg(1), u_int), buffer);
 	pushstr(s, strlen(s));
 }
 
@@ -5093,9 +5166,9 @@ static void
 bi_inet_aton()
 {
 	grad_string_t s;
-	mem2string(&s, (RWSTYPE*)getarg(1));
+	mem2string(&s, (RWSTYPE*)rw_c_val(getarg(1), ptr));
 	/* Note: inet_aton is not always present. See lib/iputils.c */
-	pushn(grad_ip_strtoip(s.data));
+	pushn(rw_c_cast(grad_ip_strtoip(s.data), u_int));
 }
 
 static void
@@ -5105,9 +5178,9 @@ bi_tolower()
 	grad_string_t dest;
 	int i;
 
-	mem2string(&src, (RWSTYPE*) getarg(1));
+	mem2string(&src, (RWSTYPE*) rw_c_val(getarg(1), ptr));
 	pushstr(src.data, src.size);
-	mem2string(&dest, (RWSTYPE*) tos());
+	mem2string(&dest, (RWSTYPE*) rw_c_val(tos(), ptr));
 	for (i = 0; i < dest.size; i++)
 		dest.data[i] = tolower(dest.data[i]);
 }	
@@ -5119,9 +5192,9 @@ bi_toupper()
 	grad_string_t dest;
 	int i;
 
-	mem2string(&src, (RWSTYPE*) getarg(1));
+	mem2string(&src, (RWSTYPE*) rw_c_val(getarg(1), ptr));
 	pushstr(src.data, src.size);
-	mem2string(&dest, (RWSTYPE*) tos());
+	mem2string(&dest, (RWSTYPE*) rw_c_val(tos(), ptr));
 	for (i = 0; i < dest.size; i++)
 		dest.data[i] = toupper(dest.data[i]);
 }	
@@ -5129,7 +5202,7 @@ bi_toupper()
 static void
 bi_request_code_string()
 {
-        int code = (int) getarg(1);
+        int code = rw_c_val(getarg(1), int);
 	const char *s = grad_request_code_to_name(code);
 	pushstr(s, strlen(s));
 }
@@ -5138,35 +5211,35 @@ static void
 bi_request_source_ip()
 {
 	assert_request_presence();
-	pushn((RWSTYPE) mach.req->ipaddr);
+	pushn(rw_c_cast(mach.req->ipaddr, u_int));
 }
 
 static void
 bi_request_source_port()
 {
 	assert_request_presence();
-	pushn((RWSTYPE) mach.req->udp_port);
+	pushn(rw_c_cast(mach.req->udp_port, u_int));
 }
 
 static void
 bi_request_id()
 {
 	assert_request_presence();
-	pushn((RWSTYPE) mach.req->id);
+	pushn(rw_c_cast(mach.req->id, u_int));
 }
 
 static void
 bi_request_code()
 {
 	assert_request_presence();
-	pushn((RWSTYPE) mach.req->code);
+	pushn(rw_c_cast(mach.req->code, u_int));
 }
 
 static void
 bi_nas_name()
 {
         grad_nas_t *nas;
-	grad_uint32_t ip = (grad_uint32_t) getarg(1);
+	grad_uint32_t ip = (grad_uint32_t) rw_c_val(getarg(1), u_int);
 
 	if ((nas = grad_nas_lookup_ip(ip)) != NULL) {
 		char *s = nas->shortname[0] ? nas->shortname : nas->longname;
@@ -5183,7 +5256,7 @@ static void
 bi_nas_short_name()
 {
         grad_nas_t *nas;
-	grad_uint32_t ip = (grad_uint32_t) getarg(1);
+	grad_uint32_t ip = (grad_uint32_t) rw_c_val(getarg(1), u_int);
 
 	if ((nas = grad_nas_lookup_ip(ip)) && nas->shortname[0]) {
 		pushstr(nas->shortname, strlen(nas->shortname));
@@ -5199,7 +5272,7 @@ static void
 bi_nas_full_name()
 {
         grad_nas_t *nas;
-	grad_uint32_t ip = (grad_uint32_t) getarg(1);
+	grad_uint32_t ip = (grad_uint32_t) rw_c_val(getarg(1), u_int);
 
 	if ((nas = grad_nas_lookup_ip(ip)) != NULL) {
 		pushstr(nas->longname, strlen(nas->longname));
@@ -5214,7 +5287,7 @@ bi_nas_full_name()
 static void
 bi_gethostbyaddr()
 {
-	grad_uint32_t ip = (grad_uint32_t) getarg(1);
+	grad_uint32_t ip = (grad_uint32_t) rw_c_val(getarg(1), u_int);
 	char nasname[GRAD_MAX_LONGNAME];
 		
 	grad_ip_gethostname(ip, nasname, sizeof(nasname));
@@ -5225,14 +5298,14 @@ static void
 bi_gethostbyname()
 {
 	grad_string_t s;
-	mem2string(&s, (RWSTYPE*)getarg(1));
-	pushn((RWSTYPE) grad_ip_gethostaddr(s.data));
+	mem2string(&s, (RWSTYPE*) rw_c_val(getarg(1), ptr));
+	pushn(rw_c_cast(grad_ip_gethostaddr(s.data), u_int));
 }
 
 static void
 bi_time()
 {
-	pushn((RWSTYPE) time(NULL));
+	pushn(rw_c_cast(time(NULL), u_int));
 }
 
 static void
@@ -5240,11 +5313,11 @@ bi_strftime()
 {
 	struct tm *tm;
 	char *base;
-	time_t t = (time_t) getarg(1);
+	time_t t = (time_t) rw_c_val(getarg(1), u_int);
 	grad_string_t fmt;
 	size_t n;
 	
-	mem2string(&fmt, (RWSTYPE*) getarg(2));
+	mem2string(&fmt, (RWSTYPE*) rw_c_val(getarg(2), ptr));
 	tm = localtime(&t);
 	base = temp_space_create();
 	n = strftime(base, temp_space_size(), fmt.data, tm);
@@ -5259,7 +5332,7 @@ rw_regerror(const char *prefix, regex_t *rx, int rc)
 	if (!errbuf) 
 		rw_error(prefix);
 	else {
-		strcpy (errbuf, prefix);
+		strcpy(errbuf, prefix);
 		regerror(rc, rx, errbuf + strlen(prefix), sz);
 		rw_error_free(errbuf);
 	}
@@ -5412,9 +5485,9 @@ bi_gsub()
 	grad_list_t *subst;
 	int rc;
 	
-	mem2string(&re_str, (RWSTYPE*) getarg(3));
-	mem2string(&repl, (RWSTYPE*) getarg(2));
-	mem2string(&arg, (RWSTYPE*) getarg(1));
+	mem2string(&re_str, (RWSTYPE*) rw_c_val(getarg(3), ptr));
+	mem2string(&repl, (RWSTYPE*) rw_c_val(getarg(2), ptr));
+	mem2string(&arg, (RWSTYPE*) rw_c_val(getarg(1), ptr));
 	p = arg.data;
 	
         rc = regcomp(&rx, re_str.data, regcomp_flags);
@@ -5439,8 +5512,8 @@ bi_gsub()
 	temp_space_copy(&base, p, strlen(p) + 1);
 	subst_destroy(subst);
 	regfree(&rx);
-
-	pushn((RWSTYPE)temp_space_fix(base));
+		   
+		   pushn(rw_c_cast(temp_space_fix(base), void *));
 }
 
 static void
@@ -5455,9 +5528,9 @@ bi_sub()
 	grad_list_t *subst;
 	int rc;
 	
-	mem2string(&re_str, (RWSTYPE*) getarg(3));
-	mem2string(&repl, (RWSTYPE*) getarg(2));
-	mem2string(&arg, (RWSTYPE*) getarg(1));
+	mem2string(&re_str, (RWSTYPE*) rw_c_val(getarg(3), ptr));
+	mem2string(&repl, (RWSTYPE*) rw_c_val(getarg(2), ptr));
+	mem2string(&arg, (RWSTYPE*) rw_c_val(getarg(1), ptr));
 	
         rc = regcomp(&rx, re_str.data, regcomp_flags);
         if (rc) 
@@ -5480,7 +5553,7 @@ bi_sub()
 	subst_destroy(subst);
 	regfree(&rx);
 
-	pushn((RWSTYPE)temp_space_fix(base));
+	pushn(rw_c_cast(temp_space_fix(base), void*));
 }
 
 #define ISPRINT(c) (((unsigned char)c) < 128 && (isalnum(c) || c == '-'))
@@ -5493,7 +5566,7 @@ bi_qprn()
 	size_t count;
 	RWSTYPE *sp;
 	
-	mem2string(&arg, (RWSTYPE*)getarg(1));
+	mem2string(&arg, (RWSTYPE*) rw_c_val(getarg(1), ptr));
 	end = arg.data + arg.size;
 	for (count = 0, p = arg.data; p < end; p++)
 		if (!ISPRINT(*p))
@@ -5501,8 +5574,8 @@ bi_qprn()
 
 	/* Each encoded character takes 3 bytes. */
 	sp = heap_reserve(sizeof(RWSTYPE) + arg.size + 2*count + 1);
-	sp[0] = arg.size + 2*count;
-	pushn((RWSTYPE) sp);
+	rw_c_val(sp[0], size) = arg.size + 2*count;
+	pushn(rw_c_cast(sp, void*));
 	
 	for (p = (char*)(sp + 1), s = arg.data; s < end; s++) {
 		if (ISPRINT(*s))
@@ -5527,11 +5600,11 @@ bi_quote_string()
 	char *p;
 	size_t size;
 	
-	mem2string(&arg, (RWSTYPE*)getarg(1));
+	mem2string(&arg, (RWSTYPE*) rw_c_val(getarg(1), ptr));
 	size = grad_argcv_quoted_length_n(arg.data, arg.size, &quote);
 	sp = heap_reserve(sizeof(RWSTYPE) + size + 1);
-	sp[0] = size;
-	pushn((RWSTYPE)sp);
+	rw_c_val(sp[0], size) = size;
+	pushn(rw_c_cast(sp, void*));
 	p = (char*)(sp + 1);
 	grad_argcv_quote_copy_n(p, arg.data, arg.size);
 }
@@ -5539,25 +5612,23 @@ bi_quote_string()
 static void
 bi_unquote_string()
 {
-	int quote;
 	grad_string_t arg;
 	RWSTYPE *sp;
 	char *p;
-	size_t size;
 	
-	mem2string(&arg, (RWSTYPE*)getarg(1));
+	mem2string(&arg, (RWSTYPE*) rw_c_val(getarg(1), ptr));
 	sp = heap_reserve(sizeof(RWSTYPE) +  arg.size + 1);
 	p = (char*)(sp + 1);
 	grad_argcv_unquote_copy(p, arg.data, arg.size);
-	sp[0] = strlen(p);
-	pushn((RWSTYPE)sp);
+	rw_c_val(sp[0], u_int) = strlen(p);
+	pushn(rw_c_cast(sp, void*));
 }
 
 static void
 bi_textdomain()
 {
 	grad_string_t s;
-	mem2string(&s, (RWSTYPE*)getarg(1));
+	mem2string(&s, (RWSTYPE*) rw_c_val(getarg(1), ptr));
 	pushstr(default_gettext_domain, strlen (default_gettext_domain));
 	grad_string_replace(&default_gettext_domain, s.data);
 }
@@ -5568,7 +5639,7 @@ bi_gettext()
 	grad_string_t s;
 	const char *p;
 	
-	mem2string(&s, (RWSTYPE*)getarg(1));
+	mem2string(&s, (RWSTYPE*) rw_c_val(getarg(1), ptr));
 	p = dgettext(default_gettext_domain, s.data);
 	pushstr(p, strlen(p));
 }
@@ -5580,8 +5651,8 @@ bi_dgettext()
 	grad_string_t text;
 	const char *p;
 	
-	mem2string(&domain, (RWSTYPE*)getarg(2));
-	mem2string(&text, (RWSTYPE*)getarg(1));
+	mem2string(&domain, (RWSTYPE*) rw_c_val(getarg(2), ptr));
+	mem2string(&text, (RWSTYPE*) rw_c_val(getarg(1), ptr));
 	p = dgettext(domain.data, text.data);
 	pushstr(p, strlen(p));
 }
@@ -5595,9 +5666,9 @@ bi_ngettext()
 	unsigned long n;
 	const char *p;
 
-	mem2string(&s, (RWSTYPE*)getarg(3));
-	mem2string(&pl, (RWSTYPE*)getarg(2));
-	n = (unsigned long) getarg(1);
+	mem2string(&s, (RWSTYPE*) rw_c_val(getarg(3), ptr));
+	mem2string(&pl, (RWSTYPE*) rw_c_val(getarg(2), ptr));
+	n = (unsigned long) rw_c_val(getarg(1), u_int);
 	p = dngettext(default_gettext_domain,
 		      s.data,
 		      pl.data,
@@ -5614,10 +5685,10 @@ bi_dngettext()
 	unsigned long n;
 	const char *p;
 
-	mem2string(&domain, (RWSTYPE*)getarg(4));
-	mem2string(&s, (RWSTYPE*)getarg(3));
-	mem2string(&pl, (RWSTYPE*)getarg(2));
-	n = (unsigned long) getarg(1);
+	mem2string(&domain, (RWSTYPE*) rw_c_val(getarg(4), ptr));
+	mem2string(&s, (RWSTYPE*) rw_c_val(getarg(3), ptr));
+	mem2string(&pl, (RWSTYPE*) rw_c_val(getarg(2), ptr));
+	n = (unsigned long) rw_c_val(getarg(1), u_int);
 
         p = dngettext(domain.data, s.data, pl.data, n);
 	pushstr(p, strlen(p));
@@ -5705,7 +5776,7 @@ function_install(FUNCTION *fun)
 {
         FUNCTION *fp;
 
-        if (fp = (FUNCTION *)grad_sym_lookup(rewrite_tab, fun->name)) {
+        if ((fp = (FUNCTION *)grad_sym_lookup(rewrite_tab, fun->name))) {
                 grad_log_loc(GRAD_LOG_ERR, &fun->loc,
 			     _("redefinition of function %s"));
                 grad_log_loc(GRAD_LOG_ERR, &fp->loc,
@@ -5832,8 +5903,8 @@ run_init(pctr_t pc, grad_request_t *request)
         }
 
         /* Imitate a function call */
-        pushn(0);                  /* Return address */
-        run(pc);                   /* call function */
+        pushn(rw_c_cast(0, pctr_t)); /* Return address */
+        run(pc);                     /* call function */
         if (GRAD_DEBUG_LEVEL(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
@@ -5851,15 +5922,15 @@ return_value(grad_value_t *val)
 		
 	switch (val->type) {
 	case Integer:   
-		val->datum.ival = mach.rA;
+		val->datum.ival = rw_c_val(mach.rA, u_int);
 		break;
 			
 	case String:
-		mem2string(&val->datum.sval, (RWSTYPE*) mach.rA);
+		mem2string(&val->datum.sval, (RWSTYPE*) rw_c_val(mach.rA, ptr));
 		p = grad_emalloc (val->datum.sval.size + 1);
 		memcpy (p, val->datum.sval.data, val->datum.sval.size);
 		p[val->datum.sval.size] = 0;
-		val->datum.sval.data = p;
+		val->datum.sval.data = (char*) p;
 		break;
 		
 	default:
@@ -5914,7 +5985,7 @@ rewrite_invoke(grad_data_type_t rettype, grad_value_t *val,
                 nargs++;
                 switch (*typestr++) {
                 case 'i':
-                        pushn(va_arg(ap, int));
+                        pushint(va_arg(ap, int));
                         break;
                 case 's':
                         s = va_arg(ap, char*);
@@ -5927,8 +5998,8 @@ rewrite_invoke(grad_data_type_t rettype, grad_value_t *val,
         va_end(ap);
 
         /* Imitate a function call */
-        pushn(0);                  /* Return address */
-        run(fun->entry);           /* call function */
+        pushn(rw_c_cast(0, pctr_t));   /* Return address */
+        run(fun->entry);               /* call function */
         if (GRAD_DEBUG_LEVEL(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");

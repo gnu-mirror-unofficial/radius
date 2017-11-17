@@ -1,6 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2010, 2013 Free Software
-   Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -258,7 +257,7 @@ _get_hex_string(struct ascend_parse_buf *pb, u_char *buf)
 		}
 	}
 
-	for (i = 0; i < 2*ASCEND_MAX_CMP_LENGTH; i++)
+	for (i = 0; i < ASCEND_MAX_CMP_LENGTH; i += 2)
 		*buf++ = (tmp[i] << 4) | tmp[i+1];
 	return rc;
 }

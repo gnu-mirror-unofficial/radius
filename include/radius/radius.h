@@ -1,6 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2010, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -26,6 +25,7 @@
 #include <radius/mem.h>
 #include <radius/dictionary.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
@@ -393,6 +393,8 @@ int grad_avp_cmp(grad_avp_t *a, grad_avp_t *b);
 int grad_avl_cmp(grad_avp_t *a, grad_avp_t *b, int prop);
 int grad_avp_null_string_p(grad_avp_t *pair);
 	
+void grad_avl_fprint(FILE *fp, char *prefix, int typeflag, grad_avp_t *avl);
+
 extern int grad_resolve_hostnames;
 
 char *grad_ip_gethostname (grad_uint32_t, char *buf, size_t size);

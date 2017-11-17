@@ -1,7 +1,6 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2010,
-   2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -103,7 +102,7 @@ peek_ctx()
 /* Forward declarations */
 static void run_statement(radtest_node_t *node);
 static void errsync();
-int yyerror(char *s);
+int yyerror(char const *s);
  
 %}
 
@@ -895,7 +894,7 @@ pritem        : expr %prec PRITEM
 %%
 
 int
-yyerror(char *s)
+yyerror(char const *s)
 {
 	if (strcmp(s, "parse error") == 0
 	    || strcmp(s, "syntax error") == 0) {
@@ -920,7 +919,7 @@ yyerror(char *s)
 static char *funcname_displayed = NULL;
 
 static int
-namecmp(char *a, char *b)
+namecmp(char const *a, char const *b)
 {
 	if (!a || !b)
 		return a != b;

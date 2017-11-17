@@ -1,6 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010,
-   2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -49,7 +48,7 @@ get_argcv(const char *str, const char *delim, size_t *pargc, char ***pargv)
 static int
 continuation_line_p(const char *str, const char *delim)
 {
-	int argc;
+	size_t argc;
 	char **argv;
 	int rc = get_argcv(str, delim, &argc, &argv) == 0
 		&& argc > 0
@@ -62,7 +61,7 @@ int
 grad_read_raddb_file(char *filename, int vital, char *delim,
 		     int (*fun)(), void *closure)
 {
-        int    argc;
+        size_t argc;
         char **argv;
         grad_locus_t loc;
 	int fd;

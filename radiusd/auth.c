@@ -1,6 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008, 2010,
-   2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -1060,7 +1059,7 @@ sfn_simuse(AUTH_MACH *m)
 {
         char  name[GRAD_STRING_LENGTH];
         int rc;
-        int count;
+        size_t count;
 	
         strip_username(strip_names,
                        m->namepair->avp_strvalue, m->user_check, name);
